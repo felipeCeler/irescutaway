@@ -33,14 +33,14 @@ void MainWindow::open(QString pFilename,bool who ) {
 	}
 }
 
-void MainWindow::on_action_Open_Ply_triggered()
+void MainWindow::on_action_Open_IRES_triggered()
 {
 	// Asks for a file name to open.
 	QString filename = QFileDialog::getOpenFileName (
 			this,
-			tr("Choose a Ply *.ply file"),
+			tr("Choose a Reservoir *.ires file"),
 			".",
-			tr("ply model (*.ply)"));
+			tr("ires reservoir model (*.ires)"));
 
 	// Tries to load file if filename not empty.
 	if ( filename != "" )

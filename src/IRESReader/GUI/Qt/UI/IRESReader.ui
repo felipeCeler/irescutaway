@@ -20,14 +20,14 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>25</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
     <property name="title">
      <string>File</string>
     </property>
-    <addaction name="action_Open_Ply"/>
+    <addaction name="action_Open_IRES"/>
     <addaction name="separator"/>
     <addaction name="action_Quit"/>
    </widget>
@@ -41,9 +41,9 @@
    <addaction name="menuTools"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
-  <action name="action_Open_Ply">
+  <action name="action_Open_IRES">
    <property name="text">
-    <string>Open Ply</string>
+    <string>Open *.ires</string>
    </property>
   </action>
   <action name="action_Quit">

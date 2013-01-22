@@ -20,7 +20,7 @@ class MainWindow: public QMainWindow , private Ui::MainWindow
 
 	public slots:
 
-		void on_action_Open_Ply_triggered ( );
+		void on_action_Open_IRES_triggered ( );
 		void on_action_Load_Shaders_triggered ( );
 
 
