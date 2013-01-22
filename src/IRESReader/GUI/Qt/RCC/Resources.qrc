@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/">
+        <file>Icons/caju.png</file>
+        <file>Shaders/Primary.frag</file>
+        <file>Shaders/Primary.vert</file>
+    </qresource>
+</RCC>
