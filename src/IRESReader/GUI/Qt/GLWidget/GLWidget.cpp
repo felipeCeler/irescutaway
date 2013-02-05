@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <algorithm>
 
 #include <GUI/Qt/GLWidget/GLWidget.hpp>
 // Se quiser usar QPainter Ver exemplo no QT demo - Manda Qt em wave animation !!!
@@ -26,15 +27,8 @@ GLWidget::GLWidget (  QWidget* parent , const QGLWidget* shareWidget , Qt::Windo
 void GLWidget::initializeGL ( )
 {
 	/// Celer OpenGL
-	Celer::OpenGL::OpenGLContext::instance ( )->glewInitialize ( "File GLWidget.cpp line 39" );
+	Celer::OpenGL::OpenGLContext::instance ( )->glewInitialize ( "File GLWidget.cpp line 29" );
 	/// Celer OpenGL
-
-	camera_.setPosition ( Celer::Vector3<float> ( 0.0f , 0.0f , 10.0f ) );
-	camera_.setAspectRatio ( width ( ) , height ( ) );
-	camera_.setPerspectiveProjectionMatrix ( 60 , camera_.aspectRatio ( ) , 0.1 , 500 );
-	camera_.setOrthographicProjectionMatrix ( 0.0 , GLfloat ( width ( ) ) , 0.0 , GLfloat ( height ( ) ) , -100.0 , 100.0 );
-	//camera_.setBehavior(Celer::Camera<float>::REVOLVE_AROUND_MODE);
-	cameraStep_ = 0.01f;
 
 
 	buttonRelease_ = false;
@@ -66,7 +60,11 @@ void GLWidget::initializeGL ( )
 
 	cube_.creatBuffers ( );
 
+	camera_.setPosition ( cube_.box.center ( ) );
+	camera_.setOffset ( 3.0f * cube_.box.diagonal ( ) );
 
+	camera_.setBehavior ( Celer::Camera<float>::REVOLVE_AROUND_MODE );
+	cameraStep_ = 0.01f;
 
 }
 
@@ -75,7 +73,9 @@ void GLWidget::resizeGL ( int width , int height )
 	glViewport ( 0 , 0 , width , height );
 	camera_.setWindowSize ( width , height );
 
-	camera_.setPerspectiveProjectionMatrix ( 60 , camera_.aspectRatio() , 0.1 , 500 );
+
+	camera_.setAspectRatio ( width  , height  );
+	camera_.setPerspectiveProjectionMatrix ( 60 , camera_.aspectRatio ( ) , 100.0 , 10.0*cube_.box.diagonal() );
 
 	centerX_ = static_cast<float> ( width * 0.5 );
 	centerY_ = static_cast<float> ( height * 0.5 );
@@ -118,6 +118,15 @@ void GLWidget::TridimensionalSetUp ( )
 		glUniformMatrix4fv ( manager.uniforms_["projectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
 		
 		cube_.draw ( );
+
+		// 1rst attribute buffer : vertices
+
+//		glBindVertexArray(vertexArray);
+//		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices);
+//		// Draw the triangle !
+//		glDrawElements(GL_TRIANGLES, 36 , GL_UNSIGNED_INT, 0);
+//
+//		glBindVertexArray(0);
 		
 		manager.deactive ( );
 		

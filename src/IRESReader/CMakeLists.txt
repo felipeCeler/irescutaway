@@ -40,11 +40,13 @@ endforeach()
 set( ${PROJECT_NAME}_SOURCES App/main.cpp 
     						 GUI/Qt/MainWindow/MainWindow.cpp
     						 GUI/Qt/GLWidget/GLWidget.cpp
-    						 GUI/Qt/GLWidget/Cube.cpp)
+    						 GUI/Qt/GLWidget/Cube.cpp
+    						 IRESClasses/CornerPointGrid_test.cpp)
 	
 set( ${PROJECT_NAME}_HEADERS GUI/Qt/MainWindow/MainWindow.hpp
                              GUI/Qt/GLWidget/GLWidget.hpp
-                             GUI/Qt/GLWidget/Cube.hpp)	
+                             GUI/Qt/GLWidget/Cube.hpp
+                             )	
 
 set( MOC_HEADERS GUI/Qt/MainWindow/MainWindow.hpp
                  GUI/Qt/GLWidget/GLWidget.hpp  )

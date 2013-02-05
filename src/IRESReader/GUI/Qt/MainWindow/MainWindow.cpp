@@ -16,7 +16,7 @@ MainWindow::MainWindow ( QMainWindow *parent ) :
 	glFormat.setSamples(4);
 
 	setupUi ( this );
-	this->glWidget = new GLWidget ( glFormat, this );
+	this->glWidget = new GLWidget ( this );
 	this->setCentralWidget ( glWidget );
 
 	QIcon icon;

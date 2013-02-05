@@ -26,6 +26,9 @@
 #include <QtCore/QMimeData>
 
 
+#include <IRESClasses/CornerPointGrid_test.cpp>
+
+
 class GLWidget: public QGLWidget
 {
 		Q_OBJECT
@@ -86,6 +89,13 @@ private:
 	Celer::OpenGL::Texture2D 	facePhoto;
 
 	Cube  cube_;
+
+	GLuint vertexArray;
+	GLuint vbo;
+	GLuint indices;
+
+	Ires ires_cornerPoint_test_;
+	Celer::BoundingBox3<double> box;
 };
 
 #endif

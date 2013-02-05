@@ -3,8 +3,8 @@
 
 #include <GUI/Qt/MainWindow/MainWindow.hpp>
 
-// Learning ifstream
-#include<fstream>
+
+
 
 int main ( int argc , char *argv[] )
 {
@@ -16,35 +16,9 @@ int main ( int argc , char *argv[] )
 		return 1;
 	}
 
-	//MainWindow * form = new MainWindow;
+	MainWindow * form = new MainWindow;
 
-	//form->show();
-
-	std::ifstream inFile;
-
-	inFile.open ( "/media/d/Workspace/iofile/src/ioFile/App/test.ply" , std::ios::in );
-
-	char a[80];
-
-	if ( inFile.fail ( ) )
-	{
-		std::cout << " error! myabe the file doesn't exist " << std::endl;
-		inFile.close ( );
-	}
-	else if ( !inFile )
-	{
-		std::cout << "While opening a file an error is encountered" << std::endl;
-	}
-	else
-	{
-		std::cout << "File is successfully opened" << std::endl;
-
-		while ( !inFile.eof ( ) )
-		{
-			inFile >> a;
-			std::cout << a << std::endl;
-		}
-	}
+	form->show();
 
 	return app.exec ( );
 }
