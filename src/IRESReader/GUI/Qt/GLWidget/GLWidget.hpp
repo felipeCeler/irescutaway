@@ -95,6 +95,7 @@ private:
 	GLuint indices;
 
 	Ires ires_cornerPoint_test_;
+	std::vector<int> list_of_indices;
 	Celer::BoundingBox3<double> box;
 };
 

@@ -67,14 +67,13 @@ void Cube::creatBuffers( )
 	float x = 5878424.7906;
 
 	points.push_back ( Celer::Vector3<GLdouble> ( 2440863.6397 , 5878424.7906 , 1015.6089 ) );
-	points.push_back ( Celer::Vector3<GLdouble> ( 2440938.7195 , 5878414.9469 , 969.9014 ) );
-	points.push_back ( Celer::Vector3<GLdouble> ( 2440950.3564 , 5878486.1683 , 972.0026 ) );
+	points.push_back ( Celer::Vector3<GLdouble> ( 2440938.7195 , 5878414.9469 , 969.90140 ) );
+	points.push_back ( Celer::Vector3<GLdouble> ( 2440950.3564 , 5878486.1683 , 972.00260 ) );
 	points.push_back ( Celer::Vector3<GLdouble> ( 2440875.6062 , 5878495.3373 , 1023.9014 ) );
 	points.push_back ( Celer::Vector3<GLdouble> ( 2440863.6397 , 5878424.7906 , 1065.6089 ) );
 	points.push_back ( Celer::Vector3<GLdouble> ( 2440938.7195 , 5878414.9469 , 1019.9014 ) );
 	points.push_back ( Celer::Vector3<GLdouble> ( 2440950.3564 , 5878486.1683 , 1022.0026 ) );
 	points.push_back ( Celer::Vector3<GLdouble> ( 2440875.6062 , 5878495.3373 , 1073.9014 ) );
-	points.push_back ( Celer::Vector3<GLdouble> ( 2441013.7993 , 5878405.1033 , 914.1412 ) );
 
 //	points.push_back ( Celer::Vector3<GLdouble> ( x * 1.0f , x * 1.0f , x * 1.0f ) );
 //	points.push_back ( Celer::Vector3<GLdouble> ( x * 1.0f , x * 1.0f ,-x * 1.0f ) );
@@ -87,17 +86,44 @@ void Cube::creatBuffers( )
 
 	box.fromPointCloud ( points.begin ( ) , points.end ( ) );
 
-	points.clear ( );
 
-	points.push_back ( box.max ( ) );
-	points.push_back ( Celer::Vector3<GLdouble> ( box.max ( ).x , box.max ( ).y , box.min ( ).z ) );
-	points.push_back ( Celer::Vector3<GLdouble> ( box.min ( ).x , box.max ( ).y , box.min ( ).z ) );
-	points.push_back ( Celer::Vector3<GLdouble> ( box.min ( ).x , box.max ( ).y , box.max ( ).z ) );
+	std::cout << "center " << box.center() << std::endl;
+	std::cout << "min " << box.min() << std::endl;
+	std::cout << "max " << box.max() << std::endl;
+	std::cout << "diagonal " << box.diagonal() << std::endl;
 
-	points.push_back ( Celer::Vector3<GLdouble> ( box.max ( ).x , box.min ( ).y , box.max ( ).z ) );
-	points.push_back ( Celer::Vector3<GLdouble> ( box.min ( ).x , box.min ( ).y , box.max ( ).z ) );
-	points.push_back ( box.min ( ) );
-	points.push_back ( Celer::Vector3<GLdouble> ( box.max ( ).x , box.min ( ).y , box.min ( ).z ) );
+//	points.clear ( );
+//
+//	points.push_back ( box.max ( ) );
+//	points.push_back ( Celer::Vector3<GLdouble> ( box.max ( ).x , box.max ( ).y , box.min ( ).z ) );
+//	points.push_back ( Celer::Vector3<GLdouble> ( box.min ( ).x , box.max ( ).y , box.min ( ).z ) );
+//	points.push_back ( Celer::Vector3<GLdouble> ( box.min ( ).x , box.max ( ).y , box.max ( ).z ) );
+//
+//	points.push_back ( Celer::Vector3<GLdouble> ( box.max ( ).x , box.min ( ).y , box.max ( ).z ) );
+//	points.push_back ( Celer::Vector3<GLdouble> ( box.min ( ).x , box.min ( ).y , box.max ( ).z ) );
+//	points.push_back ( box.min ( ) );
+//	points.push_back ( Celer::Vector3<GLdouble> ( box.max ( ).x , box.min ( ).y , box.min ( ).z ) );
+
+
+
+	int ires_indices_charles [ ] =
+	{
+	 // Top Face 	      // Bottom Face
+         0, 1, 2, 2, 3, 0,    4, 5, 6, 6, 7, 4,
+         // Front Face	      // Back Face
+         0, 4, 5, 5, 1, 0,    2, 6, 7, 7, 4, 2,
+         // Right Face	      // Left Face
+         0, 3, 7, 7, 4, 0,     1, 5, 6, 6, 2 ,1
+	};
+
+	int vertex_indices_obj [ ] =
+	{
+          4, 1, 0, 5, 1, 4,    5 ,2 ,1, 6, 2, 5,
+          6, 3, 2, 7, 3, 6,    7 ,0 ,3, 4, 0, 7,
+          0, 2, 3, 1, 2, 0,    7 ,5 ,4, 6, 5, 7
+	};
+
+
 
 //	// 2 Triangle per face.
 	GLuint g_vertex_indices[] =
@@ -112,7 +138,7 @@ void Cube::creatBuffers( )
 	   0, 4, 7, 7, 1, 0,    2, 6, 5, 5, 3, 2
 	};
 
-	indices = std::vector<GLuint>(g_vertex_indices,g_vertex_indices+36);
+	indices = std::vector<GLuint>(vertex_indices_obj,vertex_indices_obj+36);
 
 	verticesSlot	= 0;
 
@@ -131,7 +157,7 @@ void Cube::creatBuffers( )
 
 	   // Set up generic attributes pointers
 	glEnableVertexAttribArray(verticesSlot);
-	GlVertexAttribPointer(verticesSlot, 3, GL_DOUBLE, GL_FALSE, 0, 0);
+	glVertexAttribPointer(verticesSlot, 3, GL_DOUBLE, GL_FALSE, 0, 0);
 
 
 	glBindVertexArray(0);

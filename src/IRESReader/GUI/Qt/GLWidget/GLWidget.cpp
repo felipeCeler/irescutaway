@@ -6,6 +6,7 @@
 #include <stdlib.h>
 
 #include <algorithm>
+#include <iterator>
 
 #include <GUI/Qt/GLWidget/GLWidget.hpp>
 // Se quiser usar QPainter Ver exemplo no QT demo - Manda Qt em wave animation !!!
@@ -58,13 +59,126 @@ void GLWidget::initializeGL ( )
 
 	LoadShaders ( );
 
-	cube_.creatBuffers ( );
+	ires_cornerPoint_test_.openIRES( "/media/d/Workspace/IRESReader/Files/Ires/zmap.ires" );
 
-	camera_.setPosition ( cube_.box.center ( ) );
-	camera_.setOffset ( 3.0f * cube_.box.diagonal ( ) );
+
+	for (int i = 0 ; i < 8 ; i++)
+	{
+		std::cout << " id " << ires_cornerPoint_test_.blocks[i*4] << " " << ires_cornerPoint_test_.vertices[i*4] ;
+		std::cout << " id " << ires_cornerPoint_test_.blocks[i*4+1] << " " << ires_cornerPoint_test_.vertices[i*4+1] ;
+		std::cout << " id " << ires_cornerPoint_test_.blocks[i*4+2] << " " << ires_cornerPoint_test_.vertices[i*4+2] ;
+		std::cout << " id " << ires_cornerPoint_test_.blocks[i*4+3] << " " << ires_cornerPoint_test_.vertices[i*4+3] ;
+	}
+
+
+//        4, 1, 0, 5, 1, 4,    5 ,2 ,1, 6, 2, 5,
+//        6, 3, 2, 7, 3, 6,    7 ,0 ,3, 4, 0, 7,
+//        0, 2, 3, 1, 2, 0,    7 ,5 ,4, 6, 5, 7
+
+//        // Top Face 		// Bottom
+//	   0, 1, 2, 2, 3, 0,    4, 5, 6, 6, 7, 4,
+//
+//	   // Front 		// Back
+//	   0, 3, 5, 5, 4 , 0,   2, 1, 7, 7, 6, 2,
+//
+//	   // Right   	 	// Left
+//	   0, 4, 7, 7, 1, 0,    2, 6, 5, 5, 3, 2
+
+//	int index [] =
+//	{
+//            // Top Face
+//            ires_cornerPoint_test_.blocks[4],ires_cornerPoint_test_.blocks[1],ires_cornerPoint_test_.blocks[0],
+//            ires_cornerPoint_test_.blocks[5],ires_cornerPoint_test_.blocks[1],ires_cornerPoint_test_.blocks[4],
+//            // Bottom Face
+//            ires_cornerPoint_test_.blocks[5],ires_cornerPoint_test_.blocks[2],ires_cornerPoint_test_.blocks[1],
+//            ires_cornerPoint_test_.blocks[6],ires_cornerPoint_test_.blocks[2],ires_cornerPoint_test_.blocks[5],
+//            // Front Face
+//            ires_cornerPoint_test_.blocks[6],ires_cornerPoint_test_.blocks[3],ires_cornerPoint_test_.blocks[2],
+//            ires_cornerPoint_test_.blocks[7],ires_cornerPoint_test_.blocks[3],ires_cornerPoint_test_.blocks[6],
+//            // Back Face
+//            ires_cornerPoint_test_.blocks[7],ires_cornerPoint_test_.blocks[0],ires_cornerPoint_test_.blocks[3],
+//            ires_cornerPoint_test_.blocks[4],ires_cornerPoint_test_.blocks[0],ires_cornerPoint_test_.blocks[7],
+//            // Right Face
+//            ires_cornerPoint_test_.blocks[0],ires_cornerPoint_test_.blocks[2],ires_cornerPoint_test_.blocks[3],
+//            ires_cornerPoint_test_.blocks[1],ires_cornerPoint_test_.blocks[2],ires_cornerPoint_test_.blocks[0],
+//            // Left Face
+//            ires_cornerPoint_test_.blocks[7],ires_cornerPoint_test_.blocks[5],ires_cornerPoint_test_.blocks[4],
+//            ires_cornerPoint_test_.blocks[6],ires_cornerPoint_test_.blocks[5],ires_cornerPoint_test_.blocks[7]
+//	};
+
+
+
+
+	for ( int i = 0; i < ires_cornerPoint_test_.blocks.size(); i+=8 )
+	{
+
+
+		int index [] =
+		{
+		    // Top Face
+		    ires_cornerPoint_test_.blocks[i+2],ires_cornerPoint_test_.blocks[i+1],ires_cornerPoint_test_.blocks[i+0],
+		    ires_cornerPoint_test_.blocks[i+0],ires_cornerPoint_test_.blocks[i+3],ires_cornerPoint_test_.blocks[i+2],
+		    // Bottom Face
+		    ires_cornerPoint_test_.blocks[i+4],ires_cornerPoint_test_.blocks[i+7],ires_cornerPoint_test_.blocks[i+6],
+		    ires_cornerPoint_test_.blocks[i+6],ires_cornerPoint_test_.blocks[i+5],ires_cornerPoint_test_.blocks[i+4],
+		    // Front Face
+		    ires_cornerPoint_test_.blocks[i+0],ires_cornerPoint_test_.blocks[i+3],ires_cornerPoint_test_.blocks[i+7],
+		    ires_cornerPoint_test_.blocks[i+7],ires_cornerPoint_test_.blocks[i+3],ires_cornerPoint_test_.blocks[i+4],
+		    // Back Face
+		    ires_cornerPoint_test_.blocks[i+1],ires_cornerPoint_test_.blocks[i+2],ires_cornerPoint_test_.blocks[i+5],
+		    ires_cornerPoint_test_.blocks[i+5],ires_cornerPoint_test_.blocks[i+6],ires_cornerPoint_test_.blocks[i+1],
+		    // Right Face
+		    ires_cornerPoint_test_.blocks[i+0],ires_cornerPoint_test_.blocks[i+1],ires_cornerPoint_test_.blocks[i+6],
+		    ires_cornerPoint_test_.blocks[i+6],ires_cornerPoint_test_.blocks[i+7],ires_cornerPoint_test_.blocks[i+0],
+		    // Left Face
+		    ires_cornerPoint_test_.blocks[i+2],ires_cornerPoint_test_.blocks[i+3],ires_cornerPoint_test_.blocks[i+4],
+		    ires_cornerPoint_test_.blocks[i+4],ires_cornerPoint_test_.blocks[i+5],ires_cornerPoint_test_.blocks[i+2],
+		};
+
+
+		std::copy(index, index + 36, std::back_inserter(list_of_indices));
+
+
+
+	}
+
+
+	glGenVertexArrays ( 1 , &vertexArray);
+	glBindVertexArray(vertexArray);
+
+		/// Requesting Vertex Buffers to the GPU
+		glGenBuffers ( 1 , &vbo );
+			glBindBuffer ( GL_ARRAY_BUFFER , vbo );
+			glBufferData ( GL_ARRAY_BUFFER , ires_cornerPoint_test_.vertices.size( ) * sizeof(ires_cornerPoint_test_.vertices[0]) , &ires_cornerPoint_test_.vertices[0] , GL_STATIC_DRAW );
+
+		/// Requesting Indices
+		glGenBuffers ( 1 , &indices);
+			glBindBuffer ( GL_ELEMENT_ARRAY_BUFFER, indices );
+			glBufferData ( GL_ELEMENT_ARRAY_BUFFER , list_of_indices.size() * sizeof(list_of_indices[0]) , &list_of_indices[0] , GL_STATIC_DRAW );
+
+	   // Set up generic attributes pointers
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_DOUBLE, GL_FALSE, 0, 0);
+
+
+	glBindVertexArray(0);
+
+
+
+
+	cube_.creatBuffers ();
+
+
+	box.fromPointCloud(  ires_cornerPoint_test_.vertices.begin(),ires_cornerPoint_test_.vertices.end() );
+
+	camera_.setPosition ( box.center ( ) );
+	camera_.setTarget ( box.center ( ) );
+	std::cout << box.diagonal ( );
+	camera_.setOffset ( 3.0*box.diagonal ( ) );
 
 	camera_.setBehavior ( Celer::Camera<float>::REVOLVE_AROUND_MODE );
-	cameraStep_ = 0.01f;
+
+	cameraStep_ = 10.0f;
 
 }
 
@@ -75,7 +189,7 @@ void GLWidget::resizeGL ( int width , int height )
 
 
 	camera_.setAspectRatio ( width  , height  );
-	camera_.setPerspectiveProjectionMatrix ( 60 , camera_.aspectRatio ( ) , 100.0 , 10.0*cube_.box.diagonal() );
+	camera_.setPerspectiveProjectionMatrix ( 60 , camera_.aspectRatio ( ) , 10.0 , 1000.0*cube_.box.diagonal() );
 
 	centerX_ = static_cast<float> ( width * 0.5 );
 	centerY_ = static_cast<float> ( height * 0.5 );
@@ -117,16 +231,16 @@ void GLWidget::TridimensionalSetUp ( )
 		glUniformMatrix4fv ( manager.uniforms_["modelViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
 		glUniformMatrix4fv ( manager.uniforms_["projectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
 		
-		cube_.draw ( );
+//		cube_.draw ( );
 
 		// 1rst attribute buffer : vertices
 
-//		glBindVertexArray(vertexArray);
-//		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices);
+		glBindVertexArray(vertexArray);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices);
 //		// Draw the triangle !
-//		glDrawElements(GL_TRIANGLES, 36 , GL_UNSIGNED_INT, 0);
-//
-//		glBindVertexArray(0);
+		glDrawElements(GL_TRIANGLES, list_of_indices.size() , GL_UNSIGNED_INT, 0);
+
+		glBindVertexArray(0);
 		
 		manager.deactive ( );
 		
@@ -168,6 +282,9 @@ void GLWidget::processMultiKeys ( )
 {
 foreach( int key , keysPresseds_)
 {
+
+	std::cout  << camera_.position();
+
 	if ( key == Qt::Key_Q )
 	{
 		camera_.moveUpward ( cameraStep_ );
