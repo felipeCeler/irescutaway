@@ -91,11 +91,14 @@ private:
 	Cube  cube_;
 
 	GLuint vertexArray;
-	GLuint vbo;
-	GLuint indices;
+	GLuint vertices_buffer;
+	GLuint normal_buffer;
+	GLuint indices_buffer;
 
 	Ires ires_cornerPoint_test_;
 	std::vector<int> list_of_indices;
+	std::vector<Celer::Vector3<GLdouble> > list_of_normals;
+	std::vector<Celer::Vector3<GLdouble> > list_of_vertices;
 	Celer::BoundingBox3<double> box;
 };
 
