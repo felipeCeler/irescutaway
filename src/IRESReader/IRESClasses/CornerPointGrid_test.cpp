@@ -7,6 +7,10 @@
  * g++ CornerPointGrid_test.cpp -I /media/d/Workspace/IRESReader/libs/Celer/src
  */
 
+
+#ifndef CORNERPOINTGRID_TEST_CPP_
+#define CORNERPOINTGRID_TEST_CPP_
+
 #include "CornerPointGrid.hpp"
 
 // Learning ifstream
@@ -38,6 +42,22 @@ class Ires
 		// Size it`s number_of_Blocks * number_of_Time_Steps * number_of_Dynamic_Properties
 		struct Dynamic_Property
 		{
+//
+//				Dynamic_Property( )
+//				{
+//
+//				}
+//
+//				Dynamic_Property( const Dynamic_Property& new_dynamic_property )
+//				{
+//					name 		= new_dynamic_property.name;
+//					unit 		= new_dynamic_property.unit;
+//					variable_name 	= new_dynamic_property.variable_name;
+//					component 	= new_dynamic_property.component;
+//
+//					values_.resize( new_dynamic_property.values_.size( ));
+//					std::copy ( new_dynamic_property.values_.begin(),new_dynamic_property.values_.end(),values_.begin());
+//				}
 
 				std::string 	name;
 				std::string 	unit;
@@ -53,6 +73,22 @@ class Ires
 		struct Static_Property
 		{
 				// From Ires.static_ name/units/variable_name/components
+
+//				Static_Property ( )
+//				{
+//
+//				}
+//
+//				Static_Property ( const Static_Property& new_static_property )
+//				{
+//					name = new_static_property.name;
+//					unit = new_static_property.unit;
+//					variable_name = new_static_property.variable_name;
+//					component = new_static_property.component;
+//
+//					values_.resize( new_static_property.values_.size());
+//					std::copy( new_static_property.values_.begin(),new_static_property.values_.end(),values_.begin());
+//				}
 
 				std::string name;
 				std::string unit;
@@ -113,8 +149,6 @@ class Ires
 				// For each well, property and on a specific time, get the data.
 				// FIXME That data comes from a perforated block.
 				std::vector<std::pair<int, std::pair<int, float> > > values_;
-
-
 
 				// FIXME How to ready that data
 				// As Charles explain me. But still get hard !!
@@ -216,6 +250,7 @@ class Ires
 //				std::cout << "wellPropSize " << header_.well_Properties_Size << std::endl;
 
 				//		// -- Copying Fault Lines
+				number_of_fault_lines.clear();
 				number_of_fault_lines.resize ( header_.number_of_Blocks_in_K_Direction );
 
 				inFile.read ( (char*) &number_of_fault_lines[0] , ( sizeof(int) * number_of_fault_lines.size ( ) ) );
@@ -229,7 +264,7 @@ class Ires
 
 				std::string data;
 				data.resize ( 64 );
-
+				dynamic_properties.clear();
 				dynamic_properties.resize ( header_.number_of_Dynamic_Properties );
 
 				// --- Copying Dynamic Names
@@ -293,6 +328,7 @@ class Ires
 
 				// --- Copying Static Properties
 
+				static_porperties.clear();
 				static_porperties.resize ( header_.number_of_Static_Properties );
 
 				// --- Copying Static Names - ||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -358,7 +394,7 @@ class Ires
 				//
 
 				// --- Copying Well Names and Properties - ||||||||||||||||||||||||||||||||||||||||||||||||||
-
+				well_names.clear();
 				well_names.resize ( header_.number_of_Wells );
 
 				for ( int i = 0; i < header_.number_of_Wells; i++ )
@@ -376,6 +412,7 @@ class Ires
 				}
 
 				// --- Well Status
+				well_status.clear();
 				well_status.resize ( header_.number_of_Wells );
 
 				for ( int i = 0; i < header_.number_of_Wells; i++ )
@@ -392,7 +429,7 @@ class Ires
 				}
 
 				// --- Copying Well Types
-
+				well_types.clear();
 				well_types.resize ( header_.number_of_Wells );
 
 				for ( int i = 0; i < header_.number_of_Wells; i++ )
@@ -409,7 +446,7 @@ class Ires
 				}
 
 				// --- Copying Well Properties Names
-
+				well_properties_names.clear();
 				well_properties_names.resize ( header_.number_of_Well_Properties );
 
 				for ( int i = 0; i < header_.number_of_Well_Properties; i++ )
@@ -426,7 +463,7 @@ class Ires
 				}
 
 				// --- Copying Well Properties Units
-
+				well_properties_units.clear();
 				well_properties_units.resize ( header_.number_of_Well_Properties );
 
 				for ( int i = 0; i < header_.number_of_Well_Properties; i++ )
@@ -443,7 +480,7 @@ class Ires
 				}
 
 				// --- Copying Well Properties Components
-
+				well_properties_components.clear();
 				well_properties_components.resize ( header_.number_of_Well_Properties );
 
 				for ( int i = 0; i < header_.number_of_Well_Properties; i++ )
@@ -460,6 +497,7 @@ class Ires
 				}
 
 				// Copying Vertices data
+				vertices.clear();
 				vertices.resize ( header_.number_of_Vertices );
 
 				inFile.read ( (char*) &vertices[0] , sizeof(Celer::Vector3<double>) * header_.number_of_Vertices );
@@ -490,6 +528,7 @@ class Ires
 
 
 				std::vector<int> indices;
+				indices.clear();
 				indices.resize( header_.number_of_Blocks_Doubles );
 
 				inFile.read ( (char*) &indices[0] , sizeof(int) * header_.number_of_Blocks_Doubles );
@@ -555,7 +594,7 @@ class Ires
 
 				// The Hard part: Well Data.
 				// First get the limits of well values: Number of points in the line, number of blocks intersected by the well the points data.
-
+				wells.clear();
 				wells.resize ( header_.number_of_Wells );
 
 				for ( int prop_index = 0; prop_index < header_.number_of_Well_Properties; ++prop_index )
@@ -591,6 +630,7 @@ class Ires
 
 
 };
+#endif /* CORNERPOINTGRID_TEST_CPP_ */
 
 //int main ( int argc , char *argv[] )
 //{

@@ -4,6 +4,8 @@
 
 #include <GUI/Qt/MainWindow/MainWindow.hpp>
 
+#include <IRESClasses/CornerPointGrid_test.cpp>
+
 MainWindow::MainWindow ( QMainWindow *parent ) :
 	QMainWindow ( parent )
 {
@@ -27,10 +29,8 @@ MainWindow::MainWindow ( QMainWindow *parent ) :
 
 void MainWindow::open(QString pFilename,bool who ) {
 
-	if ( who )
-	{
+	glWidget->openIRES( pFilename.toLocal8Bit().constData() );
 
-	}
 }
 
 void MainWindow::on_action_Open_IRES_triggered()

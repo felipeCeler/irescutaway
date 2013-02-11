@@ -57,6 +57,7 @@ class GLWidget: public QGLWidget
 		void TridimensionalSetUp ( );
 		void TwodimensionalSetUp ( );
 		void LoadShaders ( );
+		void openIRES ( const std::string& filename );
 
 	protected:
 		void dragEnterEvent ( QDragEnterEvent *event );
@@ -96,10 +97,12 @@ private:
 	GLuint indices_buffer;
 
 	Ires ires_cornerPoint_test_;
-	std::vector<int> list_of_indices;
-	std::vector<Celer::Vector3<GLdouble> > list_of_normals;
-	std::vector<Celer::Vector3<GLdouble> > list_of_vertices;
-	Celer::BoundingBox3<double> box;
+	bool ires_has_been_open_sucesseful;
+
+	std::vector<int> 			list_of_indices;
+	std::vector<Celer::Vector3<GLdouble> > 	list_of_normals;
+	std::vector<Celer::Vector3<GLdouble> > 	list_of_vertices;
+	Celer::BoundingBox3<double> 		box;
 };
 
 #endif
