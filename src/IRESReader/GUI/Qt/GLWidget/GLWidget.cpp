@@ -57,7 +57,7 @@ void GLWidget::initializeGL ( )
 	
 	LoadShaders ( );
 
-	ires_has_been_open_sucesseful = 0;
+	ires_has_been_open_sucessefully = 0;
 
 	glGenVertexArrays ( 1 , &vertexArray);
 
@@ -71,6 +71,12 @@ void GLWidget::initializeGL ( )
 
 }
 
+bool GLWidget::isIresWasOpenedSucessufully ( ) const
+{
+	return ires_has_been_open_sucessefully;
+}
+
+
 void GLWidget::openIRES ( const std::string& filename )
 {
 	makeCurrent();
@@ -78,9 +84,9 @@ void GLWidget::openIRES ( const std::string& filename )
 	ires_cornerPoint_test_.openIRES( filename );
 
 	if ( ires_cornerPoint_test_.blocks.size ( ) > 0)
-		ires_has_been_open_sucesseful = 1;
+		ires_has_been_open_sucessefully = 1;
 	else
-		ires_has_been_open_sucesseful = 0;
+		ires_has_been_open_sucessefully = 0;
 
 		std::cout << "Vertices       :" << ires_cornerPoint_test_.vertices.size ( ) << std::endl;
 		std::cout << "Blocks Indices :" << ires_cornerPoint_test_.blocks.size ( )  << std::endl;
@@ -88,8 +94,6 @@ void GLWidget::openIRES ( const std::string& filename )
 	list_of_indices.clear ( );
 	list_of_vertices.clear ( );
 	list_of_normals.clear ( );
-
-
 
 		for ( int i = 0; i < ires_cornerPoint_test_.blocks.size( ); i+=8 )
 		{
@@ -261,12 +265,14 @@ void GLWidget::openIRES ( const std::string& filename )
 
 		std::cout << "Size: " << list_of_vertices.size() << std::endl;
 
+		box = Celer::BoundingBox3<double>( );
+
 		box.fromPointCloud( list_of_vertices.begin(),list_of_vertices.end() );
 
 		camera_.setPosition ( box.center ( ) );
 		camera_.setTarget ( box.center ( ) );
 		std::cout << box.diagonal ( );
-		camera_.setOffset ( 1.0 * box.diagonal ( ) );
+		camera_.setOffset ( 2.0 * box.diagonal ( ) );
 
 		camera_.setPerspectiveProjectionMatrix ( 60 , camera_.aspectRatio ( ) , 1.0 , 1000.0*box.diagonal() );
 
@@ -322,13 +328,8 @@ void GLWidget::TridimensionalSetUp ( )
 
 
 
- 	if ( ires_has_been_open_sucesseful )
+ 	if ( ires_has_been_open_sucessefully )
 	{
-
-
- 		std::cout << " VOA  " << vertexArray << std::endl;
- 		std::cout << " VBO V  " << vertices_buffer << std::endl;
- 		std::cout << " VBO N " << normal_buffer << std::endl;
 
 		manager.active ( );
 

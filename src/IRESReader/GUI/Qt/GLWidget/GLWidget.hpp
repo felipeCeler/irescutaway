@@ -34,7 +34,9 @@ class GLWidget: public QGLWidget
 		Q_OBJECT
 
 	public:
-
+		// FIXME - Putting this as public, but I'm going to search for a better sulution to how feed other
+		//	   widget with data form another one.
+		Ires ires_cornerPoint_test_;
 		// From QGLWidget
 		explicit GLWidget ( const QGLFormat& format , QWidget* parent = 0 , const QGLWidget* shareWidget = 0 , Qt::WindowFlags f = 0 );
 		explicit GLWidget ( QWidget* parent = 0 , const QGLWidget* shareWidget = 0 , Qt::WindowFlags f = 0 );
@@ -58,6 +60,7 @@ class GLWidget: public QGLWidget
 		void TwodimensionalSetUp ( );
 		void LoadShaders ( );
 		void openIRES ( const std::string& filename );
+		bool isIresWasOpenedSucessufully () const;
 
 	protected:
 		void dragEnterEvent ( QDragEnterEvent *event );
@@ -68,6 +71,7 @@ class GLWidget: public QGLWidget
 	signals:
 
         void changed(const QMimeData *mimeData = 0);
+
 
 private:
 
@@ -96,8 +100,7 @@ private:
 	GLuint normal_buffer;
 	GLuint indices_buffer;
 
-	Ires ires_cornerPoint_test_;
-	bool ires_has_been_open_sucesseful;
+	bool ires_has_been_open_sucessefully;
 
 	std::vector<int> 			list_of_indices;
 	std::vector<Celer::Vector3<GLdouble> > 	list_of_normals;

@@ -3,6 +3,8 @@
 
 #include <QtGui/QtGui>
 
+#include <QMessageBox>
+
 #include "ui_IRESReader.h"
 
 #include <GUI/Qt/GLWidget/GLWidget.hpp>
@@ -22,6 +24,7 @@ class MainWindow: public QMainWindow , private Ui::MainWindow
 
 		void on_action_Open_IRES_triggered ( );
 		void on_action_Load_Shaders_triggered ( );
+		void on_pushButton_do_something_clicked ( );
 
 
 	private:

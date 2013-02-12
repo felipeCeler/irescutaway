@@ -25,11 +25,33 @@ MainWindow::MainWindow ( QMainWindow *parent ) :
 	icon.addFile ( ":/Icons/caju.png" , QSize ( ) , QIcon::Normal , QIcon::Off );
 	setWindowIcon ( icon );
 	showfullScreen_ = 0;
+
 }
 
 void MainWindow::open(QString pFilename,bool who ) {
 
 	glWidget->openIRES( pFilename.toLocal8Bit().constData() );
+
+	if ( glWidget->isIresWasOpenedSucessufully( ))
+	{
+		for ( int i = 0 ; i < glWidget->ires_cornerPoint_test_.static_porperties.size( ); ++i )
+			this->comboBox_choose_an_property_->addItem(  QString::fromStdString( glWidget->ires_cornerPoint_test_.static_porperties[i].name ) );
+	}
+}
+
+void MainWindow::on_pushButton_do_something_clicked ()
+{
+	QMessageBox msgBox;
+
+	if ( glWidget->isIresWasOpenedSucessufully( ))
+	{
+	msgBox.setText( QString::fromStdString( glWidget->ires_cornerPoint_test_.static_porperties[this->comboBox_choose_an_property_->currentIndex()].name));
+
+	}else
+	{
+		msgBox.setText("Open a file first my friend !");
+	}
+	msgBox.exec();
 
 }
 

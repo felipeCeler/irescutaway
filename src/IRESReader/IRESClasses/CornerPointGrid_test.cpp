@@ -22,6 +22,8 @@
 #include <iomanip>
 #include <algorithm>
 #include <string>
+#include <cstring>
+#include <cctype>
 
 // Tuple from C++
 //#include <tuple> suport but the -std=gnuxx0x
@@ -338,6 +340,8 @@ class Ires
 
 					inFile.read ( &data[0] , sizeof(char[64]) );
 
+					data.erase(std::remove_if(data.begin(), data.end(), ::iscntrl), data.end());
+
 					static_porperties[i].name = std::string ( data.begin ( ) , data.end ( ) );
 
 					//std::cout << " static names: " << static_porperties[i].name << std::endl;
@@ -529,7 +533,9 @@ class Ires
 
 				std::vector<int> indices;
 				indices.clear();
+				blocks.clear();
 				indices.resize( header_.number_of_Blocks_Doubles );
+
 
 				inFile.read ( (char*) &indices[0] , sizeof(int) * header_.number_of_Blocks_Doubles );
 
