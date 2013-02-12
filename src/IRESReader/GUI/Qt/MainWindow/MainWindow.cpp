@@ -26,6 +26,10 @@ MainWindow::MainWindow ( QMainWindow *parent ) :
 	setWindowIcon ( icon );
 	showfullScreen_ = 0;
 
+
+	connect(this->comboBox_choose_an_property_, SIGNAL(activated(int)), this, SLOT(updateDoubleSpinMin(int)));
+	connect(this->comboBox_choose_an_property_, SIGNAL(activated(int)), this, SLOT(updateDoubleSpinMax(int)));
+
 }
 
 void MainWindow::open(QString pFilename,bool who ) {
@@ -35,8 +39,50 @@ void MainWindow::open(QString pFilename,bool who ) {
 	if ( glWidget->isIresWasOpenedSucessufully( ))
 	{
 		for ( int i = 0 ; i < glWidget->ires_cornerPoint_test_.static_porperties.size( ); ++i )
+		{
 			this->comboBox_choose_an_property_->addItem(  QString::fromStdString( glWidget->ires_cornerPoint_test_.static_porperties[i].name ) );
+		}
 	}
+
+}
+
+void MainWindow::updateDoubleSpinMin( int property_index )
+{
+
+	float min =  *std::min_element ( glWidget->ires_cornerPoint_test_.static_porperties[property_index].values_.begin( ),glWidget->ires_cornerPoint_test_.static_porperties[property_index].values_.end( ) );
+	float max =  *std::max_element ( glWidget->ires_cornerPoint_test_.static_porperties[property_index].values_.begin( ),glWidget->ires_cornerPoint_test_.static_porperties[property_index].values_.end( ) );
+
+	this->doubleSpinMin->setMinimum ( static_cast<double> (min) );
+	this->doubleSpinMin->setMaximum ( static_cast<double> (max));
+
+	this->doubleSpinMax->setMinimum ( static_cast<double> (min) );
+	this->doubleSpinMax->setMaximum ( static_cast<double> (max) );
+
+	qDebug() << min;
+	qDebug() << max;
+
+	this->doubleSpinMin->setValue(static_cast<double> (min));
+
+}
+
+void MainWindow::updateDoubleSpinMax( int property_index )
+{
+
+
+	float min =  *std::min_element ( glWidget->ires_cornerPoint_test_.static_porperties[property_index].values_.begin( ),glWidget->ires_cornerPoint_test_.static_porperties[property_index].values_.end( ) );
+	float max =  *std::max_element ( glWidget->ires_cornerPoint_test_.static_porperties[property_index].values_.begin( ),glWidget->ires_cornerPoint_test_.static_porperties[property_index].values_.end( ) );
+
+	this->doubleSpinMin->setMinimum ( static_cast<double> (min) );
+	this->doubleSpinMin->setMaximum ( static_cast<double> (max));
+
+	this->doubleSpinMax->setMinimum ( static_cast<double> (min) );
+	this->doubleSpinMax->setMaximum ( static_cast<double> (max) );
+
+	qDebug() << min;
+	qDebug() << max;
+
+	this->doubleSpinMax->setValue(static_cast<double> (max));
+
 }
 
 void MainWindow::on_pushButton_do_something_clicked ()

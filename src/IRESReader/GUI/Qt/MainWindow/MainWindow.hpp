@@ -26,6 +26,10 @@ class MainWindow: public QMainWindow , private Ui::MainWindow
 		void on_action_Load_Shaders_triggered ( );
 		void on_pushButton_do_something_clicked ( );
 
+		void updateDoubleSpinMax( int property_index );
+		void updateDoubleSpinMin( int property_index );
+
+
 
 	private:
 		bool showfullScreen_;

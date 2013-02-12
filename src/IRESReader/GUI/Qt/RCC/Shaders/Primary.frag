@@ -7,5 +7,5 @@ out vec4 fragmentColor;
 //
 void main ( void )
 {
-	fragmentColor = vec4 ( (normal), 1.0 );
+	fragmentColor = vec4 ( abs(normal), 1.0 );
 }

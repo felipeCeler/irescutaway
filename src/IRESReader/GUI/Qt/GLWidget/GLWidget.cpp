@@ -234,11 +234,11 @@ void GLWidget::openIRES ( const std::string& filename )
 
 		}  // end of looping
 
-		for (int i = 0 ; i < 36 ; i++)
-		{
-			std::cout << " id " << list_of_indices[i]   << " " << list_of_vertices[i] << " Normals :" << list_of_normals[i] ;
-
-		}
+//		for (int i = 0 ; i < 36 ; i++)
+//		{
+//			std::cout << " id " << list_of_indices[i]   << " " << list_of_vertices[i] << " Normals :" << list_of_normals[i] ;
+//
+//		}
 
 
 		glBindVertexArray(vertexArray);

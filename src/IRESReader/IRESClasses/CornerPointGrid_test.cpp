@@ -229,27 +229,27 @@ class Ires
 
 				inFile.read ( (char*) &header_ , sizeof ( header_ ) );
 
-//				std::cout << "Version :" << header_.ires_version << std::endl;
-//				std::cout << "Title 1 :" << header_.first_title_ << std::endl;
-//				std::cout << "Title 2 :" << header_.second_title_ << std::endl;
-//				std::cout << "Title 3 :" << header_.thirt_title_ << std::endl;
-//				std::cout << "CaseID :" << header_.caseID << std::endl;
-//				std::cout << "Simulation Type: " << header_.simulation_type << std::endl;
-//				std::cout << "Run date: " << header_.run_date << std::endl;
-//				std::cout << "numTimesteps " << header_.number_of_Time_Steps << std::endl;
+				std::cout << "Version :" << header_.ires_version << std::endl;
+				std::cout << "Title 1 :" << header_.first_title_ << std::endl;
+				std::cout << "Title 2 :" << header_.second_title_ << std::endl;
+				std::cout << "Title 3 :" << header_.thirt_title_ << std::endl;
+				std::cout << "CaseID :" << header_.caseID << std::endl;
+				std::cout << "Simulation Type: " << header_.simulation_type << std::endl;
+				std::cout << "Run date: " << header_.run_date << std::endl;
+				std::cout << "numTimesteps " << header_.number_of_Time_Steps << std::endl;
 				std::cout << "numBlocks " << header_.number_of_Blocks << std::endl;
-//				std::cout << "numDynamic " << header_.number_of_Dynamic_Properties << std::endl;
-//				std::cout << "numStatic " << header_.number_of_Static_Properties << std::endl;
-//				std::cout << "numWells " << header_.number_of_Wells << std::endl;
+				std::cout << "numDynamic " << header_.number_of_Dynamic_Properties << std::endl;
+				std::cout << "numStatic " << header_.number_of_Static_Properties << std::endl;
+				std::cout << "numWells " << header_.number_of_Wells << std::endl;
 				std::cout << "numVertices " << header_.number_of_Vertices << std::endl;
 //
 				std::cout << "blockListLength " << header_.number_of_Blocks_Doubles << std::endl;
-//				std::cout << "numI " << header_.number_of_Blocks_in_I_Direction << std::endl;
-//				std::cout << "numJ " << header_.number_of_Blocks_in_J_Direction << std::endl;
-//				std::cout << "numK " << header_.number_of_Blocks_in_K_Direction << std::endl;
-//				std::cout << "numFaultSurfaces " << header_.number_of_Fault_Surfaces << std::endl;
-//				std::cout << "numWellProperties " << header_.number_of_Well_Properties << std::endl;
-//				std::cout << "wellPropSize " << header_.well_Properties_Size << std::endl;
+				std::cout << "numI " << header_.number_of_Blocks_in_I_Direction << std::endl;
+				std::cout << "numJ " << header_.number_of_Blocks_in_J_Direction << std::endl;
+				std::cout << "numK " << header_.number_of_Blocks_in_K_Direction << std::endl;
+				std::cout << "numFaultSurfaces " << header_.number_of_Fault_Surfaces << std::endl;
+				std::cout << "numWellProperties " << header_.number_of_Well_Properties << std::endl;
+				std::cout << "wellPropSize " << header_.well_Properties_Size << std::endl;
 
 				//		// -- Copying Fault Lines
 				number_of_fault_lines.clear();
@@ -344,7 +344,7 @@ class Ires
 
 					static_porperties[i].name = std::string ( data.begin ( ) , data.end ( ) );
 
-					//std::cout << " static names: " << static_porperties[i].name << std::endl;
+					std::cout << " static names: " << static_porperties[i].name << std::endl;
 
 					data.clear ( );
 					data.resize ( 64 );
@@ -588,10 +588,10 @@ class Ires
 
 					inFile.read ( (char*) &blocks_values[0] , sizeof(float) * header_.number_of_Blocks );
 
-//					std::cout << " Prop: " << static_porperties[name_index].name << " max : " << *std::max_element ( blocks_values.begin ( ) , blocks_values.end ( ) ) << std::endl;
-//					std::cout << " Prop: " << static_porperties[name_index].name << " min : " << *std::min_element ( blocks_values.begin ( ) , blocks_values.end ( ) ) << std::endl;
-					static_porperties[name_index].values_.reserve ( header_.number_of_Blocks );
-					static_porperties[name_index].values_ = blocks_values;
+					std::cout << " Prop: " << static_porperties[name_index].name << " max : " << *std::max_element ( blocks_values.begin ( ) , blocks_values.end ( ) ) << std::endl;
+					std::cout << " Prop: " << static_porperties[name_index].name << " min : " << *std::min_element ( blocks_values.begin ( ) , blocks_values.end ( ) ) << std::endl;
+					static_porperties[name_index].values_.resize ( header_.number_of_Blocks );
+					std::copy( blocks_values.begin(), blocks_values.end( ),static_porperties[name_index].values_.begin());
 
 					blocks_values.clear ( );
 				}
