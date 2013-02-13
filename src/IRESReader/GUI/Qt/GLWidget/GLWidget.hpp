@@ -62,6 +62,7 @@ class GLWidget: public QGLWidget
 		void openIRES ( const std::string& filename );
 		bool isIresWasOpenedSucessufully () const;
 		void changeProperty ( int property_index );
+		void changePropertyRange ( const double& min, const double& max, int property_index );
 
 	protected:
 		void dragEnterEvent ( QDragEnterEvent *event );

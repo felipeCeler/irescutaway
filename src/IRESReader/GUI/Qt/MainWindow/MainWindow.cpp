@@ -53,11 +53,11 @@ void MainWindow::updateDoubleSpinMin( int property_index )
 	float min =  *std::min_element ( glWidget->ires_cornerPoint_test_.static_porperties[property_index].values_.begin( ),glWidget->ires_cornerPoint_test_.static_porperties[property_index].values_.end( ) );
 	float max =  *std::max_element ( glWidget->ires_cornerPoint_test_.static_porperties[property_index].values_.begin( ),glWidget->ires_cornerPoint_test_.static_porperties[property_index].values_.end( ) );
 
-	this->doubleSpinMin->setMinimum ( static_cast<double> (min) );
-	this->doubleSpinMin->setMaximum ( static_cast<double> (max));
-
-	this->doubleSpinMax->setMinimum ( static_cast<double> (min) );
-	this->doubleSpinMax->setMaximum ( static_cast<double> (max) );
+//	this->doubleSpinMin->setMinimum ( static_cast<double> (min) );
+//	this->doubleSpinMin->setMaximum ( static_cast<double> (max));
+//
+//	this->doubleSpinMax->setMinimum ( static_cast<double> (min) );
+//	this->doubleSpinMax->setMaximum ( static_cast<double> (max) );
 
 	qDebug() << "Min: "<< min;
 
@@ -72,11 +72,11 @@ void MainWindow::updateDoubleSpinMax( int property_index )
 	float min =  *std::min_element ( glWidget->ires_cornerPoint_test_.static_porperties[property_index].values_.begin( ),glWidget->ires_cornerPoint_test_.static_porperties[property_index].values_.end( ) );
 	float max =  *std::max_element ( glWidget->ires_cornerPoint_test_.static_porperties[property_index].values_.begin( ),glWidget->ires_cornerPoint_test_.static_porperties[property_index].values_.end( ) );
 
-	this->doubleSpinMin->setMinimum ( static_cast<double> (min) );
-	this->doubleSpinMin->setMaximum ( static_cast<double> (max));
-
-	this->doubleSpinMax->setMinimum ( static_cast<double> (min) );
-	this->doubleSpinMax->setMaximum ( static_cast<double> (max) );
+//	this->doubleSpinMin->setMinimum ( static_cast<double> (min) );
+//	this->doubleSpinMin->setMaximum ( static_cast<double> (max));
+//
+//	this->doubleSpinMax->setMinimum ( static_cast<double> (min) );
+//	this->doubleSpinMax->setMaximum ( static_cast<double> (max) );
 
 	qDebug() << "Max: "<< max;
 
@@ -84,17 +84,16 @@ void MainWindow::updateDoubleSpinMax( int property_index )
 
 }
 
-void MainWindow::on_pushButton_do_something_clicked ()
+void MainWindow::on_pushButton_changePropertyRange_clicked()
 {
 	QMessageBox msgBox;
 
 	if ( glWidget->isIresWasOpenedSucessufully( ))
 	{
-	msgBox.setText( QString::fromStdString( glWidget->ires_cornerPoint_test_.static_porperties[this->comboBox_choose_an_property_->currentIndex()].name));
-
+		glWidget->changePropertyRange( this->doubleSpinMin->value(), this->doubleSpinMax->value(), comboBox_choose_an_property_->currentIndex() );
 	}else
 	{
-		msgBox.setText("Open a file first my friend !");
+		msgBox.setText("First of all. Open a file my friend !!  ");
 	}
 	msgBox.exec();
 

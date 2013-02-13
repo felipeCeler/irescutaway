@@ -78,6 +78,295 @@ bool GLWidget::isIresWasOpenedSucessufully ( ) const
 	return ires_has_been_open_sucessefully;
 }
 
+void GLWidget::changePropertyRange ( const double& minRange, const double& maxRange, int property_index )
+{
+
+	list_of_indices.clear ( );
+	list_of_vertices.clear ( );
+	list_of_normals.clear ( );
+	list_of_colors.clear ( );
+
+	std::cout << "Changing the property to : " << ires_cornerPoint_test_.static_porperties[property_index].name << std::endl;
+
+	float min = *std::min_element ( ires_cornerPoint_test_.static_porperties[property_index].values_.begin ( ) , ires_cornerPoint_test_.static_porperties[property_index].values_.end ( ) );
+	float max = *std::max_element ( ires_cornerPoint_test_.static_porperties[property_index].values_.begin ( ) , ires_cornerPoint_test_.static_porperties[property_index].values_.end ( ) );
+
+
+
+	for ( int i = 0; i < ires_cornerPoint_test_.blocks.size ( ); i+=8 )
+	{
+
+		float regularValue  = ( ires_cornerPoint_test_.static_porperties[property_index].values_[i/8] );
+
+		float normalizedColor = ( regularValue - min ) / ( max - min );
+
+		Celer::Vector4<GLfloat> color;
+
+		if ( ( regularValue >= minRange ) && ( regularValue <= maxRange ) )
+		{
+			switch ( (int) ( normalizedColor * 10.0f ) )
+			{
+				case 10:
+					color = Celer::Vector4<GLfloat> ( 1.0f , 0.0f , 0.0f , 1.0f );
+					break;
+				case 9:
+					color = Celer::Vector4<GLfloat> ( 0.5f , 0.25f , 0.0f , 1.0f );
+					break;
+				case 8:
+					color = Celer::Vector4<GLfloat> ( 0.5f , 0.5f , 0.0f , 1.0f );
+					break;
+				case 7:
+					color = Celer::Vector4<GLfloat> ( 0.25f , 0.5f , 0.0f , 1.0f );
+					break;
+				case 6:
+					color = Celer::Vector4<GLfloat> ( 0.0f , 0.25f , 0.0f , 1.0f );
+					break;
+				case 5:
+					color = Celer::Vector4<GLfloat> ( 0.0f , 0.5f , 0.2f , 1.0f );
+					break;
+				case 4:
+					color = Celer::Vector4<GLfloat> ( 0.0f , 0.5f , 0.4f , 1.0f );
+					break;
+				case 3:
+					color = Celer::Vector4<GLfloat> ( 0 , 0.4 , 0.5 , 1.0f );
+					break;
+				case 2:
+					color = Celer::Vector4<GLfloat> ( 0 , 0.2 , 0.5 , 1.0f );
+					break;
+				case 1:
+					color = Celer::Vector4<GLfloat> ( 0 , 0 , 0.5 , 1.0f );
+					break;
+				case 0:
+					color = Celer::Vector4<GLfloat> ( 0 , 0 , 0.375 , 1.0f );
+					break;
+					//if value is equal to max
+				default:
+					color = Celer::Vector4<GLfloat> ( 0.5f , 0.5f , 0.5f , 1.0f );
+					break;
+			}
+
+
+			int index [] =
+			{
+			    // Top Face
+			    ires_cornerPoint_test_.blocks[i+0],ires_cornerPoint_test_.blocks[i+3],ires_cornerPoint_test_.blocks[i+2],/* 0 - 5*/
+			    ires_cornerPoint_test_.blocks[i+2],ires_cornerPoint_test_.blocks[i+1],ires_cornerPoint_test_.blocks[i+0],
+			    // Bottom Face
+			    ires_cornerPoint_test_.blocks[i+4],ires_cornerPoint_test_.blocks[i+7],ires_cornerPoint_test_.blocks[i+6],/* 6 - 11 */
+			    ires_cornerPoint_test_.blocks[i+6],ires_cornerPoint_test_.blocks[i+5],ires_cornerPoint_test_.blocks[i+4],
+			    // Front Face
+			    ires_cornerPoint_test_.blocks[i+0],ires_cornerPoint_test_.blocks[i+3],ires_cornerPoint_test_.blocks[i+7],/* 12 - 17*/
+			    ires_cornerPoint_test_.blocks[i+7],ires_cornerPoint_test_.blocks[i+3],ires_cornerPoint_test_.blocks[i+4],
+			    // Back Face
+			    ires_cornerPoint_test_.blocks[i+1],ires_cornerPoint_test_.blocks[i+2],ires_cornerPoint_test_.blocks[i+5],/* 18 - 23*/
+			    ires_cornerPoint_test_.blocks[i+5],ires_cornerPoint_test_.blocks[i+6],ires_cornerPoint_test_.blocks[i+1],
+			    // Right Face
+			    ires_cornerPoint_test_.blocks[i+0],ires_cornerPoint_test_.blocks[i+1],ires_cornerPoint_test_.blocks[i+6],/*24 - 29*/
+			    ires_cornerPoint_test_.blocks[i+6],ires_cornerPoint_test_.blocks[i+7],ires_cornerPoint_test_.blocks[i+0],
+			    // Left Face
+			    ires_cornerPoint_test_.blocks[i+2],ires_cornerPoint_test_.blocks[i+3],ires_cornerPoint_test_.blocks[i+4],/*30 - 35*/
+			    ires_cornerPoint_test_.blocks[i+4],ires_cornerPoint_test_.blocks[i+5],ires_cornerPoint_test_.blocks[i+2],
+			};
+
+			Celer::Vector3<double> vertices [] =
+			{
+			    // Top Face
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[0]]),
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[1]]),
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[2]]),
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[3]]),
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[4]]),
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[5]]),
+			    // Bottom Face
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[6]]),
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[7]]),
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[8]]),
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[9]]),
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[10]]),
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[11]]),
+			    // Bottom Face
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[12]]),
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[13]]),
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[14]]),
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[15]]),
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[16]]),
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[17]]),
+			    // Bottom Face
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[18]]),
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[19]]),
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[20]]),
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[21]]),
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[22]]),
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[23]]),
+			    // Bottom Face
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[24]]),
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[25]]),
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[26]]),
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[27]]),
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[28]]),
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[29]]),
+			    // Bottom Face
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[30]]),
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[31]]),
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[32]]),
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[33]]),
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[34]]),
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[35]])
+
+		       };
+
+			Celer::Vector3<double> top_face_normal 	  = ( ires_cornerPoint_test_.vertices[index[0]] - ires_cornerPoint_test_.vertices[index[1]] ) ^ ( ires_cornerPoint_test_.vertices[index[0]] - ires_cornerPoint_test_.vertices[index[2]] );
+			top_face_normal.normalize( );
+			Celer::Vector3<double> bottom_face_normal = ( ires_cornerPoint_test_.vertices[index[6]] - ires_cornerPoint_test_.vertices[index[7]] ) ^ ( ires_cornerPoint_test_.vertices[index[6]] - ires_cornerPoint_test_.vertices[index[8]] );
+			bottom_face_normal.normalize();
+			Celer::Vector3<double> front_face_normal  = ( ires_cornerPoint_test_.vertices[index[12]] - ires_cornerPoint_test_.vertices[index[13]] ) ^ ( ires_cornerPoint_test_.vertices[index[12]] - ires_cornerPoint_test_.vertices[index[14]] );
+			front_face_normal.normalize();
+			Celer::Vector3<double> back_face_normal   = ( ires_cornerPoint_test_.vertices[index[18]] - ires_cornerPoint_test_.vertices[index[19]] ) ^ ( ires_cornerPoint_test_.vertices[index[18]] - ires_cornerPoint_test_.vertices[index[20]] );
+			back_face_normal.normalize( );
+			Celer::Vector3<double> right_face_normal  = ( ires_cornerPoint_test_.vertices[index[24]] - ires_cornerPoint_test_.vertices[index[25]] ) ^ ( ires_cornerPoint_test_.vertices[index[24]] - ires_cornerPoint_test_.vertices[index[26]] );
+			right_face_normal.normalize( );
+			Celer::Vector3<double> left_face_normal   = ( ires_cornerPoint_test_.vertices[index[30]] - ires_cornerPoint_test_.vertices[index[31]] ) ^ ( ires_cornerPoint_test_.vertices[index[30]] - ires_cornerPoint_test_.vertices[index[32]] );
+			left_face_normal.normalize( );
+
+			Celer::Vector3<double> normals [] =
+			{
+			    // Top Face
+		            top_face_normal,
+		            top_face_normal,
+		            top_face_normal,
+		            top_face_normal,
+		            top_face_normal,
+		            top_face_normal,
+			    // Bottom Face
+		            bottom_face_normal,
+		            bottom_face_normal,
+		            bottom_face_normal,
+		            bottom_face_normal,
+		            bottom_face_normal,
+		            bottom_face_normal,
+			    // Front Face
+		            front_face_normal,
+		            front_face_normal,
+		            front_face_normal,
+		            front_face_normal,
+		            front_face_normal,
+		            front_face_normal,
+			    // Back Face
+		            back_face_normal,
+		            back_face_normal,
+		            back_face_normal,
+		            back_face_normal,
+		            back_face_normal,
+		            back_face_normal,
+			    // Right Face
+		            right_face_normal,
+		            right_face_normal,
+		            right_face_normal,
+		            right_face_normal,
+		            right_face_normal,
+		            right_face_normal,
+			    // Left Face
+		            left_face_normal,
+		            left_face_normal,
+		            left_face_normal,
+		            left_face_normal,
+		            left_face_normal,
+		            left_face_normal
+
+		       };
+
+
+
+			Celer::Vector4<GLfloat> colors [] =
+			{
+			    color,
+			    color,
+			    color,
+			    color,
+			    color,
+			    color,
+
+			    color,
+			    color,
+			    color,
+			    color,
+			    color,
+			    color,
+
+			    color,
+			    color,
+			    color,
+			    color,
+			    color,
+			    color,
+
+			    color,
+			    color,
+			    color,
+			    color,
+			    color,
+			    color,
+
+			    color,
+			    color,
+			    color,
+			    color,
+			    color,
+			    color,
+
+			    color,
+			    color,
+			    color,
+			    color,
+			    color,
+			    color
+
+			 };
+
+			std::copy ( index , index + 36 , std::back_inserter ( list_of_indices ) );
+			std::copy ( vertices , vertices + 36 , std::back_inserter ( list_of_vertices ) );
+			std::copy ( normals , normals + 36 , std::back_inserter ( list_of_normals ) );
+			std::copy ( colors , colors + 36 , std::back_inserter ( list_of_colors ) );
+
+
+
+
+		}
+		else
+		{
+			color = Celer::Vector4<GLfloat> ( 0.5f , 0.5f , 0.5f , 1.0f );
+		}
+
+
+	}
+
+
+	glBindVertexArray(vertexArray);
+
+			glBindBuffer ( GL_ARRAY_BUFFER , vertices_buffer );
+			glBufferData ( GL_ARRAY_BUFFER , list_of_vertices.size( ) * sizeof(list_of_vertices[0]) , &list_of_vertices[0] , GL_DYNAMIC_DRAW );
+			// Vertex Array : Set up generic attributes pointers
+			glEnableVertexAttribArray(0);
+			glVertexAttribPointer(0, 3, GL_DOUBLE, GL_FALSE, 0, 0);
+
+			glBindBuffer ( GL_ARRAY_BUFFER , normal_buffer );
+			glBufferData ( GL_ARRAY_BUFFER , list_of_normals.size( ) * sizeof(list_of_normals[0]) , &list_of_normals[0] , GL_DYNAMIC_DRAW );
+			// Vertex Array : Set up generic attributes pointers
+			glEnableVertexAttribArray(1);
+			glVertexAttribPointer(1, 3, GL_DOUBLE, GL_FALSE, 0, 0);
+
+			glBindBuffer ( GL_ARRAY_BUFFER , color_buffer );
+			glBufferData ( GL_ARRAY_BUFFER, list_of_colors.size( ) * sizeof( list_of_colors[0] ), &list_of_colors[0], GL_DYNAMIC_DRAW);
+			glEnableVertexAttribArray(2);
+			glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 0, 0);
+
+
+			glBindBuffer ( GL_ELEMENT_ARRAY_BUFFER, indices_buffer );
+			glBufferData ( GL_ELEMENT_ARRAY_BUFFER , list_of_indices.size() * sizeof(list_of_indices[0]) , &list_of_indices[0] , GL_DYNAMIC_DRAW );
+
+	glBindVertexArray(0);
+
+}
 
 void GLWidget::changeProperty ( int property_index )
 {
@@ -88,15 +377,18 @@ void GLWidget::changeProperty ( int property_index )
 	float min = *std::min_element ( ires_cornerPoint_test_.static_porperties[property_index].values_.begin ( ) , ires_cornerPoint_test_.static_porperties[property_index].values_.end ( ) );
 	float max = *std::max_element ( ires_cornerPoint_test_.static_porperties[property_index].values_.begin ( ) , ires_cornerPoint_test_.static_porperties[property_index].values_.end ( ) );
 
-	for ( int i = 0; i < ires_cornerPoint_test_.blocks.size ( ); i++ )
+	for ( int i = 0; i < ires_cornerPoint_test_.blocks.size ( ); i+=8 )
 	{
 
-		float normalizedColor = ( ires_cornerPoint_test_.static_porperties[property_index].values_[i] - min ) / ( max - min );
+		float normalizedColor = ( ires_cornerPoint_test_.static_porperties[property_index].values_[i/8] - min ) / ( max - min );
 
 		Celer::Vector4<GLfloat> color;
 
 		switch ( (int) ( normalizedColor * 10.0f ) )
 		{
+			case 10:
+				color = Celer::Vector4<GLfloat> ( 1.0f , 0.0f , 0.0f , 1.0f );
+				break;
 			case 9:
 				color = Celer::Vector4<GLfloat> ( 0.5f , 0.25f , 0.0f , 1.0f );
 				break;
@@ -360,13 +652,13 @@ void GLWidget::openIRES ( const std::string& filename )
 		glBindVertexArray(vertexArray);
 
 				glBindBuffer ( GL_ARRAY_BUFFER , vertices_buffer );
-				glBufferData ( GL_ARRAY_BUFFER , list_of_vertices.size( ) * sizeof(list_of_vertices[0]) , &list_of_vertices[0] , GL_STATIC_DRAW );
+				glBufferData ( GL_ARRAY_BUFFER , list_of_vertices.size( ) * sizeof(list_of_vertices[0]) , &list_of_vertices[0] , GL_DYNAMIC_DRAW );
 				// Vertex Array : Set up generic attributes pointers
 				glEnableVertexAttribArray(0);
 				glVertexAttribPointer(0, 3, GL_DOUBLE, GL_FALSE, 0, 0);
 
 				glBindBuffer ( GL_ARRAY_BUFFER , normal_buffer );
-				glBufferData ( GL_ARRAY_BUFFER , list_of_normals.size( ) * sizeof(list_of_normals[0]) , &list_of_normals[0] , GL_STATIC_DRAW );
+				glBufferData ( GL_ARRAY_BUFFER , list_of_normals.size( ) * sizeof(list_of_normals[0]) , &list_of_normals[0] , GL_DYNAMIC_DRAW );
 				// Vertex Array : Set up generic attributes pointers
 				glEnableVertexAttribArray(1);
 				glVertexAttribPointer(1, 3, GL_DOUBLE, GL_FALSE, 0, 0);
@@ -378,7 +670,7 @@ void GLWidget::openIRES ( const std::string& filename )
 
 
 				glBindBuffer ( GL_ELEMENT_ARRAY_BUFFER, indices_buffer );
-				glBufferData ( GL_ELEMENT_ARRAY_BUFFER , list_of_indices.size() * sizeof(list_of_indices[0]) , &list_of_indices[0] , GL_STATIC_DRAW );
+				glBufferData ( GL_ELEMENT_ARRAY_BUFFER , list_of_indices.size() * sizeof(list_of_indices[0]) , &list_of_indices[0] , GL_DYNAMIC_DRAW );
 
 		glBindVertexArray(0);
 
@@ -396,7 +688,7 @@ void GLWidget::openIRES ( const std::string& filename )
 		camera_.setPosition ( box.center ( ) );
 		camera_.setTarget ( box.center ( ) );
 		std::cout << box.diagonal ( );
-		camera_.setOffset ( 2.0 * box.diagonal ( ) );
+		camera_.setOffset ( 1.0 * box.diagonal ( ) );
 
 		camera_.setPerspectiveProjectionMatrix ( 60 , camera_.aspectRatio ( ) , 1.0 , 1000.0*box.diagonal() );
 
