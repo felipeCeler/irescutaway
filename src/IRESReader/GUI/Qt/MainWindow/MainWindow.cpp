@@ -26,9 +26,10 @@ MainWindow::MainWindow ( QMainWindow *parent ) :
 	setWindowIcon ( icon );
 	showfullScreen_ = 0;
 
-
 	connect(this->comboBox_choose_an_property_, SIGNAL(activated(int)), this, SLOT(updateDoubleSpinMin(int)));
 	connect(this->comboBox_choose_an_property_, SIGNAL(activated(int)), this, SLOT(updateDoubleSpinMax(int)));
+	// Just the name of the function: so changeProperty , not glWidget->changeProperty
+	connect(this->comboBox_choose_an_property_, SIGNAL(activated(int)), this->glWidget, SLOT(changeProperty(int)));
 
 }
 
@@ -58,8 +59,7 @@ void MainWindow::updateDoubleSpinMin( int property_index )
 	this->doubleSpinMax->setMinimum ( static_cast<double> (min) );
 	this->doubleSpinMax->setMaximum ( static_cast<double> (max) );
 
-	qDebug() << min;
-	qDebug() << max;
+	qDebug() << "Min: "<< min;
 
 	this->doubleSpinMin->setValue(static_cast<double> (min));
 
@@ -78,8 +78,7 @@ void MainWindow::updateDoubleSpinMax( int property_index )
 	this->doubleSpinMax->setMinimum ( static_cast<double> (min) );
 	this->doubleSpinMax->setMaximum ( static_cast<double> (max) );
 
-	qDebug() << min;
-	qDebug() << max;
+	qDebug() << "Max: "<< max;
 
 	this->doubleSpinMax->setValue(static_cast<double> (max));
 

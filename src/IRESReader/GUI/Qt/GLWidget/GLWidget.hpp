@@ -61,6 +61,7 @@ class GLWidget: public QGLWidget
 		void LoadShaders ( );
 		void openIRES ( const std::string& filename );
 		bool isIresWasOpenedSucessufully () const;
+		void changeProperty ( int property_index );
 
 	protected:
 		void dragEnterEvent ( QDragEnterEvent *event );
@@ -99,12 +100,14 @@ private:
 	GLuint vertices_buffer;
 	GLuint normal_buffer;
 	GLuint indices_buffer;
+	GLuint color_buffer;
 
 	bool ires_has_been_open_sucessefully;
 
 	std::vector<int> 			list_of_indices;
 	std::vector<Celer::Vector3<GLdouble> > 	list_of_normals;
 	std::vector<Celer::Vector3<GLdouble> > 	list_of_vertices;
+	std::vector<Celer::Vector4<GLfloat> >     list_of_colors;
 	Celer::BoundingBox3<double> 		box;
 };
 

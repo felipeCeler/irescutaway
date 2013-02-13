@@ -8,10 +8,12 @@ uniform mat4 ProjectionMatrix;
 
 layout (location = 0 ) in vec3 vertices;
 layout (location = 1 ) in vec3 normals;
+layout (location = 2 ) in vec4 colors;
 
 
 
 out vec3 normal;
+out vec4 color;
 
 void main()
 {
@@ -22,6 +24,8 @@ void main()
 	normalMatrix = inverse(normalMatrix);
 
 	normal = normalize(normalMatrix * normals);
+
+	color = colors;
 
 	gl_Position = ProjectionMatrix * ViewMatrix * vec4(vertices,1.0);
 

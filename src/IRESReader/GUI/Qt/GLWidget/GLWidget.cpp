@@ -65,6 +65,8 @@ void GLWidget::initializeGL ( )
 
 		glGenBuffers ( 1 , &normal_buffer );
 
+		glGenBuffers ( 1, &color_buffer );
+
 		glGenBuffers ( 1 , &indices_buffer);
 
 
@@ -76,6 +78,119 @@ bool GLWidget::isIresWasOpenedSucessufully ( ) const
 	return ires_has_been_open_sucessefully;
 }
 
+
+void GLWidget::changeProperty ( int property_index )
+{
+	list_of_colors.clear();
+
+	std::cout << "Changing the property to : " << ires_cornerPoint_test_.static_porperties[property_index].name << std::endl;
+
+	float min = *std::min_element ( ires_cornerPoint_test_.static_porperties[property_index].values_.begin ( ) , ires_cornerPoint_test_.static_porperties[property_index].values_.end ( ) );
+	float max = *std::max_element ( ires_cornerPoint_test_.static_porperties[property_index].values_.begin ( ) , ires_cornerPoint_test_.static_porperties[property_index].values_.end ( ) );
+
+	for ( int i = 0; i < ires_cornerPoint_test_.blocks.size ( ); i++ )
+	{
+
+		float normalizedColor = ( ires_cornerPoint_test_.static_porperties[property_index].values_[i] - min ) / ( max - min );
+
+		Celer::Vector4<GLfloat> color;
+
+		switch ( (int) ( normalizedColor * 10.0f ) )
+		{
+			case 9:
+				color = Celer::Vector4<GLfloat> ( 0.5f , 0.25f , 0.0f , 1.0f );
+				break;
+			case 8:
+				color = Celer::Vector4<GLfloat> ( 0.5f , 0.5f , 0.0f , 1.0f );
+				break;
+			case 7:
+				color = Celer::Vector4<GLfloat> ( 0.25f , 0.5f , 0.0f , 1.0f );
+				break;
+			case 6:
+				color = Celer::Vector4<GLfloat> ( 0.0f , 0.25f , 0.0f , 1.0f );
+				break;
+			case 5:
+				color = Celer::Vector4<GLfloat> ( 0.0f , 0.5f , 0.2f , 1.0f );
+				break;
+			case 4:
+				color = Celer::Vector4<GLfloat> ( 0.0f , 0.5f , 0.4f , 1.0f );
+				break;
+			case 3:
+				color = Celer::Vector4<GLfloat> ( 0 , 0.4 , 0.5 , 1.0f );
+				break;
+			case 2:
+				color = Celer::Vector4<GLfloat> ( 0 , 0.2 , 0.5 , 1.0f );
+				break;
+			case 1:
+				color = Celer::Vector4<GLfloat> ( 0 , 0 , 0.5 , 1.0f );
+				break;
+			case 0:
+				color = Celer::Vector4<GLfloat> ( 0 , 0 , 0.375 , 1.0f );
+				break;
+				//if value is equal to max
+			default:
+				color = Celer::Vector4<GLfloat> ( 0.5f , 0.0f , 0.0f , 1.0f );
+				break;
+		}
+
+
+
+		Celer::Vector4<GLfloat> colors [] =
+		{
+		    color,
+		    color,
+		    color,
+		    color,
+		    color,
+		    color,
+
+		    color,
+		    color,
+		    color,
+		    color,
+		    color,
+		    color,
+
+		    color,
+		    color,
+		    color,
+		    color,
+		    color,
+		    color,
+
+		    color,
+		    color,
+		    color,
+		    color,
+		    color,
+		    color,
+
+		    color,
+		    color,
+		    color,
+		    color,
+		    color,
+		    color,
+
+		    color,
+		    color,
+		    color,
+		    color,
+		    color,
+		    color
+
+		 };
+
+		std::copy ( colors , colors + 36 , std::back_inserter ( list_of_colors ) );
+	}
+
+	glBindVertexArray ( vertexArray );
+		glBindBuffer ( GL_ARRAY_BUFFER , color_buffer );
+		glBufferData ( GL_ARRAY_BUFFER , list_of_colors.size ( ) * sizeof ( list_of_colors[0] ) , &list_of_colors[0] , GL_DYNAMIC_DRAW );
+		glEnableVertexAttribArray ( 2 );
+		glVertexAttribPointer ( 2 , 4 , GL_FLOAT , GL_FALSE , 0 , 0 );
+	glBindVertexArray ( 0 );
+}
 
 void GLWidget::openIRES ( const std::string& filename )
 {
@@ -94,6 +209,7 @@ void GLWidget::openIRES ( const std::string& filename )
 	list_of_indices.clear ( );
 	list_of_vertices.clear ( );
 	list_of_normals.clear ( );
+	list_of_colors.clear ( );
 
 		for ( int i = 0; i < ires_cornerPoint_test_.blocks.size( ); i+=8 )
 		{
@@ -118,7 +234,6 @@ void GLWidget::openIRES ( const std::string& filename )
 			    ires_cornerPoint_test_.blocks[i+2],ires_cornerPoint_test_.blocks[i+3],ires_cornerPoint_test_.blocks[i+4],/*30 - 35*/
 			    ires_cornerPoint_test_.blocks[i+4],ires_cornerPoint_test_.blocks[i+5],ires_cornerPoint_test_.blocks[i+2],
 			};
-
 
 			Celer::Vector3<double> vertices [] =
 			{
@@ -166,7 +281,6 @@ void GLWidget::openIRES ( const std::string& filename )
 			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[35]])
 
 		       };
-
 
 			Celer::Vector3<double> top_face_normal 	  = ( ires_cornerPoint_test_.vertices[index[0]] - ires_cornerPoint_test_.vertices[index[1]] ) ^ ( ires_cornerPoint_test_.vertices[index[0]] - ires_cornerPoint_test_.vertices[index[2]] );
 			top_face_normal.normalize( );
@@ -228,11 +342,13 @@ void GLWidget::openIRES ( const std::string& filename )
 
 		       };
 
+
 			std::copy ( index , index + 36 , std::back_inserter ( list_of_indices ) );
 			std::copy ( vertices , vertices + 36 , std::back_inserter ( list_of_vertices ) );
 			std::copy ( normals , normals + 36 , std::back_inserter ( list_of_normals ) );
 
-		}  // end of looping
+		}  // end of looping list of blocks
+
 
 //		for (int i = 0 ; i < 36 ; i++)
 //		{
@@ -250,16 +366,24 @@ void GLWidget::openIRES ( const std::string& filename )
 				glVertexAttribPointer(0, 3, GL_DOUBLE, GL_FALSE, 0, 0);
 
 				glBindBuffer ( GL_ARRAY_BUFFER , normal_buffer );
-				glBufferData ( GL_ARRAY_BUFFER , list_of_normals.size( ) * sizeof(list_of_normals[0]) , &list_of_normals[0] , GL_STATIC_DRAW );\
+				glBufferData ( GL_ARRAY_BUFFER , list_of_normals.size( ) * sizeof(list_of_normals[0]) , &list_of_normals[0] , GL_STATIC_DRAW );
 				// Vertex Array : Set up generic attributes pointers
 				glEnableVertexAttribArray(1);
 				glVertexAttribPointer(1, 3, GL_DOUBLE, GL_FALSE, 0, 0);
+
+				glBindBuffer ( GL_ARRAY_BUFFER , color_buffer );
+				glBufferData ( GL_ARRAY_BUFFER, list_of_colors.size( ) * sizeof( list_of_colors[0] ), &list_of_colors[0], GL_DYNAMIC_DRAW);
+				glEnableVertexAttribArray(2);
+				glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 0, 0);
+
 
 				glBindBuffer ( GL_ELEMENT_ARRAY_BUFFER, indices_buffer );
 				glBufferData ( GL_ELEMENT_ARRAY_BUFFER , list_of_indices.size() * sizeof(list_of_indices[0]) , &list_of_indices[0] , GL_STATIC_DRAW );
 
 		glBindVertexArray(0);
 
+
+		changeProperty( 0 );
 
 		//cube_.creatBuffers ();
 
@@ -278,7 +402,7 @@ void GLWidget::openIRES ( const std::string& filename )
 
 		std::cout  << camera_.position();
 
-		//camera_.setBehavior ( Celer::Camera<float>::REVOLVE_AROUND_MODE );
+		camera_.setBehavior ( Celer::Camera<float>::REVOLVE_AROUND_MODE );
 
 		cameraStep_ = 10.0f;
 
@@ -326,8 +450,6 @@ void GLWidget::TridimensionalSetUp ( )
 	glActiveTexture(GL_TEXTURE0);
 
 
-
-
  	if ( ires_has_been_open_sucessefully )
 	{
 
@@ -351,17 +473,15 @@ void GLWidget::TridimensionalSetUp ( )
 
 
 		glBindVertexArray (vertexArray);			//VAO
-			//Vertices:
-		glEnableVertexAttribArray(0);
-		glEnableVertexAttribArray(1);
+		//Vertices:
+//		glEnableVertexAttribArray(0);
+//		glEnableVertexAttribArray(1);
 
 		glDrawArrays( GL_TRIANGLES , 0, list_of_vertices.size());
 
-		glEnableVertexAttribArray(0);
-		glEnableVertexAttribArray(1);
+//		glEnableVertexAttribArray(0);
+//		glEnableVertexAttribArray(1);
 		glBindVertexArray ( 0 );
-
-
 
 		manager.deactive ( );
 		
