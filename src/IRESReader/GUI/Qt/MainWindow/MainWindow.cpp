@@ -12,8 +12,8 @@ MainWindow::MainWindow ( QMainWindow *parent ) :
 
 	QGLFormat glFormat;
 	glFormat.setSwapInterval ( 1 ); // vsync
-	glFormat.setVersion(3,3);
-	glFormat.setProfile(QGLFormat::CompatibilityProfile);
+	//glFormat.setVersion(3,3);
+	//glFormat.setProfile(QGLFormat::CompatibilityProfile);
 	glFormat.setSampleBuffers(true);
 	glFormat.setSamples(4);
 

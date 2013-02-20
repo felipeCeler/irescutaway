@@ -18,6 +18,8 @@
 #include <Celer/Scene/Camera.hpp>
 
 #include <QtOpenGL/QGLWidget>
+#include <QGLFramebufferObject>
+
 #include <QtGui/QMdiSubWindow>
 #include <QtCore/QTimer>
 #include <QtCore/QTimeLine>
@@ -58,6 +60,7 @@ class GLWidget: public QGLWidget
 		void animate ( );
 		void TridimensionalSetUp ( );
 		void TwodimensionalSetUp ( );
+		void cutawaySetup ( );
 		void LoadShaders ( );
 		void openIRES ( const std::string& filename );
 		bool isIresWasOpenedSucessufully () const;
@@ -102,14 +105,35 @@ private:
 	GLuint normal_buffer;
 	GLuint indices_buffer;
 	GLuint color_buffer;
+	GLuint screen_buffer;
+	GLuint texture_buffer;
 
 	bool ires_has_been_open_sucessefully;
 
 	std::vector<int> 			list_of_indices;
 	std::vector<Celer::Vector3<GLdouble> > 	list_of_normals;
 	std::vector<Celer::Vector3<GLdouble> > 	list_of_vertices;
-	std::vector<Celer::Vector4<GLfloat> >     list_of_colors;
+	std::vector<Celer::Vector4<GLfloat> >   list_of_colors;
 	Celer::BoundingBox3<double> 		box;
+
+
+	// From Image Cutaway.
+
+	QGLFramebufferObject*   fboInitialization;
+	Celer::OpenGL::ShaderManager	jumpFloodInitialization;
+
+	QGLFramebufferObject*   fboStep[2];
+	Celer::OpenGL::ShaderManager	jumpFloodingStep;
+
+
+	GLuint primary_vertexArray;
+	Celer::OpenGL::ShaderManager	primary;
+	GLuint secundary_vertexArray;
+	Celer::OpenGL::ShaderManager	secundary;
+
+	QImage fbo;
+	float angle;
+
 };
 
 #endif

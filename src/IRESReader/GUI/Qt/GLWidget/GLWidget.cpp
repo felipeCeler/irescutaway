@@ -35,8 +35,10 @@ void GLWidget::initializeGL ( )
 
 	/// OpenGL Stuffs
 	glEnable ( GL_DEPTH_TEST );
+	glEnable ( GL_TEXTURE_RECTANGLE );
 	glClearColor ( 0.0 , 0.0 , 0.0 , 1.0 );
-	glEnable(GL_TEXTURE_2D);
+	glDisable(GL_BLEND);
+
 
 	timer_.setSingleShot ( false );
 	connect ( &timer_ , SIGNAL ( timeout ( ) ) , this , SLOT ( gameLooping ( ) ) );
@@ -59,15 +61,28 @@ void GLWidget::initializeGL ( )
 
 	ires_has_been_open_sucessefully = 0;
 
+	scrollStep_ = 45.0f;
+	angle = static_cast<float>(1.0/std::tan(scrollStep_ * Celer::Math::kDeg2Rad));
+
+	QGLFramebufferObjectFormat format;
+	format.setSamples(4);
+
+	format.setAttachment(QGLFramebufferObject::Depth);
+	format.setInternalTextureFormat ( GL_RGBA32F );
+	format.setTextureTarget ( GL_TEXTURE_RECTANGLE );
+
+	fboStep[0] 	  = new  QGLFramebufferObject ( width() , height() , format );
+	fboStep[1] 	  = new  QGLFramebufferObject ( width() , height() , format );
+	fboInitialization = new  QGLFramebufferObject ( width() , height() , format );
+
 	glGenVertexArrays ( 1 , &vertexArray);
-
 		glGenBuffers ( 1 , &vertices_buffer );
-
 		glGenBuffers ( 1 , &normal_buffer );
-
-		glGenBuffers ( 1, &color_buffer );
-
+		glGenBuffers ( 1,  &color_buffer );
 		glGenBuffers ( 1 , &indices_buffer);
+		glGenBuffers ( 1 , &screen_buffer);
+		glGenBuffers ( 1 , &texture_buffer);
+
 
 
 
@@ -85,6 +100,7 @@ void GLWidget::changePropertyRange ( const double& minRange, const double& maxRa
 	list_of_vertices.clear ( );
 	list_of_normals.clear ( );
 	list_of_colors.clear ( );
+
 
 	std::cout << "Changing the property to : " << ires_cornerPoint_test_.static_porperties[property_index].name << std::endl;
 
@@ -327,9 +343,6 @@ void GLWidget::changePropertyRange ( const double& minRange, const double& maxRa
 			std::copy ( vertices , vertices + 36 , std::back_inserter ( list_of_vertices ) );
 			std::copy ( normals , normals + 36 , std::back_inserter ( list_of_normals ) );
 			std::copy ( colors , colors + 36 , std::back_inserter ( list_of_colors ) );
-
-
-
 
 		}
 		else
@@ -649,6 +662,39 @@ void GLWidget::openIRES ( const std::string& filename )
 //		}
 
 
+		  GLfloat openGLScreenCoordinates[] = {
+		       -1.0f,  1.0f,
+		        1.0f,  1.0f,
+		        1.0f, -1.0f,
+
+		        1.0f, -1.0f,
+		       -1.0f, -1.0f  ,
+		       -1.0f,  1.0f,
+		  };
+
+		  GLfloat textureCoordinates[] = {
+		        0.0f,  0.0f,
+		        0.0f,  1.0f,
+		        1.0f,  0.0f,
+
+		        0.0f,  1.0f,
+		        1.0f,  1.0f,
+		        1.0f,  0.0f,
+		  };
+
+//		glBindVertexArray(primary_vertexArray);
+//			glBindBuffer ( GL_ARRAY_BUFFER , screen_buffer );
+//			glBufferData ( GL_ARRAY_BUFFER, 12 *  sizeof( openGLScreenCoordinates[0] ), openGLScreenCoordinates, GL_DYNAMIC_DRAW);
+//			glEnableVertexAttribArray(2);
+//			glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, 0, 0);
+//
+//			glBindBuffer ( GL_ARRAY_BUFFER , texture_buffer );
+//			glBufferData ( GL_ARRAY_BUFFER, 12 * sizeof( textureCoordinates[0] ), textureCoordinates , GL_DYNAMIC_DRAW);
+//			glEnableVertexAttribArray(2);
+//			glVertexAttribPointer(4, 2, GL_FLOAT, GL_FALSE, 0, 0);
+//		glBindVertexArray(0);
+
+
 		glBindVertexArray(vertexArray);
 
 				glBindBuffer ( GL_ARRAY_BUFFER , vertices_buffer );
@@ -669,6 +715,16 @@ void GLWidget::openIRES ( const std::string& filename )
 				glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
 
+				glBindBuffer ( GL_ARRAY_BUFFER , screen_buffer );
+				glBufferData ( GL_ARRAY_BUFFER, 12 *  sizeof( openGLScreenCoordinates[0] ), openGLScreenCoordinates, GL_DYNAMIC_DRAW);
+				glEnableVertexAttribArray(3);
+				glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, 0, 0);
+
+				glBindBuffer ( GL_ARRAY_BUFFER , texture_buffer );
+				glBufferData ( GL_ARRAY_BUFFER, 12 * sizeof( textureCoordinates[0] ), textureCoordinates , GL_DYNAMIC_DRAW);
+				glEnableVertexAttribArray(4);
+				glVertexAttribPointer(4, 2, GL_FLOAT, GL_FALSE, 0, 0);
+
 				glBindBuffer ( GL_ELEMENT_ARRAY_BUFFER, indices_buffer );
 				glBufferData ( GL_ELEMENT_ARRAY_BUFFER , list_of_indices.size() * sizeof(list_of_indices[0]) , &list_of_indices[0] , GL_DYNAMIC_DRAW );
 
@@ -688,7 +744,7 @@ void GLWidget::openIRES ( const std::string& filename )
 		camera_.setPosition ( box.center ( ) );
 		camera_.setTarget ( box.center ( ) );
 		std::cout << box.diagonal ( );
-		camera_.setOffset ( 1.0 * box.diagonal ( ) );
+		camera_.setOffset ( 3.0 * box.diagonal ( ) );
 
 		camera_.setPerspectiveProjectionMatrix ( 60 , camera_.aspectRatio ( ) , 1.0 , 1000.0*box.diagonal() );
 
@@ -709,10 +765,32 @@ void GLWidget::resizeGL ( int width , int height )
 
 
 	camera_.setAspectRatio ( width  , height  );
-	camera_.setPerspectiveProjectionMatrix ( 60 , camera_.aspectRatio ( ) , 1.0 , 1000.0*box.diagonal() );
+	camera_.setPerspectiveProjectionMatrix ( 0 , camera_.aspectRatio ( ) , 1.0 , 1000.0*box.diagonal() );
+	camera_.setOrthographicProjectionMatrix( 0.0f, (float)width , 0.0f, (float)height, -1000.0*box.diagonal(), 1000.0*box.diagonal() );
+
 
 	centerX_ = static_cast<float> ( width * 0.5 );
 	centerY_ = static_cast<float> ( height * 0.5 );
+
+
+
+	if ( fboStep[0] )
+		delete fboStep[0];
+
+	if ( fboStep[1] )
+		delete fboStep[1];
+
+	if ( fboInitialization )
+		delete fboInitialization;
+
+	QGLFramebufferObjectFormat format;
+	format.setAttachment(QGLFramebufferObject::Depth);
+	format.setTextureTarget ( GL_TEXTURE_RECTANGLE );
+	format.setInternalTextureFormat ( GL_RGBA32F );
+
+	fboStep[0] = new QGLFramebufferObject ( width , height , format );
+	fboStep[1] = new QGLFramebufferObject ( width , height , format );
+	fboInitialization = new QGLFramebufferObject ( width , height , format );
 }
 
 /// For DropArea's implementation, we clear invoke clear() and then accept the proposed event.
@@ -722,8 +800,93 @@ void GLWidget::resizeGL ( int width , int height )
 /// Real Looping
 void GLWidget::paintGL ( )
 {
-	TridimensionalSetUp ( );
+	//TridimensionalSetUp ( );
+	cutawaySetup ( );
+
 }
+
+
+void GLWidget::cutawaySetup ( )
+{
+
+ 	if ( ires_has_been_open_sucessefully )
+	{
+
+
+ 		camera_.setViewByMouse ( );
+
+ 		if ( buttonRelease_ )
+ 		{
+ 			processMultiKeys ( );
+ 		}
+
+ 		camera_.computerViewMatrix( );
+
+
+ 		fboInitialization->bind();
+
+		glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
+ 		manager.active ( );
+
+
+		glUniform3fv( manager.uniforms_["lightDirection"].location,0,camera_.position());
+
+		camera_.setPerspectiveProjectionMatrix ( scrollStep_ , camera_.aspectRatio ( ) , 1.0 , 1000.0*box.diagonal() );
+
+		glUniformMatrix4fv ( manager.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+		glUniformMatrix4fv ( manager.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix()  );
+
+//		cube_.draw ( );
+
+		// 1rst attribute buffer : vertices
+
+//		glBindVertexArray(vertexArray);
+//		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices_buffer);
+////		// Draw the triangle !
+//		glDrawElements(GL_TRIANGLES, 12 , GL_UNSIGNED_INT, 0);
+//
+//		glBindVertexArray(0);
+
+
+		glBindVertexArray (vertexArray);			//VAO
+		//Vertices:
+//		glEnableVertexAttribArray(0);
+//		glEnableVertexAttribArray(1);
+
+		glDrawArrays( GL_TRIANGLES , 0, list_of_vertices.size());
+
+//		glEnableVertexAttribArray(0);
+//		glEnableVertexAttribArray(1);
+		glBindVertexArray ( 0 );
+
+		manager.deactive ( );
+
+		fboInitialization->release( );
+
+
+		glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
+		glActiveTexture ( GL_TEXTURE0 );
+		glEnable ( GL_TEXTURE_RECTANGLE );
+		glBindTexture( GL_TEXTURE_RECTANGLE , fboInitialization->texture());
+
+		jumpFloodingStep.active();
+
+		glBindVertexArray( vertexArray );
+
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+
+		glBindVertexArray( 0);
+
+		jumpFloodingStep.deactive();
+		glDisable ( GL_TEXTURE_RECTANGLE );
+
+
+	}
+
+}
+
 
 void GLWidget::TridimensionalSetUp ( )
 {
@@ -739,19 +902,19 @@ void GLWidget::TridimensionalSetUp ( )
 	camera_.computerViewMatrix( );
 
 
-	glActiveTexture(GL_TEXTURE0);
-
-
  	if ( ires_has_been_open_sucessefully )
 	{
+
 
 		manager.active ( );
 
 		glUniform3fv( manager.uniforms_["lightDirection"].location,0,camera_.position());
 
+		camera_.setPerspectiveProjectionMatrix ( scrollStep_ , camera_.aspectRatio ( ) , 1.0 , 1000.0*box.diagonal() );
+
 		glUniformMatrix4fv ( manager.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-		glUniformMatrix4fv ( manager.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
-		
+		glUniformMatrix4fv ( manager.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix()  );
+
 //		cube_.draw ( );
 
 		// 1rst attribute buffer : vertices
@@ -805,7 +968,22 @@ void GLWidget::LoadShaders ( )
 	qDebug () << "Directory " << shadersDir.path ();
 	shadersDir.cdUp ();
 	qDebug () << "Directory " << shadersDir.path ();
+
 	manager.create((shadersDir.path ()+"/share/Shaders/Primary.vert").toStdString(),(shadersDir.path ()+"/share/Shaders/Primary.frag").toStdString());
+
+
+	//jumpFloodInitialization.create( (shadersDir.path ()+"/share/Shaders/JFAInitializing.vert").toStdString(),(shadersDir.path ()+"/share/Shaders/JFAInitializing.frag").toStdString());
+
+	jumpFloodingStep.create( (shadersDir.path ()+"/share/Shaders/JFAStep.vert").toStdString(),(shadersDir.path ()+"/share/Shaders/JFAStep.frag").toStdString());
+
+	//fbo.save("primeiroPasso.png");
+
+	if ( ires_has_been_open_sucessefully )
+	{
+		QImage im = fboInitialization->toImage ( );
+		im.save ( QString ( "segundoPasso.png" ) );
+	}
+
 }
 
 
@@ -947,6 +1125,9 @@ void GLWidget::wheelEvent ( QWheelEvent *event )
 {
 	event->accept ( );
 	scrollStep_ += event->delta ( ) / 120.0;
+	angle = static_cast<float>(1.0/std::tan(scrollStep_ * Celer::Math::kDeg2Rad));
+	qDebug() << scrollStep_;
+
 }
 
 void GLWidget::dragEnterEvent(QDragEnterEvent *event)
