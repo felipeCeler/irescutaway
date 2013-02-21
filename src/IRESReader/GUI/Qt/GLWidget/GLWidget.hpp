@@ -35,6 +35,7 @@ class GLWidget: public QGLWidget
 {
 		Q_OBJECT
 
+
 	public:
 		// FIXME - Putting this as public, but I'm going to search for a better sulution to how feed other
 		//	   widget with data form another one.
@@ -67,6 +68,9 @@ class GLWidget: public QGLWidget
 		void changeProperty ( int property_index );
 		void changePropertyRange ( const double& min, const double& max, int property_index );
 
+		void drawPrimary ( );
+		void drawSecondary (  );
+
 	protected:
 		void dragEnterEvent ( QDragEnterEvent *event );
 		void dragMoveEvent ( QDragMoveEvent *event );
@@ -95,29 +99,54 @@ private:
 	QTimer timer_;
 
 	/// Celer OpenGL Frameworks
-	Celer::OpenGL::ShaderManager	manager;
+	Celer::OpenGL::ShaderManager	textureViewer;
 	Celer::OpenGL::Texture2D 	facePhoto;
 
-	Cube  cube_;
-
-	GLuint vertexArray;
-	GLuint vertices_buffer;
-	GLuint normal_buffer;
-	GLuint indices_buffer;
-	GLuint color_buffer;
 	GLuint screen_buffer;
 	GLuint texture_buffer;
 
+	GLuint vertexArray;
+		// Primary Attributes
+		GLuint primary_vertices_buffer;
+		GLuint primary_vertices_location;
+		GLuint primary_normal_buffer;
+		GLuint primary_normal_location;
+		GLuint primary_color_buffer;
+		GLuint primary_color_location;
+		GLuint primary_indices_buffer;
+		//Secundary Attributes
+		GLuint secondary_vertices_buffer;
+		GLuint secondary_vertices_location;
+		GLuint secondary_normal_buffer;
+		GLuint secondary_normal_location;
+		GLuint secondary_color_buffer;
+		GLuint secondary_color_location;
+		GLuint secondary_indices_buffer;
+
+	bool draw_secondary;
+	bool draw_primary;
+
 	bool ires_has_been_open_sucessefully;
 
-	std::vector<int> 			list_of_indices;
-	std::vector<Celer::Vector3<GLdouble> > 	list_of_normals;
-	std::vector<Celer::Vector3<GLdouble> > 	list_of_vertices;
-	std::vector<Celer::Vector4<GLfloat> >   list_of_colors;
+	std::vector<int> 			secondary_list_of_indices;
+	std::vector<Celer::Vector3<GLdouble> > 	secondary_list_of_normals;
+	std::vector<Celer::Vector3<GLdouble> > 	secondary_list_of_vertices;
+	std::vector<Celer::Vector4<GLfloat> >   secondary_list_of_colors;
+
+
+	std::vector<int> 			primary_list_of_indices;
+	std::vector<Celer::Vector3<GLdouble> > 	primary_list_of_normals;
+	std::vector<Celer::Vector3<GLdouble> > 	primary_list_of_vertices;
+	std::vector<Celer::Vector4<GLfloat> >   primary_list_of_colors;
+
+
 	Celer::BoundingBox3<double> 		box;
 
-
 	// From Image Cutaway.
+
+	float theta;
+
+	float pm_sz;
 
 	QGLFramebufferObject*   fboInitialization;
 	Celer::OpenGL::ShaderManager	jumpFloodInitialization;
@@ -126,13 +155,14 @@ private:
 	Celer::OpenGL::ShaderManager	jumpFloodingStep;
 
 
-	GLuint primary_vertexArray;
+
 	Celer::OpenGL::ShaderManager	primary;
-	GLuint secundary_vertexArray;
-	Celer::OpenGL::ShaderManager	secundary;
+	Celer::OpenGL::ShaderManager	secondary;
+	Celer::OpenGL::ShaderManager	cutaway;
 
 	QImage fbo;
 	float angle;
+	float zoom_angle_;
 
 };
 
