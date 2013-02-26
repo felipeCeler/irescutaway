@@ -40,10 +40,10 @@ void GLWidget::initializeGL ( )
 	glDisable(GL_BLEND);
 
 
-	timer_.setSingleShot ( false );
-	connect ( &timer_ , SIGNAL ( timeout ( ) ) , this , SLOT ( gameLooping ( ) ) );
-	connect ( &timer_ , SIGNAL ( timeout ( ) ) , this , SLOT ( animate ( ) ) );
-	timer_.start ( 0 );
+//	timer_.setSingleShot ( false );
+//	connect ( &timer_ , SIGNAL ( timeout ( ) ) , this , SLOT ( gameLooping ( ) ) );
+//	connect ( &timer_ , SIGNAL ( timeout ( ) ) , this , SLOT ( animate ( ) ) );
+//	timer_.start ( 0 );
 
 
 	setMinimumSize ( 640 , 480 );
@@ -56,6 +56,10 @@ void GLWidget::initializeGL ( )
 	setAttribute ( Qt::WA_NoSystemBackground );
 	setAutoFillBackground ( false );
 	setAcceptDrops(true);
+
+	JumpFloodingStep = 0;
+	VertexShaderStep = 0;
+	FragmentShaderStep = 0;
 	
 	LoadShaders ( );
 
@@ -66,6 +70,7 @@ void GLWidget::initializeGL ( )
 	angle = static_cast<float>(1.0/std::tan(scrollStep_ * Celer::Math::kDeg2Rad));
 	theta = angle;
 	pm_sz = 0.0f;
+
 
 	QGLFramebufferObjectFormat format;
 	format.setSamples(4);
@@ -79,18 +84,20 @@ void GLWidget::initializeGL ( )
 	fboInitialization = new  QGLFramebufferObject ( width() , height() , format );
 
 	glGenVertexArrays ( 1 , &vertexArray);
-		glGenBuffers ( 1 , &primary_vertices_buffer );
-		glGenBuffers ( 1 , &primary_normal_buffer );
-		glGenBuffers ( 1,  &primary_color_buffer );
+		glGenBuffers ( 1, &primary_vertices_buffer );
+		glGenBuffers ( 1, &primary_normal_buffer );
+		glGenBuffers ( 1, &primary_color_buffer );
+		glGenBuffers ( 1, &primary_renderFlag_buffer);
 		glGenBuffers ( 1 , &primary_indices_buffer);
 
-		glGenBuffers ( 1 , &secondary_vertices_buffer );
-		glGenBuffers ( 1 , &secondary_normal_buffer );
-		glGenBuffers ( 1,  &secondary_color_buffer );
-		glGenBuffers ( 1 , &secondary_indices_buffer);
+		glGenBuffers ( 1, &secondary_vertices_buffer );
+		glGenBuffers ( 1, &secondary_normal_buffer );
+		glGenBuffers ( 1, &secondary_color_buffer );
+		glGenBuffers ( 1, &secondary_renderFlag_buffer);
+		glGenBuffers ( 1, &secondary_indices_buffer);
 
-		glGenBuffers ( 1 , &screen_buffer);
-		glGenBuffers ( 1 , &texture_buffer);
+		glGenBuffers ( 1, &screen_buffer);
+		glGenBuffers ( 1, &texture_buffer);
 
 
 	glBindVertexArray(vertexArray);
@@ -98,10 +105,13 @@ void GLWidget::initializeGL ( )
 	primary_vertices_location = 0;
 	primary_normal_location = 1;
 	primary_color_location = 2;
+	primary_renderFlag_location = 8;
 
 	secondary_vertices_location = 3;
 	secondary_normal_location = 4;
 	secondary_color_location = 5;
+	secondary_renderFlag_location = 9;
+
 
 	draw_secondary = 1;
 	draw_primary = 0;
@@ -123,6 +133,8 @@ void GLWidget::changePropertyRange ( const double& minRange, const double& maxRa
 	primary_list_of_colors.clear ( );
 	primary_list_of_indices.clear ( );
 
+	secondary_list_of_renderFlag.clear();
+
 
 	std::cout << "Changing the property to : " << ires_cornerPoint_test_.static_porperties[property_index].name << std::endl;
 
@@ -139,6 +151,8 @@ void GLWidget::changePropertyRange ( const double& minRange, const double& maxRa
 		float normalizedColor = ( regularValue - min ) / ( max - min );
 
 		Celer::Vector4<GLfloat> color;
+
+
 
 		if ( ( regularValue >= minRange ) && ( regularValue <= maxRange ) )
 		{
@@ -361,31 +375,130 @@ void GLWidget::changePropertyRange ( const double& minRange, const double& maxRa
 
 			 };
 
+
+			GLfloat renderFlags [] =
+			{
+			    0.0f,
+			    0.0f,
+			    0.0f,
+			    0.0f,
+			    0.0f,
+			    0.0f,
+
+			    0.0f,
+			    0.0f,
+			    0.0f,
+			    0.0f,
+			    0.0f,
+			    0.0f,
+
+			    0.0f,
+			    0.0f,
+			    0.0f,
+			    0.0f,
+			    0.0f,
+			    0.0f,
+
+			    0.0f,
+			    0.0f,
+			    0.0f,
+			    0.0f,
+			    0.0f,
+			    0.0f,
+
+			    0.0f,
+			    0.0f,
+			    0.0f,
+			    0.0f,
+			    0.0f,
+			    0.0f,
+
+			    0.0f,
+			    0.0f,
+			    0.0f,
+			    0.0f,
+			    0.0f,
+			    0.0f
+
+			 };
+
 			std::copy ( index , index + 36 , std::back_inserter ( primary_list_of_indices ) );
 			std::copy ( vertices , vertices + 36 , std::back_inserter ( primary_list_of_vertices ) );
 			std::copy ( normals , normals + 36 , std::back_inserter ( primary_list_of_normals ) );
 			std::copy ( colors , colors + 36 , std::back_inserter ( primary_list_of_colors ) );
+			std::copy ( renderFlags , renderFlags + 36 , std::back_inserter ( secondary_list_of_renderFlag ) );
 
 		}
 		else
 		{
 			color = Celer::Vector4<GLfloat> ( 0.5f , 0.5f , 0.5f , 1.0f );
+
+			GLfloat renderFlags [] =
+			{
+			    1.0f,
+			    1.0f,
+			    1.0f,
+			    1.0f,
+			    1.0f,
+			    1.0f,
+
+			    1.0f,
+			    1.0f,
+			    1.0f,
+			    1.0f,
+			    1.0f,
+			    1.0f,
+
+			    1.0f,
+			    1.0f,
+			    1.0f,
+			    1.0f,
+			    1.0f,
+			    1.0f,
+
+			    1.0f,
+			    1.0f,
+			    1.0f,
+			    1.0f,
+			    1.0f,
+			    1.0f,
+
+			    1.0f,
+			    1.0f,
+			    1.0f,
+			    1.0f,
+			    1.0f,
+			    1.0f,
+
+			    1.0f,
+			    1.0f,
+			    1.0f,
+			    1.0f,
+			    1.0f,
+			    1.0f
+
+			 };
+
+			std::copy ( renderFlags , renderFlags + 36 , std::back_inserter ( secondary_list_of_renderFlag ) );
 		}
 
 
 	}
 
 	glBindBuffer ( GL_ARRAY_BUFFER , primary_vertices_buffer );
-	glBufferData ( GL_ARRAY_BUFFER , primary_list_of_vertices.size ( ) * sizeof ( primary_list_of_vertices[0] ) , &primary_list_of_vertices[0] , GL_DYNAMIC_DRAW );
+	glBufferData ( GL_ARRAY_BUFFER , primary_list_of_vertices.size ( ) * sizeof ( primary_list_of_vertices[0] ) , &primary_list_of_vertices[0] , GL_STATIC_DRAW );
 
 	glBindBuffer ( GL_ARRAY_BUFFER , primary_normal_buffer );
-	glBufferData ( GL_ARRAY_BUFFER , primary_list_of_normals.size ( ) * sizeof ( primary_list_of_normals[0] ) , &primary_list_of_normals[0] , GL_DYNAMIC_DRAW );
+	glBufferData ( GL_ARRAY_BUFFER , primary_list_of_normals.size ( ) * sizeof ( primary_list_of_normals[0] ) , &primary_list_of_normals[0] , GL_STATIC_DRAW );
 
 	glBindBuffer ( GL_ARRAY_BUFFER , primary_color_buffer );
-	glBufferData ( GL_ARRAY_BUFFER , primary_list_of_colors.size ( ) * sizeof ( primary_list_of_colors[0] ) , &primary_list_of_colors[0] , GL_DYNAMIC_DRAW );
+	glBufferData ( GL_ARRAY_BUFFER , primary_list_of_colors.size ( ) * sizeof ( primary_list_of_colors[0] ) , &primary_list_of_colors[0] , GL_STATIC_DRAW );
 
 	glBindBuffer ( GL_ELEMENT_ARRAY_BUFFER , primary_indices_buffer );
-	glBufferData ( GL_ELEMENT_ARRAY_BUFFER , primary_list_of_indices.size ( ) * sizeof ( primary_list_of_indices[0] ) , &primary_list_of_indices[0] , GL_DYNAMIC_DRAW );
+	glBufferData ( GL_ELEMENT_ARRAY_BUFFER , primary_list_of_indices.size ( ) * sizeof ( primary_list_of_indices[0] ) , &primary_list_of_indices[0] , GL_STATIC_DRAW );
+
+	glBindBuffer ( GL_ARRAY_BUFFER , secondary_renderFlag_buffer );
+	glBufferData ( GL_ARRAY_BUFFER , secondary_list_of_renderFlag.size ( ) * sizeof ( secondary_list_of_renderFlag[0] ) , &secondary_list_of_renderFlag[0] , GL_STATIC_DRAW );
 
 	draw_primary = 1;
 
@@ -501,9 +614,7 @@ void GLWidget::changeProperty ( int property_index )
 
 
 	glBindBuffer ( GL_ARRAY_BUFFER , secondary_color_buffer );
-	glBufferData ( GL_ARRAY_BUFFER , secondary_list_of_colors.size ( ) * sizeof ( secondary_list_of_colors[0] ) , &secondary_list_of_colors[0] , GL_DYNAMIC_DRAW );
-	glEnableVertexAttribArray ( secondary_color_location );
-	glVertexAttribPointer ( secondary_color_location , 4 , GL_FLOAT , GL_FALSE , 0 , 0 );
+	glBufferData ( GL_ARRAY_BUFFER , secondary_list_of_colors.size ( ) * sizeof ( secondary_list_of_colors[0] ) , &secondary_list_of_colors[0] , GL_STATIC_DRAW );
 
 }
 
@@ -528,6 +639,7 @@ void GLWidget::openIRES ( const std::string& filename )
 	secondary_list_of_vertices.clear ( );
 	secondary_list_of_normals.clear ( );
 	secondary_list_of_colors.clear ( );
+	secondary_list_of_renderFlag.clear( );
 
 	for ( int i = 0; i < ires_cornerPoint_test_.blocks.size( ); i+=8 )
 	{
@@ -707,59 +819,75 @@ void GLWidget::openIRES ( const std::string& filename )
 	};
 
 
+	secondary_list_of_renderFlag =  std::vector<GLfloat>( secondary_list_of_vertices.size( ) , 1.0f );
+
+	std::cout <<  "secondary_list_of_renderFlag.size()"  <<secondary_list_of_renderFlag.size() << " -:- "<< secondary_list_of_renderFlag[200] <<std::endl;
+
 	glBindBuffer ( GL_ARRAY_BUFFER , primary_vertices_buffer );
-	glBufferData ( GL_ARRAY_BUFFER , primary_list_of_vertices.size ( ) * sizeof ( primary_list_of_vertices[0] ) , &primary_list_of_vertices[0] , GL_DYNAMIC_DRAW );
+	glBufferData ( GL_ARRAY_BUFFER , secondary_list_of_vertices.size( ) * sizeof(secondary_list_of_vertices[0]) , 0 , GL_STATIC_DRAW );
 	// Vertex Array : Set up generic attributes pointers
 	glEnableVertexAttribArray ( primary_vertices_location );
 	glVertexAttribPointer ( primary_vertices_location , 3 , GL_DOUBLE , GL_FALSE , 0 , 0 );
 
 	glBindBuffer ( GL_ARRAY_BUFFER , primary_normal_buffer );
-	glBufferData ( GL_ARRAY_BUFFER , primary_list_of_normals.size ( ) * sizeof ( primary_list_of_normals[0] ) , &primary_list_of_normals[0] , GL_DYNAMIC_DRAW );
+	glBufferData ( GL_ARRAY_BUFFER , secondary_list_of_normals.size( ) * sizeof(secondary_list_of_normals[0]) , 0 , GL_STATIC_DRAW );
 	// Vertex Array : Set up generic attributes pointers
 	glEnableVertexAttribArray ( primary_normal_location );
 	glVertexAttribPointer ( primary_normal_location , 3 , GL_DOUBLE , GL_FALSE , 0 , 0 );
 
 	glBindBuffer ( GL_ARRAY_BUFFER , primary_color_buffer );
-	glBufferData ( GL_ARRAY_BUFFER , primary_list_of_colors.size ( ) * sizeof ( primary_list_of_colors[0] ) , &primary_list_of_colors[0] , GL_DYNAMIC_DRAW );
+	glBufferData ( GL_ARRAY_BUFFER , secondary_list_of_colors.size( ) * sizeof(secondary_list_of_colors[0]) ,0 , GL_STATIC_DRAW );
 	// Vertex Array : Set up generic attributes pointers
 	glEnableVertexAttribArray ( primary_color_location );
 	glVertexAttribPointer ( primary_color_location , 4 , GL_FLOAT , GL_FALSE , 0 , 0 );
 
+	glBindBuffer ( GL_ARRAY_BUFFER , primary_renderFlag_buffer );
+	glBufferData ( GL_ARRAY_BUFFER , primary_list_of_renderFlag.size( ) * sizeof(primary_list_of_renderFlag[0]) ,0 , GL_STATIC_DRAW );
+	// Vertex Array : Set up generic attributes pointers
+	glEnableVertexAttribArray ( primary_renderFlag_location );
+	glVertexAttribPointer ( primary_renderFlag_location , 1 , GL_FLOAT , GL_FALSE , 0 , 0 );
+
 	glBindBuffer ( GL_ELEMENT_ARRAY_BUFFER , primary_indices_buffer );
-	glBufferData ( GL_ELEMENT_ARRAY_BUFFER , primary_list_of_indices.size ( ) * sizeof ( primary_list_of_indices[0] ) , &primary_list_of_indices[0] , GL_DYNAMIC_DRAW );
+	glBufferData ( GL_ELEMENT_ARRAY_BUFFER , secondary_list_of_indices.size ( ) * sizeof ( secondary_list_of_indices[0] ) , &secondary_list_of_indices[0] , GL_STATIC_DRAW );
 
 
 	glBindBuffer ( GL_ARRAY_BUFFER , secondary_vertices_buffer );
-	glBufferData ( GL_ARRAY_BUFFER , secondary_list_of_vertices.size( ) * sizeof(secondary_list_of_vertices[0]) , &secondary_list_of_vertices[0] , GL_DYNAMIC_DRAW );
+	glBufferData ( GL_ARRAY_BUFFER , secondary_list_of_vertices.size( ) * sizeof(secondary_list_of_vertices[0]) , &secondary_list_of_vertices[0] , GL_STATIC_DRAW );
 	// Vertex Array : Set up generic attributes pointers
 	glEnableVertexAttribArray(secondary_vertices_location);
 	glVertexAttribPointer(secondary_vertices_location, 3, GL_DOUBLE, GL_FALSE, 0, 0);
 
 	glBindBuffer ( GL_ARRAY_BUFFER , secondary_normal_buffer );
-	glBufferData ( GL_ARRAY_BUFFER , secondary_list_of_normals.size( ) * sizeof(secondary_list_of_normals[0]) , &secondary_list_of_normals[0] , GL_DYNAMIC_DRAW );
+	glBufferData ( GL_ARRAY_BUFFER , secondary_list_of_normals.size( ) * sizeof(secondary_list_of_normals[0]) , &secondary_list_of_normals[0] , GL_STATIC_DRAW );
 	// Vertex Array : Set up generic attributes pointers
 	glEnableVertexAttribArray(secondary_normal_location);
 	glVertexAttribPointer(secondary_normal_location, 3, GL_DOUBLE, GL_FALSE, 0, 0);
 
 	glBindBuffer ( GL_ARRAY_BUFFER , secondary_color_buffer );
-	glBufferData ( GL_ARRAY_BUFFER, secondary_list_of_colors.size( ) * sizeof( secondary_list_of_colors[0] ), &secondary_list_of_colors[0], GL_DYNAMIC_DRAW);
+	glBufferData ( GL_ARRAY_BUFFER, secondary_list_of_colors.size( ) * sizeof( secondary_list_of_colors[0] ), &secondary_list_of_colors[0], GL_STATIC_DRAW);
 	// Vertex Array : Set up generic attributes pointers
 	glEnableVertexAttribArray(secondary_color_location);
 	glVertexAttribPointer(secondary_color_location, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
+	glBindBuffer ( GL_ARRAY_BUFFER , secondary_renderFlag_buffer );
+	glBufferData ( GL_ARRAY_BUFFER , secondary_list_of_renderFlag.size( ) * sizeof(secondary_list_of_renderFlag[0]) , &secondary_list_of_renderFlag[0] , GL_STATIC_DRAW );
+	// Vertex Array : Set up generic attributes pointers
+	glEnableVertexAttribArray ( secondary_renderFlag_location );
+	glVertexAttribPointer ( secondary_renderFlag_location , 1 , GL_FLOAT , GL_FALSE , 0 , 0 );
+
 	glBindBuffer ( GL_ELEMENT_ARRAY_BUFFER, secondary_indices_buffer );
-	glBufferData ( GL_ELEMENT_ARRAY_BUFFER , secondary_list_of_indices.size() * sizeof(secondary_list_of_indices[0]) , &secondary_list_of_indices[0] , GL_DYNAMIC_DRAW );
+	glBufferData ( GL_ELEMENT_ARRAY_BUFFER , secondary_list_of_indices.size() * sizeof(secondary_list_of_indices[0]) , &secondary_list_of_indices[0] , GL_STATIC_DRAW );
 
 
 
 	glBindBuffer ( GL_ARRAY_BUFFER , screen_buffer );
-	glBufferData ( GL_ARRAY_BUFFER, 12 *  sizeof( openGLScreenCoordinates[0] ), openGLScreenCoordinates, GL_DYNAMIC_DRAW);
+	glBufferData ( GL_ARRAY_BUFFER, 12 *  sizeof( openGLScreenCoordinates[0] ), openGLScreenCoordinates, GL_STATIC_DRAW);
 	// Vertex Array : Set up generic attributes pointers
 	glEnableVertexAttribArray(6);
 	glVertexAttribPointer(6, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
 	glBindBuffer ( GL_ARRAY_BUFFER , texture_buffer );
-	glBufferData ( GL_ARRAY_BUFFER, 12 * sizeof( textureCoordinates[0] ), textureCoordinates , GL_DYNAMIC_DRAW);
+	glBufferData ( GL_ARRAY_BUFFER, 12 * sizeof( textureCoordinates[0] ), textureCoordinates , GL_STATIC_DRAW);
 	// Vertex Array : Set up generic attributes pointers
 	glEnableVertexAttribArray(7);
 	glVertexAttribPointer(7, 2, GL_FLOAT, GL_FALSE, 0, 0);
@@ -832,6 +960,9 @@ void GLWidget::resizeGL ( int width , int height )
 /// Real Looping
 void GLWidget::paintGL ( )
 {
+
+	glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+	glClearColor ( 0.0 , 0.0 , 0.0 , 1.0 );
 	//TridimensionalSetUp ( );
 	cutawaySetup ( );
 
@@ -842,19 +973,21 @@ void GLWidget::cutawaySetup ( )
 
 	int i = 1;
 
- 	if ( ires_has_been_open_sucessefully && ( draw_primary ) && ( draw_secondary ) )
+
+	camera_.setViewByMouse ( );
+
+	if ( buttonRelease_ )
 	{
+		processMultiKeys ( );
+	}
+
+	camera_.computerViewMatrix ( );
+
+	camera_.setPerspectiveProjectionMatrix ( zoom_angle_ , camera_.aspectRatio ( ) , 1.0 , 1000.0 * box.diagonal ( ) );
 
 
- 		camera_.setViewByMouse ( );
-
- 		if ( buttonRelease_ )
- 		{
- 			processMultiKeys ( );
- 		}
-
- 		camera_.computerViewMatrix( );
-
+	if ( ires_has_been_open_sucessefully  )
+	{
 
  		jumpFloodInitialization.active ( );
 
@@ -864,8 +997,6 @@ void GLWidget::cutawaySetup ( )
 		glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
 		//glUniform3fv( jumpFloodInitialization.uniforms_["lightDirection"].location,0,camera_.position());
-
-		camera_.setPerspectiveProjectionMatrix ( zoom_angle_ , camera_.aspectRatio ( ) , 1.0 , 1000.0*box.diagonal() );
 
 		glUniformMatrix4fv ( jumpFloodInitialization.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
 		glUniformMatrix4fv ( jumpFloodInitialization.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix()  );
@@ -886,6 +1017,60 @@ void GLWidget::cutawaySetup ( )
 
 
 
+//		JumpFloodingStep->bind ( );
+//
+//		JumpFloodingStep->setUniformValue ( "viewport" , (float)width ( ) , (float)height ( ) );
+//
+//		pm_sz = ( camera_.nearPlane ( ) + camera_.farPlane ( ) ) / ( camera_.nearPlane ( ) - camera_.farPlane ( ) );
+//
+//		glMatrixMode ( GL_PROJECTION );
+//		glPushMatrix ( );
+//		glLoadIdentity ( );
+//
+//		camera_.setOrthographicProjectionMatrix ( 0.0 , GLfloat ( width ( ) ) , 0.0 , GLfloat ( height ( ) ) , -100.0 , 100.0 );
+//
+//		glMultMatrixf ( ( ~camera_.orthographicProjectionMatrix ( ) ) );
+//
+//		while ( !ExitLoop )
+//		{
+//			i = ( i + 1 ) % 2;
+//			fboStep[i]->bind ( );
+//			glActiveTexture ( GL_TEXTURE0 );
+//			glEnable ( GL_TEXTURE_RECTANGLE );
+//			glBindTexture ( GL_TEXTURE_RECTANGLE , fboStep[ ( i + 1 ) % 2]->texture ( ) );
+//
+//			JumpFloodingStep->setUniformValue ( "pm_sz" , pm_sz );
+//			JumpFloodingStep->setUniformValue ( "theta" , angle );
+//			JumpFloodingStep->setUniformValue ( "stepSize" , stepSize );
+//
+//			glClearColor ( 0.0 , 1.0 , 0.0 , 1.0 );
+//			glClear ( GL_COLOR_BUFFER_BIT );
+//
+//			glBegin ( GL_QUADS );
+//			glTexCoord2f ( 0.0 , 0.0 );
+//			glVertex2f ( 0.0 , 0.0 );
+//			glTexCoord2f ( width ( ) , 0.0 );
+//			glVertex2f ( width ( ) , 0.0 );
+//			glTexCoord2f ( width ( ) , height ( ) );
+//			glVertex2f ( width ( ) , height ( ) );
+//			glTexCoord2f ( 0.0 , height ( ) );
+//			glVertex2f ( 0.0 , height ( ) );
+//			glEnd ( );
+//			glFlush ( );
+////			QImage im = fboStep[i]->toImage ( );
+////			im.save ( QString ( "segundoPasso" ) + QString::number ( stepSize ) + QString ( ".png" ) );
+//			stepSize *= 0.5;
+//			if ( stepSize < 1 )
+//				ExitLoop = true;
+//			glDisable ( GL_TEXTURE_RECTANGLE );
+//			fboStep[i]->release ( );
+//		}
+//
+//
+//		JumpFloodingStep->release ( );
+
+
+
 		jumpFloodingStep.active( );
 
 
@@ -893,7 +1078,8 @@ void GLWidget::cutawaySetup ( )
 
 		pm_sz = ( camera_.nearPlane ( ) + camera_.farPlane ( ) ) / ( camera_.nearPlane ( ) - camera_.farPlane ( ) );
 
-		camera_.setOrthographicProjectionMatrix( 0.0f, (float)width() , 0.0f, (float)height(), -1.0, 1.0 );
+
+		camera_.setOrthographicProjectionMatrix ( 0.0 , GLfloat ( width ( ) ) , 0.0 , GLfloat ( height ( ) ) , -100.0 , 100.0 );
 
 		while ( !ExitLoop )
 		{
@@ -910,7 +1096,7 @@ void GLWidget::cutawaySetup ( )
 			glUniform1i ( jumpFloodingStep.uniforms_["stepSize"].location,stepSize );
 			glUniformMatrix4fv ( jumpFloodingStep.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.orthographicProjectionMatrix() );
 
-			glClearColor ( 1.0 , 0.0 , 0.0 , 1.0 );
+			glClearColor ( 0.0 , 0.0 , 0.0 , 1.0 );
 			glClear ( GL_COLOR_BUFFER_BIT );
 
 			glDrawArrays(GL_TRIANGLES, 0, 6);
@@ -943,47 +1129,64 @@ void GLWidget::cutawaySetup ( )
 //		textureViewer.deactive();
 //		glDisable ( GL_TEXTURE_RECTANGLE );
 
+		if ( draw_secondary && (secondary_list_of_vertices.size ( ) != 0) )
+		{
+			cutawayWireframe.active ( );
 
- 		cutaway.active ( );
+			glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
+			glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-		glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
-		glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+			glActiveTexture ( GL_TEXTURE0 );
+			glEnable ( GL_TEXTURE_RECTANGLE );
+			glBindTexture ( GL_TEXTURE_RECTANGLE , fboStep[i]->texture ( ) );
 
-		glActiveTexture ( GL_TEXTURE0 );
-		glEnable ( GL_TEXTURE_RECTANGLE );
-		glBindTexture( GL_TEXTURE_RECTANGLE , fboStep[i]->texture());
+			glUniform3fv ( cutawayWireframe.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
 
-		glUniform3fv( cutaway.uniforms_["lightDirection"].location,0,camera_.position());
+			glUniform2f ( cutawayWireframe.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
+			glUniform1i ( cutawayWireframe.uniforms_["cutaway"].location , 1 );
+			glUniformMatrix4fv ( cutawayWireframe.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+			glUniformMatrix4fv ( cutawayWireframe.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
 
-		camera_.setPerspectiveProjectionMatrix ( zoom_angle_ , camera_.aspectRatio ( ) , 1.0 , 100.0*box.diagonal() );
+			//VAO
 
-		glUniformMatrix4fv ( cutaway.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-		glUniformMatrix4fv ( cutaway.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix()  );
+			glDrawArrays ( GL_TRIANGLES , 0 , secondary_list_of_vertices.size ( ) );
 
-		//VAO
+			glDisable ( GL_TEXTURE_RECTANGLE );
 
-		glDrawArrays( GL_TRIANGLES , 0, secondary_list_of_vertices.size());
+			cutawayWireframe.deactive ( );
+		}
 
+		if ( draw_primary && ( primary_list_of_vertices.size ( ) != 0 ) )
+		{
+			primary.active ( );
 
-		cutaway.deactive ( );
-		glDisable ( GL_TEXTURE_RECTANGLE );
+			glUniformMatrix4fv ( primary.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+			glUniformMatrix4fv ( primary.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
 
- 		primary.active ( );
+			glDrawArrays ( GL_TRIANGLES , 0 , primary_list_of_vertices.size ( ) );
 
-
-		camera_.setPerspectiveProjectionMatrix ( zoom_angle_ , camera_.aspectRatio ( ) , 1.0 , 1000.0*box.diagonal() );
-
-		glUniformMatrix4fv ( primary.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-		glUniformMatrix4fv ( primary.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix()  );
-
-		//VAO
-
-		glDrawArrays( GL_TRIANGLES , 0, primary_list_of_vertices.size());
-
-		primary.deactive ( );
-
+			primary.deactive ( );
+		}
 
 	}
+//	else if ( ires_has_been_open_sucessefully )
+//	{
+//
+//		cutawayWireframe.active ( );
+//
+//		glUniform3fv ( cutawayWireframe.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
+//
+//		glUniform2f ( cutawayWireframe.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
+//		glUniform1i ( cutawayWireframe.uniforms_["cutaway"].location , 0 );
+//
+//		glUniformMatrix4fv ( cutawayWireframe.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+//		glUniformMatrix4fv ( cutawayWireframe.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+//
+//		glDrawArrays ( GL_TRIANGLES , 0 , secondary_list_of_vertices.size ( ) );
+//
+//		cutawayWireframe.deactive ( );
+//
+//	}
 
 }
 
@@ -1007,36 +1210,38 @@ void GLWidget::TridimensionalSetUp ( )
  	if ( ires_has_been_open_sucessefully )
 	{
 
-		if ( draw_secondary )
-		{
+//		if ( draw_secondary )
+//		{
+//
+ 			cutawayWireframe.active ( );
 
-			secondary.active ( );
+			glUniform3fv ( cutawayWireframe.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
 
-			glUniform3fv ( secondary.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
+			glUniform2f ( cutawayWireframe.uniforms_["WIN_SCALE"].location , (float)width(), (float)height() );
 
-			glUniformMatrix4fv ( secondary.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-			glUniformMatrix4fv ( secondary.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+			glUniformMatrix4fv ( cutawayWireframe.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+			glUniformMatrix4fv ( cutawayWireframe.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
 
-			glDrawArrays ( GL_TRIANGLES , 0 , secondary_list_of_vertices.size ( ) );
+			glDrawArrays ( GL_TRIANGLES , 0 , secondary_list_of_vertices.size() );
 
-			secondary.deactive ( );
-
-		}
-		if ( draw_primary )
-		{
-
-			primary.active ( );
-
-			glUniform3fv ( primary.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
-
-			glUniformMatrix4fv ( primary.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-			glUniformMatrix4fv ( primary.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
-
-			glDrawArrays ( GL_TRIANGLES , 0 , primary_list_of_vertices.size ( ) );
-
-			primary.deactive ( );
-
-		}
+			cutawayWireframe.deactive ( );
+//
+//		}
+//		if ( draw_primary )
+//		{
+//
+//			primary.active ( );
+//
+//			glUniform3fv ( primary.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
+//
+//			glUniformMatrix4fv ( primary.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+//			glUniformMatrix4fv ( primary.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+//
+//			glDrawArrays ( GL_TRIANGLES , 0 , primary_list_of_vertices.size ( ) );
+//
+//			primary.deactive ( );
+//
+//		}
 		
 	}
 
@@ -1075,15 +1280,70 @@ void GLWidget::LoadShaders ( )
 
 	cutaway.create((shadersDir.path ()+"/share/Shaders/Cutaway.vert").toStdString(),(shadersDir.path ()+"/share/Shaders/Cutaway.frag").toStdString());
 
+	cutawayWireframe.create((shadersDir.path ()+"/share/Shaders/CutawayWireframe.vert").toStdString(), (shadersDir.path ()+"/share/Shaders/CutawayWireframe.geom").toStdString(),(shadersDir.path ()+"/share/Shaders/CutawayWireframe.frag").toStdString());
+
 	jumpFloodInitialization.create( (shadersDir.path ()+"/share/Shaders/JFAInitializing.vert").toStdString(),(shadersDir.path ()+"/share/Shaders/JFAInitializing.frag").toStdString());
 
-	jumpFloodingStep.create( (shadersDir.path ()+"/share/Shaders/JFAStep.vert").toStdString(),(shadersDir.path ()+"/share/Shaders/JFAStep.frag").toStdString());
+	jumpFloodingStep.create( (shadersDir.path ()+"/share/Shaders/JFAStep430.vert").toStdString(),(shadersDir.path ()+"/share/Shaders/JFAStep430.frag").toStdString());
 
 //	if ( ires_has_been_open_sucessefully )
 //	{
 //		QImage im = fboStep[1]->toImage ( );
 //		im.save ( QString ( "segundoPasso.png" ) );
 //	}
+
+
+	if ( JumpFloodingStep )
+	{
+		JumpFloodingStep->release ( );
+		JumpFloodingStep->removeAllShaders ( );
+	}
+	else
+		JumpFloodingStep = new QGLShaderProgram;
+
+	if ( VertexShaderStep )
+	{
+		delete VertexShaderStep;
+		VertexShaderStep = NULL;
+	}
+
+	if ( FragmentShaderStep )
+	{
+		delete FragmentShaderStep;
+		FragmentShaderStep = NULL;
+	}
+
+	// load and compile vertex shader
+	QFileInfo vsh = QFileInfo ( shadersDir.path ( ) + "/share/Shaders/JFAStep.vert" );
+	if ( vsh.exists ( ) )
+	{
+		VertexShaderStep = new QGLShader ( QGLShader::Vertex );
+		if ( VertexShaderStep->compileSourceFile ( shadersDir.path ( ) + "/share/Shaders/JFAStep.vert" ) )
+			JumpFloodingStep->addShader ( VertexShaderStep );
+		else
+			qWarning ( ) << "Vertex Shader Error JFAStep.vert" << VertexShaderStep->log ( );
+	}
+	else
+		qWarning ( ) << "Vertex Shader source file JFAStep" << shadersDir.path ( ) + "/share/Shaders/JFAStep.vert" << " not found.";
+
+	// load and compile fragment shader
+	QFileInfo fsh = QFileInfo ( shadersDir.path ( ) + "/share/Shaders/JFAStep.frag" );
+	if ( fsh.exists ( ) )
+	{
+		FragmentShaderStep = new QGLShader ( QGLShader::Fragment );
+		if ( FragmentShaderStep->compileSourceFile ( shadersDir.path ( ) + "/share/Shaders/JFAStep.frag" ) )
+			JumpFloodingStep->addShader ( FragmentShaderStep );
+		else
+			qWarning ( ) << "Fragment Shader Error JFAStep.frag " << FragmentShaderStep->log ( );
+	}
+	else
+		qWarning ( ) << "Fragment Shader source file JFAStep " << shadersDir.path ( ) + "/share/Shaders/JFAStep.frag" << " not found.";
+
+	if ( !JumpFloodingStep->link ( ) )
+	{
+		qWarning ( ) << "Shader Program Linker Error JFAStep" << JumpFloodingStep->log ( );
+	}
+
 
 }
 
@@ -1164,6 +1424,8 @@ void GLWidget::keyPressEvent ( QKeyEvent * event )
 	{
 		drawSecondary();
 	}
+
+	updateGL();
 }
 
 void GLWidget::keyReleaseEvent ( QKeyEvent * event )
@@ -1187,6 +1449,7 @@ void GLWidget::mousePressEvent ( QMouseEvent *event )
 		{
 			lastPos = event->pos ( );
 		}
+		updateGL();
 
 }
 
@@ -1230,6 +1493,7 @@ void GLWidget::mouseMoveEvent ( QMouseEvent *event )
 		 */
 		QCursor::setPos ( mapToGlobal ( QPoint ( static_cast<int> ( centerX_ ) , static_cast<int> ( centerY_ ) ) ) );
 	}
+	updateGL();
 
 }
 
@@ -1248,6 +1512,7 @@ void GLWidget::wheelEvent ( QWheelEvent *event )
 		qDebug ( ) << scrollStep_;
 	}
 
+	updateGL();
 }
 
 void GLWidget::dragEnterEvent(QDragEnterEvent *event)

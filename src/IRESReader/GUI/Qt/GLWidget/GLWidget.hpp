@@ -19,6 +19,7 @@
 
 #include <QtOpenGL/QGLWidget>
 #include <QGLFramebufferObject>
+#include <QGLShaderProgram>
 
 #include <QtGui/QMdiSubWindow>
 #include <QtCore/QTimer>
@@ -113,6 +114,8 @@ private:
 		GLuint primary_normal_location;
 		GLuint primary_color_buffer;
 		GLuint primary_color_location;
+		GLuint primary_renderFlag_buffer;
+		GLuint primary_renderFlag_location;
 		GLuint primary_indices_buffer;
 		//Secundary Attributes
 		GLuint secondary_vertices_buffer;
@@ -121,6 +124,8 @@ private:
 		GLuint secondary_normal_location;
 		GLuint secondary_color_buffer;
 		GLuint secondary_color_location;
+		GLuint secondary_renderFlag_buffer;
+		GLuint secondary_renderFlag_location;
 		GLuint secondary_indices_buffer;
 
 	bool draw_secondary;
@@ -132,12 +137,14 @@ private:
 	std::vector<Celer::Vector3<GLdouble> > 	secondary_list_of_normals;
 	std::vector<Celer::Vector3<GLdouble> > 	secondary_list_of_vertices;
 	std::vector<Celer::Vector4<GLfloat> >   secondary_list_of_colors;
+	std::vector<GLfloat>    		secondary_list_of_renderFlag;
 
 
 	std::vector<int> 			primary_list_of_indices;
 	std::vector<Celer::Vector3<GLdouble> > 	primary_list_of_normals;
 	std::vector<Celer::Vector3<GLdouble> > 	primary_list_of_vertices;
 	std::vector<Celer::Vector4<GLfloat> >   primary_list_of_colors;
+	std::vector<GLfloat>    		primary_list_of_renderFlag;
 
 
 	Celer::BoundingBox3<double> 		box;
@@ -155,10 +162,14 @@ private:
 	Celer::OpenGL::ShaderManager	jumpFloodingStep;
 
 
+	QGLShaderProgram *JumpFloodingStep;
+	QGLShader *VertexShaderStep, *FragmentShaderStep;
+
 
 	Celer::OpenGL::ShaderManager	primary;
 	Celer::OpenGL::ShaderManager	secondary;
 	Celer::OpenGL::ShaderManager	cutaway;
+	Celer::OpenGL::ShaderManager	cutawayWireframe;
 
 	QImage fbo;
 	float angle;

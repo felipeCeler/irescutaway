@@ -13,7 +13,7 @@ layout (location = 5 ) in vec4 colors;
 
 out vec3 vert;
 out vec3 normal;
-out vec4 color;
+out vec4 propertyColor;
 
 
 void main()
@@ -26,7 +26,7 @@ void main()
 
 	normal = normalize(normalMatrix * normals);
 
-	color = colors;
+	propertyColor = colors;
 
 	gl_Position = ProjectionMatrix * ViewMatrix * vec4(vertices,1.0);
 

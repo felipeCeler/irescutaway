@@ -2,17 +2,12 @@
 #extension GL_ARB_texture_rectangle : enable
 
 uniform sampler2DRect primary;
-
+uniform int stepSize;
 uniform vec2 viewport;
 
-
-uniform int stepSize;
 uniform float pm_sz;
 uniform float theta;
 
-in vec2 texCoord;
-
-out vec4 fragmentColor;
 /*
  * Jumping Order
  *   ----------------------
@@ -53,10 +48,18 @@ void main()
 	float distance			 = 0.0;
 	float min_distance	 	 = 0.0;
 	vec2  vector			 = vec2(0.0);
-
-
+	
+//	vec4 color0 = texture2DRect ( primary, vec2(gl_FragCoord.s    	   ,gl_FragCoord.t+stepSize  )).rgba;
+//	vec4 color1 = texture2DRect ( primary, vec2(gl_FragCoord.s-stepSize,gl_FragCoord.t+stepSize ) ).rgba;
+//	vec4 color2 = texture2DRect ( primary, vec2(gl_FragCoord.s-stepSize,gl_FragCoord.t  	    ) ).rgba;
+//	vec4 color3 = texture2DRect ( primary, vec2(gl_FragCoord.s-stepSize,gl_FragCoord.t-stepSize ) ).rgba;
+//	vec4 color4 = texture2DRect ( primary, vec2(gl_FragCoord.s    	   ,gl_FragCoord.t-stepSize ) ).rgba;
+//	vec4 color5 = texture2DRect ( primary, vec2(gl_FragCoord.s+stepSize,gl_FragCoord.t-stepSize ) ).rgba;
+//	vec4 color6 = texture2DRect ( primary, vec2(gl_FragCoord.s+stepSize,gl_FragCoord.t+stepSize ) ).rgba;
+//	vec4 color7 = texture2DRect ( primary, vec2(gl_FragCoord.s+stepSize,gl_FragCoord.t+stepSize ) ).rgba;
+	
 	vec2 current_position = gl_FragCoord.xy;
-
+	 
 	// Compute a criterion value using the information of neighbor0
 	if (gl_FragCoord.t+stepSize < viewport.y)
 	{
@@ -131,7 +134,7 @@ void main()
 			NearestCoord = neighborInformation.xyz;
 		}
 	}
-
+	
 	// Compute a criterion value using the information of neighbor4
 	if ( (gl_FragCoord.t-stepSize >= 0) )
 	{
@@ -197,7 +200,10 @@ void main()
 	if (min_distance <= 0.0)
 		discard;
 
-	fragmentColor = vec4(NearestCoord.xyz,distance);
-
+//	if (stepSize == 400)
+//		gl_FragData[0] = vec4(distance,distance,distance,1.0);
+//	else
+	gl_FragData[0] = vec4(NearestCoord.xyz,min_distance);
+	//gl_FragColor = vec4(0.0,0.0,1.0,1.0);
 
 }

@@ -8,6 +8,7 @@ uniform vec3 lightDirection;
 
 in vec3 vert;
 in vec3 normal;
+in vec4 propertyColor;
 
 out vec4 fragmentColor;
 
@@ -56,6 +57,7 @@ void main(void)
 	   vec4 ls =  color_t*0.4 * pow(max( 0.0,dot(eye_dir, ref)), 5.0);
 
 	   fragmentColor = vec4(la.rgb+ld.xyz+ls.rgb, 1.0);
+	   //fragmentColor = propertyColor;
 
 
    }
