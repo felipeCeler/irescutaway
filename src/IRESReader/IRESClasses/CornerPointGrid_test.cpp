@@ -532,10 +532,9 @@ class Ires
 
 
 				std::vector<int> indices;
-				indices.clear();
-				blocks.clear();
+				indices.clear ( );
+				blocks.clear ( );
 				indices.resize( header_.number_of_Blocks_Doubles );
-
 
 				inFile.read ( (char*) &indices[0] , sizeof(int) * header_.number_of_Blocks_Doubles );
 
@@ -545,8 +544,9 @@ class Ires
 						continue;
 					blocks.push_back( indices[block_index] );
 				}
-//
+				//
 				std::cout << " Size of indices : " << indices.size( ) << " | "<<blocks.size( ) << std::endl;
+				//
 
 				// Copying Dynamic Properties for each Time Step.
 

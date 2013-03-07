@@ -2,7 +2,6 @@
 #define _MYMAINWINDOW_
 
 #include <QtGui/QtGui>
-
 #include <QMessageBox>
 
 #include "ui_IRESReader.h"

@@ -951,6 +951,40 @@ void GLWidget::resizeGL ( int width , int height )
 	fboStep[0] = new QGLFramebufferObject ( width , height , format );
 	fboStep[1] = new QGLFramebufferObject ( width , height , format );
 	fboInitialization = new QGLFramebufferObject ( width , height , format );
+
+
+
+	GLfloat openGLScreenCoordinates[] =
+	{
+                       0.0f, (float) height ,
+          (float) width , (float) height ,
+          (float) width , 0.0f,
+
+	  (float) width , 0.0f,
+	               0.0f, 0.0f,
+	               0.0f, (float) height  };
+
+	GLfloat textureCoordinates[] =
+	{
+		0.0f,  0.0f,
+		0.0f,  1.0f,
+		1.0f,  0.0f,
+
+		0.0f,  1.0f,
+		1.0f,  1.0f,
+		1.0f,  0.0f,
+	};
+
+
+	glBindBuffer ( GL_ARRAY_BUFFER , screen_buffer );
+	glBufferData ( GL_ARRAY_BUFFER, 12 *  sizeof( openGLScreenCoordinates[0] ), openGLScreenCoordinates, GL_STATIC_DRAW);
+	// Vertex Array : Set up generic attributes pointers
+
+	glBindBuffer ( GL_ARRAY_BUFFER , texture_buffer );
+	glBufferData ( GL_ARRAY_BUFFER, 12 * sizeof( textureCoordinates[0] ), textureCoordinates , GL_STATIC_DRAW);
+	// Vertex Array : Set up generic attributes pointers
+
+
 }
 
 /// For DropArea's implementation, we clear invoke clear() and then accept the proposed event.

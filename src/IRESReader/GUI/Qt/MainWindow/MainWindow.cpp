@@ -19,7 +19,12 @@ MainWindow::MainWindow ( QMainWindow *parent ) :
 
 	setupUi ( this );
 	this->glWidget = new GLWidget ( this );
-	this->setCentralWidget ( glWidget );
+	//this->setCentralWidget ( glWidget );
+
+	tabWidget_->clear ( );
+
+	tabWidget_->addTab ( glWidget , "Viewer" );
+
 
 	QIcon icon;
 	icon.addFile ( ":/Icons/caju.png" , QSize ( ) , QIcon::Normal , QIcon::Off );
@@ -30,6 +35,8 @@ MainWindow::MainWindow ( QMainWindow *parent ) :
 	connect(this->comboBox_choose_an_property_, SIGNAL(activated(int)), this, SLOT(updateDoubleSpinMax(int)));
 	// Just the name of the function: so changeProperty , not glWidget->changeProperty
 	connect(this->comboBox_choose_an_property_, SIGNAL(activated(int)), this->glWidget, SLOT(changeProperty(int)));
+
+
 
 }
 

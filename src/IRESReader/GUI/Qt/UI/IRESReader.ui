@@ -26,11 +26,40 @@
    <bool>false</bool>
   </property>
   <widget class="QWidget" name="central_widget_">
-   <layout class="QFormLayout" name="formLayout">
-    <property name="fieldGrowthPolicy">
-     <enum>QFormLayout::ExpandingFieldsGrow</enum>
-    </property>
-    <item row="3" column="0" colspan="2">
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <widget class="QTabWidget" name="tabWidget_">
+      <property name="tabPosition">
+       <enum>QTabWidget::South</enum>
+      </property>
+      <property name="tabShape">
+       <enum>QTabWidget::Rounded</enum>
+      </property>
+      <property name="currentIndex">
+       <number>0</number>
+      </property>
+      <property name="documentMode">
+       <bool>true</bool>
+      </property>
+      <property name="tabsClosable">
+       <bool>false</bool>
+      </property>
+      <property name="movable">
+       <bool>false</bool>
+      </property>
+      <widget class="QWidget" name="viewer_">
+       <attribute name="title">
+        <string>Viewer</string>
+       </attribute>
+      </widget>
+      <widget class="QWidget" name="properties">
+       <attribute name="title">
+        <string>Properties</string>
+       </attribute>
+      </widget>
+     </widget>
+    </item>
+    <item>
      <widget class="QWidget" name="widget_" native="true">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
