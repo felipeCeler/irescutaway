@@ -88,7 +88,7 @@ void GLWidget::initializeGL ( )
 		glGenBuffers ( 1, &primary_normal_buffer );
 		glGenBuffers ( 1, &primary_color_buffer );
 		glGenBuffers ( 1, &primary_renderFlag_buffer);
-		glGenBuffers ( 1 , &primary_indices_buffer);
+		glGenBuffers ( 1, &primary_indices_buffer);
 
 		glGenBuffers ( 1, &secondary_vertices_buffer );
 		glGenBuffers ( 1, &secondary_normal_buffer );
@@ -98,8 +98,6 @@ void GLWidget::initializeGL ( )
 
 		glGenBuffers ( 1, &screen_buffer);
 		glGenBuffers ( 1, &texture_buffer);
-
-
 	glBindVertexArray(vertexArray);
 
 	primary_vertices_location = 0;
@@ -643,147 +641,149 @@ void GLWidget::openIRES ( const std::string& filename )
 
 	for ( int i = 0; i < ires_cornerPoint_test_.blocks.size( ); i+=8 )
 	{
-		int index [] =
+		if ( ires_cornerPoint_test_.blocks[i] != -1)
 		{
-		    // Top Face
-		    ires_cornerPoint_test_.blocks[i+0],ires_cornerPoint_test_.blocks[i+3],ires_cornerPoint_test_.blocks[i+2],/* 0 - 5*/
-		    ires_cornerPoint_test_.blocks[i+2],ires_cornerPoint_test_.blocks[i+1],ires_cornerPoint_test_.blocks[i+0],
-		    // Bottom Face
-		    ires_cornerPoint_test_.blocks[i+4],ires_cornerPoint_test_.blocks[i+7],ires_cornerPoint_test_.blocks[i+6],/* 6 - 11 */
-		    ires_cornerPoint_test_.blocks[i+6],ires_cornerPoint_test_.blocks[i+5],ires_cornerPoint_test_.blocks[i+4],
-		    // Front Face
-		    ires_cornerPoint_test_.blocks[i+0],ires_cornerPoint_test_.blocks[i+3],ires_cornerPoint_test_.blocks[i+7],/* 12 - 17*/
-		    ires_cornerPoint_test_.blocks[i+7],ires_cornerPoint_test_.blocks[i+3],ires_cornerPoint_test_.blocks[i+4],
-		    // Back Face
-		    ires_cornerPoint_test_.blocks[i+1],ires_cornerPoint_test_.blocks[i+2],ires_cornerPoint_test_.blocks[i+5],/* 18 - 23*/
-		    ires_cornerPoint_test_.blocks[i+5],ires_cornerPoint_test_.blocks[i+6],ires_cornerPoint_test_.blocks[i+1],
-		    // Right Face
-		    ires_cornerPoint_test_.blocks[i+0],ires_cornerPoint_test_.blocks[i+1],ires_cornerPoint_test_.blocks[i+6],/*24 - 29*/
-		    ires_cornerPoint_test_.blocks[i+6],ires_cornerPoint_test_.blocks[i+7],ires_cornerPoint_test_.blocks[i+0],
-		    // Left Face
-		    ires_cornerPoint_test_.blocks[i+2],ires_cornerPoint_test_.blocks[i+3],ires_cornerPoint_test_.blocks[i+4],/*30 - 35*/
-		    ires_cornerPoint_test_.blocks[i+4],ires_cornerPoint_test_.blocks[i+5],ires_cornerPoint_test_.blocks[i+2],
-		};
+			int index [] =
+			{
+			    // Top Face
+			    ires_cornerPoint_test_.blocks[i+0],ires_cornerPoint_test_.blocks[i+3],ires_cornerPoint_test_.blocks[i+2],/* 0 - 5*/
+			    ires_cornerPoint_test_.blocks[i+2],ires_cornerPoint_test_.blocks[i+1],ires_cornerPoint_test_.blocks[i+0],
+			    // Bottom Face
+			    ires_cornerPoint_test_.blocks[i+4],ires_cornerPoint_test_.blocks[i+7],ires_cornerPoint_test_.blocks[i+6],/* 6 - 11 */
+			    ires_cornerPoint_test_.blocks[i+6],ires_cornerPoint_test_.blocks[i+5],ires_cornerPoint_test_.blocks[i+4],
+			    // Front Face
+			    ires_cornerPoint_test_.blocks[i+0],ires_cornerPoint_test_.blocks[i+3],ires_cornerPoint_test_.blocks[i+7],/* 12 - 17*/
+			    ires_cornerPoint_test_.blocks[i+7],ires_cornerPoint_test_.blocks[i+3],ires_cornerPoint_test_.blocks[i+4],
+			    // Back Face
+			    ires_cornerPoint_test_.blocks[i+1],ires_cornerPoint_test_.blocks[i+2],ires_cornerPoint_test_.blocks[i+5],/* 18 - 23*/
+			    ires_cornerPoint_test_.blocks[i+5],ires_cornerPoint_test_.blocks[i+6],ires_cornerPoint_test_.blocks[i+1],
+			    // Right Face
+			    ires_cornerPoint_test_.blocks[i+0],ires_cornerPoint_test_.blocks[i+1],ires_cornerPoint_test_.blocks[i+6],/*24 - 29*/
+			    ires_cornerPoint_test_.blocks[i+6],ires_cornerPoint_test_.blocks[i+7],ires_cornerPoint_test_.blocks[i+0],
+			    // Left Face
+			    ires_cornerPoint_test_.blocks[i+2],ires_cornerPoint_test_.blocks[i+3],ires_cornerPoint_test_.blocks[i+4],/*30 - 35*/
+			    ires_cornerPoint_test_.blocks[i+4],ires_cornerPoint_test_.blocks[i+5],ires_cornerPoint_test_.blocks[i+2],
+			};
 
-		Celer::Vector3<double> vertices [] =
-		{
-		    // Top Face
-		    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[0]]),
-		    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[1]]),
-		    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[2]]),
-		    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[3]]),
-		    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[4]]),
-		    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[5]]),
-		    // Bottom Face
-		    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[6]]),
-		    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[7]]),
-		    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[8]]),
-		    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[9]]),
-		    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[10]]),
-		    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[11]]),
-		    // Bottom Face
-		    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[12]]),
-		    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[13]]),
-		    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[14]]),
-		    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[15]]),
-		    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[16]]),
-		    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[17]]),
-		    // Bottom Face
-		    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[18]]),
-		    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[19]]),
-		    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[20]]),
-		    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[21]]),
-		    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[22]]),
-		    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[23]]),
-		    // Bottom Face
-		    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[24]]),
-		    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[25]]),
-		    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[26]]),
-		    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[27]]),
-		    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[28]]),
-		    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[29]]),
-		    // Bottom Face
-		    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[30]]),
-		    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[31]]),
-		    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[32]]),
-		    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[33]]),
-		    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[34]]),
-		    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[35]])
+			Celer::Vector3<double> vertices [] =
+			{
+			    // Top Face
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[0]]),
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[1]]),
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[2]]),
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[3]]),
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[4]]),
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[5]]),
+			    // Bottom Face
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[6]]),
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[7]]),
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[8]]),
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[9]]),
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[10]]),
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[11]]),
+			    // Bottom Face
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[12]]),
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[13]]),
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[14]]),
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[15]]),
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[16]]),
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[17]]),
+			    // Bottom Face
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[18]]),
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[19]]),
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[20]]),
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[21]]),
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[22]]),
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[23]]),
+			    // Bottom Face
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[24]]),
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[25]]),
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[26]]),
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[27]]),
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[28]]),
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[29]]),
+			    // Bottom Face
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[30]]),
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[31]]),
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[32]]),
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[33]]),
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[34]]),
+			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[35]])
 
-	       };
+		       };
 
-		Celer::Vector3<double> top_face_normal = ( ires_cornerPoint_test_.vertices[index[0]] - ires_cornerPoint_test_.vertices[index[1]] ) ^ ( ires_cornerPoint_test_.vertices[index[0]] - ires_cornerPoint_test_.vertices[index[2]] );
-		top_face_normal.normalize ( );
+			Celer::Vector3<double> top_face_normal = ( ires_cornerPoint_test_.vertices[index[0]] - ires_cornerPoint_test_.vertices[index[1]] ) ^ ( ires_cornerPoint_test_.vertices[index[0]] - ires_cornerPoint_test_.vertices[index[2]] );
+			top_face_normal.normalize ( );
 
-		Celer::Vector3<double> bottom_face_normal = ( ires_cornerPoint_test_.vertices[index[6]] - ires_cornerPoint_test_.vertices[index[7]] )  ^ ( ires_cornerPoint_test_.vertices[index[6]] - ires_cornerPoint_test_.vertices[index[8]] );
-		bottom_face_normal.normalize ( );
+			Celer::Vector3<double> bottom_face_normal = ( ires_cornerPoint_test_.vertices[index[6]] - ires_cornerPoint_test_.vertices[index[7]] )  ^ ( ires_cornerPoint_test_.vertices[index[6]] - ires_cornerPoint_test_.vertices[index[8]] );
+			bottom_face_normal.normalize ( );
 
-		Celer::Vector3<double> front_face_normal = ( ires_cornerPoint_test_.vertices[index[12]] - ires_cornerPoint_test_.vertices[index[13]] )  ^ ( ires_cornerPoint_test_.vertices[index[12]] - ires_cornerPoint_test_.vertices[index[14]] );
-		front_face_normal.normalize ( );
+			Celer::Vector3<double> front_face_normal = ( ires_cornerPoint_test_.vertices[index[12]] - ires_cornerPoint_test_.vertices[index[13]] )  ^ ( ires_cornerPoint_test_.vertices[index[12]] - ires_cornerPoint_test_.vertices[index[14]] );
+			front_face_normal.normalize ( );
 
-		Celer::Vector3<double> back_face_normal = ( ires_cornerPoint_test_.vertices[index[18]] - ires_cornerPoint_test_.vertices[index[19]] ) ^ ( ires_cornerPoint_test_.vertices[index[18]] - ires_cornerPoint_test_.vertices[index[20]] );
-		back_face_normal.normalize ( );
+			Celer::Vector3<double> back_face_normal = ( ires_cornerPoint_test_.vertices[index[18]] - ires_cornerPoint_test_.vertices[index[19]] ) ^ ( ires_cornerPoint_test_.vertices[index[18]] - ires_cornerPoint_test_.vertices[index[20]] );
+			back_face_normal.normalize ( );
 
-		Celer::Vector3<double> right_face_normal = ( ires_cornerPoint_test_.vertices[index[24]] - ires_cornerPoint_test_.vertices[index[25]] ) ^ ( ires_cornerPoint_test_.vertices[index[24]] - ires_cornerPoint_test_.vertices[index[26]] );
-		right_face_normal.normalize ( );
+			Celer::Vector3<double> right_face_normal = ( ires_cornerPoint_test_.vertices[index[24]] - ires_cornerPoint_test_.vertices[index[25]] ) ^ ( ires_cornerPoint_test_.vertices[index[24]] - ires_cornerPoint_test_.vertices[index[26]] );
+			right_face_normal.normalize ( );
 
-		Celer::Vector3<double> left_face_normal = ( ires_cornerPoint_test_.vertices[index[30]] - ires_cornerPoint_test_.vertices[index[31]] ) ^ ( ires_cornerPoint_test_.vertices[index[30]] - ires_cornerPoint_test_.vertices[index[32]] );
-		left_face_normal.normalize ( );
+			Celer::Vector3<double> left_face_normal = ( ires_cornerPoint_test_.vertices[index[30]] - ires_cornerPoint_test_.vertices[index[31]] ) ^ ( ires_cornerPoint_test_.vertices[index[30]] - ires_cornerPoint_test_.vertices[index[32]] );
+			left_face_normal.normalize ( );
 
-		Celer::Vector3<double> normals [] =
-		{
-		    // Top Face
-		    top_face_normal,
-		    top_face_normal,
-		    top_face_normal,
-		    top_face_normal,
-		    top_face_normal,
-		    top_face_normal,
-		    // Bottom Face
-		    bottom_face_normal,
-		    bottom_face_normal,
-		    bottom_face_normal,
-		    bottom_face_normal,
-		    bottom_face_normal,
-		    bottom_face_normal,
-		    // Front Face
-		    front_face_normal,
-		    front_face_normal,
-		    front_face_normal,
-		    front_face_normal,
-		    front_face_normal,
-		    front_face_normal,
-		    // Back Face
-		    back_face_normal,
-		    back_face_normal,
-		    back_face_normal,
-		    back_face_normal,
-		    back_face_normal,
-		    back_face_normal,
-		    // Right Face
-		    right_face_normal,
-		    right_face_normal,
-		    right_face_normal,
-		    right_face_normal,
-		    right_face_normal,
-		    right_face_normal,
-		    // Left Face
-		    left_face_normal,
-		    left_face_normal,
-		    left_face_normal,
-		    left_face_normal,
-		    left_face_normal,
-		    left_face_normal
+			Celer::Vector3<double> normals [] =
+			{
+			    // Top Face
+			    top_face_normal,
+			    top_face_normal,
+			    top_face_normal,
+			    top_face_normal,
+			    top_face_normal,
+			    top_face_normal,
+			    // Bottom Face
+			    bottom_face_normal,
+			    bottom_face_normal,
+			    bottom_face_normal,
+			    bottom_face_normal,
+			    bottom_face_normal,
+			    bottom_face_normal,
+			    // Front Face
+			    front_face_normal,
+			    front_face_normal,
+			    front_face_normal,
+			    front_face_normal,
+			    front_face_normal,
+			    front_face_normal,
+			    // Back Face
+			    back_face_normal,
+			    back_face_normal,
+			    back_face_normal,
+			    back_face_normal,
+			    back_face_normal,
+			    back_face_normal,
+			    // Right Face
+			    right_face_normal,
+			    right_face_normal,
+			    right_face_normal,
+			    right_face_normal,
+			    right_face_normal,
+			    right_face_normal,
+			    // Left Face
+			    left_face_normal,
+			    left_face_normal,
+			    left_face_normal,
+			    left_face_normal,
+			    left_face_normal,
+			    left_face_normal
 
-	       };
+		       };
 
 
-		std::copy ( index , index + 36 , std::back_inserter ( secondary_list_of_indices ) );
-		std::copy ( vertices , vertices + 36 , std::back_inserter ( secondary_list_of_vertices ) );
-		std::copy ( normals , normals + 36 , std::back_inserter ( secondary_list_of_normals ) );
+			std::copy ( index , index + 36 , std::back_inserter ( secondary_list_of_indices ) );
+			std::copy ( vertices , vertices + 36 , std::back_inserter ( secondary_list_of_vertices ) );
+			std::copy ( normals , normals + 36 , std::back_inserter ( secondary_list_of_normals ) );
 
-	}  // end of looping list of blocks
-
+		}  // end of looping list of blocks
+	}
 
 
 
@@ -914,7 +914,7 @@ void GLWidget::openIRES ( const std::string& filename )
 
 	cameraStep_ = 10.0f;
 
-	updateGL ( );
+	//updateGL ( );
 
 }
 

@@ -42,7 +42,7 @@ namespace IRES
 			inFile.read ( (char*) &header_ , sizeof ( header_ ) );
 
 			std::cout << std::setfill ( '-' ) << std::setw ( 80 ) << "-" << std::endl;
-			std::cout << std::setiosflags(ios::left) <<"Version :" << std::setiosflags(ios::right) << header_.ires_version << std::endl;
+			std::cout << std::setiosflags(std::ios::left) <<"Version :" << std::setiosflags(std::ios::right) << header_.ires_version << std::endl;
 			std::cout << "First Title :" << header_.first_title_ << std::endl;
 			std::cout << "Second Title :" << header_.second_title_ << std::endl;
 			std::cout << "Third Title :" << header_.thirt_title_ << std::endl;

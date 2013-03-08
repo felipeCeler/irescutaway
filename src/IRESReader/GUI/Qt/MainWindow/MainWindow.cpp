@@ -18,13 +18,15 @@ MainWindow::MainWindow ( QMainWindow *parent ) :
 	glFormat.setSamples(4);
 
 	setupUi ( this );
-	this->glWidget = new GLWidget ( this );
+	this->glWidget = new GLWidget ( this->viewer_ );
+	this->viewer_verticalLayout_->addWidget(glWidget);
+	this->tabWidget_->setCurrentIndex(0);
 	//this->setCentralWidget ( glWidget );
 
-	tabWidget_->clear ( );
-
-	tabWidget_->addTab ( glWidget , "Viewer" );
-
+	properties_tableWidget_->horizontalHeader()->setResizeMode(QHeaderView::Stretch);
+	//properties_tableWidget_->verticalHeader()->setResizeMode(QHeaderView::Stretch);
+//	properties_tableWidget_->setSpan(0, 0, 2, 1);
+//	properties_tableWidget_->setSpan(2, 0, 2, 1);
 
 	QIcon icon;
 	icon.addFile ( ":/Icons/caju.png" , QSize ( ) , QIcon::Normal , QIcon::Off );
@@ -44,12 +46,35 @@ void MainWindow::open(QString pFilename,bool who ) {
 
 	glWidget->openIRES( pFilename.toLocal8Bit().constData() );
 
+
+
+
 	if ( glWidget->isIresWasOpenedSucessufully( ))
 	{
+
+		this->properties_tableWidget_->setRowCount(glWidget->ires_cornerPoint_test_.static_porperties.size( ));
+
 		for ( int i = 0 ; i < glWidget->ires_cornerPoint_test_.static_porperties.size( ); ++i )
 		{
+
+			float min =  *std::min_element ( glWidget->ires_cornerPoint_test_.static_porperties[i].values_.begin( ),glWidget->ires_cornerPoint_test_.static_porperties[i].values_.end( ) );
+			float max =  *std::max_element ( glWidget->ires_cornerPoint_test_.static_porperties[i].values_.begin( ),glWidget->ires_cornerPoint_test_.static_porperties[i].values_.end( ) );
+
+
 			this->comboBox_choose_an_property_->addItem(  QString::fromStdString( glWidget->ires_cornerPoint_test_.static_porperties[i].name ) );
+//			properties_tableWidget_->setSpan(i * 2, 0, 2, 1);
+//			this->properties_tableWidget_->setItem(i * 2, 0, new QTableWidgetItem(  QString::fromStdString( glWidget->ires_cornerPoint_test_.static_porperties[i].name ) ) );
+//
+//			this->properties_tableWidget_->setItem(i    , 1, new QTableWidgetItem(  QString::number( min )) );
+//			this->properties_tableWidget_->setItem(i * 2, 1, new QTableWidgetItem(  QString::number( max )) );
+
+			this->properties_tableWidget_->setItem(i , 0, new QTableWidgetItem(  QString::fromStdString( glWidget->ires_cornerPoint_test_.static_porperties[i].name ) ) );
+			this->properties_tableWidget_->setItem(i , 1, new QTableWidgetItem(  QString( QString::number( min )+" - "+QString::number( max )) ));
+			//			this->properties_tableWidget_->setItem(i * 2, 1, new QTableWidgetItem(  QString::number( max )) );
+
+
 		}
+
 	}
 
 }

@@ -535,15 +535,16 @@ class Ires
 				indices.clear ( );
 				blocks.clear ( );
 				indices.resize( header_.number_of_Blocks_Doubles );
+				blocks.resize( header_.number_of_Blocks_Doubles );
 
-				inFile.read ( (char*) &indices[0] , sizeof(int) * header_.number_of_Blocks_Doubles );
+				inFile.read ( (char*) &blocks[0] , sizeof(int) * header_.number_of_Blocks_Doubles );
 
-				for ( int block_index = 0; block_index < header_.number_of_Blocks_Doubles; ++block_index )
-				{
-					if ( indices[block_index] == -1 )
-						continue;
-					blocks.push_back( indices[block_index] );
-				}
+//				for ( int block_index = 0; block_index < header_.number_of_Blocks_Doubles; ++block_index )
+//				{
+//					if ( indices[block_index] == -1 )
+//						continue;
+//					blocks.push_back( indices[block_index] );
+//				}
 				//
 				std::cout << " Size of indices : " << indices.size( ) << " | "<<blocks.size( ) << std::endl;
 				//

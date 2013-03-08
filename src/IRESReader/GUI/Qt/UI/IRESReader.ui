@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
+ <author>Felipe Moura de Carvalho</author>
  <class>MainWindow</class>
  <widget class="QMainWindow" name="MainWindow">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>600</height>
+    <width>1263</width>
+    <height>678</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -29,6 +30,12 @@
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
      <widget class="QTabWidget" name="tabWidget_">
+      <property name="minimumSize">
+       <size>
+        <width>640</width>
+        <height>480</height>
+       </size>
+      </property>
       <property name="tabPosition">
        <enum>QTabWidget::South</enum>
       </property>
@@ -36,7 +43,7 @@
        <enum>QTabWidget::Rounded</enum>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <property name="documentMode">
        <bool>true</bool>
@@ -51,22 +58,38 @@
        <attribute name="title">
         <string>Viewer</string>
        </attribute>
+       <layout class="QVBoxLayout" name="viewer_verticalLayout_"/>
       </widget>
-      <widget class="QWidget" name="properties">
+      <widget class="QWidget" name="properties_">
        <attribute name="title">
         <string>Properties</string>
        </attribute>
+       <layout class="QVBoxLayout" name="properties_verticalLayout_">
+        <item>
+         <widget class="QTableWidget" name="properties_tableWidget_">
+          <property name="editTriggers">
+           <set>QAbstractItemView::NoEditTriggers</set>
+          </property>
+          <property name="selectionMode">
+           <enum>QAbstractItemView::NoSelection</enum>
+          </property>
+          <attribute name="verticalHeaderVisible">
+           <bool>false</bool>
+          </attribute>
+          <column>
+           <property name="text">
+            <string>Properties</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Values (min - max)</string>
+           </property>
+          </column>
+         </widget>
+        </item>
+       </layout>
       </widget>
-     </widget>
-    </item>
-    <item>
-     <widget class="QWidget" name="widget_" native="true">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
      </widget>
     </item>
    </layout>
@@ -76,7 +99,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
+     <width>1263</width>
      <height>20</height>
     </rect>
    </property>
@@ -94,8 +117,16 @@
     </property>
     <addaction name="action_Load_Shaders"/>
    </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>Help</string>
+    </property>
+    <addaction name="actionTE_VIRA"/>
+    <addaction name="actionFend_for_yourself"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuTools"/>
+   <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QDockWidget" name="dockWidget">
@@ -272,6 +303,16 @@
   <action name="action_Load_Shaders">
    <property name="text">
     <string>Load Shaders</string>
+   </property>
+  </action>
+  <action name="actionTE_VIRA">
+   <property name="text">
+    <string>Te vira ! [pt_BR]</string>
+   </property>
+  </action>
+  <action name="actionFend_for_yourself">
+   <property name="text">
+    <string>Fend for yourself ! [us]</string>
    </property>
   </action>
  </widget>
