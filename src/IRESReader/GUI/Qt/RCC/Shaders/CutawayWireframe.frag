@@ -37,6 +37,6 @@ void main ( void )
 		}
 	}
 
-	fragmentColor = I * vec4 ( 0.0 , 0.0 , 0.0 , 1.0 ) + ( 1.0 - I ) * geometryShaderOut_VertexData.propertyColor;
+	fragmentColor = I * vec4 ( 0.0 , 0.0 , 0.0 , 1.0 ) + ( 1.0 - I ) * (geometryShaderOut_VertexData.propertyColor + vec4 ( 1.0 , 1.0 , 1.0, 1.0 ));
 
 }
