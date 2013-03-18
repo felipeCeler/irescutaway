@@ -90,6 +90,7 @@ void GLWidget::initializeGL ( )
 		glGenBuffers ( 1, &primary_renderFlag_buffer);
 		glGenBuffers ( 1, &primary_indices_buffer);
 
+		glGenBuffers ( 1, &secondary_vertices_buffer_indices_ );
 		glGenBuffers ( 1, &secondary_vertices_buffer );
 		glGenBuffers ( 1, &secondary_normal_buffer );
 		glGenBuffers ( 1, &secondary_color_buffer );
@@ -105,6 +106,8 @@ void GLWidget::initializeGL ( )
 	primary_color_location = 2;
 	primary_renderFlag_location = 8;
 
+
+	secondary_vertices_buffer_indices_location = 10;
 	secondary_vertices_location = 3;
 	secondary_normal_location = 4;
 	secondary_color_location = 5;
@@ -616,10 +619,100 @@ void GLWidget::changeProperty ( int property_index )
 
 }
 
+void GLWidget::openIRES2 ( const std::string& filename )
+{
+
+	reservoir_model_.openIRES(filename);
+
+	if ( reservoir_model_.blocks.size ( ) > 0 )
+	{
+		ires_has_been_open_sucessefully = 1;
+
+
+		secondary_list_of_indices.clear ( );
+		secondary_list_of_vertices.clear ( );
+		secondary_list_of_normals.clear ( );
+		secondary_list_of_colors.clear ( );
+		secondary_list_of_renderFlag.clear( );
+
+		int number_of_null_blocks = 0;
+
+		for (size_t i = 0; i < reservoir_model_.blocks.size(); i+=8 )
+		{
+			if ( reservoir_model_.blocks[i] != -1)
+			{
+				int index [] =
+				{
+				    // Top Face
+				    reservoir_model_.blocks[i+0],reservoir_model_.blocks[i+1],reservoir_model_.blocks[i+3],reservoir_model_.blocks[i+2],/* 0 - 5*/
+				    // Bottom Face
+				    reservoir_model_.blocks[i+4],reservoir_model_.blocks[i+7],reservoir_model_.blocks[i+5],reservoir_model_.blocks[i+6],/* 6 - 11 */
+				    // Front Face
+				    reservoir_model_.blocks[i+0],reservoir_model_.blocks[i+7],reservoir_model_.blocks[i+3],reservoir_model_.blocks[i+4],/* 12 - 17*/
+//				    // Back Face
+				    reservoir_model_.blocks[i+1],reservoir_model_.blocks[i+2],reservoir_model_.blocks[i+6],reservoir_model_.blocks[i+5],/* 18 - 23*/
+//				    // Right Face
+				    reservoir_model_.blocks[i+2],reservoir_model_.blocks[i+3],reservoir_model_.blocks[i+5],reservoir_model_.blocks[i+4],/*24 - 29*/
+//				    // Left Face
+				    reservoir_model_.blocks[i+0],reservoir_model_.blocks[i+1],reservoir_model_.blocks[i+7],reservoir_model_.blocks[i+6]/*30 - 35*/
+				};
+
+				std::copy ( index , index + 24 , std::back_inserter ( secondary_list_of_indices ) );
+
+			}  // end of looping list of blocks
+			else
+
+			{
+				++number_of_null_blocks;
+
+			}
+		}
+
+			glBindBuffer ( GL_ARRAY_BUFFER , secondary_vertices_buffer_indices_ );
+			glBufferData ( GL_ARRAY_BUFFER , reservoir_model_.vertices.size ( ) * sizeof ( reservoir_model_.vertices[0] ) , &reservoir_model_.vertices[0] , GL_STATIC_DRAW );
+			// Vertex Array : Set up generic attributes pointers
+			glEnableVertexAttribArray ( secondary_vertices_buffer_indices_location );
+			glVertexAttribPointer ( secondary_vertices_buffer_indices_location , 3 , GL_DOUBLE , GL_FALSE , 0 , 0 );
+
+
+			glBindBuffer ( GL_ELEMENT_ARRAY_BUFFER, secondary_indices_buffer );
+			glBufferData ( GL_ELEMENT_ARRAY_BUFFER , secondary_list_of_indices.size() * sizeof(secondary_list_of_indices[0]) , &secondary_list_of_indices[0] , GL_STATIC_DRAW );
+
+			std::cout << "Size: " << secondary_list_of_vertices.size ( ) << std::endl;
+			std::cout << "Number of Blocks NuLL: " << ((reservoir_model_.blocks.size()-number_of_null_blocks)) % 8 << std::endl;
+
+			box = Celer::BoundingBox3<double> ( );
+
+			box.fromPointCloud ( reservoir_model_.vertices.begin ( ) , reservoir_model_.vertices.end ( ) );
+
+			camera_.setPosition ( box.center ( ) );
+			camera_.setTarget ( box.center ( ) );
+			std::cout << box.diagonal ( );
+			camera_.setOffset ( 3.0 * box.diagonal ( ) );
+
+			camera_.setPerspectiveProjectionMatrix ( 60 , camera_.aspectRatio ( ) , 1.0 , 1000.0 * box.diagonal ( ) );
+
+			std::cout << camera_.position ( );
+
+			camera_.setBehavior ( Celer::Camera<float>::REVOLVE_AROUND_MODE );
+
+			cameraStep_ = 10.0f;
+
+
+	}
+	else
+	{
+		ires_has_been_open_sucessefully = 0;
+	}
+
+
+}
+
 void GLWidget::openIRES ( const std::string& filename )
 {
 
 	ires_cornerPoint_test_.openIRES( filename );
+
 
 	if ( ires_cornerPoint_test_.blocks.size ( ) > 0 )
 	{
@@ -821,7 +914,7 @@ void GLWidget::openIRES ( const std::string& filename )
 
 	secondary_list_of_renderFlag =  std::vector<GLfloat>( secondary_list_of_vertices.size( ) , 1.0f );
 
-	std::cout <<  "secondary_list_of_renderFlag.size()"  <<secondary_list_of_renderFlag.size() << " -:- "<< secondary_list_of_renderFlag[200] <<std::endl;
+	std::cout <<  "secondary_list_of_renderFlag.size()"  << secondary_list_of_renderFlag.size() << " -:- "<< secondary_list_of_renderFlag[200] <<std::endl;
 
 	glBindBuffer ( GL_ARRAY_BUFFER , primary_vertices_buffer );
 	glBufferData ( GL_ARRAY_BUFFER , secondary_list_of_vertices.size( ) * sizeof(secondary_list_of_vertices[0]) , 0 , GL_STATIC_DRAW );
@@ -914,7 +1007,6 @@ void GLWidget::openIRES ( const std::string& filename )
 
 	cameraStep_ = 10.0f;
 
-	//updateGL ( );
 
 }
 
@@ -997,8 +1089,8 @@ void GLWidget::paintGL ( )
 
 	glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 	glClearColor ( 0.0 , 0.0 , 0.0 , 1.0 );
-	//TridimensionalSetUp ( );
-	cutawaySetup ( );
+	TridimensionalSetUp ( );
+	//cutawaySetup ( );
 
 }
 
@@ -1247,18 +1339,27 @@ void GLWidget::TridimensionalSetUp ( )
 //		if ( draw_secondary )
 //		{
 //
- 			cutawayWireframe.active ( );
+ 			secondary.active ( );
 
-			glUniform3fv ( cutawayWireframe.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
+//			glUniform3fv ( cutawayWireframe.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
+//
+//			glUniform2f ( cutawayWireframe.uniforms_["WIN_SCALE"].location , (float)width(), (float)height() );
 
-			glUniform2f ( cutawayWireframe.uniforms_["WIN_SCALE"].location , (float)width(), (float)height() );
+			glUniform3fv ( secondary.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
 
-			glUniformMatrix4fv ( cutawayWireframe.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-			glUniformMatrix4fv ( cutawayWireframe.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+			glUniform2f ( secondary.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
 
-			glDrawArrays ( GL_TRIANGLES , 0 , secondary_list_of_vertices.size() );
+//
+			glUniformMatrix4fv ( secondary.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+			glUniformMatrix4fv ( secondary.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
 
-			cutawayWireframe.deactive ( );
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, secondary_indices_buffer);
+			glDrawElements( GL_LINES_ADJACENCY , secondary_list_of_indices.size(), GL_UNSIGNED_INT,0 );
+
+			//glDrawArrays ( GL_LINES_ADJACENCY , 0 , secondary_list_of_vertices.size ( ) );
+
+
+			secondary.deactive ( );
 //
 //		}
 //		if ( draw_primary )
@@ -1310,7 +1411,7 @@ void GLWidget::LoadShaders ( )
 
 	primary.create((shadersDir.path ()+"/share/Shaders/Primary.vert").toStdString(),(shadersDir.path ()+"/share/Shaders/Primary.frag").toStdString());
 
-	secondary.create((shadersDir.path ()+"/share/Shaders/Secondary.vert").toStdString(),(shadersDir.path ()+"/share/Shaders/Secondary.frag").toStdString());
+	secondary.create((shadersDir.path ()+"/share/Shaders/Secondary.vert").toStdString(),(shadersDir.path ()+"/share/Shaders/Secondary.geom").toStdString(),(shadersDir.path ()+"/share/Shaders/Secondary.frag").toStdString());
 
 	cutaway.create((shadersDir.path ()+"/share/Shaders/Cutaway.vert").toStdString(),(shadersDir.path ()+"/share/Shaders/Cutaway.frag").toStdString());
 
@@ -1319,65 +1420,6 @@ void GLWidget::LoadShaders ( )
 	jumpFloodInitialization.create( (shadersDir.path ()+"/share/Shaders/JFAInitializing.vert").toStdString(),(shadersDir.path ()+"/share/Shaders/JFAInitializing.frag").toStdString());
 
 	jumpFloodingStep.create( (shadersDir.path ()+"/share/Shaders/JFAStep430.vert").toStdString(),(shadersDir.path ()+"/share/Shaders/JFAStep430.frag").toStdString());
-
-//	if ( ires_has_been_open_sucessefully )
-//	{
-//		QImage im = fboStep[1]->toImage ( );
-//		im.save ( QString ( "segundoPasso.png" ) );
-//	}
-
-
-	if ( JumpFloodingStep )
-	{
-		JumpFloodingStep->release ( );
-		JumpFloodingStep->removeAllShaders ( );
-	}
-	else
-		JumpFloodingStep = new QGLShaderProgram;
-
-	if ( VertexShaderStep )
-	{
-		delete VertexShaderStep;
-		VertexShaderStep = NULL;
-	}
-
-	if ( FragmentShaderStep )
-	{
-		delete FragmentShaderStep;
-		FragmentShaderStep = NULL;
-	}
-
-	// load and compile vertex shader
-	QFileInfo vsh = QFileInfo ( shadersDir.path ( ) + "/share/Shaders/JFAStep.vert" );
-	if ( vsh.exists ( ) )
-	{
-		VertexShaderStep = new QGLShader ( QGLShader::Vertex );
-		if ( VertexShaderStep->compileSourceFile ( shadersDir.path ( ) + "/share/Shaders/JFAStep.vert" ) )
-			JumpFloodingStep->addShader ( VertexShaderStep );
-		else
-			qWarning ( ) << "Vertex Shader Error JFAStep.vert" << VertexShaderStep->log ( );
-	}
-	else
-		qWarning ( ) << "Vertex Shader source file JFAStep" << shadersDir.path ( ) + "/share/Shaders/JFAStep.vert" << " not found.";
-
-	// load and compile fragment shader
-	QFileInfo fsh = QFileInfo ( shadersDir.path ( ) + "/share/Shaders/JFAStep.frag" );
-	if ( fsh.exists ( ) )
-	{
-		FragmentShaderStep = new QGLShader ( QGLShader::Fragment );
-		if ( FragmentShaderStep->compileSourceFile ( shadersDir.path ( ) + "/share/Shaders/JFAStep.frag" ) )
-			JumpFloodingStep->addShader ( FragmentShaderStep );
-		else
-			qWarning ( ) << "Fragment Shader Error JFAStep.frag " << FragmentShaderStep->log ( );
-	}
-	else
-		qWarning ( ) << "Fragment Shader source file JFAStep " << shadersDir.path ( ) + "/share/Shaders/JFAStep.frag" << " not found.";
-
-	if ( !JumpFloodingStep->link ( ) )
-	{
-		qWarning ( ) << "Shader Program Linker Error JFAStep" << JumpFloodingStep->log ( );
-	}
-
 
 }
 

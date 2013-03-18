@@ -12,12 +12,24 @@
 //}
 #version 420
 
-//in  float angle;
-uniform  vec3 lightDirection;
+////in  float angle;
+//uniform  vec3 lightDirection;
+//
+//
+//in vec3 normal;
+//in vec4 color;
 
 
-in vec3 normal;
-in vec4 color;
+noperspective in vec4 dist;
+
+uniform vec3 lightDirection;
+
+in VertexData
+{
+    vec4 propertyColor;
+    vec4 normal;
+
+} geometryShaderOut_VertexData;
 
 out vec4 fragmentColor;
 
@@ -45,7 +57,12 @@ void main(void)
 //	   vec4 ls =  color_t*0.4 * pow(max( 0.0,dot(eye_dir, ref)), 5.0);
 //
 //	   fragmentColor = vec4(la.rgb+ld.xyz+ls.rgb, 1.0);
-	   fragmentColor = vec4(color);
+
+	float d = min(dist[0], min(dist[1], min(dist[2], dist[3])));
+	float I = exp2(-2 * d * d);
+
+	fragmentColor = I * vec4 ( 0.0 , 0.0 , 0.0 , 1.0 ) + ( 1.0 - I ) * (geometryShaderOut_VertexData.propertyColor + vec4 ( 1.0 , 1.0 , 1.0, 1.0 ));
+
 
 
 }

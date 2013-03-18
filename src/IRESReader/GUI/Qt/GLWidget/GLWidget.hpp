@@ -30,6 +30,7 @@
 
 
 #include <IRESClasses/CornerPointGrid_test.cpp>
+#include <IRESClasses/CornerPointGrid.hpp>
 
 
 class GLWidget: public QGLWidget
@@ -41,6 +42,7 @@ class GLWidget: public QGLWidget
 		// FIXME - Putting this as public, but I'm going to search for a better sulution to how feed other
 		//	   widget with data form another one.
 		Ires ires_cornerPoint_test_;
+		IRES::CornerPointGrid reservoir_model_;
 		// From QGLWidget
 		explicit GLWidget ( const QGLFormat& format , QWidget* parent = 0 , const QGLWidget* shareWidget = 0 , Qt::WindowFlags f = 0 );
 		explicit GLWidget ( QWidget* parent = 0 , const QGLWidget* shareWidget = 0 , Qt::WindowFlags f = 0 );
@@ -65,6 +67,7 @@ class GLWidget: public QGLWidget
 		void cutawaySetup ( );
 		void LoadShaders ( );
 		void openIRES ( const std::string& filename );
+		void openIRES2 ( const std::string& filename );
 		bool isIresWasOpenedSucessufully () const;
 		void changeProperty ( int property_index );
 		void changePropertyRange ( const double& min, const double& max, int property_index );
@@ -108,6 +111,8 @@ private:
 
 	GLuint vertexArray;
 		// Primary Attributes
+		GLuint primary_vertices_buffer_indices_;
+		GLuint primary_vertices_buffer_indices_location;
 		GLuint primary_vertices_buffer;
 		GLuint primary_vertices_location;
 		GLuint primary_normal_buffer;
@@ -118,6 +123,8 @@ private:
 		GLuint primary_renderFlag_location;
 		GLuint primary_indices_buffer;
 		//Secundary Attributes
+		GLuint secondary_vertices_buffer_indices_;
+		GLuint secondary_vertices_buffer_indices_location;
 		GLuint secondary_vertices_buffer;
 		GLuint secondary_vertices_location;
 		GLuint secondary_normal_buffer;

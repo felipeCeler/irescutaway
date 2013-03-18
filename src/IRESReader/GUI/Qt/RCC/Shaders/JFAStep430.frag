@@ -31,7 +31,7 @@ float cutawaySurface ( in vec2 current_position, in vec3 neighborInformation )
 
 	float distance = length(vector)/length(viewport);
 
-	return (neighborInformation.z - ((-theta)*(pm_sz+neighborInformation.z)*(distance)) );
+	return neighborInformation.z - ((-theta)*(pm_sz+neighborInformation.z)*(distance));
 	//return (neighborInformation.z - theta*(distance) );
 }
 

@@ -41,30 +41,31 @@ namespace IRES
 
 			inFile.read ( (char*) &header_ , sizeof ( header_ ) );
 
-			std::cout << std::setfill ( '-' ) << std::setw ( 80 ) << "-" << std::endl;
-			std::cout << std::setiosflags(std::ios::left) <<"Version :" << std::setiosflags(std::ios::right) << header_.ires_version << std::endl;
-			std::cout << "First Title :" << header_.first_title_ << std::endl;
-			std::cout << "Second Title :" << header_.second_title_ << std::endl;
-			std::cout << "Third Title :" << header_.thirt_title_ << std::endl;
-			std::cout << "Case ID :" << header_.caseID << std::endl;
-			std::cout << "Simulation Type :" << header_.simulation_type << std::endl;
-			std::cout << "Run date :" << header_.run_date << std::endl;
-			std::cout << "Number of Time Steps :" << header_.number_of_Time_Steps << std::endl;
-			std::cout << "Number of Blocks :" << header_.number_of_Blocks << std::endl;
-			std::cout << "Number of Dynamic :" << header_.number_of_Dynamic_Properties << std::endl;
-			std::cout << "Number of Static :" << header_.number_of_Static_Properties << std::endl;
-			std::cout << "Number of Wells :" << header_.number_of_Wells << std::endl;
-			std::cout << "Number of Vertices :" << header_.number_of_Vertices << std::endl;
-			//
-			std::cout << "Number of Double Blocks :" << header_.number_of_Blocks_Doubles << std::endl;
-			std::cout << "Number of Blocks in I direction :" << header_.number_of_Blocks_in_I_Direction << std::endl;
-			std::cout << "Number of Blocks in J direction :" << header_.number_of_Blocks_in_J_Direction << std::endl;
-			std::cout << "Number of Blocks in K direction :" << header_.number_of_Blocks_in_K_Direction << std::endl;
-			std::cout << "Number of Fault Surfaces :" << header_.number_of_Fault_Surfaces << std::endl;
-			std::cout << "Number of Well Properties :" << header_.number_of_Well_Properties << std::endl;
-			std::cout << "well Property Size ? :" << header_.well_Properties_Size << std::endl;
+			std::cout << std::setfill ( '-' ) << std::setw ( 55 ) << "-" << std::endl;
 
-			std::cout << std::setfill ( '-' ) << std::setw ( 80 ) << "-" << std::endl;
+			std::cout << std::setw(50) << std::left << "Version : " << std::setiosflags(std::ios::right) << header_.ires_version << std::endl;
+			std::cout << std::setw(50) << std::left << "First Title : " << header_.first_title_ << std::endl;
+			std::cout << std::setw(50) << std::left << "Second Title : " << header_.second_title_ << std::endl;
+			std::cout << std::setw(50) << std::left << "Third Title :  " << header_.thirt_title_ << std::endl;
+			std::cout << std::setw(50) << std::left << "Case ID : " << header_.caseID << std::endl;
+			std::cout << std::setw(50) << std::left << "Simulation Type :" << header_.simulation_type << std::endl;
+			std::cout << std::setw(50) << std::left << "Run date : " << header_.run_date << std::endl;
+			std::cout << std::setw(50) << std::left << "Number of Time Steps : " << header_.number_of_Time_Steps << std::endl;
+			std::cout << std::setw(50) << std::left << "Number of Blocks : " << header_.number_of_Blocks << std::endl;
+			std::cout << std::setw(50) << std::left << "Number of Dynamic : " << header_.number_of_Dynamic_Properties << std::endl;
+			std::cout << std::setw(50) << std::left << "Number of Static : " << header_.number_of_Static_Properties << std::endl;
+			std::cout << std::setw(50) << std::left << "Number of Wells : " << header_.number_of_Wells << std::endl;
+			std::cout << std::setw(50) << std::left << "Number of Vertices : " << header_.number_of_Vertices << std::endl;
+			//
+			std::cout << std::setw(50) << std::left << "Number of Double Blocks :" << header_.number_of_Blocks_Doubles << std::endl;
+			std::cout << std::setw(50) << std::left << "Number of Blocks in I direction :" << header_.number_of_Blocks_in_I_Direction << std::endl;
+			std::cout << std::setw(50) << std::left << "Number of Blocks in J direction :" << header_.number_of_Blocks_in_J_Direction << std::endl;
+			std::cout << std::setw(50) << std::left << "Number of Blocks in K direction :" << header_.number_of_Blocks_in_K_Direction << std::endl;
+			std::cout << std::setw(50) << std::left << "Number of Fault Surfaces :" << header_.number_of_Fault_Surfaces << std::endl;
+			std::cout << std::setw(50) << std::left << "Number of Well Properties :" << header_.number_of_Well_Properties << std::endl;
+			std::cout << std::setw(50) << std::left << "well Property Size ? :" << header_.well_Properties_Size << std::endl;
+
+			std::cout << std::setfill ( '-' ) << std::setw ( 55 ) << "-" << std::endl;
 
 			// -- Copying Fault Lines
 			number_of_fault_lines.clear ( );

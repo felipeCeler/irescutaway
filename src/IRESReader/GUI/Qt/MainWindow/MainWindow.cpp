@@ -44,75 +44,73 @@ MainWindow::MainWindow ( QMainWindow *parent ) :
 
 void MainWindow::open(QString pFilename,bool who ) {
 
-	glWidget->openIRES( pFilename.toLocal8Bit().constData() );
+//	glWidget->openIRES( pFilename.toLocal8Bit().constData() );
+	glWidget->openIRES2( pFilename.toLocal8Bit().constData() );
 
-
-
-
-	if ( glWidget->isIresWasOpenedSucessufully( ))
-	{
-
-		this->properties_tableWidget_->setRowCount(glWidget->ires_cornerPoint_test_.static_porperties.size( ));
-
-		for ( int i = 0 ; i < glWidget->ires_cornerPoint_test_.static_porperties.size( ); ++i )
-		{
-
-			float min =  *std::min_element ( glWidget->ires_cornerPoint_test_.static_porperties[i].values_.begin( ),glWidget->ires_cornerPoint_test_.static_porperties[i].values_.end( ) );
-			float max =  *std::max_element ( glWidget->ires_cornerPoint_test_.static_porperties[i].values_.begin( ),glWidget->ires_cornerPoint_test_.static_porperties[i].values_.end( ) );
-
-
-			this->comboBox_choose_an_property_->addItem(  QString::fromStdString( glWidget->ires_cornerPoint_test_.static_porperties[i].name ) );
+//	if ( glWidget->isIresWasOpenedSucessufully( ))
+//	{
+//
+//		this->properties_tableWidget_->setRowCount(glWidget->ires_cornerPoint_test_.static_porperties.size( ));
+//
+//		for ( int i = 0 ; i < glWidget->ires_cornerPoint_test_.static_porperties.size( ); ++i )
+//		{
+//
+//			float min =  *std::min_element ( glWidget->ires_cornerPoint_test_.static_porperties[i].values_.begin( ),glWidget->ires_cornerPoint_test_.static_porperties[i].values_.end( ) );
+//			float max =  *std::max_element ( glWidget->ires_cornerPoint_test_.static_porperties[i].values_.begin( ),glWidget->ires_cornerPoint_test_.static_porperties[i].values_.end( ) );
+//
+//
+//			this->comboBox_choose_an_property_->addItem(  QString::fromStdString( glWidget->ires_cornerPoint_test_.static_porperties[i].name ) );
 //			properties_tableWidget_->setSpan(i * 2, 0, 2, 1);
 //			this->properties_tableWidget_->setItem(i * 2, 0, new QTableWidgetItem(  QString::fromStdString( glWidget->ires_cornerPoint_test_.static_porperties[i].name ) ) );
 //
 //			this->properties_tableWidget_->setItem(i    , 1, new QTableWidgetItem(  QString::number( min )) );
 //			this->properties_tableWidget_->setItem(i * 2, 1, new QTableWidgetItem(  QString::number( max )) );
-
-			this->properties_tableWidget_->setItem(i , 0, new QTableWidgetItem(  QString::fromStdString( glWidget->ires_cornerPoint_test_.static_porperties[i].name ) ) );
-			this->properties_tableWidget_->setItem(i , 1, new QTableWidgetItem(  QString( QString::number( min )+" - "+QString::number( max )) ));
-			//			this->properties_tableWidget_->setItem(i * 2, 1, new QTableWidgetItem(  QString::number( max )) );
-
-
-		}
-
-	}
+//
+//			this->properties_tableWidget_->setItem(i , 0, new QTableWidgetItem(  QString::fromStdString( glWidget->ires_cornerPoint_test_.static_porperties[i].name ) ) );
+//			this->properties_tableWidget_->setItem(i , 1, new QTableWidgetItem(  QString( QString::number( min )+" - "+QString::number( max )) ));
+//			// this->properties_tableWidget_->setItem(i * 2, 1, new QTableWidgetItem(  QString::number( max )) );
+//
+//
+//		}
+//
+//	}
 
 }
 
 void MainWindow::updateDoubleSpinMin( int property_index )
 {
 
-	float min =  *std::min_element ( glWidget->ires_cornerPoint_test_.static_porperties[property_index].values_.begin( ),glWidget->ires_cornerPoint_test_.static_porperties[property_index].values_.end( ) );
-	float max =  *std::max_element ( glWidget->ires_cornerPoint_test_.static_porperties[property_index].values_.begin( ),glWidget->ires_cornerPoint_test_.static_porperties[property_index].values_.end( ) );
-
+//	float min =  *std::min_element ( glWidget->ires_cornerPoint_test_.static_porperties[property_index].values_.begin( ),glWidget->ires_cornerPoint_test_.static_porperties[property_index].values_.end( ) );
+//	float max =  *std::max_element ( glWidget->ires_cornerPoint_test_.static_porperties[property_index].values_.begin( ),glWidget->ires_cornerPoint_test_.static_porperties[property_index].values_.end( ) );
+//
 //	this->doubleSpinMin->setMinimum ( static_cast<double> (min) );
 //	this->doubleSpinMin->setMaximum ( static_cast<double> (max));
 //
 //	this->doubleSpinMax->setMinimum ( static_cast<double> (min) );
 //	this->doubleSpinMax->setMaximum ( static_cast<double> (max) );
-
-	qDebug() << "Min: "<< min;
-
-	this->doubleSpinMin->setValue(static_cast<double> (min));
+//
+//	qDebug() << "Min: "<< min;
+//
+//	this->doubleSpinMin->setValue(static_cast<double> (min));
 
 }
 
 void MainWindow::updateDoubleSpinMax( int property_index )
 {
 
-
-	float min =  *std::min_element ( glWidget->ires_cornerPoint_test_.static_porperties[property_index].values_.begin( ),glWidget->ires_cornerPoint_test_.static_porperties[property_index].values_.end( ) );
-	float max =  *std::max_element ( glWidget->ires_cornerPoint_test_.static_porperties[property_index].values_.begin( ),glWidget->ires_cornerPoint_test_.static_porperties[property_index].values_.end( ) );
-
+//
+//	float min =  *std::min_element ( glWidget->ires_cornerPoint_test_.static_porperties[property_index].values_.begin( ),glWidget->ires_cornerPoint_test_.static_porperties[property_index].values_.end( ) );
+//	float max =  *std::max_element ( glWidget->ires_cornerPoint_test_.static_porperties[property_index].values_.begin( ),glWidget->ires_cornerPoint_test_.static_porperties[property_index].values_.end( ) );
+//
 //	this->doubleSpinMin->setMinimum ( static_cast<double> (min) );
 //	this->doubleSpinMin->setMaximum ( static_cast<double> (max));
 //
 //	this->doubleSpinMax->setMinimum ( static_cast<double> (min) );
 //	this->doubleSpinMax->setMaximum ( static_cast<double> (max) );
-
-	qDebug() << "Max: "<< max;
-
-	this->doubleSpinMax->setValue(static_cast<double> (max));
+//
+//	qDebug() << "Max: "<< max;
+//
+//	this->doubleSpinMax->setValue(static_cast<double> (max));
 
 }
 
