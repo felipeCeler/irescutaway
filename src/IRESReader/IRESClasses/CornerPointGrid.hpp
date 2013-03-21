@@ -33,6 +33,8 @@ namespace IRES
 	 * What is Corner Point Grid ...
 	 *
 	 * What the meaning of this class ...
+	 *
+	 * WTF I'm just read ...
 	 */
 
 	// LORE - Its data come from *.ires
@@ -172,6 +174,7 @@ namespace IRES
 			std::vector<Well_Data> 			wells;
 
 			std::vector<Celer::Vector3<double> > 	vertices;
+
 			std::vector<int> 			blocks;
 
 		public:

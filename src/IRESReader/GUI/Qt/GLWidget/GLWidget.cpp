@@ -637,7 +637,30 @@ void GLWidget::openIRES2 ( const std::string& filename )
 
 		int number_of_null_blocks = 0;
 
-		for (size_t i = 0; i < reservoir_model_.blocks.size(); i+=8 )
+		int i = 0;
+
+
+		std::cout << "Size: " << secondary_list_of_vertices.size ( ) << std::endl;
+		std::cout << "Number of Blocks NuLL: " << ( ( reservoir_model_.blocks.size ( ) - number_of_null_blocks ) ) % 8 << std::endl;
+
+		box = Celer::BoundingBox3<double> ( );
+
+		box.fromPointCloud ( reservoir_model_.vertices.begin ( ) , reservoir_model_.vertices.end ( ) );
+
+
+		for ( int i = 0; i < reservoir_model_.vertices.size() ; i++)
+		{
+			reservoir_model_.vertices[i] -= box.center();
+			reservoir_model_.vertices[i].x /= box.diagonal();
+			reservoir_model_.vertices[i].y /= box.diagonal();
+			reservoir_model_.vertices[i].z /= box.diagonal();
+
+		}
+
+		box.fromPointCloud ( reservoir_model_.vertices.begin ( ) , reservoir_model_.vertices.end ( ) );
+
+
+		while ( i < reservoir_model_.blocks.size())
 		{
 			if ( reservoir_model_.blocks[i] != -1)
 			{
@@ -657,46 +680,39 @@ void GLWidget::openIRES2 ( const std::string& filename )
 				    reservoir_model_.blocks[i+0],reservoir_model_.blocks[i+1],reservoir_model_.blocks[i+7],reservoir_model_.blocks[i+6]/*30 - 35*/
 				};
 
+				i += 8;
 				std::copy ( index , index + 24 , std::back_inserter ( secondary_list_of_indices ) );
 
 			}  // end of looping list of blocks
 			else
-
 			{
+				i += 1;
 				++number_of_null_blocks;
-
 			}
 		}
 
-			glBindBuffer ( GL_ARRAY_BUFFER , secondary_vertices_buffer_indices_ );
-			glBufferData ( GL_ARRAY_BUFFER , reservoir_model_.vertices.size ( ) * sizeof ( reservoir_model_.vertices[0] ) , &reservoir_model_.vertices[0] , GL_STATIC_DRAW );
-			// Vertex Array : Set up generic attributes pointers
-			glEnableVertexAttribArray ( secondary_vertices_buffer_indices_location );
-			glVertexAttribPointer ( secondary_vertices_buffer_indices_location , 3 , GL_DOUBLE , GL_FALSE , 0 , 0 );
+		camera_.setPosition ( box.center ( ) );
+		camera_.setTarget ( box.center ( ) );
+		std::cout << box.diagonal ( );
+		camera_.setOffset ( 3.0 * box.diagonal ( ) );
 
+		camera_.setPerspectiveProjectionMatrix ( 60 , camera_.aspectRatio ( ) , 1.0 , 1000.0 * box.diagonal ( ) );
 
-			glBindBuffer ( GL_ELEMENT_ARRAY_BUFFER, secondary_indices_buffer );
-			glBufferData ( GL_ELEMENT_ARRAY_BUFFER , secondary_list_of_indices.size() * sizeof(secondary_list_of_indices[0]) , &secondary_list_of_indices[0] , GL_STATIC_DRAW );
+		std::cout << camera_.position ( );
 
-			std::cout << "Size: " << secondary_list_of_vertices.size ( ) << std::endl;
-			std::cout << "Number of Blocks NuLL: " << ((reservoir_model_.blocks.size()-number_of_null_blocks)) % 8 << std::endl;
+		camera_.setBehavior ( Celer::Camera<float>::REVOLVE_AROUND_MODE );
 
-			box = Celer::BoundingBox3<double> ( );
+		cameraStep_ = 10.0f;
 
-			box.fromPointCloud ( reservoir_model_.vertices.begin ( ) , reservoir_model_.vertices.end ( ) );
+		glBindBuffer ( GL_ARRAY_BUFFER , secondary_vertices_buffer_indices_ );
+		glBufferData ( GL_ARRAY_BUFFER , reservoir_model_.vertices.size ( ) * sizeof ( reservoir_model_.vertices[0] ) , &reservoir_model_.vertices[0] , GL_STATIC_DRAW );
+		// Vertex Array : Set up generic attributes pointers
+		glEnableVertexAttribArray ( secondary_vertices_buffer_indices_location );
+		glVertexAttribPointer ( secondary_vertices_buffer_indices_location , 3 , GL_DOUBLE , GL_FALSE , 0 , 0 );
 
-			camera_.setPosition ( box.center ( ) );
-			camera_.setTarget ( box.center ( ) );
-			std::cout << box.diagonal ( );
-			camera_.setOffset ( 3.0 * box.diagonal ( ) );
+		glBindBuffer ( GL_ELEMENT_ARRAY_BUFFER , secondary_indices_buffer );
+		glBufferData ( GL_ELEMENT_ARRAY_BUFFER , secondary_list_of_indices.size ( ) * sizeof ( secondary_list_of_indices[0] ) , &secondary_list_of_indices[0] , GL_STATIC_DRAW );
 
-			camera_.setPerspectiveProjectionMatrix ( 60 , camera_.aspectRatio ( ) , 1.0 , 1000.0 * box.diagonal ( ) );
-
-			std::cout << camera_.position ( );
-
-			camera_.setBehavior ( Celer::Camera<float>::REVOLVE_AROUND_MODE );
-
-			cameraStep_ = 10.0f;
 
 
 	}

@@ -13,7 +13,6 @@ namespace IRES
 	CornerPointGrid::CornerPointGrid ( )
 	{
 		// TODO Auto-generated constructor stub
-
 	}
 
 	CornerPointGrid::~CornerPointGrid ( )
@@ -33,15 +32,15 @@ namespace IRES
 		}
 		else if ( !inFile )
 		{
-			std::cout << "While opening a file an error is encountered" << std::endl;
+			std::cout << " While opening a file an error is encountered " << std::endl;
 		}
 		else  // Let's ready this piece of "cake".
 		{
-			std::cout << "File is successfully opened" << std::endl;
+			std::cout << " File is successfully opened " << std::endl;
 
 			inFile.read ( (char*) &header_ , sizeof ( header_ ) );
 
-			std::cout << std::setfill ( '-' ) << std::setw ( 55 ) << "-" << std::endl;
+			std::cout << std::setfill ( '-' ) << std::setw ( 55 ) << "-" <<  std::endl;
 
 			std::cout << std::setw(50) << std::left << "Version : " << std::setiosflags(std::ios::right) << header_.ires_version << std::endl;
 			std::cout << std::setw(50) << std::left << "First Title : " << header_.first_title_ << std::endl;
@@ -154,7 +153,7 @@ namespace IRES
 
 				static_porperties[i].name = std::string ( data.begin ( ) , data.end ( ) );
 
-				std::cout << " static names: " << static_porperties[i].name << std::endl;
+				//std::cout << " static names: " << static_porperties[i].name << std::endl;
 
 				data.clear ( );
 				data.resize ( 64 );
@@ -351,7 +350,7 @@ namespace IRES
 
 			}
 
-			std::cout << " Position Static: " << inFile.tellg ( ) << std::endl;
+			//std::cout << " Position Static: " << inFile.tellg ( ) << std::endl;
 
 			// Copying Static Properties
 
@@ -362,10 +361,10 @@ namespace IRES
 
 				inFile.read ( (char*) &blocks_values[0] , sizeof(float) * header_.number_of_Blocks );
 
-				std::cout << " Property: " << static_porperties[name_index].name << " max : " << *std::max_element ( blocks_values.begin ( ) , blocks_values.end ( ) ) << std::endl;
-				std::cout << " Property: " << static_porperties[name_index].name << " min : " << *std::min_element ( blocks_values.begin ( ) , blocks_values.end ( ) ) << std::endl;
+				//std::cout << " Property: " << static_porperties[name_index].name << " max : " << *std::max_element ( blocks_values.begin ( ) , blocks_values.end ( ) ) << std::endl;
+				//std::cout << " Property: " << static_porperties[name_index].name << " min : " << *std::min_element ( blocks_values.begin ( ) , blocks_values.end ( ) ) << std::endl;
 				static_porperties[name_index].values_.resize ( header_.number_of_Blocks );
-				std::copy ( blocks_values.begin ( ) , blocks_values.end ( ) , static_porperties[name_index].values_.begin ( ) );
+				//std::copy ( blocks_values.begin ( ) , blocks_values.end ( ) , static_porperties[name_index].values_.begin ( ) );
 
 				blocks_values.clear ( );
 			}
