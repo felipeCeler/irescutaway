@@ -67,10 +67,10 @@ class GLWidget: public QGLWidget
 		void cutawaySetup ( );
 		void LoadShaders ( );
 		void openIRES ( const std::string& filename );
-		void openIRES2 ( const std::string& filename );
 		bool isIresWasOpenedSucessufully () const;
 		void changeProperty ( int property_index );
 		void changePropertyRange ( const double& min, const double& max, int property_index );
+
 
 		void drawPrimary ( );
 		void drawSecondary (  );
@@ -111,8 +111,6 @@ private:
 
 	GLuint vertexArray;
 		// Primary Attributes
-		GLuint primary_vertices_buffer_indices_;
-		GLuint primary_vertices_buffer_indices_location;
 		GLuint primary_vertices_buffer;
 		GLuint primary_vertices_location;
 		GLuint primary_normal_buffer;
@@ -121,10 +119,9 @@ private:
 		GLuint primary_color_location;
 		GLuint primary_renderFlag_buffer;
 		GLuint primary_renderFlag_location;
+
 		GLuint primary_indices_buffer;
 		//Secundary Attributes
-		GLuint secondary_vertices_buffer_indices_;
-		GLuint secondary_vertices_buffer_indices_location;
 		GLuint secondary_vertices_buffer;
 		GLuint secondary_vertices_location;
 		GLuint secondary_normal_buffer;
@@ -133,6 +130,7 @@ private:
 		GLuint secondary_color_location;
 		GLuint secondary_renderFlag_buffer;
 		GLuint secondary_renderFlag_location;
+
 		GLuint secondary_indices_buffer;
 
 	bool draw_secondary;
@@ -141,15 +139,15 @@ private:
 	bool ires_has_been_open_sucessefully;
 
 	std::vector<int> 			secondary_list_of_indices;
-	std::vector<Celer::Vector3<GLdouble> > 	secondary_list_of_normals;
-	std::vector<Celer::Vector3<GLdouble> > 	secondary_list_of_vertices;
+	std::vector<Celer::Vector4<GLfloat> > 	secondary_list_of_normals;
+	std::vector<Celer::Vector4<GLfloat> > 	secondary_list_of_vertices;
 	std::vector<Celer::Vector4<GLfloat> >   secondary_list_of_colors;
 	std::vector<GLfloat>    		secondary_list_of_renderFlag;
 
 
 	std::vector<int> 			primary_list_of_indices;
-	std::vector<Celer::Vector3<GLdouble> > 	primary_list_of_normals;
-	std::vector<Celer::Vector3<GLdouble> > 	primary_list_of_vertices;
+	std::vector<Celer::Vector4<GLfloat> > 	primary_list_of_normals;
+	std::vector<Celer::Vector4<GLfloat> > 	primary_list_of_vertices;
 	std::vector<Celer::Vector4<GLfloat> >   primary_list_of_colors;
 	std::vector<GLfloat>    		primary_list_of_renderFlag;
 

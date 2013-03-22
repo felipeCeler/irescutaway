@@ -6,7 +6,8 @@ uniform mat4 ModelMatrix;
 uniform mat4 ViewMatrix;
 uniform mat4 ProjectionMatrix;
 
-layout (location = 10 ) in vec3 vertices;
+layout (location = 3 ) in vec4 vertices;
+layout (location = 5  ) in vec4 colors;
 
 
 out VertexData
@@ -34,8 +35,8 @@ void main()
 //
 //	color = colors;
 
-	vertexShaderOut_VertexData.propertyColor = vec4(1.0,0.0,0.0,1.0);
+	vertexShaderOut_VertexData.propertyColor = vec4(1.0,0.0,0.0,1.0);//colors;
 
-	gl_Position = ProjectionMatrix * ViewMatrix * vec4(vertices,1.0);
+	gl_Position = ProjectionMatrix * ViewMatrix * vec4(vertices);
 
 }
