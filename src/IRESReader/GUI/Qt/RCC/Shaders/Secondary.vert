@@ -15,7 +15,7 @@ out VertexData
     vec4 propertyColor;
     vec4 normal;
 
-} vertexShaderOut_VertexData;
+} vertexShader_VertexData;
 
 //
 //out vec3 vert;
@@ -35,8 +35,8 @@ void main()
 //
 //	color = colors;
 
-	vertexShaderOut_VertexData.propertyColor = vec4(1.0,0.0,0.0,1.0);//colors;
+	vertexShader_VertexData.propertyColor = colors;//vec4(1.0,0.0,0.0,1.0);
 
-	gl_Position = ProjectionMatrix * ViewMatrix * vec4(vertices);
+	gl_Position = ProjectionMatrix * ViewMatrix * vertices;
 
 }

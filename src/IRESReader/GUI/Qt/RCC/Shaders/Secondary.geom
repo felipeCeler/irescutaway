@@ -3,7 +3,6 @@
 layout(lines_adjacency) in;
 layout(triangle_strip, max_vertices=4) out;
 
-
 uniform vec2 WIN_SCALE;
 
 noperspective out vec4 dist;
@@ -13,14 +12,14 @@ in VertexData
     vec4 propertyColor;
     vec4 normal;
 
-} vertexShaderOut_VertexData[4];
+} vertexShader_VertexData[4];
 
 out VertexData
 {
 	vec4 propertyColor;
 	vec4 normal;
 
-} geometryShaderOut_VertexData;
+} geometryShader_VertexData;
 
 
 void main(void)
@@ -46,22 +45,22 @@ void main(void)
 
 
 	dist = vec4(area4/length(v4), area3/length(v3), 0, 0);
-	geometryShaderOut_VertexData.propertyColor = vertexShaderOut_VertexData[0].propertyColor;
+	geometryShader_VertexData.propertyColor = vertexShader_VertexData[0].propertyColor;
 	gl_Position = gl_in[0].gl_Position;
 	EmitVertex();
 
 	dist = vec4(area2/length(v4), 0, 0, area1/length(v2));
-	geometryShaderOut_VertexData.propertyColor = vertexShaderOut_VertexData[1].propertyColor;
+	geometryShader_VertexData.propertyColor = vertexShader_VertexData[1].propertyColor;
 	gl_Position = gl_in[1].gl_Position;
 	EmitVertex();
 
 	dist = vec4(0, area2/length(v3), area1/length(v0), 0);
-	geometryShaderOut_VertexData.propertyColor = vertexShaderOut_VertexData[2].propertyColor;
+	geometryShader_VertexData.propertyColor = vertexShader_VertexData[2].propertyColor;
 	gl_Position = gl_in[2].gl_Position;
 	EmitVertex();
 
 	dist = vec4(0, 0, area3/length(v0), area4/length(v2));
-	geometryShaderOut_VertexData.propertyColor = vertexShaderOut_VertexData[3].propertyColor;
+	geometryShader_VertexData.propertyColor = vertexShader_VertexData[3].propertyColor;
 	gl_Position = gl_in[3].gl_Position;
 	EmitVertex();
 

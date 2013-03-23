@@ -733,12 +733,7 @@ void GLWidget::openIRES ( const std::string& filename )
 			reservoir_model_.vertices[i].x /= box.diagonal();
 			reservoir_model_.vertices[i].y /= box.diagonal();
 			reservoir_model_.vertices[i].z /= box.diagonal();
-
-//			secondary_list_of_vertices[i] = Celer::Vector4<GLfloat> ( static_cast<GLfloat>(reservoir_model_.vertices[i].x),
-//									          static_cast<GLfloat>(reservoir_model_.vertices[i].y),
-//									          static_cast<GLfloat>(reservoir_model_.vertices[i].z),
-//									           1.0f);
-			secondary_list_of_colors[i] = Celer::Vector4<GLfloat> ( 1.0f, 1.0f, 0.0f, 1.0f);
+			std::cout << " Vector " <<  reservoir_model_.vertices[i] << std::endl;
 		}
 
 		box.fromPointCloud ( reservoir_model_.vertices.begin ( ) , reservoir_model_.vertices.begin ( ) + 8 );
@@ -749,10 +744,10 @@ void GLWidget::openIRES ( const std::string& filename )
 		{
 			if ( reservoir_model_.blocks[i] != -1)
 			{
-				int index []
+				int index [] =
 				{
 				    // Top Face
-				    reservoir_model_.blocks[i+0],reservoir_model_.blocks[i+1],reservoir_model_.blocks[i+3],reservoir_model_.blocks[i+2],/* 0 - 5*/
+				    reservoir_model_.blocks[i+0],reservoir_model_.blocks[i+1],reservoir_model_.blocks[i+2],reservoir_model_.blocks[i+3],/* 0 - 5*/
 				    // Bottom Face
 				    reservoir_model_.blocks[i+4],reservoir_model_.blocks[i+7],reservoir_model_.blocks[i+5],reservoir_model_.blocks[i+6],/* 6 - 11 */
 				    // Front Face
@@ -766,42 +761,83 @@ void GLWidget::openIRES ( const std::string& filename )
 				};
 
 
-				Celer::Vector4<GLfloat> vertices []
+				Celer::Vector4<GLfloat> v0 = Celer::Vector4<GLfloat> ( static_cast<GLfloat>(reservoir_model_.vertices[0].x), static_cast<GLfloat>(reservoir_model_.vertices[0].y), static_cast<GLfloat>(reservoir_model_.vertices[0].z), 1.0f);
+				Celer::Vector4<GLfloat> v1 = Celer::Vector4<GLfloat> ( static_cast<GLfloat>(reservoir_model_.vertices[1].x), static_cast<GLfloat>(reservoir_model_.vertices[1].y), static_cast<GLfloat>(reservoir_model_.vertices[1].z), 1.0f);
+				Celer::Vector4<GLfloat> v2 = Celer::Vector4<GLfloat> ( static_cast<GLfloat>(reservoir_model_.vertices[2].x), static_cast<GLfloat>(reservoir_model_.vertices[2].y), static_cast<GLfloat>(reservoir_model_.vertices[2].z), 1.0f);
+				Celer::Vector4<GLfloat> v3 = Celer::Vector4<GLfloat> ( static_cast<GLfloat>(reservoir_model_.vertices[3].x), static_cast<GLfloat>(reservoir_model_.vertices[3].y), static_cast<GLfloat>(reservoir_model_.vertices[3].z), 1.0f);
+
+				Celer::Vector4<GLfloat> v4 = Celer::Vector4<GLfloat> ( static_cast<GLfloat>(reservoir_model_.vertices[4].x), static_cast<GLfloat>(reservoir_model_.vertices[4].y), static_cast<GLfloat>(reservoir_model_.vertices[4].z), 1.0f);
+				Celer::Vector4<GLfloat> v5 = Celer::Vector4<GLfloat> ( static_cast<GLfloat>(reservoir_model_.vertices[5].x), static_cast<GLfloat>(reservoir_model_.vertices[5].y), static_cast<GLfloat>(reservoir_model_.vertices[5].z), 1.0f);
+ 				Celer::Vector4<GLfloat> v6 = Celer::Vector4<GLfloat> ( static_cast<GLfloat>(reservoir_model_.vertices[6].x), static_cast<GLfloat>(reservoir_model_.vertices[6].y), static_cast<GLfloat>(reservoir_model_.vertices[6].z), 1.0f);
+				Celer::Vector4<GLfloat> v7 = Celer::Vector4<GLfloat> ( static_cast<GLfloat>(reservoir_model_.vertices[7].x), static_cast<GLfloat>(reservoir_model_.vertices[7].y), static_cast<GLfloat>(reservoir_model_.vertices[7].z), 1.0f);
+
+
+				std::cout << " Vector float " <<  v0 << std::endl;
+				std::cout << " Vector float " <<  v1 << std::endl;
+				std::cout << " Vector float " <<  v2 << std::endl;
+				std::cout << " Vector float " <<  v3 << std::endl;
+				std::cout << " Vector float " <<  v4 << std::endl;
+				std::cout << " Vector float " <<  v5 << std::endl;
+				std::cout << " Vector float " <<  v6 << std::endl;
+				std::cout << " Vector float " <<  v7 << std::endl;
+
+
+
+				Celer::Vector4<GLfloat> vertices [] =
 				{
 				    // Top Face
-				    Celer::Vector4<GLfloat> ( static_cast<GLfloat>(reservoir_model_.vertices[index[0]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[0]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[0]].z), 1.0f),
-				    Celer::Vector4<GLfloat> ( static_cast<GLfloat>(reservoir_model_.vertices[index[1]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[1]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[1]].z), 1.0f),
-				    Celer::Vector4<GLfloat> ( static_cast<GLfloat>(reservoir_model_.vertices[index[2]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[2]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[2]].z), 1.0f),
-				    Celer::Vector4<GLfloat> ( static_cast<GLfloat>(reservoir_model_.vertices[index[3]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[3]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[3]].z), 1.0f),
+					v0,v1,v3,v2,
 				    // Bottom Face
-				    Celer::Vector4<GLfloat> ( static_cast<GLfloat>(reservoir_model_.vertices[index[4]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[4]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[4]].z), 1.0f),
-				    Celer::Vector4<GLfloat> ( static_cast<GLfloat>(reservoir_model_.vertices[index[5]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[5]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[5]].z), 1.0f),
-				    Celer::Vector4<GLfloat> ( static_cast<GLfloat>(reservoir_model_.vertices[index[6]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[6]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[6]].z), 1.0f),
-				    Celer::Vector4<GLfloat> ( static_cast<GLfloat>(reservoir_model_.vertices[index[7]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[7]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[7]].z), 1.0f),
+					v4,v7,v5,v6,
 				    // Front Face
-				    Celer::Vector4<GLfloat> ( static_cast<GLfloat>(reservoir_model_.vertices[index[8]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[8]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[8]].z), 1.0f),
-				    Celer::Vector4<GLfloat> ( static_cast<GLfloat>(reservoir_model_.vertices[index[9]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[9]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[9]].z), 1.0f),
-				    Celer::Vector4<GLfloat> ( static_cast<GLfloat>(reservoir_model_.vertices[index[10]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[10]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[10]].z), 1.0f),
-				    Celer::Vector4<GLfloat> ( static_cast<GLfloat>(reservoir_model_.vertices[index[11]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[11]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[11]].z), 1.0f),
+					v0,v7,v3,v4,
 				    // Back Face
-				    Celer::Vector4<GLfloat> ( static_cast<GLfloat>(reservoir_model_.vertices[index[12]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[12]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[12]].z), 1.0f),
-				    Celer::Vector4<GLfloat> ( static_cast<GLfloat>(reservoir_model_.vertices[index[13]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[13]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[13]].z), 1.0f),
-				    Celer::Vector4<GLfloat> ( static_cast<GLfloat>(reservoir_model_.vertices[index[14]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[14]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[14]].z), 1.0f),
-				    Celer::Vector4<GLfloat> ( static_cast<GLfloat>(reservoir_model_.vertices[index[15]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[15]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[15]].z), 1.0f),
+					v1,v2,v6,v5,
 				    // Right Face
-				    Celer::Vector4<GLfloat> ( static_cast<GLfloat>(reservoir_model_.vertices[index[16]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[16]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[16]].z), 1.0f),
-				    Celer::Vector4<GLfloat> ( static_cast<GLfloat>(reservoir_model_.vertices[index[17]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[17]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[17]].z), 1.0f),
-				    Celer::Vector4<GLfloat> ( static_cast<GLfloat>(reservoir_model_.vertices[index[18]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[18]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[18]].z), 1.0f),
-				    Celer::Vector4<GLfloat> ( static_cast<GLfloat>(reservoir_model_.vertices[index[19]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[19]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[19]].z), 1.0f),
+					v2,v3,v5,v4,
 				    // Left Face
-				    Celer::Vector4<GLfloat> ( static_cast<GLfloat>(reservoir_model_.vertices[index[20]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[20]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[20]].z), 1.0f),
-				    Celer::Vector4<GLfloat> ( static_cast<GLfloat>(reservoir_model_.vertices[index[21]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[21]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[21]].z), 1.0f),
-				    Celer::Vector4<GLfloat> ( static_cast<GLfloat>(reservoir_model_.vertices[index[22]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[22]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[22]].z), 1.0f),
-				    Celer::Vector4<GLfloat> ( static_cast<GLfloat>(reservoir_model_.vertices[index[23]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[23]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[23]].z), 1.0f)
+					v0,v1,v7,v6
+				};
+
+
+				Celer::Vector4<GLfloat> colors [] =
+				{
+				    // Top Face
+				     Celer::Vector4<GLfloat> (1.0,0.0,0.0,1.0),
+				     Celer::Vector4<GLfloat> (1.0,0.0,0.0,1.0),
+				     Celer::Vector4<GLfloat> (1.0,0.0,0.0,1.0),
+				     Celer::Vector4<GLfloat> (1.0,0.0,0.0,1.0),
+				    // Bottom Face
+				     Celer::Vector4<GLfloat> (0.0,1.0,0.0,1.0),
+				     Celer::Vector4<GLfloat> (0.0,1.0,0.0,1.0),
+				     Celer::Vector4<GLfloat> (0.0,1.0,0.0,1.0),
+				     Celer::Vector4<GLfloat> (0.0,1.0,0.0,1.0),
+				    // Front Face
+				     Celer::Vector4<GLfloat> (0.0,0.0,1.0,1.0),
+     				     Celer::Vector4<GLfloat> (0.0,0.0,1.0,1.0),
+     				     Celer::Vector4<GLfloat> (0.0,0.0,1.0,1.0),
+     				     Celer::Vector4<GLfloat> (0.0,0.0,1.0,1.0),
+				    // Back Face
+				     Celer::Vector4<GLfloat> (0.0,1.0,0.0,1.0),
+     				     Celer::Vector4<GLfloat> (0.0,1.0,0.0,1.0),
+     				     Celer::Vector4<GLfloat> (0.0,1.0,0.0,1.0),
+     				     Celer::Vector4<GLfloat> (0.0,1.0,0.0,1.0),
+				    // Right Face
+				     Celer::Vector4<GLfloat> (0.0,1.0,0.0,1.0),
+     				     Celer::Vector4<GLfloat> (0.0,1.0,0.0,1.0),
+     				     Celer::Vector4<GLfloat> (0.0,1.0,0.0,1.0),
+     				     Celer::Vector4<GLfloat> (0.0,1.0,0.0,1.0),
+				    // Left Face
+				     Celer::Vector4<GLfloat> (0.0,1.0,0.0,1.0),
+     				     Celer::Vector4<GLfloat> (0.0,1.0,0.0,1.0),
+     				     Celer::Vector4<GLfloat> (0.0,1.0,0.0,1.0),
+     				     Celer::Vector4<GLfloat> (0.0,1.0,0.0,1.0)
+
 				};
 
 				std::copy ( index 	, index + 24 , std::back_inserter ( secondary_list_of_indices ) );
-				std::copy ( vertices 	, vertices + 24 , std::back_inserter ( secondary_list_of_vertices) );
+				std::copy ( vertices 	, vertices + 24  , std::back_inserter ( secondary_list_of_vertices) );
+				std::copy ( colors 	, colors + 24  , std::back_inserter ( secondary_list_of_colors) );
 				i += 8;
 
 			}  // end of looping list of blocks
@@ -1501,6 +1537,8 @@ void GLWidget::TridimensionalSetUp ( )
 //			glDrawElements( GL_LINES_ADJACENCY , secondary_list_of_indices.size(), GL_UNSIGNED_INT,0 );
 
 			glDrawArrays ( GL_LINES_ADJACENCY , 0 , secondary_list_of_vertices.size());
+			//glDrawArrays( GL_TRIANGLES , 0, primary_list_of_vertices.size());
+
 
 
 			secondary.deactive ( );
