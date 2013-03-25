@@ -37,8 +37,6 @@ flat out vec4 fragmentColor;
 
 void main(void)
 {
-
-
 //	   vec3 newNormal = normal;
 //	   vec3 newVert   = vert;
 //
