@@ -6,10 +6,10 @@ uniform mat4 ModelMatrix;
 uniform mat4 ViewMatrix;
 uniform mat4 ProjectionMatrix;
 
-layout (location = 3 ) in vec4 vertices;
-layout (location = 4 ) in vec4 normals;
-layout (location = 5 ) in vec4 colors;
-layout (location = 6 ) in vec4 focus;
+layout (location = 1 ) in vec4 vertices;
+layout (location = 2 ) in vec4 normals;
+layout (location = 3 ) in vec4 colors;
+layout (location = 4 ) in vec4 focus;
 
 
 out VertexData
@@ -37,8 +37,17 @@ void main()
 //
 //	color = colors;
 
-	vertexShader_VertexData.propertyColor = colors;//vec4(1.0,0.0,0.0,1.0);
+	if ( focus.x == 0.0 )
+	{
+		vertexShader_VertexData.propertyColor = colors; //vec4(1.0,0.0,0.0,1.0);
+		gl_Position = ProjectionMatrix * ViewMatrix * vertices;
+	}
+	else
+	{
+		vertexShader_VertexData.propertyColor = vec4(0.0,1.0,1.0,1.0);
+		gl_Position = ProjectionMatrix * ViewMatrix * vec4(1.0,0.0,0.0,0.0);;
+	}
 
-	gl_Position = ProjectionMatrix * ViewMatrix * vertices;
+
 
 }

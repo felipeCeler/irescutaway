@@ -84,31 +84,21 @@ void GLWidget::initializeGL ( )
 	fboInitialization = new  QGLFramebufferObject ( width() , height() , format );
 
 	glGenVertexArrays ( 1 , &vertexArray);
-		glGenBuffers ( 1, &primary_vertices_buffer );
-		glGenBuffers ( 1, &primary_normal_buffer );
-		glGenBuffers ( 1, &primary_color_buffer );
-		glGenBuffers ( 1, &primary_renderFlag_buffer);
-		glGenBuffers ( 1, &primary_indices_buffer);
-
-		glGenBuffers ( 1, &secondary_vertices_buffer );
-		glGenBuffers ( 1, &secondary_normal_buffer );
-		glGenBuffers ( 1, &secondary_color_buffer );
-		glGenBuffers ( 1, &secondary_renderFlag_buffer);
-		glGenBuffers ( 1, &secondary_indices_buffer);
+		glGenBuffers ( 1, &reservoir_vertices_buffer );
+		glGenBuffers ( 1, &reservoir_normal_buffer );
+		glGenBuffers ( 1, &reservoir_color_buffer );
+		glGenBuffers ( 1, &reservoir_renderFlag_buffer);
+		glGenBuffers ( 1, &reservoir_indices_buffer);
 
 		glGenBuffers ( 1, &screen_buffer);
 		glGenBuffers ( 1, &texture_buffer);
 	glBindVertexArray(vertexArray);
 
-	primary_vertices_location = 0;
-	primary_normal_location = 1;
-	primary_color_location = 2;
-	primary_renderFlag_location = 8;
 
-	secondary_vertices_location = 3;
-	secondary_normal_location = 4;
-	secondary_color_location = 5;
-	secondary_renderFlag_location = 9;
+	reservoir_vertices_location 	= 1;
+	reservoir_normal_location 	= 2;
+	reservoir_color_location 	= 3;
+	reservoir_renderFlag_location 	= 4;
 
 
 	draw_secondary = 1;
@@ -125,388 +115,107 @@ bool GLWidget::isIresWasOpenedSucessufully ( ) const
 
 void GLWidget::changePropertyRange ( const double& minRange, const double& maxRange, int property_index )
 {
-//
-//	primary_list_of_vertices.clear ( );
-//	primary_list_of_normals.clear ( );
-//	primary_list_of_colors.clear ( );
-//	primary_list_of_indices.clear ( );
-//
-//	secondary_list_of_renderFlag.clear();
-//
-//
-//	std::cout << "Changing the property to : " << ires_cornerPoint_test_.static_porperties[property_index].name << std::endl;
-//
-//	float min = *std::min_element ( ires_cornerPoint_test_.static_porperties[property_index].values_.begin ( ) , ires_cornerPoint_test_.static_porperties[property_index].values_.end ( ) );
-//	float max = *std::max_element ( ires_cornerPoint_test_.static_porperties[property_index].values_.begin ( ) , ires_cornerPoint_test_.static_porperties[property_index].values_.end ( ) );
-//
-//
-//
-//	for ( int i = 0; i < ires_cornerPoint_test_.blocks.size ( ); i+=8 )
-//	{
-//
-//		float regularValue  = ( ires_cornerPoint_test_.static_porperties[property_index].values_[i/8] );
-//
-//		float normalizedColor = ( regularValue - min ) / ( max - min );
-//
-//		Celer::Vector4<GLfloat> color;
-//
-//
-//
-//		if ( ( regularValue >= minRange ) && ( regularValue <= maxRange ) )
-//		{
-//			switch ( (int) ( normalizedColor * 10.0f ) )
-//			{
-//				case 10:
-//					color = Celer::Vector4<GLfloat> ( 1.0f , 0.0f , 0.0f , 1.0f );
-//					break;
-//				case 9:
-//					color = Celer::Vector4<GLfloat> ( 0.5f , 0.25f , 0.0f , 1.0f );
-//					break;
-//				case 8:
-//					color = Celer::Vector4<GLfloat> ( 0.5f , 0.5f , 0.0f , 1.0f );
-//					break;
-//				case 7:
-//					color = Celer::Vector4<GLfloat> ( 0.25f , 0.5f , 0.0f , 1.0f );
-//					break;
-//				case 6:
-//					color = Celer::Vector4<GLfloat> ( 0.0f , 0.25f , 0.0f , 1.0f );
-//					break;
-//				case 5:
-//					color = Celer::Vector4<GLfloat> ( 0.0f , 0.5f , 0.2f , 1.0f );
-//					break;
-//				case 4:
-//					color = Celer::Vector4<GLfloat> ( 0.0f , 0.5f , 0.4f , 1.0f );
-//					break;
-//				case 3:
-//					color = Celer::Vector4<GLfloat> ( 0 , 0.4 , 0.5 , 1.0f );
-//					break;
-//				case 2:
-//					color = Celer::Vector4<GLfloat> ( 0 , 0.2 , 0.5 , 1.0f );
-//					break;
-//				case 1:
-//					color = Celer::Vector4<GLfloat> ( 0 , 0 , 0.5 , 1.0f );
-//					break;
-//				case 0:
-//					color = Celer::Vector4<GLfloat> ( 0 , 0 , 0.375 , 1.0f );
-//					break;
-//					//if value is equal to max
-//				default:
-//					color = Celer::Vector4<GLfloat> ( 0.5f , 0.5f , 0.5f , 1.0f );
-//					break;
-//			}
-//
-//
-//			int index [] =
-//			{
-//			    // Top Face
-//			    ires_cornerPoint_test_.blocks[i+0],ires_cornerPoint_test_.blocks[i+3],ires_cornerPoint_test_.blocks[i+2],/* 0 - 5*/
-//			    ires_cornerPoint_test_.blocks[i+2],ires_cornerPoint_test_.blocks[i+1],ires_cornerPoint_test_.blocks[i+0],
-//			    // Bottom Face
-//			    ires_cornerPoint_test_.blocks[i+4],ires_cornerPoint_test_.blocks[i+7],ires_cornerPoint_test_.blocks[i+6],/* 6 - 11 */
-//			    ires_cornerPoint_test_.blocks[i+6],ires_cornerPoint_test_.blocks[i+5],ires_cornerPoint_test_.blocks[i+4],
-//			    // Front Face
-//			    ires_cornerPoint_test_.blocks[i+0],ires_cornerPoint_test_.blocks[i+3],ires_cornerPoint_test_.blocks[i+7],/* 12 - 17*/
-//			    ires_cornerPoint_test_.blocks[i+7],ires_cornerPoint_test_.blocks[i+3],ires_cornerPoint_test_.blocks[i+4],
-//			    // Back Face
-//			    ires_cornerPoint_test_.blocks[i+1],ires_cornerPoint_test_.blocks[i+2],ires_cornerPoint_test_.blocks[i+5],/* 18 - 23*/
-//			    ires_cornerPoint_test_.blocks[i+5],ires_cornerPoint_test_.blocks[i+6],ires_cornerPoint_test_.blocks[i+1],
-//			    // Right Face
-//			    ires_cornerPoint_test_.blocks[i+0],ires_cornerPoint_test_.blocks[i+1],ires_cornerPoint_test_.blocks[i+6],/*24 - 29*/
-//			    ires_cornerPoint_test_.blocks[i+6],ires_cornerPoint_test_.blocks[i+7],ires_cornerPoint_test_.blocks[i+0],
-//			    // Left Face
-//			    ires_cornerPoint_test_.blocks[i+2],ires_cornerPoint_test_.blocks[i+3],ires_cornerPoint_test_.blocks[i+4],/*30 - 35*/
-//			    ires_cornerPoint_test_.blocks[i+4],ires_cornerPoint_test_.blocks[i+5],ires_cornerPoint_test_.blocks[i+2],
-//			};
-//
-//			Celer::Vector3<double> vertices [] =
-//			{
-//			    // Top Face
-//			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[0]]),
-//			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[1]]),
-//			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[2]]),
-//			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[3]]),
-//			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[4]]),
-//			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[5]]),
-//			    // Bottom Face
-//			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[6]]),
-//			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[7]]),
-//			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[8]]),
-//			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[9]]),
-//			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[10]]),
-//			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[11]]),
-//			    // Bottom Face
-//			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[12]]),
-//			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[13]]),
-//			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[14]]),
-//			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[15]]),
-//			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[16]]),
-//			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[17]]),
-//			    // Bottom Face
-//			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[18]]),
-//			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[19]]),
-//			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[20]]),
-//			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[21]]),
-//			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[22]]),
-//			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[23]]),
-//			    // Bottom Face
-//			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[24]]),
-//			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[25]]),
-//			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[26]]),
-//			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[27]]),
-//			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[28]]),
-//			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[29]]),
-//			    // Bottom Face
-//			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[30]]),
-//			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[31]]),
-//			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[32]]),
-//			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[33]]),
-//			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[34]]),
-//			    Celer::Vector3<double> ( ires_cornerPoint_test_.vertices[index[35]])
-//
-//		       };
-//
-//			Celer::Vector3<double> top_face_normal 	  = ( ires_cornerPoint_test_.vertices[index[0]] - ires_cornerPoint_test_.vertices[index[1]] ) ^ ( ires_cornerPoint_test_.vertices[index[0]] - ires_cornerPoint_test_.vertices[index[2]] );
-//			top_face_normal.normalize( );
-//			Celer::Vector3<double> bottom_face_normal = ( ires_cornerPoint_test_.vertices[index[6]] - ires_cornerPoint_test_.vertices[index[7]] ) ^ ( ires_cornerPoint_test_.vertices[index[6]] - ires_cornerPoint_test_.vertices[index[8]] );
-//			bottom_face_normal.normalize();
-//			Celer::Vector3<double> front_face_normal  = ( ires_cornerPoint_test_.vertices[index[12]] - ires_cornerPoint_test_.vertices[index[13]] ) ^ ( ires_cornerPoint_test_.vertices[index[12]] - ires_cornerPoint_test_.vertices[index[14]] );
-//			front_face_normal.normalize();
-//			Celer::Vector3<double> back_face_normal   = ( ires_cornerPoint_test_.vertices[index[18]] - ires_cornerPoint_test_.vertices[index[19]] ) ^ ( ires_cornerPoint_test_.vertices[index[18]] - ires_cornerPoint_test_.vertices[index[20]] );
-//			back_face_normal.normalize( );
-//			Celer::Vector3<double> right_face_normal  = ( ires_cornerPoint_test_.vertices[index[24]] - ires_cornerPoint_test_.vertices[index[25]] ) ^ ( ires_cornerPoint_test_.vertices[index[24]] - ires_cornerPoint_test_.vertices[index[26]] );
-//			right_face_normal.normalize( );
-//			Celer::Vector3<double> left_face_normal   = ( ires_cornerPoint_test_.vertices[index[30]] - ires_cornerPoint_test_.vertices[index[31]] ) ^ ( ires_cornerPoint_test_.vertices[index[30]] - ires_cornerPoint_test_.vertices[index[32]] );
-//			left_face_normal.normalize( );
-//
-//			Celer::Vector3<double> normals [] =
-//			{
-//			    // Top Face
-//		            top_face_normal,
-//		            top_face_normal,
-//		            top_face_normal,
-//		            top_face_normal,
-//		            top_face_normal,
-//		            top_face_normal,
-//			    // Bottom Face
-//		            bottom_face_normal,
-//		            bottom_face_normal,
-//		            bottom_face_normal,
-//		            bottom_face_normal,
-//		            bottom_face_normal,
-//		            bottom_face_normal,
-//			    // Front Face
-//		            front_face_normal,
-//		            front_face_normal,
-//		            front_face_normal,
-//		            front_face_normal,
-//		            front_face_normal,
-//		            front_face_normal,
-//			    // Back Face
-//		            back_face_normal,
-//		            back_face_normal,
-//		            back_face_normal,
-//		            back_face_normal,
-//		            back_face_normal,
-//		            back_face_normal,
-//			    // Right Face
-//		            right_face_normal,
-//		            right_face_normal,
-//		            right_face_normal,
-//		            right_face_normal,
-//		            right_face_normal,
-//		            right_face_normal,
-//			    // Left Face
-//		            left_face_normal,
-//		            left_face_normal,
-//		            left_face_normal,
-//		            left_face_normal,
-//		            left_face_normal,
-//		            left_face_normal
-//
-//		       };
-//
-//
-//
-//			Celer::Vector4<GLfloat> colors [] =
-//			{
-//			    color,
-//			    color,
-//			    color,
-//			    color,
-//			    color,
-//			    color,
-//
-//			    color,
-//			    color,
-//			    color,
-//			    color,
-//			    color,
-//			    color,
-//
-//			    color,
-//			    color,
-//			    color,
-//			    color,
-//			    color,
-//			    color,
-//
-//			    color,
-//			    color,
-//			    color,
-//			    color,
-//			    color,
-//			    color,
-//
-//			    color,
-//			    color,
-//			    color,
-//			    color,
-//			    color,
-//			    color,
-//
-//			    color,
-//			    color,
-//			    color,
-//			    color,
-//			    color,
-//			    color
-//
-//			 };
-//
-//
-//			GLfloat renderFlags [] =
-//			{
-//			    0.0f,
-//			    0.0f,
-//			    0.0f,
-//			    0.0f,
-//			    0.0f,
-//			    0.0f,
-//
-//			    0.0f,
-//			    0.0f,
-//			    0.0f,
-//			    0.0f,
-//			    0.0f,
-//			    0.0f,
-//
-//			    0.0f,
-//			    0.0f,
-//			    0.0f,
-//			    0.0f,
-//			    0.0f,
-//			    0.0f,
-//
-//			    0.0f,
-//			    0.0f,
-//			    0.0f,
-//			    0.0f,
-//			    0.0f,
-//			    0.0f,
-//
-//			    0.0f,
-//			    0.0f,
-//			    0.0f,
-//			    0.0f,
-//			    0.0f,
-//			    0.0f,
-//
-//			    0.0f,
-//			    0.0f,
-//			    0.0f,
-//			    0.0f,
-//			    0.0f,
-//			    0.0f
-//
-//			 };
-//
-//			std::copy ( index , index + 36 , std::back_inserter ( primary_list_of_indices ) );
-//			std::copy ( vertices , vertices + 36 , std::back_inserter ( primary_list_of_vertices ) );
-//			std::copy ( normals , normals + 36 , std::back_inserter ( primary_list_of_normals ) );
-//			std::copy ( colors , colors + 36 , std::back_inserter ( primary_list_of_colors ) );
-//			std::copy ( renderFlags , renderFlags + 36 , std::back_inserter ( secondary_list_of_renderFlag ) );
-//
-//		}
-//		else
-//		{
-//			color = Celer::Vector4<GLfloat> ( 0.5f , 0.5f , 0.5f , 1.0f );
-//
-//			GLfloat renderFlags [] =
-//			{
-//			    1.0f,
-//			    1.0f,
-//			    1.0f,
-//			    1.0f,
-//			    1.0f,
-//			    1.0f,
-//
-//			    1.0f,
-//			    1.0f,
-//			    1.0f,
-//			    1.0f,
-//			    1.0f,
-//			    1.0f,
-//
-//			    1.0f,
-//			    1.0f,
-//			    1.0f,
-//			    1.0f,
-//			    1.0f,
-//			    1.0f,
-//
-//			    1.0f,
-//			    1.0f,
-//			    1.0f,
-//			    1.0f,
-//			    1.0f,
-//			    1.0f,
-//
-//			    1.0f,
-//			    1.0f,
-//			    1.0f,
-//			    1.0f,
-//			    1.0f,
-//			    1.0f,
-//
-//			    1.0f,
-//			    1.0f,
-//			    1.0f,
-//			    1.0f,
-//			    1.0f,
-//			    1.0f
-//
-//			 };
-//
-//			std::copy ( renderFlags , renderFlags + 36 , std::back_inserter ( secondary_list_of_renderFlag ) );
-//		}
-//
-//
-//	}
-//
-//	glBindBuffer ( GL_ARRAY_BUFFER , primary_vertices_buffer );
-//	glBufferData ( GL_ARRAY_BUFFER , primary_list_of_vertices.size ( ) * sizeof ( primary_list_of_vertices[0] ) , &primary_list_of_vertices[0] , GL_STATIC_DRAW );
-//
-//	glBindBuffer ( GL_ARRAY_BUFFER , primary_normal_buffer );
-//	glBufferData ( GL_ARRAY_BUFFER , primary_list_of_normals.size ( ) * sizeof ( primary_list_of_normals[0] ) , &primary_list_of_normals[0] , GL_STATIC_DRAW );
-//
-//	glBindBuffer ( GL_ARRAY_BUFFER , primary_color_buffer );
-//	glBufferData ( GL_ARRAY_BUFFER , primary_list_of_colors.size ( ) * sizeof ( primary_list_of_colors[0] ) , &primary_list_of_colors[0] , GL_STATIC_DRAW );
-//
-//	glBindBuffer ( GL_ELEMENT_ARRAY_BUFFER , primary_indices_buffer );
-//	glBufferData ( GL_ELEMENT_ARRAY_BUFFER , primary_list_of_indices.size ( ) * sizeof ( primary_list_of_indices[0] ) , &primary_list_of_indices[0] , GL_STATIC_DRAW );
-//
-//	glBindBuffer ( GL_ARRAY_BUFFER , secondary_renderFlag_buffer );
-//	glBufferData ( GL_ARRAY_BUFFER , secondary_list_of_renderFlag.size ( ) * sizeof ( secondary_list_of_renderFlag[0] ) , &secondary_list_of_renderFlag[0] , GL_STATIC_DRAW );
-//
-//	draw_primary = 1;
 
+
+	reservoir_list_of_colors.clear ( );
+	reservoir_list_of_renderFlag.clear ( );
+	reservoir_list_of_renderFlag.clear ( );
+
+	std::cout << "Changing the property to : " << reservoir_model_.static_porperties[property_index].name << std::endl;
+
+	float min = *std::min_element ( reservoir_model_.static_porperties[property_index].values_.begin ( ) , reservoir_model_.static_porperties[property_index].values_.end ( ) );
+	float max = *std::max_element ( reservoir_model_.static_porperties[property_index].values_.begin ( ) , reservoir_model_.static_porperties[property_index].values_.end ( ) );
+
+	std::size_t i = 0;
+
+	std::vector<Celer::Vector4<GLfloat> > colors ( 24 );
+	std::vector<Celer::Vector4<GLfloat> > renderFlags ( 24 );
+
+	Celer::Vector4<GLfloat> color;
+
+	while ( i < reservoir_model_.blocks.size ( ) )
+	{
+		if ( reservoir_model_.blocks[i] != -1 )
+		{
+
+			float regularValue = ( reservoir_model_.static_porperties[property_index].values_[i / 8] );
+
+			float normalizedColor = ( regularValue - min ) / ( max - min );
+
+			if ( ( regularValue >= minRange ) && ( regularValue <= maxRange ) )
+			{
+				switch ( (int) ( normalizedColor * 10.0f ) )
+				{
+					case 10:
+						color = Celer::Vector4<GLfloat> ( 1.0f , 0.0f , 0.0f , 1.0f );
+						break;
+					case 9:
+						color = Celer::Vector4<GLfloat> ( 0.5f , 0.25f , 0.0f , 1.0f );
+						break;
+					case 8:
+						color = Celer::Vector4<GLfloat> ( 0.5f , 0.5f , 0.0f , 1.0f );
+						break;
+					case 7:
+						color = Celer::Vector4<GLfloat> ( 0.25f , 0.5f , 0.0f , 1.0f );
+						break;
+					case 6:
+						color = Celer::Vector4<GLfloat> ( 0.0f , 0.25f , 0.0f , 1.0f );
+						break;
+					case 5:
+						color = Celer::Vector4<GLfloat> ( 0.0f , 0.5f , 0.2f , 1.0f );
+						break;
+					case 4:
+						color = Celer::Vector4<GLfloat> ( 0.0f , 0.5f , 0.4f , 1.0f );
+						break;
+					case 3:
+						color = Celer::Vector4<GLfloat> ( 0 , 0.4 , 0.5 , 1.0f );
+						break;
+					case 2:
+						color = Celer::Vector4<GLfloat> ( 0 , 0.2 , 0.5 , 1.0f );
+						break;
+					case 1:
+						color = Celer::Vector4<GLfloat> ( 0 , 0 , 0.5 , 1.0f );
+						break;
+					case 0:
+						color = Celer::Vector4<GLfloat> ( 0 , 0 , 0.375 , 1.0f );
+						break;
+						//if value is equal to max
+					default:
+						color = Celer::Vector4<GLfloat> ( 0.5f , 0.5f , 0.5f , 1.0f );
+						break;
+				}
+
+				colors 		= std::vector<Celer::Vector4<GLfloat> > ( 24 , color );
+				renderFlags 	= std::vector<Celer::Vector4<GLfloat> > ( 24 , Celer::Vector4<GLfloat> ( 0.0f , 1.0f , 0.0f , 1.0f ));
+			}else
+			{
+
+				colors 		= std::vector<Celer::Vector4<GLfloat> > ( 24 , Celer::Vector4<GLfloat> ( 1.0f , 0.0f , 0.0f , 1.0f ) );
+				renderFlags 	= std::vector<Celer::Vector4<GLfloat> > ( 24 , Celer::Vector4<GLfloat> ( 1.0f , 1.0f , 0.0f , 1.0f ) );
+			}
+
+			std::copy ( colors.begin( ) 	, colors.begin( )      + 24 , std::back_inserter ( reservoir_list_of_colors     ) );
+			std::copy ( renderFlags.begin( ), renderFlags.begin( ) + 24 , std::back_inserter ( reservoir_list_of_renderFlag ) );
+			i += 8;
+		}
+		else
+		{
+			i += 1;
+		}
+	}
+
+	glBindBuffer ( GL_ARRAY_BUFFER , reservoir_color_buffer );
+	glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_colors.size ( ) * sizeof ( reservoir_list_of_colors[0] ) , &reservoir_list_of_colors[0] , GL_STREAM_DRAW );
+
+	glBindBuffer ( GL_ARRAY_BUFFER , reservoir_renderFlag_buffer );
+	glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_renderFlag.size ( ) * sizeof ( reservoir_list_of_renderFlag[0] ) , &reservoir_list_of_renderFlag[0] , GL_STREAM_DRAW );
 }
 
 void GLWidget::changeProperty ( int property_index )
 {
 
 
-	secondary_list_of_colors.clear ( );
+	reservoir_list_of_colors.clear ( );
 
 	std::cout << "Changing the property to : " << reservoir_model_.static_porperties[property_index].name << std::endl;
 
@@ -518,9 +227,9 @@ void GLWidget::changeProperty ( int property_index )
 
 	std::size_t i = 0;
 
-	while ( i < reservoir_model_.blocks.size())
+	while ( i < reservoir_model_.blocks.size( ) )
 	{
-		if ( reservoir_model_.blocks[i] != -1)
+		if ( reservoir_model_.blocks[i] != -1 )
 		{
 
 			float normalized_color = ( reservoir_model_.static_porperties[property_index].values_[i/8] - min ) / ( max - min );
@@ -577,14 +286,9 @@ void GLWidget::changeProperty ( int property_index )
 				color, color, color, color, color, color,
 
 				color, color, color, color, color, color,
-
-				color, color, color, color, color, color,
-
-				color, color, color, color, color, color
-
 			};
 
-			std::copy ( colors , colors + 24 , std::back_inserter ( secondary_list_of_colors ) );
+			std::copy ( colors , colors + 24 , std::back_inserter ( reservoir_list_of_colors ) );
 
 			i += 8;
 
@@ -595,8 +299,8 @@ void GLWidget::changeProperty ( int property_index )
 		}
 	}
 
-	glBindBuffer ( GL_ARRAY_BUFFER , secondary_color_buffer );
-	glBufferData ( GL_ARRAY_BUFFER , secondary_list_of_colors.size ( ) * sizeof ( secondary_list_of_colors[0] ) , &secondary_list_of_colors[0] , GL_STREAM_DRAW );
+	glBindBuffer ( GL_ARRAY_BUFFER , reservoir_color_buffer );
+	glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_colors.size ( ) * sizeof ( reservoir_list_of_colors[0] ) , &reservoir_list_of_colors[0] , GL_STREAM_DRAW );
 	// Vertex Array : Set up generic attributes pointers
 
 }
@@ -610,11 +314,11 @@ void GLWidget::openIRES ( const std::string& filename )
 	{
 		ires_has_been_open_sucessefully = 1;
 
-		secondary_list_of_indices.clear ( );
-		secondary_list_of_vertices.clear ( );
-		secondary_list_of_normals.clear ( );
-		secondary_list_of_colors.clear ( );
-		secondary_list_of_renderFlag.clear( );
+		reservoir_list_of_indices.clear ( );
+		reservoir_list_of_vertices.clear ( );
+		reservoir_list_of_normals.clear ( );
+		reservoir_list_of_colors.clear ( );
+		reservoir_list_of_renderFlag.clear( );
 
 
 		box = Celer::BoundingBox3<double> ( );
@@ -689,9 +393,44 @@ void GLWidget::openIRES ( const std::string& filename )
 				    Celer::Vector4<GLfloat> ( static_cast<GLfloat>(reservoir_model_.vertices[index[23]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[23]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[23]].z), 1.0f)
 				};
 
+				Celer::Vector4<GLfloat> focus [] =
+				{
+				    // Top Face
+				    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f),
+				    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f),
+				    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f),
+				    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f),
+				    // Bottom Face
+				    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f),
+				    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f),
+				    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f),
+				    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f),
+				    // Front Face
+				    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f),
+				    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f),
+				    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f),
+				    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f),
+				    // Back Face
+				    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f),
+				    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f),
+				    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f),
+				    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f),
+				    // Right Face
+				    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f),
+				    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f),
+				    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f),
+				    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f),
+				    // Left Face
+				    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f),
+				    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f),
+				    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f),
+				    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f)
+				};
 
-				std::copy ( index 	, index + 24 , std::back_inserter ( secondary_list_of_indices ) );
-				std::copy ( vertices 	, vertices + 24  , std::back_inserter ( secondary_list_of_vertices) );
+
+				std::copy ( index 	, index    + 24 , std::back_inserter ( reservoir_list_of_indices   ) );
+				std::copy ( vertices 	, vertices + 24 , std::back_inserter ( reservoir_list_of_vertices  ) );
+				std::copy ( focus 	, focus    + 24 , std::back_inserter ( reservoir_list_of_renderFlag) );
 
 				i += 8;
 
@@ -716,23 +455,28 @@ void GLWidget::openIRES ( const std::string& filename )
 
 		cameraStep_ = 10.0f;
 
-		glBindBuffer ( GL_ARRAY_BUFFER , secondary_vertices_buffer );
-		glBufferData ( GL_ARRAY_BUFFER , secondary_list_of_vertices.size ( ) * sizeof ( secondary_list_of_vertices[0] ) , &secondary_list_of_vertices[0] , GL_STATIC_DRAW );
+		glBindBuffer ( GL_ARRAY_BUFFER , reservoir_vertices_buffer );
+		glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_vertices.size ( ) * sizeof ( reservoir_list_of_vertices[0] ) , &reservoir_list_of_vertices[0] , GL_STATIC_DRAW );
 		// Vertex Array : Set up generic attributes pointers
-		glEnableVertexAttribArray ( secondary_vertices_location );
-		glVertexAttribPointer ( secondary_vertices_location , 4 , GL_FLOAT , GL_FALSE , 0 , 0 );
+		glEnableVertexAttribArray ( reservoir_vertices_location );
+		glVertexAttribPointer ( reservoir_vertices_location , 4 , GL_FLOAT , GL_FALSE , 0 , 0 );
 
-		glBindBuffer ( GL_ARRAY_BUFFER , secondary_color_buffer );
-		glBufferData ( GL_ARRAY_BUFFER , secondary_list_of_colors.size ( ) * sizeof ( secondary_list_of_colors[0] ) , &secondary_list_of_colors[0] , GL_STREAM_DRAW );
+		glBindBuffer ( GL_ARRAY_BUFFER , reservoir_color_buffer );
+		glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_colors.size ( ) * sizeof ( reservoir_list_of_colors[0] ) , &reservoir_list_of_colors[0] , GL_STREAM_DRAW );
 		// Vertex Array : Set up generic attributes pointers
-		glEnableVertexAttribArray ( secondary_color_location );
-		glVertexAttribPointer ( secondary_color_location , 4 , GL_FLOAT , GL_FALSE , 0 , 0 );
+		glEnableVertexAttribArray ( reservoir_color_location );
+		glVertexAttribPointer ( reservoir_color_location , 4 , GL_FLOAT , GL_FALSE , 0 , 0 );
 
-		glBindBuffer ( GL_ELEMENT_ARRAY_BUFFER , secondary_indices_buffer );
-		glBufferData ( GL_ELEMENT_ARRAY_BUFFER , secondary_list_of_indices.size ( ) * sizeof ( secondary_list_of_indices[0] ) , &secondary_list_of_indices[0] , GL_STATIC_DRAW );
+		glBindBuffer ( GL_ARRAY_BUFFER , reservoir_renderFlag_buffer );
+		glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_renderFlag.size ( ) * sizeof ( reservoir_list_of_renderFlag[0] ) , &reservoir_list_of_renderFlag[0] , GL_STREAM_DRAW );
+		// Vertex Array : Set up generic attributes pointers
+		glEnableVertexAttribArray ( reservoir_renderFlag_buffer );
+		glVertexAttribPointer ( reservoir_renderFlag_location , 4 , GL_FLOAT , GL_FALSE , 0 , 0 );
+
+		glBindBuffer ( GL_ELEMENT_ARRAY_BUFFER , reservoir_indices_buffer );
+		glBufferData ( GL_ELEMENT_ARRAY_BUFFER , reservoir_list_of_indices.size ( ) * sizeof ( reservoir_list_of_indices[0] ) , &reservoir_list_of_indices[0] , GL_STATIC_DRAW );
 
 		changeProperty(0);
-
 
 	}
 	else
@@ -830,94 +574,136 @@ void GLWidget::paintGL ( )
 void GLWidget::cutawaySetup ( )
 {
 
-	int i = 1;
-
-
-	camera_.setViewByMouse ( );
-
-	if ( buttonRelease_ )
-	{
-		processMultiKeys ( );
-	}
-
-	camera_.computerViewMatrix ( );
-
-	camera_.setPerspectiveProjectionMatrix ( zoom_angle_ , camera_.aspectRatio ( ) , 1.0 , 1000.0 * box.diagonal ( ) );
-
-
-	if ( ires_has_been_open_sucessefully  )
-	{
-
- 		jumpFloodInitialization.active ( );
-
- 		fboStep[1]->bind();
-
-		glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
-		glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-
-		//glUniform3fv( jumpFloodInitialization.uniforms_["lightDirection"].location,0,camera_.position());
-
-		glUniformMatrix4fv ( jumpFloodInitialization.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-		glUniformMatrix4fv ( jumpFloodInitialization.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix()  );
-
-		//VAO
-
-		glDrawArrays( GL_TRIANGLES , 0, primary_list_of_vertices.size());
-
-
-		fboStep[1]->release( );
-
-		jumpFloodInitialization.deactive ( );
-
-
-		// Do Jumping Flooding Algorithm
-		int stepSize = ( width ( ) > height ( ) ? width ( ) : height ( ) ) * 0.5;
-		bool ExitLoop = 0;
-
-
-
-//		JumpFloodingStep->bind ( );
+//	int i = 1;
 //
-//		JumpFloodingStep->setUniformValue ( "viewport" , (float)width ( ) , (float)height ( ) );
+//
+//	camera_.setViewByMouse ( );
+//
+//	if ( buttonRelease_ )
+//	{
+//		processMultiKeys ( );
+//	}
+//
+//	camera_.computerViewMatrix ( );
+//
+//	camera_.setPerspectiveProjectionMatrix ( zoom_angle_ , camera_.aspectRatio ( ) , 1.0 , 1000.0 * box.diagonal ( ) );
+//
+//
+//	if ( ires_has_been_open_sucessefully  )
+//	{
+//
+// 		jumpFloodInitialization.active ( );
+//
+// 		fboStep[1]->bind();
+//
+//		glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
+//		glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+//
+//		//glUniform3fv( jumpFloodInitialization.uniforms_["lightDirection"].location,0,camera_.position());
+//
+//		glUniformMatrix4fv ( jumpFloodInitialization.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+//		glUniformMatrix4fv ( jumpFloodInitialization.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix()  );
+//
+//		//VAO
+//
+//		glDrawArrays( GL_TRIANGLES , 0, primary_list_of_vertices.size());
+//
+//
+//		fboStep[1]->release( );
+//
+//		jumpFloodInitialization.deactive ( );
+//
+//
+//		// Do Jumping Flooding Algorithm
+//		int stepSize = ( width ( ) > height ( ) ? width ( ) : height ( ) ) * 0.5;
+//		bool ExitLoop = 0;
+//
+//
+//
+////		JumpFloodingStep->bind ( );
+////
+////		JumpFloodingStep->setUniformValue ( "viewport" , (float)width ( ) , (float)height ( ) );
+////
+////		pm_sz = ( camera_.nearPlane ( ) + camera_.farPlane ( ) ) / ( camera_.nearPlane ( ) - camera_.farPlane ( ) );
+////
+////		glMatrixMode ( GL_PROJECTION );
+////		glPushMatrix ( );
+////		glLoadIdentity ( );
+////
+////		camera_.setOrthographicProjectionMatrix ( 0.0 , GLfloat ( width ( ) ) , 0.0 , GLfloat ( height ( ) ) , -100.0 , 100.0 );
+////
+////		glMultMatrixf ( ( ~camera_.orthographicProjectionMatrix ( ) ) );
+////
+////		while ( !ExitLoop )
+////		{
+////			i = ( i + 1 ) % 2;
+////			fboStep[i]->bind ( );
+////			glActiveTexture ( GL_TEXTURE0 );
+////			glEnable ( GL_TEXTURE_RECTANGLE );
+////			glBindTexture ( GL_TEXTURE_RECTANGLE , fboStep[ ( i + 1 ) % 2]->texture ( ) );
+////
+////			JumpFloodingStep->setUniformValue ( "pm_sz" , pm_sz );
+////			JumpFloodingStep->setUniformValue ( "theta" , angle );
+////			JumpFloodingStep->setUniformValue ( "stepSize" , stepSize );
+////
+////			glClearColor ( 0.0 , 1.0 , 0.0 , 1.0 );
+////			glClear ( GL_COLOR_BUFFER_BIT );
+////
+////			glBegin ( GL_QUADS );
+////			glTexCoord2f ( 0.0 , 0.0 );
+////			glVertex2f ( 0.0 , 0.0 );
+////			glTexCoord2f ( width ( ) , 0.0 );
+////			glVertex2f ( width ( ) , 0.0 );
+////			glTexCoord2f ( width ( ) , height ( ) );
+////			glVertex2f ( width ( ) , height ( ) );
+////			glTexCoord2f ( 0.0 , height ( ) );
+////			glVertex2f ( 0.0 , height ( ) );
+////			glEnd ( );
+////			glFlush ( );
+//////			QImage im = fboStep[i]->toImage ( );
+//////			im.save ( QString ( "segundoPasso" ) + QString::number ( stepSize ) + QString ( ".png" ) );
+////			stepSize *= 0.5;
+////			if ( stepSize < 1 )
+////				ExitLoop = true;
+////			glDisable ( GL_TEXTURE_RECTANGLE );
+////			fboStep[i]->release ( );
+////		}
+////
+////
+////		JumpFloodingStep->release ( );
+//
+//
+//
+//		jumpFloodingStep.active( );
+//
+//
+//		glUniform2f ( jumpFloodingStep.uniforms_["viewport"].location, (float)width ( ) , (float)height ( ) );
 //
 //		pm_sz = ( camera_.nearPlane ( ) + camera_.farPlane ( ) ) / ( camera_.nearPlane ( ) - camera_.farPlane ( ) );
 //
-//		glMatrixMode ( GL_PROJECTION );
-//		glPushMatrix ( );
-//		glLoadIdentity ( );
 //
 //		camera_.setOrthographicProjectionMatrix ( 0.0 , GLfloat ( width ( ) ) , 0.0 , GLfloat ( height ( ) ) , -100.0 , 100.0 );
 //
-//		glMultMatrixf ( ( ~camera_.orthographicProjectionMatrix ( ) ) );
-//
 //		while ( !ExitLoop )
 //		{
+//			//std::cout << " i " << stepSize << std::endl;
 //			i = ( i + 1 ) % 2;
 //			fboStep[i]->bind ( );
 //			glActiveTexture ( GL_TEXTURE0 );
 //			glEnable ( GL_TEXTURE_RECTANGLE );
 //			glBindTexture ( GL_TEXTURE_RECTANGLE , fboStep[ ( i + 1 ) % 2]->texture ( ) );
 //
-//			JumpFloodingStep->setUniformValue ( "pm_sz" , pm_sz );
-//			JumpFloodingStep->setUniformValue ( "theta" , angle );
-//			JumpFloodingStep->setUniformValue ( "stepSize" , stepSize );
 //
-//			glClearColor ( 0.0 , 1.0 , 0.0 , 1.0 );
+//			glUniform1f ( jumpFloodingStep.uniforms_["pm_sz"].location,pm_sz );
+//			glUniform1f ( jumpFloodingStep.uniforms_["theta"].location,angle );
+//			glUniform1i ( jumpFloodingStep.uniforms_["stepSize"].location,stepSize );
+//			glUniformMatrix4fv ( jumpFloodingStep.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.orthographicProjectionMatrix() );
+//
+//			glClearColor ( 0.0 , 0.0 , 0.0 , 1.0 );
 //			glClear ( GL_COLOR_BUFFER_BIT );
 //
-//			glBegin ( GL_QUADS );
-//			glTexCoord2f ( 0.0 , 0.0 );
-//			glVertex2f ( 0.0 , 0.0 );
-//			glTexCoord2f ( width ( ) , 0.0 );
-//			glVertex2f ( width ( ) , 0.0 );
-//			glTexCoord2f ( width ( ) , height ( ) );
-//			glVertex2f ( width ( ) , height ( ) );
-//			glTexCoord2f ( 0.0 , height ( ) );
-//			glVertex2f ( 0.0 , height ( ) );
-//			glEnd ( );
-//			glFlush ( );
-////			QImage im = fboStep[i]->toImage ( );
-////			im.save ( QString ( "segundoPasso" ) + QString::number ( stepSize ) + QString ( ".png" ) );
+//			glDrawArrays(GL_TRIANGLES, 0, 6);
+//
 //			stepSize *= 0.5;
 //			if ( stepSize < 1 )
 //				ExitLoop = true;
@@ -925,109 +711,67 @@ void GLWidget::cutawaySetup ( )
 //			fboStep[i]->release ( );
 //		}
 //
+//		jumpFloodingStep.deactive( ) ;
 //
-//		JumpFloodingStep->release ( );
-
-
-
-		jumpFloodingStep.active( );
-
-
-		glUniform2f ( jumpFloodingStep.uniforms_["viewport"].location, (float)width ( ) , (float)height ( ) );
-
-		pm_sz = ( camera_.nearPlane ( ) + camera_.farPlane ( ) ) / ( camera_.nearPlane ( ) - camera_.farPlane ( ) );
-
-
-		camera_.setOrthographicProjectionMatrix ( 0.0 , GLfloat ( width ( ) ) , 0.0 , GLfloat ( height ( ) ) , -100.0 , 100.0 );
-
-		while ( !ExitLoop )
-		{
-			//std::cout << " i " << stepSize << std::endl;
-			i = ( i + 1 ) % 2;
-			fboStep[i]->bind ( );
-			glActiveTexture ( GL_TEXTURE0 );
-			glEnable ( GL_TEXTURE_RECTANGLE );
-			glBindTexture ( GL_TEXTURE_RECTANGLE , fboStep[ ( i + 1 ) % 2]->texture ( ) );
-
-
-			glUniform1f ( jumpFloodingStep.uniforms_["pm_sz"].location,pm_sz );
-			glUniform1f ( jumpFloodingStep.uniforms_["theta"].location,angle );
-			glUniform1i ( jumpFloodingStep.uniforms_["stepSize"].location,stepSize );
-			glUniformMatrix4fv ( jumpFloodingStep.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.orthographicProjectionMatrix() );
-
-			glClearColor ( 0.0 , 0.0 , 0.0 , 1.0 );
-			glClear ( GL_COLOR_BUFFER_BIT );
-
-			glDrawArrays(GL_TRIANGLES, 0, 6);
-
-			stepSize *= 0.5;
-			if ( stepSize < 1 )
-				ExitLoop = true;
-			glDisable ( GL_TEXTURE_RECTANGLE );
-			fboStep[i]->release ( );
-		}
-
-		jumpFloodingStep.deactive( ) ;
-
-//		glClearColor ( 0.0 , 1.0 , 0.0 , 1.0 );
-//		glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+////		glClearColor ( 0.0 , 1.0 , 0.0 , 1.0 );
+////		glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+////
+////		glActiveTexture ( GL_TEXTURE0 );
+////		glEnable ( GL_TEXTURE_RECTANGLE );
+////		glBindTexture( GL_TEXTURE_RECTANGLE , fboStep[i]->texture());
+////
+////		textureViewer.active();
+////
+////		camera_.setOrthographicProjectionMatrix( 0.0f, (float)width() , 0.0f, (float)height(), -1.0, 1.0 );
+////		glUniformMatrix4fv ( textureViewer.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.orthographicProjectionMatrix() );
+////
+////
+////		glDrawArrays(GL_TRIANGLES, 0, 6);
+////
+////
+////		textureViewer.deactive();
+////		glDisable ( GL_TEXTURE_RECTANGLE );
 //
-//		glActiveTexture ( GL_TEXTURE0 );
-//		glEnable ( GL_TEXTURE_RECTANGLE );
-//		glBindTexture( GL_TEXTURE_RECTANGLE , fboStep[i]->texture());
+//		if ( draw_secondary && (reservoir_list_of_vertices.size ( ) != 0) )
+//		{
+//			cutawayWireframe.active ( );
 //
-//		textureViewer.active();
+//			glClearColor ( 1.0 , 1.0 , 1.0 , 1.0 );
+//			glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 //
-//		camera_.setOrthographicProjectionMatrix( 0.0f, (float)width() , 0.0f, (float)height(), -1.0, 1.0 );
-//		glUniformMatrix4fv ( textureViewer.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.orthographicProjectionMatrix() );
+//			glActiveTexture ( GL_TEXTURE0 );
+//			glEnable ( GL_TEXTURE_RECTANGLE );
+//			glBindTexture ( GL_TEXTURE_RECTANGLE , fboStep[i]->texture ( ) );
 //
+//			glUniform3fv ( cutawayWireframe.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
 //
-//		glDrawArrays(GL_TRIANGLES, 0, 6);
+//			glUniform2f ( cutawayWireframe.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
+//			glUniform1i ( cutawayWireframe.uniforms_["cutaway"].location , 1 );
+//			glUniformMatrix4fv ( cutawayWireframe.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+//			glUniformMatrix4fv ( cutawayWireframe.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
 //
+//			//VAO
 //
-//		textureViewer.deactive();
-//		glDisable ( GL_TEXTURE_RECTANGLE );
-
-		if ( draw_secondary && (secondary_list_of_vertices.size ( ) != 0) )
-		{
-			cutawayWireframe.active ( );
-
-			glClearColor ( 1.0 , 1.0 , 1.0 , 1.0 );
-			glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-
-			glActiveTexture ( GL_TEXTURE0 );
-			glEnable ( GL_TEXTURE_RECTANGLE );
-			glBindTexture ( GL_TEXTURE_RECTANGLE , fboStep[i]->texture ( ) );
-
-			glUniform3fv ( cutawayWireframe.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
-
-			glUniform2f ( cutawayWireframe.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
-			glUniform1i ( cutawayWireframe.uniforms_["cutaway"].location , 1 );
-			glUniformMatrix4fv ( cutawayWireframe.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-			glUniformMatrix4fv ( cutawayWireframe.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
-
-			//VAO
-
-			glDrawArrays ( GL_TRIANGLES , 0 , secondary_list_of_vertices.size ( ) );
-
-			glDisable ( GL_TEXTURE_RECTANGLE );
-
-			cutawayWireframe.deactive ( );
-		}
-
-		if ( draw_primary && ( primary_list_of_vertices.size ( ) != 0 ) )
-		{
-			primary.active ( );
-
-			glUniformMatrix4fv ( primary.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-			glUniformMatrix4fv ( primary.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
-
-			glDrawArrays ( GL_TRIANGLES , 0 , primary_list_of_vertices.size ( ) );
-
-			primary.deactive ( );
-		}
-
-	}
+//			glDrawArrays ( GL_TRIANGLES , 0 , reservoir_list_of_vertices.size ( ) );
+//
+//			glDisable ( GL_TEXTURE_RECTANGLE );
+//
+//			cutawayWireframe.deactive ( );
+//		}
+//
+//		if ( draw_primary && ( primary_list_of_vertices.size ( ) != 0 ) )
+//		{
+//			primary.active ( );
+//
+//			glUniformMatrix4fv ( primary.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+//			glUniformMatrix4fv ( primary.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+//
+//			glDrawArrays ( GL_TRIANGLES , 0 , primary_list_of_vertices.size ( ) );
+//
+//			primary.deactive ( );
+//		}
+//
+//	}
 //	else if ( ires_has_been_open_sucessefully )
 //	{
 //
@@ -1041,7 +785,7 @@ void GLWidget::cutawaySetup ( )
 //		glUniformMatrix4fv ( cutawayWireframe.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
 //		glUniformMatrix4fv ( cutawayWireframe.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
 //
-//		glDrawArrays ( GL_TRIANGLES , 0 , secondary_list_of_vertices.size ( ) );
+//		glDrawArrays ( GL_TRIANGLES , 0 , reservoir_list_of_vertices.size ( ) );
 //
 //		cutawayWireframe.deactive ( );
 //
@@ -1085,10 +829,10 @@ void GLWidget::TridimensionalSetUp ( )
 			glUniformMatrix4fv ( secondary.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
 			glUniformMatrix4fv ( secondary.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
 
-//			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, secondary_indices_buffer);
-//			glDrawElements( GL_LINES_ADJACENCY , secondary_list_of_indices.size(), GL_UNSIGNED_INT,0 );
+//			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, reservoir_indices_buffer);
+//			glDrawElements( GL_LINES_ADJACENCY , reservoir_list_of_indices.size(), GL_UNSIGNED_INT,0 );
 
-			glDrawArrays ( GL_LINES_ADJACENCY , 0 , secondary_list_of_vertices.size());
+			glDrawArrays ( GL_LINES_ADJACENCY , 0 , reservoir_list_of_vertices.size());
 			//glDrawArrays( GL_TRIANGLES , 0, primary_list_of_vertices.size());
 
 
@@ -1386,13 +1130,13 @@ void GLWidget::dragLeaveEvent(QDragLeaveEvent *event)
 
 void GLWidget::drawPrimary(  )
 {
-	if ( primary_list_of_vertices.size ( ) > 0)
+	if ( reservoir_list_of_vertices.size( ) > 0 )
 		draw_primary = !draw_primary;
 }
 
 void GLWidget::drawSecondary( )
 {
-	if ( secondary_list_of_vertices.size( ) > 0 )
+	if ( reservoir_list_of_vertices.size( ) > 0 )
 		draw_secondary = !draw_secondary;
 }
 

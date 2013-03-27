@@ -41,7 +41,7 @@ class GLWidget: public QGLWidget
 	public:
 		// FIXME - Putting this as public, but I'm going to search for a better sulution to how feed other
 		//	   widget with data form another one.
-		Ires ires_cornerPoint_test_;
+
 		IRES::CornerPointGrid reservoir_model_;
 		// From QGLWidget
 		explicit GLWidget ( const QGLFormat& format , QWidget* parent = 0 , const QGLWidget* shareWidget = 0 , Qt::WindowFlags f = 0 );
@@ -106,50 +106,33 @@ private:
 	Celer::OpenGL::ShaderManager	textureViewer;
 	Celer::OpenGL::Texture2D 	facePhoto;
 
+
+	GLuint vertexArray;
 	GLuint screen_buffer;
 	GLuint texture_buffer;
 
-	GLuint vertexArray;
-		// Primary Attributes
-		GLuint primary_vertices_buffer;
-		GLuint primary_vertices_location;
-		GLuint primary_normal_buffer;
-		GLuint primary_normal_location;
-		GLuint primary_color_buffer;
-		GLuint primary_color_location;
-		GLuint primary_renderFlag_buffer;
-		GLuint primary_renderFlag_location;
+	// Reservoir Attributes on GPU
+	GLuint reservoir_vertices_buffer;
+	GLuint reservoir_vertices_location;
+	GLuint reservoir_normal_buffer;
+	GLuint reservoir_normal_location;
+	GLuint reservoir_color_buffer;
+	GLuint reservoir_color_location;
+	GLuint reservoir_renderFlag_buffer;
+	GLuint reservoir_renderFlag_location;
 
-		GLuint primary_indices_buffer;
-		//Secundary Attributes
-		GLuint secondary_vertices_buffer;
-		GLuint secondary_vertices_location;
-		GLuint secondary_normal_buffer;
-		GLuint secondary_normal_location;
-		GLuint secondary_color_buffer;
-		GLuint secondary_color_location;
-		GLuint secondary_renderFlag_buffer;
-		GLuint secondary_renderFlag_location;
-
-		GLuint secondary_indices_buffer;
+	GLuint reservoir_indices_buffer;
 
 	bool draw_secondary;
 	bool draw_primary;
 
 	bool ires_has_been_open_sucessefully;
 
-	std::vector<int> 			secondary_list_of_indices;
-	std::vector<Celer::Vector4<GLfloat> > 	secondary_list_of_normals;
-	std::vector<Celer::Vector4<GLfloat> > 	secondary_list_of_vertices;
-	std::vector<Celer::Vector4<GLfloat> >   secondary_list_of_colors;
-	std::vector<GLfloat>    		secondary_list_of_renderFlag;
-
-
-	std::vector<int> 			primary_list_of_indices;
-	std::vector<Celer::Vector4<GLfloat> > 	primary_list_of_normals;
-	std::vector<Celer::Vector4<GLfloat> > 	primary_list_of_vertices;
-	std::vector<Celer::Vector4<GLfloat> >   primary_list_of_colors;
-	std::vector<GLfloat>    		primary_list_of_renderFlag;
+	std::vector<int> 			reservoir_list_of_indices;
+	std::vector<Celer::Vector4<GLfloat> > 	reservoir_list_of_normals;
+	std::vector<Celer::Vector4<GLfloat> > 	reservoir_list_of_vertices;
+	std::vector<Celer::Vector4<GLfloat> >   reservoir_list_of_colors;
+	std::vector<Celer::Vector4<GLfloat> >   reservoir_list_of_renderFlag;
 
 
 	Celer::BoundingBox3<double> 		box;
