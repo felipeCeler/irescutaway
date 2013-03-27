@@ -7,7 +7,9 @@ uniform mat4 ViewMatrix;
 uniform mat4 ProjectionMatrix;
 
 layout (location = 3 ) in vec4 vertices;
-layout (location = 5  ) in vec4 colors;
+layout (location = 4 ) in vec4 normals;
+layout (location = 5 ) in vec4 colors;
+layout (location = 6 ) in vec4 focus;
 
 
 out VertexData
