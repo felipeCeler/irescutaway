@@ -476,6 +476,40 @@ void GLWidget::openIRES ( const std::string& filename )
 		glBindBuffer ( GL_ELEMENT_ARRAY_BUFFER , reservoir_indices_buffer );
 		glBufferData ( GL_ELEMENT_ARRAY_BUFFER , reservoir_list_of_indices.size ( ) * sizeof ( reservoir_list_of_indices[0] ) , &reservoir_list_of_indices[0] , GL_STATIC_DRAW );
 
+
+		GLfloat openGLScreenCoordinates[] =
+		{
+	                      0.0f, (float) height() ,
+	          (float) width() , (float) height() ,
+	          (float) width() , 0.0f,
+
+		  (float) width() , 0.0f,
+		               0.0f, 0.0f,
+		               0.0f, (float) height()  };
+
+		GLfloat textureCoordinates[] =
+		{
+			0.0f,  0.0f,
+			0.0f,  1.0f,
+			1.0f,  0.0f,
+
+			0.0f,  1.0f,
+			1.0f,  1.0f,
+			1.0f,  0.0f,
+		};
+
+		glBindBuffer ( GL_ARRAY_BUFFER , screen_buffer );
+		glBufferData ( GL_ARRAY_BUFFER, 12 *  sizeof( openGLScreenCoordinates[0] ), openGLScreenCoordinates, GL_STATIC_DRAW);
+		// Vertex Array : Set up generic attributes pointers
+		glEnableVertexAttribArray(6);
+		glVertexAttribPointer(6, 2, GL_FLOAT, GL_FALSE, 0, 0);
+
+		glBindBuffer ( GL_ARRAY_BUFFER , texture_buffer );
+		glBufferData ( GL_ARRAY_BUFFER, 12 * sizeof( textureCoordinates[0] ), textureCoordinates , GL_STATIC_DRAW);
+		// Vertex Array : Set up generic attributes pointers
+		glEnableVertexAttribArray(7);
+		glVertexAttribPointer(7, 2, GL_FLOAT, GL_FALSE, 0, 0);
+
 		changeProperty(0);
 
 	}
@@ -566,230 +600,161 @@ void GLWidget::paintGL ( )
 
 	glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 	glClearColor ( 0.0 , 0.0 , 0.0 , 1.0 );
-	TridimensionalSetUp ( );
-	//cutawaySetup ( );
+	//TridimensionalSetUp ( );
+	cutawaySetup ( );
 
 }
 
 void GLWidget::cutawaySetup ( )
 {
 
-//	int i = 1;
-//
-//
-//	camera_.setViewByMouse ( );
-//
-//	if ( buttonRelease_ )
-//	{
-//		processMultiKeys ( );
-//	}
-//
-//	camera_.computerViewMatrix ( );
-//
-//	camera_.setPerspectiveProjectionMatrix ( zoom_angle_ , camera_.aspectRatio ( ) , 1.0 , 1000.0 * box.diagonal ( ) );
-//
-//
-//	if ( ires_has_been_open_sucessefully  )
-//	{
-//
-// 		jumpFloodInitialization.active ( );
-//
-// 		fboStep[1]->bind();
-//
-//		glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
-//		glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-//
-//		//glUniform3fv( jumpFloodInitialization.uniforms_["lightDirection"].location,0,camera_.position());
-//
-//		glUniformMatrix4fv ( jumpFloodInitialization.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-//		glUniformMatrix4fv ( jumpFloodInitialization.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix()  );
-//
-//		//VAO
-//
-//		glDrawArrays( GL_TRIANGLES , 0, primary_list_of_vertices.size());
-//
-//
-//		fboStep[1]->release( );
-//
-//		jumpFloodInitialization.deactive ( );
-//
-//
-//		// Do Jumping Flooding Algorithm
-//		int stepSize = ( width ( ) > height ( ) ? width ( ) : height ( ) ) * 0.5;
-//		bool ExitLoop = 0;
-//
-//
-//
-////		JumpFloodingStep->bind ( );
-////
-////		JumpFloodingStep->setUniformValue ( "viewport" , (float)width ( ) , (float)height ( ) );
-////
-////		pm_sz = ( camera_.nearPlane ( ) + camera_.farPlane ( ) ) / ( camera_.nearPlane ( ) - camera_.farPlane ( ) );
-////
-////		glMatrixMode ( GL_PROJECTION );
-////		glPushMatrix ( );
-////		glLoadIdentity ( );
-////
-////		camera_.setOrthographicProjectionMatrix ( 0.0 , GLfloat ( width ( ) ) , 0.0 , GLfloat ( height ( ) ) , -100.0 , 100.0 );
-////
-////		glMultMatrixf ( ( ~camera_.orthographicProjectionMatrix ( ) ) );
-////
-////		while ( !ExitLoop )
-////		{
-////			i = ( i + 1 ) % 2;
-////			fboStep[i]->bind ( );
-////			glActiveTexture ( GL_TEXTURE0 );
-////			glEnable ( GL_TEXTURE_RECTANGLE );
-////			glBindTexture ( GL_TEXTURE_RECTANGLE , fboStep[ ( i + 1 ) % 2]->texture ( ) );
-////
-////			JumpFloodingStep->setUniformValue ( "pm_sz" , pm_sz );
-////			JumpFloodingStep->setUniformValue ( "theta" , angle );
-////			JumpFloodingStep->setUniformValue ( "stepSize" , stepSize );
-////
-////			glClearColor ( 0.0 , 1.0 , 0.0 , 1.0 );
-////			glClear ( GL_COLOR_BUFFER_BIT );
-////
-////			glBegin ( GL_QUADS );
-////			glTexCoord2f ( 0.0 , 0.0 );
-////			glVertex2f ( 0.0 , 0.0 );
-////			glTexCoord2f ( width ( ) , 0.0 );
-////			glVertex2f ( width ( ) , 0.0 );
-////			glTexCoord2f ( width ( ) , height ( ) );
-////			glVertex2f ( width ( ) , height ( ) );
-////			glTexCoord2f ( 0.0 , height ( ) );
-////			glVertex2f ( 0.0 , height ( ) );
-////			glEnd ( );
-////			glFlush ( );
-//////			QImage im = fboStep[i]->toImage ( );
-//////			im.save ( QString ( "segundoPasso" ) + QString::number ( stepSize ) + QString ( ".png" ) );
-////			stepSize *= 0.5;
-////			if ( stepSize < 1 )
-////				ExitLoop = true;
-////			glDisable ( GL_TEXTURE_RECTANGLE );
-////			fboStep[i]->release ( );
-////		}
-////
-////
-////		JumpFloodingStep->release ( );
-//
-//
-//
-//		jumpFloodingStep.active( );
-//
-//
-//		glUniform2f ( jumpFloodingStep.uniforms_["viewport"].location, (float)width ( ) , (float)height ( ) );
-//
-//		pm_sz = ( camera_.nearPlane ( ) + camera_.farPlane ( ) ) / ( camera_.nearPlane ( ) - camera_.farPlane ( ) );
-//
-//
-//		camera_.setOrthographicProjectionMatrix ( 0.0 , GLfloat ( width ( ) ) , 0.0 , GLfloat ( height ( ) ) , -100.0 , 100.0 );
-//
-//		while ( !ExitLoop )
-//		{
-//			//std::cout << " i " << stepSize << std::endl;
-//			i = ( i + 1 ) % 2;
-//			fboStep[i]->bind ( );
-//			glActiveTexture ( GL_TEXTURE0 );
-//			glEnable ( GL_TEXTURE_RECTANGLE );
-//			glBindTexture ( GL_TEXTURE_RECTANGLE , fboStep[ ( i + 1 ) % 2]->texture ( ) );
-//
-//
-//			glUniform1f ( jumpFloodingStep.uniforms_["pm_sz"].location,pm_sz );
-//			glUniform1f ( jumpFloodingStep.uniforms_["theta"].location,angle );
-//			glUniform1i ( jumpFloodingStep.uniforms_["stepSize"].location,stepSize );
-//			glUniformMatrix4fv ( jumpFloodingStep.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.orthographicProjectionMatrix() );
-//
-//			glClearColor ( 0.0 , 0.0 , 0.0 , 1.0 );
-//			glClear ( GL_COLOR_BUFFER_BIT );
-//
-//			glDrawArrays(GL_TRIANGLES, 0, 6);
-//
-//			stepSize *= 0.5;
-//			if ( stepSize < 1 )
-//				ExitLoop = true;
-//			glDisable ( GL_TEXTURE_RECTANGLE );
-//			fboStep[i]->release ( );
-//		}
-//
-//		jumpFloodingStep.deactive( ) ;
-//
-////		glClearColor ( 0.0 , 1.0 , 0.0 , 1.0 );
-////		glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-////
-////		glActiveTexture ( GL_TEXTURE0 );
-////		glEnable ( GL_TEXTURE_RECTANGLE );
-////		glBindTexture( GL_TEXTURE_RECTANGLE , fboStep[i]->texture());
-////
-////		textureViewer.active();
-////
-////		camera_.setOrthographicProjectionMatrix( 0.0f, (float)width() , 0.0f, (float)height(), -1.0, 1.0 );
-////		glUniformMatrix4fv ( textureViewer.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.orthographicProjectionMatrix() );
-////
-////
-////		glDrawArrays(GL_TRIANGLES, 0, 6);
-////
-////
-////		textureViewer.deactive();
-////		glDisable ( GL_TEXTURE_RECTANGLE );
-//
-//		if ( draw_secondary && (reservoir_list_of_vertices.size ( ) != 0) )
-//		{
-//			cutawayWireframe.active ( );
-//
-//			glClearColor ( 1.0 , 1.0 , 1.0 , 1.0 );
-//			glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-//
-//			glActiveTexture ( GL_TEXTURE0 );
-//			glEnable ( GL_TEXTURE_RECTANGLE );
-//			glBindTexture ( GL_TEXTURE_RECTANGLE , fboStep[i]->texture ( ) );
-//
-//			glUniform3fv ( cutawayWireframe.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
-//
-//			glUniform2f ( cutawayWireframe.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
-//			glUniform1i ( cutawayWireframe.uniforms_["cutaway"].location , 1 );
-//			glUniformMatrix4fv ( cutawayWireframe.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-//			glUniformMatrix4fv ( cutawayWireframe.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
-//
-//			//VAO
-//
-//			glDrawArrays ( GL_TRIANGLES , 0 , reservoir_list_of_vertices.size ( ) );
-//
-//			glDisable ( GL_TEXTURE_RECTANGLE );
-//
-//			cutawayWireframe.deactive ( );
-//		}
-//
-//		if ( draw_primary && ( primary_list_of_vertices.size ( ) != 0 ) )
-//		{
-//			primary.active ( );
-//
-//			glUniformMatrix4fv ( primary.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-//			glUniformMatrix4fv ( primary.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
-//
-//			glDrawArrays ( GL_TRIANGLES , 0 , primary_list_of_vertices.size ( ) );
-//
-//			primary.deactive ( );
-//		}
-//
-//	}
-//	else if ( ires_has_been_open_sucessefully )
-//	{
-//
-//		cutawayWireframe.active ( );
-//
-//		glUniform3fv ( cutawayWireframe.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
-//
-//		glUniform2f ( cutawayWireframe.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
-//		glUniform1i ( cutawayWireframe.uniforms_["cutaway"].location , 0 );
-//
-//		glUniformMatrix4fv ( cutawayWireframe.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-//		glUniformMatrix4fv ( cutawayWireframe.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
-//
-//		glDrawArrays ( GL_TRIANGLES , 0 , reservoir_list_of_vertices.size ( ) );
-//
-//		cutawayWireframe.deactive ( );
-//
-//	}
+	int i = 1;
+
+
+	camera_.setViewByMouse ( );
+
+	if ( buttonRelease_ )
+	{
+		processMultiKeys ( );
+	}
+
+	camera_.computerViewMatrix ( );
+
+	camera_.setPerspectiveProjectionMatrix ( zoom_angle_ , camera_.aspectRatio ( ) , 1.0 , 1000.0 * box.diagonal ( ) );
+
+
+	if ( ires_has_been_open_sucessefully  )
+	{
+
+ 		jumpFloodInitialization.active ( );
+
+ 		fboStep[1]->bind();
+
+		glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
+		glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
+		//glUniform3fv( jumpFloodInitialization.uniforms_["lightDirection"].location,0,camera_.position());
+
+		glUniformMatrix4fv ( jumpFloodInitialization.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+		glUniformMatrix4fv ( jumpFloodInitialization.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix()  );
+
+		//VAO
+
+		glDrawArrays ( GL_LINES_ADJACENCY , 0 , reservoir_list_of_vertices.size());
+
+
+		fboStep[1]->release( );
+
+		jumpFloodInitialization.deactive ( );
+
+
+		// Do Jumping Flooding Algorithm
+		int stepSize = ( width ( ) > height ( ) ? width ( ) : height ( ) ) * 0.5;
+		bool ExitLoop = 0;
+
+
+		jumpFloodingStep.active( );
+
+
+		glUniform2f ( jumpFloodingStep.uniforms_["viewport"].location, (float)width ( ) , (float)height ( ) );
+
+		pm_sz = ( camera_.nearPlane ( ) + camera_.farPlane ( ) ) / ( camera_.nearPlane ( ) - camera_.farPlane ( ) );
+
+
+		camera_.setOrthographicProjectionMatrix ( 0.0 , GLfloat ( width ( ) ) , 0.0 , GLfloat ( height ( ) ) , -100.0 , 100.0 );
+
+		while ( !ExitLoop )
+		{
+			//std::cout << " i " << stepSize << std::endl;
+			i = ( i + 1 ) % 2;
+			fboStep[i]->bind ( );
+			glActiveTexture ( GL_TEXTURE0 );
+			glEnable ( GL_TEXTURE_RECTANGLE );
+			glBindTexture ( GL_TEXTURE_RECTANGLE , fboStep[ ( i + 1 ) % 2]->texture ( ) );
+
+
+			glUniform1f ( jumpFloodingStep.uniforms_["pm_sz"].location,pm_sz );
+			glUniform1f ( jumpFloodingStep.uniforms_["theta"].location,angle );
+			glUniform1i ( jumpFloodingStep.uniforms_["stepSize"].location,stepSize );
+			glUniformMatrix4fv ( jumpFloodingStep.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.orthographicProjectionMatrix() );
+
+			glClearColor ( 0.0 , 0.0 , 0.0 , 1.0 );
+			glClear ( GL_COLOR_BUFFER_BIT );
+
+			glDrawArrays(GL_TRIANGLES, 0, 6);
+
+			stepSize *= 0.5;
+			if ( stepSize < 1 )
+				ExitLoop = true;
+			glDisable ( GL_TEXTURE_RECTANGLE );
+			fboStep[i]->release ( );
+		}
+
+		jumpFloodingStep.deactive( ) ;
+
+
+		if ( draw_secondary && (reservoir_list_of_vertices.size ( ) != 0) )
+		{
+			cutawayWireframe.active ( );
+
+			glClearColor ( 1.0 , 1.0 , 1.0 , 1.0 );
+			glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
+			glActiveTexture ( GL_TEXTURE0 );
+			glEnable ( GL_TEXTURE_RECTANGLE );
+			glBindTexture ( GL_TEXTURE_RECTANGLE , fboStep[i]->texture ( ) );
+
+			glUniform3fv ( cutawayWireframe.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
+
+			glUniform2f ( cutawayWireframe.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
+			glUniform1i ( cutawayWireframe.uniforms_["cutaway"].location , 1 );
+			glUniformMatrix4fv ( cutawayWireframe.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+			glUniformMatrix4fv ( cutawayWireframe.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+
+			//VAO
+
+			glDrawArrays ( GL_LINES_ADJACENCY , 0 , reservoir_list_of_vertices.size());
+
+			glDisable ( GL_TEXTURE_RECTANGLE );
+
+			cutawayWireframe.deactive ( );
+		}
+
+		if ( draw_primary && (reservoir_list_of_vertices.size ( ) != 0)  )
+		{
+			primary.active ( );
+
+			glUniform3fv ( primary.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
+
+			glUniform2f ( primary.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
+			glUniform1i ( primary.uniforms_["cutaway"].location , 1 );
+			glUniformMatrix4fv ( primary.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+			glUniformMatrix4fv ( primary.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+
+			glDrawArrays ( GL_LINES_ADJACENCY , 0 , reservoir_list_of_vertices.size());
+
+			primary.deactive ( );
+		}
+
+	}
+	else if ( ires_has_been_open_sucessefully )
+	{
+
+		cutawayWireframe.active ( );
+
+		glUniform3fv ( cutawayWireframe.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
+
+		glUniform2f ( cutawayWireframe.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
+		glUniform1i ( cutawayWireframe.uniforms_["cutaway"].location , 0 );
+
+		glUniformMatrix4fv ( cutawayWireframe.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+		glUniformMatrix4fv ( cutawayWireframe.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+
+		glDrawArrays ( GL_LINES_ADJACENCY , 0 , reservoir_list_of_vertices.size());
+
+		cutawayWireframe.deactive ( );
+
+	}
 
 }
 
@@ -887,7 +852,7 @@ void GLWidget::LoadShaders ( )
 
 	textureViewer.create((shadersDir.path ()+"/share/Shaders/fboTest.vert").toStdString(),(shadersDir.path ()+"/share/Shaders/fboTest.frag").toStdString());
 
-	primary.create((shadersDir.path ()+"/share/Shaders/Primary.vert").toStdString(),(shadersDir.path ()+"/share/Shaders/Primary.frag").toStdString());
+	primary.create((shadersDir.path ()+"/share/Shaders/Primary.vert").toStdString(),(shadersDir.path ()+"/share/Shaders/Primary.geom").toStdString(),(shadersDir.path ()+"/share/Shaders/Primary.frag").toStdString());
 
 	secondary.create((shadersDir.path ()+"/share/Shaders/Secondary.vert").toStdString(),(shadersDir.path ()+"/share/Shaders/Secondary.geom").toStdString(),(shadersDir.path ()+"/share/Shaders/Secondary.frag").toStdString());
 

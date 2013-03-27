@@ -3,16 +3,19 @@
 
 uniform sampler2DRect primary;
 
-noperspective in vec3 dist;
 
-uniform vec3 lightDirection;
+noperspective in vec4 dist;
+
 
 in VertexData
 {
     vec4 propertyColor;
     vec4 normal;
 
-} geometryShaderOut_VertexData;
+} geometryShader_VertexData;
+
+
+uniform vec3 lightDirection;
 
 out vec4 fragmentColor;
 
@@ -20,9 +23,6 @@ uniform int cutaway;
 
 void main ( void )
 {
-
-	float d = min ( dist[0] , min ( dist[1] , dist[2] ) );
-	float I = exp2 ( -2 * d * d );
 
 
 	if ( cutaway == 1 )
@@ -37,6 +37,11 @@ void main ( void )
 		}
 	}
 
-	fragmentColor = I * vec4 ( 0.0 , 0.0 , 0.0 , 1.0 ) + ( 1.0 - I ) * (geometryShaderOut_VertexData.propertyColor + vec4 ( 1.0 , 1.0 , 1.0, 1.0 ));
+	float d = min(dist[0], min(dist[1], min(dist[2], dist[3])));
+	float I = exp2(-2 * d * d);
+
+	fragmentColor = I * vec4 ( 0.0 , 0.0 , 0.0 , 1.0 ) + ( 1.0 - I ) * (geometryShader_VertexData.propertyColor);
 
 }
+
+

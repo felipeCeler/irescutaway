@@ -6,9 +6,10 @@ uniform mat4 ModelMatrix;
 uniform mat4 ViewMatrix;
 uniform mat4 ProjectionMatrix;
 
-layout (location = 0 ) in vec3 vertices;
-layout (location = 1 ) in vec3 normals;
-
+layout (location = 1 ) in vec4 vertices;
+layout (location = 2 ) in vec4 normals;
+layout (location = 3 ) in vec4 colors;
+layout (location = 4 ) in vec4 focus;
 
 out vec3 normal;
 out vec4 color;
@@ -17,15 +18,21 @@ void main()
 {
 
 
-	mat3 normalMatrix = mat3(ViewMatrix);
-	normalMatrix = transpose(normalMatrix);
-	normalMatrix = inverse(normalMatrix);
+//	mat3 normalMatrix = mat3(ViewMatrix);
+//	normalMatrix = transpose(normalMatrix);
+//	normalMatrix = inverse(normalMatrix);
+//
+//	normal = normalize(normalMatrix * normals);
 
-	normal = normalize(normalMatrix * normals);
-
-	color = vec4(1.0);
-
-	gl_Position = ProjectionMatrix * ViewMatrix * vec4(vertices,1.0);
+	if ( focus.x == 0.0 )
+	{
+		gl_Position = ProjectionMatrix * ViewMatrix * vertices;
+	}
+	else
+	{
+		gl_Position = ProjectionMatrix * ViewMatrix * vec4(1.0,0.0,0.0,0.0);
+	}
 
 }
+
 
