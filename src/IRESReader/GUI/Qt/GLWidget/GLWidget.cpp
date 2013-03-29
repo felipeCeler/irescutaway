@@ -87,8 +87,8 @@ void GLWidget::initializeGL ( )
 		glGenBuffers ( 1, &reservoir_vertices_buffer );
 		glGenBuffers ( 1, &reservoir_normal_buffer );
 		glGenBuffers ( 1, &reservoir_color_buffer );
-		glGenBuffers ( 1, &reservoir_renderFlag_buffer);
-		glGenBuffers ( 1, &reservoir_indices_buffer);
+		glGenBuffers ( 1, &reservoir_renderFlag_buffer );
+		glGenBuffers ( 1, &reservoir_indices_buffer );
 
 		glGenBuffers ( 1, &screen_buffer);
 		glGenBuffers ( 1, &texture_buffer);
