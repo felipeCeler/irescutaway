@@ -94,6 +94,8 @@ void GLWidget::initializeGL ( )
 		glGenBuffers ( 1, &texture_buffer);
 	glBindVertexArray(vertexArray);
 
+	glGenVertexArrays ( 1 , &vertexArrayScreen );
+
 
 	reservoir_vertices_location 	= 1;
 	reservoir_normal_location 	= 2;
@@ -204,11 +206,17 @@ void GLWidget::changePropertyRange ( const double& minRange, const double& maxRa
 		}
 	}
 
+
+	glBindVertexArray(vertexArray);
+
 	glBindBuffer ( GL_ARRAY_BUFFER , reservoir_color_buffer );
 	glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_colors.size ( ) * sizeof ( reservoir_list_of_colors[0] ) , &reservoir_list_of_colors[0] , GL_STREAM_DRAW );
 
 	glBindBuffer ( GL_ARRAY_BUFFER , reservoir_renderFlag_buffer );
 	glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_renderFlag.size ( ) * sizeof ( reservoir_list_of_renderFlag[0] ) , &reservoir_list_of_renderFlag[0] , GL_STREAM_DRAW );
+
+	glBindVertexArray(0);
+
 }
 
 void GLWidget::changeProperty ( int property_index )
@@ -299,8 +307,13 @@ void GLWidget::changeProperty ( int property_index )
 		}
 	}
 
+	glBindVertexArray(vertexArray);
+
 	glBindBuffer ( GL_ARRAY_BUFFER , reservoir_color_buffer );
 	glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_colors.size ( ) * sizeof ( reservoir_list_of_colors[0] ) , &reservoir_list_of_colors[0] , GL_STREAM_DRAW );
+
+	glBindVertexArray(0);
+
 	// Vertex Array : Set up generic attributes pointers
 
 }
@@ -455,6 +468,10 @@ void GLWidget::openIRES ( const std::string& filename )
 
 		cameraStep_ = 10.0f;
 
+
+		glBindVertexArray(vertexArray);
+
+
 		glBindBuffer ( GL_ARRAY_BUFFER , reservoir_vertices_buffer );
 		glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_vertices.size ( ) * sizeof ( reservoir_list_of_vertices[0] ) , &reservoir_list_of_vertices[0] , GL_STATIC_DRAW );
 		// Vertex Array : Set up generic attributes pointers
@@ -475,6 +492,10 @@ void GLWidget::openIRES ( const std::string& filename )
 
 		glBindBuffer ( GL_ELEMENT_ARRAY_BUFFER , reservoir_indices_buffer );
 		glBufferData ( GL_ELEMENT_ARRAY_BUFFER , reservoir_list_of_indices.size ( ) * sizeof ( reservoir_list_of_indices[0] ) , &reservoir_list_of_indices[0] , GL_STATIC_DRAW );
+
+		glBindVertexArray(0);
+
+		glBindVertexArray(vertexArrayScreen);
 
 
 		GLfloat openGLScreenCoordinates[] =
@@ -509,6 +530,8 @@ void GLWidget::openIRES ( const std::string& filename )
 		// Vertex Array : Set up generic attributes pointers
 		glEnableVertexAttribArray(7);
 		glVertexAttribPointer(7, 2, GL_FLOAT, GL_FALSE, 0, 0);
+
+		glBindVertexArray(0);
 
 		changeProperty(0);
 
@@ -556,6 +579,8 @@ void GLWidget::resizeGL ( int width , int height )
 	fboInitialization = new QGLFramebufferObject ( width , height , format );
 
 
+	glBindVertexArray(vertexArrayScreen);
+
 
 	GLfloat openGLScreenCoordinates[] =
 	{
@@ -586,6 +611,7 @@ void GLWidget::resizeGL ( int width , int height )
 	glBindBuffer ( GL_ARRAY_BUFFER , texture_buffer );
 	glBufferData ( GL_ARRAY_BUFFER, 12 * sizeof( textureCoordinates[0] ), textureCoordinates , GL_STATIC_DRAW);
 	// Vertex Array : Set up generic attributes pointers
+	glBindVertexArray(0);
 
 
 }
@@ -639,9 +665,9 @@ void GLWidget::cutawaySetup ( )
 		glUniformMatrix4fv ( jumpFloodInitialization.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix()  );
 
 		//VAO
-
+		glBindVertexArray(vertexArray);
 		glDrawArrays ( GL_LINES_ADJACENCY , 0 , reservoir_list_of_vertices.size());
-
+		glBindVertexArray(0);
 
 		fboStep[1]->release( );
 
@@ -681,7 +707,9 @@ void GLWidget::cutawaySetup ( )
 			glClearColor ( 0.0 , 0.0 , 0.0 , 1.0 );
 			glClear ( GL_COLOR_BUFFER_BIT );
 
+			glBindVertexArray(vertexArrayScreen);
 			glDrawArrays(GL_TRIANGLES, 0, 6);
+			glBindVertexArray(0);
 
 			stepSize *= 0.5;
 			if ( stepSize < 1 )
@@ -712,9 +740,9 @@ void GLWidget::cutawaySetup ( )
 			glUniformMatrix4fv ( cutawayWireframe.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
 
 			//VAO
-
+			glBindVertexArray(vertexArray);
 			glDrawArrays ( GL_LINES_ADJACENCY , 0 , reservoir_list_of_vertices.size());
-
+			glBindVertexArray(0);
 			glDisable ( GL_TEXTURE_RECTANGLE );
 
 			cutawayWireframe.deactive ( );
@@ -731,7 +759,9 @@ void GLWidget::cutawaySetup ( )
 			glUniformMatrix4fv ( primary.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
 			glUniformMatrix4fv ( primary.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
 
+			glBindVertexArray(vertexArray);
 			glDrawArrays ( GL_LINES_ADJACENCY , 0 , reservoir_list_of_vertices.size());
+			glBindVertexArray(0);
 
 			primary.deactive ( );
 		}

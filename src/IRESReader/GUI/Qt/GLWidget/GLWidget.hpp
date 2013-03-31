@@ -108,6 +108,7 @@ private:
 
 
 	GLuint vertexArray;
+	GLuint vertexArrayScreen;
 	GLuint screen_buffer;
 	GLuint texture_buffer;
 
