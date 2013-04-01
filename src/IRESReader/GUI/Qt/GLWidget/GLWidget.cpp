@@ -770,19 +770,19 @@ void GLWidget::cutawaySetup ( )
 	else if ( ires_has_been_open_sucessefully )
 	{
 
-		cutawayWireframe.active ( );
-
-		glUniform3fv ( cutawayWireframe.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
-
-		glUniform2f ( cutawayWireframe.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
-		glUniform1i ( cutawayWireframe.uniforms_["cutaway"].location , 0 );
-
-		glUniformMatrix4fv ( cutawayWireframe.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-		glUniformMatrix4fv ( cutawayWireframe.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
-
-		glDrawArrays ( GL_LINES_ADJACENCY , 0 , reservoir_list_of_vertices.size());
-
-		cutawayWireframe.deactive ( );
+//		cutawayWireframe.active ( );
+//
+//		glUniform3fv ( cutawayWireframe.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
+//
+//		glUniform2f ( cutawayWireframe.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
+//		glUniform1i ( cutawayWireframe.uniforms_["cutaway"].location , 0 );
+//
+//		glUniformMatrix4fv ( cutawayWireframe.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+//		glUniformMatrix4fv ( cutawayWireframe.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+//
+//		glDrawArrays ( GL_LINES_ADJACENCY , 0 , reservoir_list_of_vertices.size());
+//
+//		cutawayWireframe.deactive ( );
 
 	}
 
