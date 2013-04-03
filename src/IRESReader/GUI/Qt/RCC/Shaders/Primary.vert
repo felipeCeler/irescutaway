@@ -39,12 +39,12 @@ void main()
 
 	if ( focus.x == 0.0 )
 	{
-		vertexShader_VertexData.propertyColor = vec4(1.0,0.0,0.0,1.0);
+		vertexShader_VertexData.propertyColor = colors;
 		gl_Position = ProjectionMatrix * ViewMatrix * (1.5*vertices);
 	}
 	else
 	{
-		vertexShader_VertexData.propertyColor = vec4(1.0,0.0,0.0,1.0);
+		vertexShader_VertexData.propertyColor = colors;
 		gl_Position = ProjectionMatrix * ViewMatrix * vec4(1.0,0.0,0.0,0.0);
 	}
 

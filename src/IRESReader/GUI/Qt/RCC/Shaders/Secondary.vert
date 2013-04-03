@@ -37,16 +37,19 @@ void main()
 //
 //	color = colors;
 
-	if ( focus.x == 0.0 )
-	{
-		vertexShader_VertexData.propertyColor = colors; //vec4(1.0,0.0,0.0,1.0);
-		gl_Position = ProjectionMatrix * ViewMatrix * vertices;
-	}
-	else
-	{
-		vertexShader_VertexData.propertyColor = vec4(0.0,1.0,1.0,1.0);
-		gl_Position = ProjectionMatrix * ViewMatrix * vec4(1.0,0.0,0.0,0.0);
-	}
+	vertexShader_VertexData.propertyColor = colors; //vec4(1.0,0.0,0.0,1.0);
+	gl_Position = ProjectionMatrix * ViewMatrix * vertices;
+
+//	if ( focus.x == 0.0 )
+//	{
+//		vertexShader_VertexData.propertyColor = colors; //vec4(1.0,0.0,0.0,1.0);
+//		gl_Position = ProjectionMatrix * ViewMatrix * vertices;
+//	}
+//	else
+//	{
+//		vertexShader_VertexData.propertyColor = colors;
+//		gl_Position = ProjectionMatrix * ViewMatrix * vec4(1.0,0.0,0.0,0.0);
+//	}
 
 
 
