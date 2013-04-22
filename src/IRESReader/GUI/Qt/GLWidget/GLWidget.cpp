@@ -88,6 +88,7 @@ void GLWidget::initializeGL ( )
 		glGenBuffers ( 1, &reservoir_normal_buffer );
 		glGenBuffers ( 1, &reservoir_color_buffer );
 		glGenBuffers ( 1, &reservoir_renderFlag_buffer );
+		glGenBuffers ( 1, &reservoir_IJK_buffer );
 		glGenBuffers ( 1, &reservoir_indices_buffer );
 
 		glGenBuffers ( 1, &screen_buffer);
@@ -101,11 +102,13 @@ void GLWidget::initializeGL ( )
 	reservoir_normal_location 	= 2;
 	reservoir_color_location 	= 3;
 	reservoir_renderFlag_location 	= 4;
+	reservoir_IJK_location 		= 5;
 
 
 	draw_secondary = 1;
 	draw_primary = 0;
 
+	isCutaway = 0;
 
 
 }
@@ -318,6 +321,75 @@ void GLWidget::changeProperty ( int property_index )
 
 }
 
+void GLWidget::changeIJK ( const int& min_i, const int& max_i,
+                           const int& min_j, const int& max_j,
+                           const int& min_k, const int& max_k )
+{
+	min_I_ = min_i;
+	max_I_ = max_i;
+	min_J_ = min_j;
+	max_J_ = max_j;
+	min_K_ = min_k;
+	max_K_ = max_k;
+
+	std::cout << " min_I " << min_I_ << std::endl;
+	std::cout << " max_I " << max_I_ << std::endl;
+	std::cout << " min_J " << min_J_ << std::endl;
+	std::cout << " max_J " << max_J_ << std::endl;
+	std::cout << " min_K " << min_K_ << std::endl;
+	std::cout << " max_K " << max_K_ << std::endl;
+
+}
+
+void GLWidget::changeMaxI ( const int& value )
+{
+	max_I_ = value;
+	std::cout << " min_I " << min_I_ << std::endl;
+	std::cout << " max_I " << max_I_ << std::endl;
+	updateGL();
+}
+
+void GLWidget::changeMaxJ ( const int& value )
+{
+	max_J_ = value;
+	std::cout << " min_J " << min_J_ << std::endl;
+	std::cout << " max_J " << max_J_ << std::endl;
+	updateGL();
+}
+
+void GLWidget::changeMaxK ( const int& value )
+{
+	max_K_ = value;
+	std::cout << " min_K " << min_K_ << std::endl;
+	std::cout << " max_K " << max_K_ << std::endl;
+	updateGL();
+}
+
+void GLWidget::changeMinI ( const int& value )
+{
+	min_I_ = value;
+	std::cout << " min_I " << min_I_ << std::endl;
+	std::cout << " max_I " << max_I_ << std::endl;
+	updateGL();
+}
+
+void GLWidget::changeMinJ ( const int& value )
+{
+	min_J_ = value;
+	std::cout << " min_J " << min_J_ << std::endl;
+	std::cout << " max_J " << max_J_ << std::endl;
+	updateGL();
+}
+
+void GLWidget::changeMinK ( const int& value )
+{
+	min_K_ = value;
+	std::cout << " min_K " << min_K_ << std::endl;
+	std::cout << " max_K " << max_K_ << std::endl;
+	updateGL();
+}
+
+
 void GLWidget::openIRES ( const std::string& filename )
 {
 
@@ -327,11 +399,12 @@ void GLWidget::openIRES ( const std::string& filename )
 	{
 		ires_has_been_open_sucessefully = 1;
 
-		reservoir_list_of_indices.clear ( );
 		reservoir_list_of_vertices.clear ( );
 		reservoir_list_of_normals.clear ( );
 		reservoir_list_of_colors.clear ( );
+		reservoir_list_of_IJKs.clear ( );
 		reservoir_list_of_renderFlag.clear( );
+		reservoir_list_of_indices.clear ( );
 
 
 		box = Celer::BoundingBox3<double> ( );
@@ -351,10 +424,31 @@ void GLWidget::openIRES ( const std::string& filename )
 
 		std::size_t i = 0;
 
-		while ( i <  reservoir_model_.blocks.size ( ))
+		while ( i < reservoir_model_.blocks.size ( ) )
 		{
 			if ( reservoir_model_.blocks[i] != -1)
 			{
+
+
+				/// From Nicole`s presentation
+				Celer::Vector4<int> IJK ( (  (i/8) % reservoir_model_.header_.number_of_Blocks_in_I_Direction) + 1,
+						          ( ((i/8) / reservoir_model_.header_.number_of_Blocks_in_I_Direction) % reservoir_model_.header_.number_of_Blocks_in_J_Direction ) +1,
+						          (  (i/8) / (reservoir_model_.header_.number_of_Blocks_in_I_Direction * reservoir_model_.header_.number_of_Blocks_in_J_Direction )) +1,
+						          0 );
+
+//				if ( IJK.z == 3 )
+//				{
+//					std::cout << IJK ;
+//				}
+
+				Celer::Vector4<int> IJKs [] =
+				{
+
+				     IJK,IJK,IJK,IJK, IJK,IJK,IJK,IJK, IJK,IJK,IJK,IJK, IJK,IJK,IJK,IJK, IJK,IJK,IJK,IJK ,IJK,IJK,IJK,IJK
+
+				};
+
+
 				int index [] =
 				{
 				    // Top Face
@@ -371,40 +465,103 @@ void GLWidget::openIRES ( const std::string& filename )
 				    reservoir_model_.blocks[i+0],reservoir_model_.blocks[i+1],reservoir_model_.blocks[i+7],reservoir_model_.blocks[i+6] /* 30 - 35*/
 				};
 
+				// Top Face
+				Celer::Vector3<GLfloat> v0( static_cast<GLfloat>(reservoir_model_.vertices[index[0]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[0]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[0]].z));
+				Celer::Vector3<GLfloat> v1( static_cast<GLfloat>(reservoir_model_.vertices[index[1]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[1]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[1]].z));
+				Celer::Vector3<GLfloat> v3( static_cast<GLfloat>(reservoir_model_.vertices[index[2]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[2]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[2]].z));
+				Celer::Vector3<GLfloat> v2( static_cast<GLfloat>(reservoir_model_.vertices[index[3]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[3]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[3]].z));
+				// Bottom Face
+				Celer::Vector3<GLfloat> v4( static_cast<GLfloat>(reservoir_model_.vertices[index[4]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[4]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[4]].z));
+				Celer::Vector3<GLfloat> v7( static_cast<GLfloat>(reservoir_model_.vertices[index[5]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[5]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[5]].z));
+				Celer::Vector3<GLfloat> v5( static_cast<GLfloat>(reservoir_model_.vertices[index[6]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[6]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[6]].z));
+				Celer::Vector3<GLfloat> v6( static_cast<GLfloat>(reservoir_model_.vertices[index[7]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[7]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[7]].z));
 
 				Celer::Vector4<GLfloat> vertices [] =
 				{
 				    // Top Face
-				    Celer::Vector4<GLfloat> ( static_cast<GLfloat>(reservoir_model_.vertices[index[0]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[0]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[0]].z), 1.0f),
-				    Celer::Vector4<GLfloat> ( static_cast<GLfloat>(reservoir_model_.vertices[index[1]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[1]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[1]].z), 1.0f),
-				    Celer::Vector4<GLfloat> ( static_cast<GLfloat>(reservoir_model_.vertices[index[2]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[2]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[2]].z), 1.0f),
-				    Celer::Vector4<GLfloat> ( static_cast<GLfloat>(reservoir_model_.vertices[index[3]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[3]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[3]].z), 1.0f),
+				    Celer::Vector4<GLfloat> ( v0, 1.0f),
+				    Celer::Vector4<GLfloat> ( v1, 1.0f),
+				    Celer::Vector4<GLfloat> ( v3, 1.0f),
+				    Celer::Vector4<GLfloat> ( v2, 1.0f),
 				    // Bottom Face
-				    Celer::Vector4<GLfloat> ( static_cast<GLfloat>(reservoir_model_.vertices[index[4]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[4]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[4]].z), 1.0f),
-				    Celer::Vector4<GLfloat> ( static_cast<GLfloat>(reservoir_model_.vertices[index[5]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[5]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[5]].z), 1.0f),
-				    Celer::Vector4<GLfloat> ( static_cast<GLfloat>(reservoir_model_.vertices[index[6]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[6]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[6]].z), 1.0f),
-				    Celer::Vector4<GLfloat> ( static_cast<GLfloat>(reservoir_model_.vertices[index[7]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[7]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[7]].z), 1.0f),
+				    Celer::Vector4<GLfloat> ( v4, 1.0f),
+				    Celer::Vector4<GLfloat> ( v7, 1.0f),
+				    Celer::Vector4<GLfloat> ( v5, 1.0f),
+				    Celer::Vector4<GLfloat> ( v6, 1.0f),
 				    // Front Face
-				    Celer::Vector4<GLfloat> ( static_cast<GLfloat>(reservoir_model_.vertices[index[8]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[8]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[8]].z), 1.0f),
-				    Celer::Vector4<GLfloat> ( static_cast<GLfloat>(reservoir_model_.vertices[index[9]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[9]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[9]].z), 1.0f),
-				    Celer::Vector4<GLfloat> ( static_cast<GLfloat>(reservoir_model_.vertices[index[10]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[10]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[10]].z), 1.0f),
-				    Celer::Vector4<GLfloat> ( static_cast<GLfloat>(reservoir_model_.vertices[index[11]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[11]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[11]].z), 1.0f),
+				    Celer::Vector4<GLfloat> ( v0, 1.0f),
+				    Celer::Vector4<GLfloat> ( v7, 1.0f),
+				    Celer::Vector4<GLfloat> ( v3, 1.0f),
+				    Celer::Vector4<GLfloat> ( v4, 1.0f),
 				    // Back Face
-				    Celer::Vector4<GLfloat> ( static_cast<GLfloat>(reservoir_model_.vertices[index[12]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[12]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[12]].z), 1.0f),
-				    Celer::Vector4<GLfloat> ( static_cast<GLfloat>(reservoir_model_.vertices[index[13]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[13]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[13]].z), 1.0f),
-				    Celer::Vector4<GLfloat> ( static_cast<GLfloat>(reservoir_model_.vertices[index[14]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[14]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[14]].z), 1.0f),
-				    Celer::Vector4<GLfloat> ( static_cast<GLfloat>(reservoir_model_.vertices[index[15]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[15]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[15]].z), 1.0f),
+				    Celer::Vector4<GLfloat> ( v1, 1.0f),
+				    Celer::Vector4<GLfloat> ( v2, 1.0f),
+				    Celer::Vector4<GLfloat> ( v6, 1.0f),
+				    Celer::Vector4<GLfloat> ( v5, 1.0f),
 				    // Right Face
-				    Celer::Vector4<GLfloat> ( static_cast<GLfloat>(reservoir_model_.vertices[index[16]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[16]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[16]].z), 1.0f),
-				    Celer::Vector4<GLfloat> ( static_cast<GLfloat>(reservoir_model_.vertices[index[17]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[17]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[17]].z), 1.0f),
-				    Celer::Vector4<GLfloat> ( static_cast<GLfloat>(reservoir_model_.vertices[index[18]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[18]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[18]].z), 1.0f),
-				    Celer::Vector4<GLfloat> ( static_cast<GLfloat>(reservoir_model_.vertices[index[19]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[19]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[19]].z), 1.0f),
+				    Celer::Vector4<GLfloat> ( v2, 1.0f),
+				    Celer::Vector4<GLfloat> ( v3, 1.0f),
+				    Celer::Vector4<GLfloat> ( v5, 1.0f),
+				    Celer::Vector4<GLfloat> ( v4, 1.0f),
 				    // Left Face
-				    Celer::Vector4<GLfloat> ( static_cast<GLfloat>(reservoir_model_.vertices[index[20]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[20]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[20]].z), 1.0f),
-				    Celer::Vector4<GLfloat> ( static_cast<GLfloat>(reservoir_model_.vertices[index[21]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[21]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[21]].z), 1.0f),
-				    Celer::Vector4<GLfloat> ( static_cast<GLfloat>(reservoir_model_.vertices[index[22]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[22]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[22]].z), 1.0f),
-				    Celer::Vector4<GLfloat> ( static_cast<GLfloat>(reservoir_model_.vertices[index[23]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[23]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[23]].z), 1.0f)
+				    Celer::Vector4<GLfloat> ( v0, 1.0f),
+				    Celer::Vector4<GLfloat> ( v1, 1.0f),
+				    Celer::Vector4<GLfloat> ( v7, 1.0f),
+				    Celer::Vector4<GLfloat> ( v6, 1.0f)
 				};
+
+
+				Celer::Vector3<GLfloat> topNormal 	= ((v1 - v0) ^ (v3 - v0)).norm();
+				//std::cout << topNormal << std::endl;
+				Celer::Vector3<GLfloat> bottomNormal 	= ((v7 - v4) ^ (v5 - v4)).norm();
+				//std::cout << bottomNormal << std::endl;
+				Celer::Vector3<GLfloat> frontNormal 	= ((v7 - v0) ^ (v3 - v0)).norm();
+				//std::cout << frontNormal << std::endl;
+				Celer::Vector3<GLfloat> backmNormal 	= ((v2 - v1) ^ (v6 - v1)).norm();
+				//std::cout << backmNormal << std::endl;
+				Celer::Vector3<GLfloat> rightNormal 	= ((v3 - v2) ^ (v5 - v2)).norm();
+				//std::cout << rightNormal << std::endl;
+				Celer::Vector3<GLfloat> leftNormal 	= ((v1 - v0) ^ (v7 - v0)).norm();
+				//std::cout << leftNormal << std::endl;
+//
+//
+				// Care about the type: GL_DOUBLE or GL_FLOAT
+				Celer::Vector4<GLfloat> normals[] =
+				{
+				  // X Y Z
+					//  Top Face
+					Celer::Vector4<GLfloat> ( topNormal, 1.0f),
+					Celer::Vector4<GLfloat> ( topNormal, 1.0f),
+					Celer::Vector4<GLfloat> ( topNormal, 1.0f),
+					Celer::Vector4<GLfloat> ( topNormal, 1.0f),
+					// Bottom Face
+					Celer::Vector4<GLfloat> ( bottomNormal, 1.0f),
+					Celer::Vector4<GLfloat> ( bottomNormal, 1.0f),
+					Celer::Vector4<GLfloat> ( bottomNormal, 1.0f),
+					Celer::Vector4<GLfloat> ( bottomNormal, 1.0f),
+					// Front Face
+					Celer::Vector4<GLfloat> ( frontNormal, 1.0f),
+					Celer::Vector4<GLfloat> ( frontNormal, 1.0f),
+					Celer::Vector4<GLfloat> ( frontNormal, 1.0f),
+					Celer::Vector4<GLfloat> ( frontNormal, 1.0f),
+					// Back Face
+					Celer::Vector4<GLfloat> ( backmNormal, 1.0f),
+					Celer::Vector4<GLfloat> ( backmNormal, 1.0f),
+					Celer::Vector4<GLfloat> ( backmNormal, 1.0f),
+					Celer::Vector4<GLfloat> ( backmNormal, 1.0f),
+					// Right Face
+					Celer::Vector4<GLfloat> ( rightNormal, 1.0f),
+					Celer::Vector4<GLfloat> ( rightNormal, 1.0f),
+					Celer::Vector4<GLfloat> ( rightNormal, 1.0f),
+					Celer::Vector4<GLfloat> ( rightNormal, 1.0f),
+					// Left Face
+					Celer::Vector4<GLfloat> ( leftNormal, 1.0f),
+					Celer::Vector4<GLfloat> ( leftNormal, 1.0f),
+					Celer::Vector4<GLfloat> ( leftNormal, 1.0f),
+					Celer::Vector4<GLfloat> ( leftNormal, 1.0f)
+				};
+
+
 
 				Celer::Vector4<GLfloat> focus [] =
 				{
@@ -441,9 +598,12 @@ void GLWidget::openIRES ( const std::string& filename )
 				};
 
 
-				std::copy ( index 	, index    + 24 , std::back_inserter ( reservoir_list_of_indices   ) );
 				std::copy ( vertices 	, vertices + 24 , std::back_inserter ( reservoir_list_of_vertices  ) );
+				std::copy ( normals 	, normals  + 24 , std::back_inserter ( reservoir_list_of_normals) );
+				std::copy ( index 	, index    + 24 , std::back_inserter ( reservoir_list_of_indices   ) );
 				std::copy ( focus 	, focus    + 24 , std::back_inserter ( reservoir_list_of_renderFlag) );
+				std::copy ( IJKs 	, IJKs     + 24 , std::back_inserter ( reservoir_list_of_IJKs  ) );
+
 
 				i += 8;
 
@@ -453,6 +613,13 @@ void GLWidget::openIRES ( const std::string& filename )
 				i += 1;
 			}
 		}
+
+		max_I_ = reservoir_model_.header_.number_of_Blocks_in_I_Direction;
+		min_I_ = 0;
+		max_J_ = reservoir_model_.header_.number_of_Blocks_in_J_Direction;
+		min_J_ = 0;
+		max_K_ = reservoir_model_.header_.number_of_Blocks_in_K_Direction;
+		min_K_ = 0;
 
 
 		camera_.setPosition ( box.center ( ) );
@@ -478,6 +645,13 @@ void GLWidget::openIRES ( const std::string& filename )
 		glEnableVertexAttribArray ( reservoir_vertices_location );
 		glVertexAttribPointer ( reservoir_vertices_location , 4 , GL_FLOAT , GL_FALSE , 0 , 0 );
 
+		glBindBuffer ( GL_ARRAY_BUFFER , reservoir_normal_buffer );
+		glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_normals.size ( ) * sizeof ( reservoir_list_of_normals[0] ) , &reservoir_list_of_normals[0] , GL_STREAM_DRAW );
+		// Vertex Array : Set up generic attributes pointers
+		glEnableVertexAttribArray ( reservoir_normal_location );
+		glVertexAttribPointer ( reservoir_normal_location , 4 , GL_FLOAT , GL_FALSE , 0 , 0 );
+
+
 		glBindBuffer ( GL_ARRAY_BUFFER , reservoir_color_buffer );
 		glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_colors.size ( ) * sizeof ( reservoir_list_of_colors[0] ) , &reservoir_list_of_colors[0] , GL_STREAM_DRAW );
 		// Vertex Array : Set up generic attributes pointers
@@ -490,6 +664,13 @@ void GLWidget::openIRES ( const std::string& filename )
 		glEnableVertexAttribArray ( reservoir_renderFlag_buffer );
 		glVertexAttribPointer ( reservoir_renderFlag_location , 4 , GL_FLOAT , GL_FALSE , 0 , 0 );
 
+		// FIXME glVertexAttribIPointer FOR INTEGERS!
+		glBindBuffer ( GL_ARRAY_BUFFER , reservoir_IJK_buffer );
+		glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_IJKs.size ( ) * sizeof ( reservoir_list_of_IJKs[0] ) , &reservoir_list_of_IJKs[0] , GL_STREAM_DRAW );
+		// Vertex Array : Set up generic attributes pointers
+		glEnableVertexAttribArray ( reservoir_IJK_buffer );
+		glVertexAttribIPointer ( reservoir_IJK_location , 4 , GL_INT, 0 , 0 );
+
 		glBindBuffer ( GL_ELEMENT_ARRAY_BUFFER , reservoir_indices_buffer );
 		glBufferData ( GL_ELEMENT_ARRAY_BUFFER , reservoir_list_of_indices.size ( ) * sizeof ( reservoir_list_of_indices[0] ) , &reservoir_list_of_indices[0] , GL_STATIC_DRAW );
 
@@ -498,15 +679,14 @@ void GLWidget::openIRES ( const std::string& filename )
 		glBindVertexArray(vertexArrayScreen);
 
 
-		GLfloat openGLScreenCoordinates[] =
-		{
-	                      0.0f, (float) height() ,
-	          (float) width() , (float) height() ,
-	          (float) width() , 0.0f,
-
-		  (float) width() , 0.0f,
-		               0.0f, 0.0f,
-		               0.0f, (float) height()  };
+		GLfloat openGLScreenCoordinates[] = {
+		       -1.0f,  1.0f,
+			1.0f,  1.0f,
+			1.0f, -1.0f,
+			1.0f, -1.0f,
+		       -1.0f, -1.0f,
+		       -1.0f,  1.0f
+		  };
 
 		GLfloat textureCoordinates[] =
 		{
@@ -551,7 +731,7 @@ void GLWidget::resizeGL ( int width , int height )
 
 
 	camera_.setAspectRatio ( width  , height  );
-	camera_.setPerspectiveProjectionMatrix ( 0 , camera_.aspectRatio ( ) , 1.0 , 1000.0*box.diagonal() );
+	camera_.setPerspectiveProjectionMatrix ( 0 , camera_.aspectRatio ( ) , 1.0 , 100.0*box.diagonal() );
 	camera_.setOrthographicProjectionMatrix( 0.0f, (float)width , 0.0f, (float)height, -1.0, 1.0 );
 
 
@@ -584,13 +764,13 @@ void GLWidget::resizeGL ( int width , int height )
 
 	GLfloat openGLScreenCoordinates[] =
 	{
-                       0.0f, (float) height ,
-          (float) width , (float) height ,
-          (float) width , 0.0f,
-
-	  (float) width , 0.0f,
-	               0.0f, 0.0f,
-	               0.0f, (float) height  };
+	       -1.0f,  1.0f,
+		1.0f,  1.0f,
+		1.0f, -1.0f,
+		1.0f, -1.0f,
+	       -1.0f, -1.0f,
+	       -1.0f,  1.0f
+	};
 
 	GLfloat textureCoordinates[] =
 	{
@@ -626,12 +806,21 @@ void GLWidget::paintGL ( )
 
 	glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 	glClearColor ( 0.0 , 0.0 , 0.0 , 1.0 );
-	//TridimensionalSetUp ( );
-	cutawaySetup ( );
+
+	if ( isCutaway )
+	{
+		BurnsCutawaySetup ( );
+	}
+	else
+	{
+		TridimensionalSetUp ( );
+	}
+
+
 
 }
 
-void GLWidget::cutawaySetup ( )
+void GLWidget::BurnsCutawaySetup ( )
 {
 
 	int i = 1;
@@ -652,26 +841,24 @@ void GLWidget::cutawaySetup ( )
 	if ( ires_has_been_open_sucessefully  )
 	{
 
- 		jumpFloodInitialization.active ( );
+		BurnsJFAInitializing430.active ( );
 
  		fboStep[1]->bind();
 
 		glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
 		glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-		//glUniform3fv( jumpFloodInitialization.uniforms_["lightDirection"].location,0,camera_.position());
-
-		glUniformMatrix4fv ( jumpFloodInitialization.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-		glUniformMatrix4fv ( jumpFloodInitialization.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix()  );
+		glUniformMatrix4fv ( BurnsJFAInitializing430.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+		glUniformMatrix4fv ( BurnsJFAInitializing430.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix()  );
 
 		//VAO
 		glBindVertexArray(vertexArray);
-		glDrawArrays ( GL_LINES_ADJACENCY , 0 , reservoir_list_of_vertices.size());
+		glDrawArrays ( GL_TRIANGLES , 0 , reservoir_list_of_vertices.size());
 		glBindVertexArray(0);
 
 		fboStep[1]->release( );
 
-		jumpFloodInitialization.deactive ( );
+		BurnsJFAInitializing430.deactive ( );
 
 
 		// Do Jumping Flooding Algorithm
@@ -679,10 +866,10 @@ void GLWidget::cutawaySetup ( )
 		bool ExitLoop = 0;
 
 
-		jumpFloodingStep.active( );
+		BurnsJFAStep430.active( );
 
 
-		glUniform2f ( jumpFloodingStep.uniforms_["viewport"].location, (float)width ( ) , (float)height ( ) );
+		glUniform2f ( BurnsJFAStep430.uniforms_["viewport"].location, (float)width ( ) , (float)height ( ) );
 
 		pm_sz = ( camera_.nearPlane ( ) + camera_.farPlane ( ) ) / ( camera_.nearPlane ( ) - camera_.farPlane ( ) );
 
@@ -699,10 +886,10 @@ void GLWidget::cutawaySetup ( )
 			glBindTexture ( GL_TEXTURE_RECTANGLE , fboStep[ ( i + 1 ) % 2]->texture ( ) );
 
 
-			glUniform1f ( jumpFloodingStep.uniforms_["pm_sz"].location,pm_sz );
-			glUniform1f ( jumpFloodingStep.uniforms_["theta"].location,angle );
-			glUniform1i ( jumpFloodingStep.uniforms_["stepSize"].location,stepSize );
-			glUniformMatrix4fv ( jumpFloodingStep.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.orthographicProjectionMatrix() );
+			glUniform1f ( BurnsJFAStep430.uniforms_["pm_sz"].location,pm_sz );
+			glUniform1f ( BurnsJFAStep430.uniforms_["theta"].location,angle );
+			glUniform1i ( BurnsJFAStep430.uniforms_["stepSize"].location,stepSize );
+			glUniformMatrix4fv ( BurnsJFAStep430.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.orthographicProjectionMatrix() );
 
 			glClearColor ( 0.0 , 0.0 , 0.0 , 1.0 );
 			glClear ( GL_COLOR_BUFFER_BIT );
@@ -718,12 +905,12 @@ void GLWidget::cutawaySetup ( )
 			fboStep[i]->release ( );
 		}
 
-		jumpFloodingStep.deactive( ) ;
+		BurnsJFAStep430.deactive( ) ;
 
 
 		if ( draw_secondary && (reservoir_list_of_vertices.size ( ) != 0) )
 		{
-			cutawayWireframe.active ( );
+			BurnsSecundary430Wireframe.active ( );
 
 			glClearColor ( 1.0 , 1.0 , 1.0 , 1.0 );
 			glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
@@ -732,12 +919,12 @@ void GLWidget::cutawaySetup ( )
 			glEnable ( GL_TEXTURE_RECTANGLE );
 			glBindTexture ( GL_TEXTURE_RECTANGLE , fboStep[i]->texture ( ) );
 
-			glUniform3fv ( cutawayWireframe.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
+			glUniform3fv ( BurnsSecundary430Wireframe.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
 
-			glUniform2f ( cutawayWireframe.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
-			glUniform1i ( cutawayWireframe.uniforms_["cutaway"].location , 1 );
-			glUniformMatrix4fv ( cutawayWireframe.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-			glUniformMatrix4fv ( cutawayWireframe.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+			glUniform2f ( BurnsSecundary430Wireframe.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
+			glUniform1i ( BurnsSecundary430Wireframe.uniforms_["cutaway"].location , 1 );
+			glUniformMatrix4fv ( BurnsSecundary430Wireframe.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+			glUniformMatrix4fv ( BurnsSecundary430Wireframe.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
 
 			//VAO
 			glBindVertexArray(vertexArray);
@@ -745,7 +932,7 @@ void GLWidget::cutawaySetup ( )
 			glBindVertexArray(0);
 			glDisable ( GL_TEXTURE_RECTANGLE );
 
-			cutawayWireframe.deactive ( );
+			BurnsSecundary430Wireframe.deactive ( );
 		}
 
 		if ( draw_primary && (reservoir_list_of_vertices.size ( ) != 0)  )
@@ -790,7 +977,6 @@ void GLWidget::cutawaySetup ( )
 
 }
 
-
 void GLWidget::TridimensionalSetUp ( )
 {
 	glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
@@ -810,48 +996,46 @@ void GLWidget::TridimensionalSetUp ( )
  	if ( ires_has_been_open_sucessefully )
 	{
 
-//		if ( draw_secondary )
-//		{
-//
+		if ( draw_secondary )
+		{
  			secondary.active ( );
 
-//			glUniform3fv ( cutawayWireframe.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
-//
-//			glUniform2f ( cutawayWireframe.uniforms_["WIN_SCALE"].location , (float)width(), (float)height() );
+ 			glUniform3fv ( secondary.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
 
-			glUniform3fv ( secondary.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
+ 			glUniform3i ( secondary.uniforms_["min_IJK"].location , min_I_, min_J_, min_K_ );
+ 			glUniform3i ( secondary.uniforms_["max_IJK"].location , max_I_, max_J_, max_K_ );
 
 			glUniform2f ( secondary.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
-//
+
 			glUniformMatrix4fv ( secondary.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
 			glUniformMatrix4fv ( secondary.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
 
-//			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, reservoir_indices_buffer);
-//			glDrawElements( GL_LINES_ADJACENCY , reservoir_list_of_indices.size(), GL_UNSIGNED_INT,0 );
-
+			glBindVertexArray(vertexArray);
 			glDrawArrays ( GL_LINES_ADJACENCY , 0 , reservoir_list_of_vertices.size());
-			//glDrawArrays( GL_TRIANGLES , 0, primary_list_of_vertices.size());
-
-
+			glBindVertexArray(0);
 
 			secondary.deactive ( );
-//
-//		}
-//		if ( draw_primary )
-//		{
-//
-//			primary.active ( );
-//
-//			glUniform3fv ( primary.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
-//
-//			glUniformMatrix4fv ( primary.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-//			glUniformMatrix4fv ( primary.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
-//
-//			glDrawArrays ( GL_TRIANGLES , 0 , primary_list_of_vertices.size ( ) );
-//
-//			primary.deactive ( );
-//
-//		}
+
+		}
+		if ( draw_primary )
+		{
+
+ 			primary.active ( );
+
+ 			glUniform3fv ( primary.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
+
+			glUniform2f ( primary.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
+
+			glUniformMatrix4fv ( primary.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+			glUniformMatrix4fv ( primary.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+
+			glBindVertexArray(vertexArray);
+			glDrawArrays ( GL_LINES_ADJACENCY , 0 , reservoir_list_of_vertices.size());
+			glBindVertexArray(0);
+
+			primary.deactive ( );
+
+		}
 		
 	}
 
@@ -861,7 +1045,6 @@ void GLWidget::TwodimensionalSetUp ( )
 {
 	glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 }
-
 
 void GLWidget::gameLooping ( )
 {
@@ -882,23 +1065,21 @@ void GLWidget::LoadShaders ( )
 	shadersDir.cdUp ();
 	qDebug () << "Directory " << shadersDir.path ();
 
-	textureViewer.create((shadersDir.path ()+"/share/Shaders/fboTest.vert").toStdString(),(shadersDir.path ()+"/share/Shaders/fboTest.frag").toStdString());
+	textureViewer.create("textureViewer",(shadersDir.path ()+"/share/Shaders/fboTest.vert").toStdString(),(shadersDir.path ()+"/share/Shaders/fboTest.frag").toStdString());
 
-	primary.create((shadersDir.path ()+"/share/Shaders/Primary.vert").toStdString(),(shadersDir.path ()+"/share/Shaders/Primary.geom").toStdString(),(shadersDir.path ()+"/share/Shaders/Primary.frag").toStdString());
+	primary.create("primary",(shadersDir.path ()+"/share/Shaders/Primary.vert").toStdString(),(shadersDir.path ()+"/share/Shaders/Primary.geom").toStdString(),(shadersDir.path ()+"/share/Shaders/Primary.frag").toStdString());
 
-	secondary.create((shadersDir.path ()+"/share/Shaders/Secondary.vert").toStdString(),(shadersDir.path ()+"/share/Shaders/Secondary.geom").toStdString(),(shadersDir.path ()+"/share/Shaders/Secondary.frag").toStdString());
+	secondary.create("secondary",(shadersDir.path ()+"/share/Shaders/Secondary.vert").toStdString(),(shadersDir.path ()+"/share/Shaders/Secondary.geom").toStdString(),(shadersDir.path ()+"/share/Shaders/Secondary.frag").toStdString());
 
-	cutaway.create((shadersDir.path ()+"/share/Shaders/Cutaway.vert").toStdString(),(shadersDir.path ()+"/share/Shaders/Cutaway.frag").toStdString());
+	BurnsSecundary430.create("BurnsSecundary430",(shadersDir.path ()+"/share/Shaders/BurnsSecundary430.vert").toStdString(),(shadersDir.path ()+"/share/Shaders/BurnsSecundary430.frag").toStdString());
 
-	cutawayWireframe.create((shadersDir.path ()+"/share/Shaders/CutawayWireframe.vert").toStdString(), (shadersDir.path ()+"/share/Shaders/CutawayWireframe.geom").toStdString(),(shadersDir.path ()+"/share/Shaders/CutawayWireframe.frag").toStdString());
+	BurnsSecundary430Wireframe.create("BurnsSecundary430Wireframe",(shadersDir.path ()+"/share/Shaders/BurnsSecundary430Wireframe.vert").toStdString(), (shadersDir.path ()+"/share/Shaders/BurnsSecundary430Wireframe.geom").toStdString(),(shadersDir.path ()+"/share/Shaders/BurnsSecundary430Wireframe.frag").toStdString());
 
-	jumpFloodInitialization.create( (shadersDir.path ()+"/share/Shaders/JFAInitializing.vert").toStdString(),(shadersDir.path ()+"/share/Shaders/JFAInitializing.frag").toStdString());
+	BurnsJFAInitializing430.create("BurnsJFAInitializing430",(shadersDir.path ()+"/share/Shaders/BurnsJFAInitializing430.vert").toStdString(),(shadersDir.path ()+"/share/Shaders/BurnsJFAInitializing430.frag").toStdString());
 
-	jumpFloodingStep.create( (shadersDir.path ()+"/share/Shaders/JFAStep430.vert").toStdString(),(shadersDir.path ()+"/share/Shaders/JFAStep430.frag").toStdString());
+	BurnsJFAStep430.create("BurnsJFAStep430",(shadersDir.path ()+"/share/Shaders/BurnsJFAStep430.vert").toStdString(),(shadersDir.path ()+"/share/Shaders/BurnsJFAStep430.frag").toStdString());
 
 }
-
-
 
 /// KeyInput
 void GLWidget::processMultiKeys ( )
@@ -966,14 +1147,18 @@ void GLWidget::keyPressEvent ( QKeyEvent * event )
 	buttonRelease_ = true;
 	keysPresseds_ += event->key ( );
 
-	if ( ( QApplication::keyboardModifiers ( ) == Qt::ShiftModifier ) && ( event->key ( ) == Qt::Key_A ) )
+	if ( ( QApplication::keyboardModifiers ( ) == Qt::ShiftModifier ) && ( event->key ( ) == Qt::Key_F ) )
 	{
 		drawPrimary();
 	}
 
-	if ( ( QApplication::keyboardModifiers ( ) == Qt::ShiftModifier ) && ( event->key ( ) == Qt::Key_S ) )
+	if ( ( QApplication::keyboardModifiers ( ) == Qt::ShiftModifier ) && ( event->key ( ) == Qt::Key_G ) )
 	{
 		drawSecondary();
+	}
+	if ( ( QApplication::keyboardModifiers ( ) == Qt::ShiftModifier ) && ( event->key ( ) == Qt::Key_T ) )
+	{
+		isCutaway = !isCutaway;
 	}
 
 	updateGL();

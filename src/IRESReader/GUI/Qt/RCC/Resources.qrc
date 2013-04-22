@@ -1,7 +1,8 @@
 <RCC>
-    <qresource prefix="/">
-        <file>Icons/caju.png</file>
-        <file>Shaders/Primary.frag</file>
-        <file>Shaders/Primary.vert</file>
-    </qresource>
+  <qresource prefix="/">
+    <file>Icons/CelerSystemAllBlack.png</file>
+    <file>Icons/celerGLnoFilter3.png</file>
+    <file>Icons/caju.png</file>
+    <file>Icons/CelerGLShadow.png</file>
+  </qresource>
 </RCC>

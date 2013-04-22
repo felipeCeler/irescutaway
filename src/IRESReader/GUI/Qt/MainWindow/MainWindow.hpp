@@ -7,10 +7,9 @@
 #include "ui_IRESReader.h"
 
 #include <GUI/Qt/GLWidget/GLWidget.hpp>
+#include <GUI/Qt/AboutWidget/AboutWidgetIRESReader.hpp>
 
-class QWorkspace;
-
-class MainWindow: public QMainWindow , private Ui::MainWindow
+class MainWindow: public QMainWindow
 {
 		Q_OBJECT
 
@@ -24,6 +23,9 @@ class MainWindow: public QMainWindow , private Ui::MainWindow
 		void on_action_Open_IRES_triggered ( );
 		void on_action_Load_Shaders_triggered ( );
 		void on_pushButton_changePropertyRange_clicked ( );
+		void on_pushButton_Reset_IJK_clicked( );
+		void on_pushButton_changeIJK_clicked( );
+
 
 		void updateDoubleSpinMax( int property_index );
 		void updateDoubleSpinMin( int property_index );
@@ -31,8 +33,13 @@ class MainWindow: public QMainWindow , private Ui::MainWindow
 
 
 	private:
+		Ui::MainWindow * ui;
+
 		bool showfullScreen_;
-		GLWidget* glWidget;
+
+		GLWidget * glWidget;
+
+		AboutWidgetIRESReader * aboutIRESReader;
 };
 
 #endif

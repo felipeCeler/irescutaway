@@ -10,7 +10,7 @@
 //{
 //	fragmentColor = vec4 ( color );
 //}
-#version 420
+#version 430
 
 ////in  float angle;
 //uniform  vec3 lightDirection;

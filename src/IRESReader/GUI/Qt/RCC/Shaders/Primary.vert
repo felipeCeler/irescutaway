@@ -46,6 +46,7 @@ void main()
 	{
 		vertexShader_VertexData.propertyColor = colors;
 		gl_Position = ProjectionMatrix * ViewMatrix * vec4(1.0,0.0,0.0,0.0);
+
 	}
 
 

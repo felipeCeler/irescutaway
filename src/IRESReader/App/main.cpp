@@ -3,13 +3,10 @@
 
 #include <GUI/Qt/MainWindow/MainWindow.hpp>
 
-
-
-
 int main ( int argc , char *argv[] )
 {
 
-QApplication app ( argc , argv );
+	QApplication app ( argc , argv );
 	if ( !QGLFormat::hasOpenGL ( ) )
 	{
 		std::cerr << "This system has no OpenGL support" << std::endl;
@@ -18,11 +15,8 @@ QApplication app ( argc , argv );
 
 	MainWindow * form = new MainWindow;
 
-	form->show();
+	form->show ( );
 
 	return app.exec ( );
 }
-
-
-
 

@@ -21,6 +21,9 @@
 #include <QGLFramebufferObject>
 #include <QGLShaderProgram>
 
+// Standard Library
+#include <limits>
+
 #include <QtGui/QMdiSubWindow>
 #include <QtCore/QTimer>
 #include <QtCore/QTimeLine>
@@ -29,7 +32,6 @@
 #include <QtCore/QMimeData>
 
 
-#include <IRESClasses/CornerPointGrid_test.cpp>
 #include <IRESClasses/CornerPointGrid.hpp>
 
 
@@ -64,22 +66,30 @@ class GLWidget: public QGLWidget
 		void animate ( );
 		void TridimensionalSetUp ( );
 		void TwodimensionalSetUp ( );
-		void cutawaySetup ( );
+		void BurnsCutawaySetup ( );
 		void LoadShaders ( );
 		void openIRES ( const std::string& filename );
 		bool isIresWasOpenedSucessufully () const;
 		void changeProperty ( int property_index );
 		void changePropertyRange ( const double& min, const double& max, int property_index );
+		void changeIJK ( const int& min_i, const int& max_i, const int& min_j, const int& max_j, const int& min_k, const int& max_k );
 
+		void changeMaxI ( const int& value);
+		void changeMaxJ ( const int& value);
+		void changeMaxK ( const int& value);
+
+		void changeMinI ( const int& value);
+		void changeMinJ ( const int& value);
+		void changeMinK ( const int& value);
 
 		void drawPrimary ( );
 		void drawSecondary (  );
 
 	protected:
 		void dragEnterEvent ( QDragEnterEvent *event );
-		void dragMoveEvent ( QDragMoveEvent *event );
+		void dragMoveEvent  ( QDragMoveEvent *event );
 		void dragLeaveEvent ( QDragLeaveEvent *event );
-		void dropEvent ( QDropEvent *event );
+		void dropEvent      ( QDropEvent *event );
 
 	signals:
 
@@ -121,6 +131,8 @@ private:
 	GLuint reservoir_color_location;
 	GLuint reservoir_renderFlag_buffer;
 	GLuint reservoir_renderFlag_location;
+	GLuint reservoir_IJK_buffer;
+	GLuint reservoir_IJK_location;
 
 	GLuint reservoir_indices_buffer;
 
@@ -133,6 +145,7 @@ private:
 	std::vector<Celer::Vector4<GLfloat> > 	reservoir_list_of_normals;
 	std::vector<Celer::Vector4<GLfloat> > 	reservoir_list_of_vertices;
 	std::vector<Celer::Vector4<GLfloat> >   reservoir_list_of_colors;
+	std::vector<Celer::Vector4<GLint> >     reservoir_list_of_IJKs;
 	std::vector<Celer::Vector4<GLfloat> >   reservoir_list_of_renderFlag;
 
 
@@ -145,10 +158,10 @@ private:
 	float pm_sz;
 
 	QGLFramebufferObject*   fboInitialization;
-	Celer::OpenGL::ShaderManager	jumpFloodInitialization;
+	Celer::OpenGL::ShaderManager	BurnsJFAInitializing430;
 
 	QGLFramebufferObject*   fboStep[2];
-	Celer::OpenGL::ShaderManager	jumpFloodingStep;
+	Celer::OpenGL::ShaderManager	BurnsJFAStep430;
 
 
 	QGLShaderProgram *JumpFloodingStep;
@@ -157,12 +170,20 @@ private:
 
 	Celer::OpenGL::ShaderManager	primary;
 	Celer::OpenGL::ShaderManager	secondary;
-	Celer::OpenGL::ShaderManager	cutaway;
-	Celer::OpenGL::ShaderManager	cutawayWireframe;
+	Celer::OpenGL::ShaderManager	BurnsSecundary430;
+	Celer::OpenGL::ShaderManager	BurnsSecundary430Wireframe;
 
 	QImage fbo;
-	float angle;
-	float zoom_angle_;
+	float  angle;
+	float  zoom_angle_;
+	bool   isCutaway;
+
+	int max_I_;
+	int min_I_;
+	int max_J_;
+	int min_J_;
+	int max_K_;
+	int min_K_;
 
 };
 

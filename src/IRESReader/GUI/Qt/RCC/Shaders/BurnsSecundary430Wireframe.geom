@@ -9,15 +9,17 @@ noperspective out vec4 dist;
 
 in VertexData
 {
-    vec4 propertyColor;
-    vec4 normal;
+	vec4 vert;
+	vec4 normal;
+	vec4 propertyColor;
 
 } vertexShader_VertexData[4];
 
 out VertexData
 {
-	vec4 propertyColor;
+	vec4 vert;
 	vec4 normal;
+	vec4 propertyColor;
 
 } geometryShader_VertexData;
 
@@ -46,21 +48,29 @@ void main(void)
 
 	dist = vec4(area4/length(v4), area3/length(v3), 0, 0);
 	geometryShader_VertexData.propertyColor = vertexShader_VertexData[0].propertyColor;
+	geometryShader_VertexData.vert = vertexShader_VertexData[0].vert;
+	geometryShader_VertexData.normal = vertexShader_VertexData[0].normal;
 	gl_Position = gl_in[0].gl_Position;
 	EmitVertex();
 
 	dist = vec4(area2/length(v4), 0, 0, area1/length(v2));
 	geometryShader_VertexData.propertyColor = vertexShader_VertexData[1].propertyColor;
+	geometryShader_VertexData.vert = vertexShader_VertexData[1].vert;
+	geometryShader_VertexData.normal = vertexShader_VertexData[1].normal;
 	gl_Position = gl_in[1].gl_Position;
 	EmitVertex();
 
 	dist = vec4(0, area2/length(v3), area1/length(v0), 0);
 	geometryShader_VertexData.propertyColor = vertexShader_VertexData[2].propertyColor;
+	geometryShader_VertexData.vert = vertexShader_VertexData[2].vert;
+	geometryShader_VertexData.normal = vertexShader_VertexData[2].normal;
 	gl_Position = gl_in[2].gl_Position;
 	EmitVertex();
 
 	dist = vec4(0, 0, area3/length(v0), area4/length(v2));
 	geometryShader_VertexData.propertyColor = vertexShader_VertexData[3].propertyColor;
+	geometryShader_VertexData.vert = vertexShader_VertexData[3].vert;
+	geometryShader_VertexData.normal = vertexShader_VertexData[3].normal;
 	gl_Position = gl_in[3].gl_Position;
 	EmitVertex();
 

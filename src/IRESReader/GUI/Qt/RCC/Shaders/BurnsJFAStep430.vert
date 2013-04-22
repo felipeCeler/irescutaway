@@ -13,7 +13,7 @@ void main()
 
     texCoord = texCoords;
 
-    gl_Position =  ProjectionMatrix * vec4(Position,0.0,  1.0);
+    gl_Position =  vec4(Position,0.0,  1.0);
 
 }
 
