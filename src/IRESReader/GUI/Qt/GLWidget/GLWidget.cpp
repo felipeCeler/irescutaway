@@ -1,12 +1,5 @@
 #include <QtGui/QtGui>
 
-#include <limits>
-
-#include <stdio.h>
-#include <stdlib.h>
-
-#include <algorithm>
-#include <iterator>
 
 #include <GUI/Qt/GLWidget/GLWidget.hpp>
 // Se quiser usar QPainter Ver exemplo no QT demo - Manda Qt em wave animation !!!
@@ -110,6 +103,9 @@ void GLWidget::initializeGL ( )
 
 	isCutaway = 0;
 
+	glGenVertexArrays (1, &vertexArray_box);
+		glGenBuffers( 1, &vertexBuffer_box);
+
 
 }
 
@@ -118,12 +114,128 @@ bool GLWidget::isIresWasOpenedSucessufully ( ) const
 	return ires_has_been_open_sucessefully;
 }
 
+void GLWidget::CutVolumeGenerator( )
+{
+
+	Celer::BoundingBox3<GLfloat> box;
+
+
+	while ( boxes.size ( ) != 0 )
+	{
+
+		box = boxes.front( );
+
+		boxes.pop_front( );
+
+		std::list<Celer::BoundingBox3<GLfloat> >::iterator box_iterator = boxes.begin ( );
+
+		while ( box_iterator != boxes.end ( ) )
+		{
+
+			if ( box.intersect( *box_iterator ) )
+			{
+				box 	     = box + (*box_iterator);
+				box_iterator = boxes.erase ( box_iterator );
+			}
+			else
+			{
+				++box_iterator;
+			}
+		}
+
+		cutVolumes.push_back( box );
+
+	}
+
+
+	for ( std::vector<Celer::BoundingBox3<GLfloat> >::iterator it = cutVolumes.begin(); it != cutVolumes.end();++it)
+	{
+
+		Celer::Vector3<GLfloat> v0 ( it->max ( ).x , it->max ( ).y , it->max ( ).z );
+		Celer::Vector3<GLfloat> v1 ( it->max ( ).x , it->max ( ).y , it->min ( ).z );
+		Celer::Vector3<GLfloat> v2 ( it->min ( ).x , it->max ( ).y , it->min ( ).z );
+		Celer::Vector3<GLfloat> v3 ( it->min ( ).x , it->max ( ).y , it->max ( ).z );
+
+		Celer::Vector3<GLfloat> v4 ( it->max ( ).x , it->min ( ).y , it->max ( ).z );
+		Celer::Vector3<GLfloat> v5 ( it->min ( ).x , it->min ( ).y , it->max ( ).z );
+		Celer::Vector3<GLfloat> v6 ( it->min ( ).x , it->min ( ).y , it->min ( ).z );
+		Celer::Vector3<GLfloat> v7 ( it->max ( ).x , it->min ( ).y , it->min ( ).z );
+
+
+		Celer::Vector3<GLfloat> topNormal 		= ((v0 - v1) ^ (v0 - v3)).norm();
+		std::cout << topNormal << std::endl;
+		Celer::Vector3<GLfloat> bottomNormal 	= ((v4 - v5) ^ (v4 - v7)).norm();
+		std::cout << bottomNormal << std::endl;
+		Celer::Vector3<GLfloat> frontNormal 	= ((v0 - v3) ^ (v0 - v4)).norm();
+		std::cout << frontNormal << std::endl;
+		Celer::Vector3<GLfloat> backmNormal 	= ((v1 - v7) ^ (v1 - v2)).norm();
+		std::cout << backmNormal << std::endl;
+		Celer::Vector3<GLfloat> rightNormal 	= ((v0 - v4) ^ (v0 - v1)).norm();
+		std::cout << rightNormal << std::endl;
+		Celer::Vector3<GLfloat> leftNormal 	= ((v2 - v6) ^ (v2 - v3)).norm();
+		std::cout << leftNormal << std::endl;
+
+
+		// Care about the type: GL_DOUBLE or GL_FLOAT
+		Celer::Vector3<GLfloat> vertices[] =
+		{
+		  // X Y Z
+			//  Top Face
+			v0,v1,v3,v2,
+			// Bottom Face
+			v4,v5,v7,v6,
+			// Front Face
+		      //v0,v3,v4,v5,
+			// Back Face
+			v2,v1,v6,v7,
+			// Right Face
+			v0,v4,v1,v7,
+			// Left Face
+			v2,v6,v3,v5
+		};
+
+
+		// Care about the type: GL_DOUBLE or GL_FLOAT
+		Celer::Vector3<GLfloat> normals[] =
+		{
+		  // X Y Z
+			//  Top Face
+			topNormal,topNormal,topNormal,topNormal,
+			// Bottom Face
+			bottomNormal,bottomNormal,bottomNormal,bottomNormal,
+			// Front Face
+		      //frontNormal,frontNormal,frontNormal,frontNormal,
+			// Back Face
+			backmNormal,backmNormal,backmNormal,backmNormal,
+			// Right Face
+			rightNormal,rightNormal,rightNormal,rightNormal,
+			// Left Face
+			leftNormal,leftNormal,leftNormal,leftNormal
+		};
+
+		std::copy ( vertices, vertices + 24 , std::back_inserter ( box_vertices  ) );
+
+	}
+
+	glBindVertexArray ( vertexArray_box );
+		glBindBuffer ( GL_ARRAY_BUFFER , vertexBuffer_box );
+		glBufferData ( GL_ARRAY_BUFFER , box_vertices.size( ) * sizeof ( box_vertices[0] ) , &box_vertices[0] , GL_STATIC_DRAW );
+		// Set up generic attributes pointers
+		glEnableVertexAttribArray ( 1 );
+		glVertexAttribPointer ( 1 , 4 , GL_FLOAT , GL_FALSE , 0 , 0 );
+	glBindVertexArray ( 0 );
+
+}
+
 void GLWidget::changePropertyRange ( const double& minRange, const double& maxRange, int property_index )
 {
 
 
 	reservoir_list_of_colors.clear ( );
 	reservoir_list_of_renderFlag.clear ( );
+
+	boxes.clear ( );
+	cutVolumes.clear();
 
 	std::cout << "Changing the property to : " << reservoir_model_.static_porperties[property_index].name << std::endl;
 
@@ -193,6 +305,80 @@ void GLWidget::changePropertyRange ( const double& minRange, const double& maxRa
 			if ( ( regularValue >= minRange ) && ( regularValue <= maxRange ) )
 			{
 				renderFlags = std::vector<Celer::Vector4<GLfloat> > ( 24 , Celer::Vector4<GLfloat> ( 0.0f , 1.0f , 0.0f , 1.0f ) );
+
+
+
+				int index [] =
+				{
+				    // Top Face
+				    reservoir_model_.blocks[i+0],reservoir_model_.blocks[i+1],reservoir_model_.blocks[i+3],reservoir_model_.blocks[i+2],/* 0 - 5*/
+				    // Bottom Face
+				    reservoir_model_.blocks[i+4],reservoir_model_.blocks[i+7],reservoir_model_.blocks[i+5],reservoir_model_.blocks[i+6],/* 6 - 11 */
+				    // Front Face
+				    reservoir_model_.blocks[i+0],reservoir_model_.blocks[i+7],reservoir_model_.blocks[i+3],reservoir_model_.blocks[i+4],/* 12 - 17*/
+				    // Back Face
+				    reservoir_model_.blocks[i+1],reservoir_model_.blocks[i+2],reservoir_model_.blocks[i+6],reservoir_model_.blocks[i+5],/* 18 - 23*/
+				    // Right Face
+				    reservoir_model_.blocks[i+2],reservoir_model_.blocks[i+3],reservoir_model_.blocks[i+5],reservoir_model_.blocks[i+4],/* 24 - 29*/
+				    // Left Face
+				    reservoir_model_.blocks[i+0],reservoir_model_.blocks[i+1],reservoir_model_.blocks[i+7],reservoir_model_.blocks[i+6] /* 30 - 35*/
+				};
+
+				// Top Face
+				Celer::Vector3<GLfloat> v0( static_cast<GLfloat>(reservoir_model_.vertices[index[0]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[0]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[0]].z));
+				Celer::Vector3<GLfloat> v1( static_cast<GLfloat>(reservoir_model_.vertices[index[1]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[1]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[1]].z));
+				Celer::Vector3<GLfloat> v3( static_cast<GLfloat>(reservoir_model_.vertices[index[2]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[2]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[2]].z));
+				Celer::Vector3<GLfloat> v2( static_cast<GLfloat>(reservoir_model_.vertices[index[3]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[3]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[3]].z));
+				// Bottom Face
+				Celer::Vector3<GLfloat> v4( static_cast<GLfloat>(reservoir_model_.vertices[index[4]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[4]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[4]].z));
+				Celer::Vector3<GLfloat> v7( static_cast<GLfloat>(reservoir_model_.vertices[index[5]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[5]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[5]].z));
+				Celer::Vector3<GLfloat> v5( static_cast<GLfloat>(reservoir_model_.vertices[index[6]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[6]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[6]].z));
+				Celer::Vector3<GLfloat> v6( static_cast<GLfloat>(reservoir_model_.vertices[index[7]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[7]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[7]].z));
+
+
+				std::vector<Celer::Vector4<GLfloat> > vertices;
+				vertices.resize( 24 );
+
+
+				// Top Face
+				vertices[0] = Celer::Vector4<GLfloat> ( v0 , 1.0f );
+				vertices[1] = Celer::Vector4<GLfloat> ( v1 , 1.0f );
+				vertices[2] = Celer::Vector4<GLfloat> ( v3 , 1.0f );
+				vertices[3] = Celer::Vector4<GLfloat> ( v2 , 1.0f );
+				// Bottom Face
+				vertices[4] = Celer::Vector4<GLfloat> ( v4 , 1.0f );
+				vertices[5] = Celer::Vector4<GLfloat> ( v7 , 1.0f );
+				vertices[6] = Celer::Vector4<GLfloat> ( v5 , 1.0f );
+				vertices[7] = Celer::Vector4<GLfloat> ( v6 , 1.0f );
+				// Front Face
+				vertices[8] = Celer::Vector4<GLfloat> ( v0 , 1.0f );
+				vertices[9] = Celer::Vector4<GLfloat> ( v7 , 1.0f );
+				vertices[10] = Celer::Vector4<GLfloat> ( v3 , 1.0f );
+				vertices[11] = Celer::Vector4<GLfloat> ( v4 , 1.0f );
+				// Back Face
+				vertices[12] = Celer::Vector4<GLfloat> ( v1 , 1.0f );
+				vertices[13] = Celer::Vector4<GLfloat> ( v2 , 1.0f );
+				vertices[14] = Celer::Vector4<GLfloat> ( v6 , 1.0f );
+				vertices[15] = Celer::Vector4<GLfloat> ( v5 , 1.0f );
+				// Right Face
+				vertices[16] = Celer::Vector4<GLfloat> ( v2 , 1.0f );
+				vertices[17] = Celer::Vector4<GLfloat> ( v3 , 1.0f );
+				vertices[18] = Celer::Vector4<GLfloat> ( v5 , 1.0f );
+				vertices[19] = Celer::Vector4<GLfloat> ( v4 , 1.0f );
+				// Left Face
+				vertices[20] = Celer::Vector4<GLfloat> ( v0 , 1.0f );
+				vertices[21] = Celer::Vector4<GLfloat> ( v1 , 1.0f );
+				vertices[22] = Celer::Vector4<GLfloat> ( v7 , 1.0f );
+				vertices[23] = Celer::Vector4<GLfloat> ( v6 , 1.0f );
+
+
+				Celer::BoundingBox3<GLfloat> box;
+
+				box.fromPointCloud ( vertices.begin ( ) , vertices.end ( ) );
+
+				boxes.push_back( box );
+
+
 			}
 			else
 			{
@@ -209,6 +395,10 @@ void GLWidget::changePropertyRange ( const double& minRange, const double& maxRa
 		}
 	}
 
+
+	CutVolumeGenerator();
+
+	std::cout << " number of boxes " << cutVolumes.size( ) << std::endl;
 
 	glBindVertexArray(vertexArray);
 
@@ -820,6 +1010,15 @@ void GLWidget::paintGL ( )
 
 }
 
+
+void GLWidget::EmilioSetup( )
+{
+
+
+
+
+}
+
 void GLWidget::BurnsCutawaySetup ( )
 {
 
@@ -1035,6 +1234,26 @@ void GLWidget::TridimensionalSetUp ( )
 
 			primary.deactive ( );
 
+//			glEnable ( GL_BLEND );
+//			glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+
+			cutVolume.active ( );
+
+			glUniform3fv ( cutVolume.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
+
+			glUniform2f ( cutVolume.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
+
+			glUniformMatrix4fv ( cutVolume.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+			glUniformMatrix4fv ( cutVolume.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+
+			glBindVertexArray ( vertexArray_box );
+			glDrawArrays ( GL_LINES_ADJACENCY , 0 , box_vertices.size() );
+			glBindVertexArray ( 0 );
+
+			cutVolume.deactive ( );
+			//glDisable ( GL_BLEND );
+
+
 		}
 		
 	}
@@ -1066,6 +1285,8 @@ void GLWidget::LoadShaders ( )
 	qDebug () << "Directory " << shadersDir.path ();
 
 	textureViewer.create("textureViewer",(shadersDir.path ()+"/share/Shaders/fboTest.vert").toStdString(),(shadersDir.path ()+"/share/Shaders/fboTest.frag").toStdString());
+
+	cutVolume.create("cutVolume",(shadersDir.path ()+"/share/Shaders/CutVolume.vert").toStdString(),(shadersDir.path ()+"/share/Shaders/CutVolume.geom").toStdString(),(shadersDir.path ()+"/share/Shaders/CutVolume.frag").toStdString());
 
 	primary.create("primary",(shadersDir.path ()+"/share/Shaders/Primary.vert").toStdString(),(shadersDir.path ()+"/share/Shaders/Primary.geom").toStdString(),(shadersDir.path ()+"/share/Shaders/Primary.frag").toStdString());
 

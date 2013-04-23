@@ -23,7 +23,7 @@
 
 // Celer Framework
 #include <Celer/Core/Geometry/Math/Vector3.hpp>
-#include <Celer/Core/Geometry/Math/BoundingBox3.hpp>
+#include <Celer/Core/Physics/BoundingBox3.hpp>
 
 namespace IRES
 {
@@ -44,6 +44,10 @@ namespace IRES
 
 
 		public:
+
+
+
+
 			struct TheHeader
 			{
 

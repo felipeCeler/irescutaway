@@ -12,7 +12,7 @@
 /// Celer::Libraries
 
 #include <Celer/Core/Geometry/Math/Vector3.hpp>
-#include <Celer/Core/Geometry/Math/BoundingBox3.hpp>
+#include <Celer/Core/Physics/BoundingBox3.hpp>
 	/// OpenGL
 #include <Celer/OpenGLFramework/OpenGLContext.hpp>
 

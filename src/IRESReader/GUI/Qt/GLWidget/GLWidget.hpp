@@ -23,6 +23,13 @@
 
 // Standard Library
 #include <limits>
+#include <stdio.h>
+#include <stdlib.h>
+#include <algorithm>
+#include <iterator>
+#include <list>
+#include <vector>
+
 
 #include <QtGui/QMdiSubWindow>
 #include <QtCore/QTimer>
@@ -33,6 +40,7 @@
 
 
 #include <IRESClasses/CornerPointGrid.hpp>
+
 
 
 class GLWidget: public QGLWidget
@@ -67,7 +75,9 @@ class GLWidget: public QGLWidget
 		void TridimensionalSetUp ( );
 		void TwodimensionalSetUp ( );
 		void BurnsCutawaySetup ( );
+		void EmilioSetup ( );
 		void LoadShaders ( );
+		void CutVolumeGenerator ( );
 		void openIRES ( const std::string& filename );
 		bool isIresWasOpenedSucessufully () const;
 		void changeProperty ( int property_index );
@@ -149,7 +159,13 @@ private:
 	std::vector<Celer::Vector4<GLfloat> >   reservoir_list_of_renderFlag;
 
 
-	Celer::BoundingBox3<double> 		box;
+	Celer::BoundingBox3<double> 		   box;
+	std::list  <Celer::BoundingBox3<GLfloat> > boxes;
+	std::vector<Celer::BoundingBox3<GLfloat> > cutVolumes;
+	std::vector<Celer::Vector4<GLfloat> >      box_vertices;
+
+	GLuint vertexArray_box;
+	GLuint vertexBuffer_box;
 
 	// From Image Cutaway.
 
@@ -168,6 +184,7 @@ private:
 	QGLShader *VertexShaderStep, *FragmentShaderStep;
 
 
+	Celer::OpenGL::ShaderManager	cutVolume;
 	Celer::OpenGL::ShaderManager	primary;
 	Celer::OpenGL::ShaderManager	secondary;
 	Celer::OpenGL::ShaderManager	BurnsSecundary430;
