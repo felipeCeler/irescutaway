@@ -129,13 +129,16 @@ void GLWidget::CutVolumeGenerator( )
 
 		std::list<Celer::BoundingBox3<GLfloat> >::iterator box_iterator = boxes.begin ( );
 
-		while ( box_iterator != boxes.end ( ) )
+		int cont = 0;
+
+		while ( ( box_iterator != boxes.end ( ) ) && ( cont != 10) )
 		{
 
 			if ( box.intersect( *box_iterator ) )
 			{
 				box 	     = box + (*box_iterator);
 				box_iterator = boxes.erase ( box_iterator );
+				cont++;
 			}
 			else
 			{
@@ -249,9 +252,9 @@ void GLWidget::changePropertyRange ( const double& minRange, const double& maxRa
 
 	Celer::Vector4<GLfloat> color;
 
-	while ( i < reservoir_model_.blocks.size ( ) )
+	while ( i < reservoir_model_.block_indices.size ( ) )
 	{
-		if ( reservoir_model_.blocks[i] != -1 )
+		if ( reservoir_model_.block_indices[i] != -1 )
 		{
 
 			float regularValue = ( reservoir_model_.static_porperties[property_index].values_[i / 8] );
@@ -311,17 +314,17 @@ void GLWidget::changePropertyRange ( const double& minRange, const double& maxRa
 				int index [] =
 				{
 				    // Top Face
-				    reservoir_model_.blocks[i+0],reservoir_model_.blocks[i+1],reservoir_model_.blocks[i+3],reservoir_model_.blocks[i+2],/* 0 - 5*/
+				    reservoir_model_.block_indices[i+0],reservoir_model_.block_indices[i+1],reservoir_model_.block_indices[i+3],reservoir_model_.block_indices[i+2],/* 0 - 5*/
 				    // Bottom Face
-				    reservoir_model_.blocks[i+4],reservoir_model_.blocks[i+7],reservoir_model_.blocks[i+5],reservoir_model_.blocks[i+6],/* 6 - 11 */
+				    reservoir_model_.block_indices[i+4],reservoir_model_.block_indices[i+7],reservoir_model_.block_indices[i+5],reservoir_model_.block_indices[i+6],/* 6 - 11 */
 				    // Front Face
-				    reservoir_model_.blocks[i+0],reservoir_model_.blocks[i+7],reservoir_model_.blocks[i+3],reservoir_model_.blocks[i+4],/* 12 - 17*/
+				    reservoir_model_.block_indices[i+0],reservoir_model_.block_indices[i+7],reservoir_model_.block_indices[i+3],reservoir_model_.block_indices[i+4],/* 12 - 17*/
 				    // Back Face
-				    reservoir_model_.blocks[i+1],reservoir_model_.blocks[i+2],reservoir_model_.blocks[i+6],reservoir_model_.blocks[i+5],/* 18 - 23*/
+				    reservoir_model_.block_indices[i+1],reservoir_model_.block_indices[i+2],reservoir_model_.block_indices[i+6],reservoir_model_.block_indices[i+5],/* 18 - 23*/
 				    // Right Face
-				    reservoir_model_.blocks[i+2],reservoir_model_.blocks[i+3],reservoir_model_.blocks[i+5],reservoir_model_.blocks[i+4],/* 24 - 29*/
+				    reservoir_model_.block_indices[i+2],reservoir_model_.block_indices[i+3],reservoir_model_.block_indices[i+5],reservoir_model_.block_indices[i+4],/* 24 - 29*/
 				    // Left Face
-				    reservoir_model_.blocks[i+0],reservoir_model_.blocks[i+1],reservoir_model_.blocks[i+7],reservoir_model_.blocks[i+6] /* 30 - 35*/
+				    reservoir_model_.block_indices[i+0],reservoir_model_.block_indices[i+1],reservoir_model_.block_indices[i+7],reservoir_model_.block_indices[i+6] /* 30 - 35*/
 				};
 
 				// Top Face
@@ -395,7 +398,7 @@ void GLWidget::changePropertyRange ( const double& minRange, const double& maxRa
 		}
 	}
 
-
+	// Loop over the boxes
 	CutVolumeGenerator();
 
 	std::cout << " number of boxes " << cutVolumes.size( ) << std::endl;
@@ -428,9 +431,9 @@ void GLWidget::changeProperty ( int property_index )
 
 	std::size_t i = 0;
 
-	while ( i < reservoir_model_.blocks.size( ) )
+	while ( i < reservoir_model_.block_indices.size( ) )
 	{
-		if ( reservoir_model_.blocks[i] != -1 )
+		if ( reservoir_model_.block_indices[i] != -1 )
 		{
 
 			float normalized_color = ( reservoir_model_.static_porperties[property_index].values_[i/8] - min ) / ( max - min );
@@ -585,7 +588,7 @@ void GLWidget::openIRES ( const std::string& filename )
 
 	reservoir_model_.openIRES(filename);
 
-	if ( reservoir_model_.blocks.size ( ) > 0 )
+	if ( reservoir_model_.block_indices.size ( ) > 0 )
 	{
 		ires_has_been_open_sucessefully = 1;
 
@@ -614,9 +617,9 @@ void GLWidget::openIRES ( const std::string& filename )
 
 		std::size_t i = 0;
 
-		while ( i < reservoir_model_.blocks.size ( ) )
+		while ( i < reservoir_model_.block_indices.size ( ) )
 		{
-			if ( reservoir_model_.blocks[i] != -1)
+			if ( reservoir_model_.block_indices[i] != -1)
 			{
 
 
@@ -642,17 +645,17 @@ void GLWidget::openIRES ( const std::string& filename )
 				int index [] =
 				{
 				    // Top Face
-				    reservoir_model_.blocks[i+0],reservoir_model_.blocks[i+1],reservoir_model_.blocks[i+3],reservoir_model_.blocks[i+2],/* 0 - 5*/
+				    reservoir_model_.block_indices[i+0],reservoir_model_.block_indices[i+1],reservoir_model_.block_indices[i+3],reservoir_model_.block_indices[i+2],/* 0 - 5*/
 				    // Bottom Face
-				    reservoir_model_.blocks[i+4],reservoir_model_.blocks[i+7],reservoir_model_.blocks[i+5],reservoir_model_.blocks[i+6],/* 6 - 11 */
+				    reservoir_model_.block_indices[i+4],reservoir_model_.block_indices[i+7],reservoir_model_.block_indices[i+5],reservoir_model_.block_indices[i+6],/* 6 - 11 */
 				    // Front Face
-				    reservoir_model_.blocks[i+0],reservoir_model_.blocks[i+7],reservoir_model_.blocks[i+3],reservoir_model_.blocks[i+4],/* 12 - 17*/
+				    reservoir_model_.block_indices[i+0],reservoir_model_.block_indices[i+7],reservoir_model_.block_indices[i+3],reservoir_model_.block_indices[i+4],/* 12 - 17*/
 				    // Back Face
-				    reservoir_model_.blocks[i+1],reservoir_model_.blocks[i+2],reservoir_model_.blocks[i+6],reservoir_model_.blocks[i+5],/* 18 - 23*/
+				    reservoir_model_.block_indices[i+1],reservoir_model_.block_indices[i+2],reservoir_model_.block_indices[i+6],reservoir_model_.block_indices[i+5],/* 18 - 23*/
 				    // Right Face
-				    reservoir_model_.blocks[i+2],reservoir_model_.blocks[i+3],reservoir_model_.blocks[i+5],reservoir_model_.blocks[i+4],/* 24 - 29*/
+				    reservoir_model_.block_indices[i+2],reservoir_model_.block_indices[i+3],reservoir_model_.block_indices[i+5],reservoir_model_.block_indices[i+4],/* 24 - 29*/
 				    // Left Face
-				    reservoir_model_.blocks[i+0],reservoir_model_.blocks[i+1],reservoir_model_.blocks[i+7],reservoir_model_.blocks[i+6] /* 30 - 35*/
+				    reservoir_model_.block_indices[i+0],reservoir_model_.block_indices[i+1],reservoir_model_.block_indices[i+7],reservoir_model_.block_indices[i+6] /* 30 - 35*/
 				};
 
 				// Top Face
@@ -796,6 +799,8 @@ void GLWidget::openIRES ( const std::string& filename )
 
 
 				i += 8;
+
+
 
 			}  // end of looping list of blocks
 			else

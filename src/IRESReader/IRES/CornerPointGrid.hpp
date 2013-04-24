@@ -25,6 +25,9 @@
 #include <Celer/Core/Geometry/Math/Vector3.hpp>
 #include <Celer/Core/Physics/BoundingBox3.hpp>
 
+// IRES Classes
+#include <IRES/Block.hpp>
+
 namespace IRES
 {
 
@@ -44,8 +47,6 @@ namespace IRES
 
 
 		public:
-
-
 
 
 			struct TheHeader
@@ -77,7 +78,6 @@ namespace IRES
 			};
 
 
-
 			struct Static_Property
 			{
 
@@ -94,14 +94,14 @@ namespace IRES
 			struct Dynamic_Property
 			{
 
-					std::string 	name;
-					std::string 	unit;
-					std::string 	variable_name;
-					std::string 	component;
+					std::string name;
+					std::string unit;
+					std::string variable_name;
+					std::string component;
 					// From Ires.dynamic_ name/units/variable_name/components
 
 					// FIXME std::pair< timeStep, values for each block >
-					std::vector<std::pair<int,std::vector<float> > > values_;
+					std::vector<std::pair<int, std::vector<float> > > values_;
 
 			};
 
@@ -160,13 +160,15 @@ namespace IRES
 
 			};
 
+
 			TheHeader 				header_;
 
 			std::vector<int>	 		number_of_fault_lines;
 
-			std::vector<Dynamic_Property> 		dynamic_properties;
-			std::vector<Static_Property> 		static_porperties;
+			std::vector<CornerPointGrid::Dynamic_Property> 	dynamic_properties;
+			std::vector<CornerPointGrid::Static_Property> 	static_porperties;
 
+			// Well Data
 			std::vector<std::string> 		well_names;
 			std::vector<std::string> 		well_status;
 			std::vector<std::string> 		well_types;
@@ -179,7 +181,9 @@ namespace IRES
 
 			std::vector<Celer::Vector3<double> > 	vertices;
 
-			std::vector<int> 			blocks;
+			std::vector<int> 			block_indices;
+
+			std::vector<IRES::Block>                blocks;
 
 		public:
 

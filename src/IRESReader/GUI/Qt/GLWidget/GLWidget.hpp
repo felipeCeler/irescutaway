@@ -39,7 +39,7 @@
 #include <QtCore/QMimeData>
 
 
-#include <IRESClasses/CornerPointGrid.hpp>
+#include <IRES/CornerPointGrid.hpp>
 
 
 

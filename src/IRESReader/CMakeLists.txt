@@ -42,14 +42,17 @@ set( ${PROJECT_NAME}_SOURCES App/main.cpp
     						 GUI/Qt/AboutWidget/AboutWidgetIRESReader.cpp
     						 GUI/Qt/GLWidget/GLWidget.cpp
     						 GUI/Qt/GLWidget/Cube.cpp
-    						 IRESClasses/CornerPointGrid_test.cpp
-    						 IRESClasses/CornerPointGrid.cpp)
+    						 IRES/CornerPointGrid_test.cpp
+    						 IRES/CornerPointGrid.cpp
+    						 IRES/Block.cpp
+    						 )
 	
 set( ${PROJECT_NAME}_HEADERS GUI/Qt/MainWindow/MainWindow.hpp
                              GUI/Qt/AboutWidget/AboutWidgetIRESReader.hpp
                              GUI/Qt/GLWidget/GLWidget.hpp
                              GUI/Qt/GLWidget/Cube.hpp
-                             IRESClasses/CornerPointGrid.hpp
+                             IRES/CornerPointGrid.hpp
+                             IRES/Block.hpp
                              )	
 
 set( MOC_HEADERS GUI/Qt/MainWindow/MainWindow.hpp

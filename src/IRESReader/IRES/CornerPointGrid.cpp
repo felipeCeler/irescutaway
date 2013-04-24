@@ -316,10 +316,10 @@ namespace IRES
 			inFile.read ( (char*) &vertices[0] , sizeof(Celer::Vector3<double>) * header_.number_of_Vertices );
 
 			// Copying Indices
-			blocks.clear ( );
-			blocks.resize ( header_.number_of_Blocks_Doubles );
+			block_indices.clear ( );
+			block_indices.resize ( header_.number_of_Blocks_Doubles );
 
-			inFile.read ( (char*) &blocks[0] , sizeof(int) * header_.number_of_Blocks_Doubles );
+			inFile.read ( (char*) &block_indices[0] , sizeof(int) * header_.number_of_Blocks_Doubles );
 
 			// Copying Dynamic Properties for each Time Step.
 
@@ -371,11 +371,256 @@ namespace IRES
 
 
 		}
-		inFile.close ( );
+
+
+		/// Filling the list with real Blocks ( block indice different of -1 )
+
+
+		if ( block_indices.size ( ) > 0 )
+		{
+
+			Celer::BoundingBox3<double> box;
+
+			box.fromPointCloud ( vertices.begin ( ) , vertices.end ( ) );
+
+			for ( std::size_t  i = 0; i < vertices.size ( ) ; i++)
+			{
+				vertices[i] -= box.center();
+				vertices[i].x /= box.diagonal();
+				vertices[i].y /= box.diagonal();
+				vertices[i].z /= box.diagonal();
+				//std::cout << " Vector " <<  vertices[i] << std::endl;
+			}
+
+			box.fromPointCloud ( vertices.begin ( ) , vertices.end ( ) );
+
+			std::size_t i = 0;
+
+			// To hold new Modelos Blocks;
+			blocks.clear();
+			blocks.resize( header_.number_of_Blocks );
+
+
+			while ( i < block_indices.size ( ) )
+			{
+				if ( block_indices[i] != -1)
+				{
+
+					IRES::Block new_block;
+
+					/// From Nicole`s presentation
+					Celer::Vector4<int> IJK ( (  (i/8) % header_.number_of_Blocks_in_I_Direction) + 1,
+								  ( ((i/8) / header_.number_of_Blocks_in_I_Direction) % header_.number_of_Blocks_in_J_Direction ) +1,
+								  (  (i/8) / (header_.number_of_Blocks_in_I_Direction * header_.number_of_Blocks_in_J_Direction )) +1,
+								  0 );
+
+
+					Celer::Vector4<int> IJKs [] =
+					{
+
+					     IJK,IJK,IJK,IJK, IJK,IJK,IJK,IJK, IJK,IJK,IJK,IJK, IJK,IJK,IJK,IJK, IJK,IJK,IJK,IJK ,IJK,IJK,IJK,IJK
+
+					};
+
+
+					int index [] =
+					{
+					    // Top Face
+					    block_indices[i+0],block_indices[i+1],block_indices[i+3],block_indices[i+2],/* 0 - 5*/
+					    // Bottom Face
+					    block_indices[i+4],block_indices[i+7],block_indices[i+5],block_indices[i+6],/* 6 - 11 */
+					    // Front Face
+					    block_indices[i+0],block_indices[i+7],block_indices[i+3],block_indices[i+4],/* 12 - 17*/
+					    // Back Face
+					    block_indices[i+1],block_indices[i+2],block_indices[i+6],block_indices[i+5],/* 18 - 23*/
+					    // Right Face
+					    block_indices[i+2],block_indices[i+3],block_indices[i+5],block_indices[i+4],/* 24 - 29*/
+					    // Left Face
+					    block_indices[i+0],block_indices[i+1],block_indices[i+7],block_indices[i+6] /* 30 - 35*/
+					};
+
+					// Top Face
+					Celer::Vector3<float> v0( static_cast<float>(vertices[index[0]].x), static_cast<float>(vertices[index[0]].y), static_cast<float>(vertices[index[0]].z));
+					Celer::Vector3<float> v1( static_cast<float>(vertices[index[1]].x), static_cast<float>(vertices[index[1]].y), static_cast<float>(vertices[index[1]].z));
+					Celer::Vector3<float> v3( static_cast<float>(vertices[index[2]].x), static_cast<float>(vertices[index[2]].y), static_cast<float>(vertices[index[2]].z));
+					Celer::Vector3<float> v2( static_cast<float>(vertices[index[3]].x), static_cast<float>(vertices[index[3]].y), static_cast<float>(vertices[index[3]].z));
+					// Bottom Face
+					Celer::Vector3<float> v4( static_cast<float>(vertices[index[4]].x), static_cast<float>(vertices[index[4]].y), static_cast<float>(vertices[index[4]].z));
+					Celer::Vector3<float> v7( static_cast<float>(vertices[index[5]].x), static_cast<float>(vertices[index[5]].y), static_cast<float>(vertices[index[5]].z));
+					Celer::Vector3<float> v5( static_cast<float>(vertices[index[6]].x), static_cast<float>(vertices[index[6]].y), static_cast<float>(vertices[index[6]].z));
+					Celer::Vector3<float> v6( static_cast<float>(vertices[index[7]].x), static_cast<float>(vertices[index[7]].y), static_cast<float>(vertices[index[7]].z));
+
+					Celer::Vector4<float> vertices [] =
+					{
+					    // Top Face
+					    Celer::Vector4<float> ( v0, 1.0f),
+					    Celer::Vector4<float> ( v1, 1.0f),
+					    Celer::Vector4<float> ( v3, 1.0f),
+					    Celer::Vector4<float> ( v2, 1.0f),
+					    // Bottom Face
+					    Celer::Vector4<float> ( v4, 1.0f),
+					    Celer::Vector4<float> ( v7, 1.0f),
+					    Celer::Vector4<float> ( v5, 1.0f),
+					    Celer::Vector4<float> ( v6, 1.0f),
+					    // Front Face
+					    Celer::Vector4<float> ( v0, 1.0f),
+					    Celer::Vector4<float> ( v7, 1.0f),
+					    Celer::Vector4<float> ( v3, 1.0f),
+					    Celer::Vector4<float> ( v4, 1.0f),
+					    // Back Face
+					    Celer::Vector4<float> ( v1, 1.0f),
+					    Celer::Vector4<float> ( v2, 1.0f),
+					    Celer::Vector4<float> ( v6, 1.0f),
+					    Celer::Vector4<float> ( v5, 1.0f),
+					    // Right Face
+					    Celer::Vector4<float> ( v2, 1.0f),
+					    Celer::Vector4<float> ( v3, 1.0f),
+					    Celer::Vector4<float> ( v5, 1.0f),
+					    Celer::Vector4<float> ( v4, 1.0f),
+					    // Left Face
+					    Celer::Vector4<float> ( v0, 1.0f),
+					    Celer::Vector4<float> ( v1, 1.0f),
+					    Celer::Vector4<float> ( v7, 1.0f),
+					    Celer::Vector4<float> ( v6, 1.0f)
+					};
+
+
+					Celer::Vector3<float> topNormal 	= ((v1 - v0) ^ (v3 - v0)).norm();
+					//std::cout << topNormal << std::endl;
+					Celer::Vector3<float> bottomNormal 	= ((v7 - v4) ^ (v5 - v4)).norm();
+					//std::cout << bottomNormal << std::endl;
+					Celer::Vector3<float> frontNormal 	= ((v7 - v0) ^ (v3 - v0)).norm();
+					//std::cout << frontNormal << std::endl;
+					Celer::Vector3<float> backmNormal 	= ((v2 - v1) ^ (v6 - v1)).norm();
+					//std::cout << backmNormal << std::endl;
+					Celer::Vector3<float> rightNormal 	= ((v3 - v2) ^ (v5 - v2)).norm();
+					//std::cout << rightNormal << std::endl;
+					Celer::Vector3<float> leftNormal 	= ((v1 - v0) ^ (v7 - v0)).norm();
+					//std::cout << leftNormal << std::endl;
+	//
+	//
+					// Care about the type: GL_DOUBLE or GL_FLOAT
+					Celer::Vector4<float> normals[] =
+					{
+						//  Top Face
+						Celer::Vector4<float> ( topNormal, 1.0f),
+						Celer::Vector4<float> ( topNormal, 1.0f),
+						Celer::Vector4<float> ( topNormal, 1.0f),
+						Celer::Vector4<float> ( topNormal, 1.0f),
+						// Bottom Face
+						Celer::Vector4<float> ( bottomNormal, 1.0f),
+						Celer::Vector4<float> ( bottomNormal, 1.0f),
+						Celer::Vector4<float> ( bottomNormal, 1.0f),
+						Celer::Vector4<float> ( bottomNormal, 1.0f),
+						// Front Face
+						Celer::Vector4<float> ( frontNormal, 1.0f),
+						Celer::Vector4<float> ( frontNormal, 1.0f),
+						Celer::Vector4<float> ( frontNormal, 1.0f),
+						Celer::Vector4<float> ( frontNormal, 1.0f),
+						// Back Face
+						Celer::Vector4<float> ( backmNormal, 1.0f),
+						Celer::Vector4<float> ( backmNormal, 1.0f),
+						Celer::Vector4<float> ( backmNormal, 1.0f),
+						Celer::Vector4<float> ( backmNormal, 1.0f),
+						// Right Face
+						Celer::Vector4<float> ( rightNormal, 1.0f),
+						Celer::Vector4<float> ( rightNormal, 1.0f),
+						Celer::Vector4<float> ( rightNormal, 1.0f),
+						Celer::Vector4<float> ( rightNormal, 1.0f),
+						// Left Face
+						Celer::Vector4<float> ( leftNormal, 1.0f),
+						Celer::Vector4<float> ( leftNormal, 1.0f),
+						Celer::Vector4<float> ( leftNormal, 1.0f),
+						Celer::Vector4<float> ( leftNormal, 1.0f)
+					};
+
+
+
+					Celer::Vector4<float> focus [] =
+					{
+					    // Top Face
+					    Celer::Vector4<float> ( 1.0,1.0,1.0,1.0f),
+					    Celer::Vector4<float> ( 1.0,1.0,1.0,1.0f),
+					    Celer::Vector4<float> ( 1.0,1.0,1.0,1.0f),
+					    Celer::Vector4<float> ( 1.0,1.0,1.0,1.0f),
+					    // Bottom Face
+					    Celer::Vector4<float> ( 1.0,1.0,1.0,1.0f),
+					    Celer::Vector4<float> ( 1.0,1.0,1.0,1.0f),
+					    Celer::Vector4<float> ( 1.0,1.0,1.0,1.0f),
+					    Celer::Vector4<float> ( 1.0,1.0,1.0,1.0f),
+					    // Front Face
+					    Celer::Vector4<float> ( 1.0,1.0,1.0,1.0f),
+					    Celer::Vector4<float> ( 1.0,1.0,1.0,1.0f),
+					    Celer::Vector4<float> ( 1.0,1.0,1.0,1.0f),
+					    Celer::Vector4<float> ( 1.0,1.0,1.0,1.0f),
+					    // Back Face
+					    Celer::Vector4<float> ( 1.0,1.0,1.0,1.0f),
+					    Celer::Vector4<float> ( 1.0,1.0,1.0,1.0f),
+					    Celer::Vector4<float> ( 1.0,1.0,1.0,1.0f),
+					    Celer::Vector4<float> ( 1.0,1.0,1.0,1.0f),
+					    // Right Face
+					    Celer::Vector4<float> ( 1.0,1.0,1.0,1.0f),
+					    Celer::Vector4<float> ( 1.0,1.0,1.0,1.0f),
+					    Celer::Vector4<float> ( 1.0,1.0,1.0,1.0f),
+					    Celer::Vector4<float> ( 1.0,1.0,1.0,1.0f),
+					    // Left Face
+					    Celer::Vector4<float> ( 1.0,1.0,1.0,1.0f),
+					    Celer::Vector4<float> ( 1.0,1.0,1.0,1.0f),
+					    Celer::Vector4<float> ( 1.0,1.0,1.0,1.0f),
+					    Celer::Vector4<float> ( 1.0,1.0,1.0,1.0f)
+					};
+
+
+					std::copy ( vertices 	, vertices + 24 , std::back_inserter ( new_block.vertices  ) );
+					std::copy ( normals 	, normals  + 24 , std::back_inserter ( new_block.normals) );
+					std::copy ( index 	, index    + 24 , std::back_inserter ( new_block.indices   ) );
+					std::copy ( focus 	, focus    + 24 , std::back_inserter ( new_block.focus) );
+					std::copy ( IJKs 	, IJKs     + 24 , std::back_inserter ( new_block.IJK  ) );
+
+					new_block.setIdentification ( i/8 );
+
+					for ( std::size_t property = 0;  property < static_porperties.size();  ++property )
+					{
+
+						new_block.static_porperties.name  	   = static_porperties[property].name;
+						new_block.static_porperties.unit  	   = static_porperties[property].unit;
+						new_block.static_porperties.variable_name  = static_porperties[property].variable_name;
+						new_block.static_porperties.component      = static_porperties[property].component;
+						new_block.static_porperties.value_	   = static_porperties[property].values_[i/8];
+
+					}
+
+					for ( std::size_t property = 0;  property < dynamic_properties.size();  ++property )
+					{
+
+						new_block.dynamic_properties.name  	   = dynamic_properties[property].name;
+						new_block.dynamic_properties.unit  	   = dynamic_properties[property].unit;
+						new_block.dynamic_properties.variable_name = dynamic_properties[property].variable_name;
+						new_block.dynamic_properties.component     = dynamic_properties[property].component;
+						new_block.dynamic_properties.values_	   = dynamic_properties[property].values_[i/8];
+
+					}
+
+
+					blocks[i/8] =  new_block;
+
+					i += 8;
+
+				}  // end of looping list of blocks
+				else
+				{
+					i += 1;
+				}
+			}
+
+			std::cout << " Size of List of Blocks " << blocks.size ( ) << std::endl;
+
+			inFile.close ( );
+		}
+
+
+
+
+
 	}
-
-
-
-
-
 } /* namespace ires */

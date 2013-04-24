@@ -4,7 +4,6 @@
 
 #include <GUI/Qt/MainWindow/MainWindow.hpp>
 
-#include <IRESClasses/CornerPointGrid_test.cpp>
 
 MainWindow::MainWindow ( QMainWindow *parent ) :
 	QMainWindow ( parent )
