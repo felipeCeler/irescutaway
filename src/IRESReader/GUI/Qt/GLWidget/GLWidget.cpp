@@ -809,11 +809,11 @@ void GLWidget::openIRES ( const std::string& filename )
 			}
 		}
 
-		max_I_ = reservoir_model_.header_.number_of_Blocks_in_I_Direction;
+		max_I_ = 0;
 		min_I_ = 0;
-		max_J_ = reservoir_model_.header_.number_of_Blocks_in_J_Direction;
+		max_J_ = 0;
 		min_J_ = 0;
-		max_K_ = reservoir_model_.header_.number_of_Blocks_in_K_Direction;
+		max_K_ = 0;
 		min_K_ = 0;
 
 
@@ -1446,7 +1446,7 @@ void GLWidget::mouseMoveEvent ( QMouseEvent *event )
 
 		camera_.rotate ( pitch , heading , roll );
 
-		/*! Três coisas :
+		/*! Trï¿½s coisas :
 		 *  - event->pos() retorna coordenadas x e y relativa a widget que recebeu o evento.
 		 *  - mapToGlobla mapei as coordenadas da widget para coordenada global da tela.
 		 *  - QCurso::setPos() posiciona o mouse em coordenada global.

@@ -400,6 +400,7 @@ namespace IRES
 			blocks.clear();
 			blocks.resize( header_.number_of_Blocks );
 
+			int property_index = 0;
 
 			while ( i < block_indices.size ( ) )
 			{
@@ -409,9 +410,9 @@ namespace IRES
 					IRES::Block new_block;
 
 					/// From Nicole`s presentation
-					Celer::Vector4<int> IJK ( (  (i/8) % header_.number_of_Blocks_in_I_Direction) + 1,
-								  ( ((i/8) / header_.number_of_Blocks_in_I_Direction) % header_.number_of_Blocks_in_J_Direction ) +1,
-								  (  (i/8) / (header_.number_of_Blocks_in_I_Direction * header_.number_of_Blocks_in_J_Direction )) +1,
+					Celer::Vector4<int> IJK ( (  (property_index) % header_.number_of_Blocks_in_I_Direction) + 1,
+								  ( ((property_index) / header_.number_of_Blocks_in_I_Direction) % header_.number_of_Blocks_in_J_Direction ) +1,
+								  (  (property_index) / (header_.number_of_Blocks_in_I_Direction * header_.number_of_Blocks_in_J_Direction )) +1,
 								  0 );
 
 
@@ -577,40 +578,51 @@ namespace IRES
 					std::copy ( focus 	, focus    + 24 , std::back_inserter ( new_block.focus) );
 					std::copy ( IJKs 	, IJKs     + 24 , std::back_inserter ( new_block.IJK  ) );
 
-					new_block.setIdentification ( i/8 );
+					new_block.setIdentification ( property_index );
+
+					new_block.static_porperties.resize(static_porperties.size());
 
 					for ( std::size_t property = 0;  property < static_porperties.size();  ++property )
 					{
 
-						new_block.static_porperties.name  	   = static_porperties[property].name;
-						new_block.static_porperties.unit  	   = static_porperties[property].unit;
-						new_block.static_porperties.variable_name  = static_porperties[property].variable_name;
-						new_block.static_porperties.component      = static_porperties[property].component;
-						new_block.static_porperties.value_	   = static_porperties[property].values_[i/8];
+						new_block.static_porperties[property].name  	   = static_porperties[property].name;
+						new_block.static_porperties[property].unit  	   = static_porperties[property].unit;
+						new_block.static_porperties[property].variable_name  = static_porperties[property].variable_name;
+						new_block.static_porperties[property].component      = static_porperties[property].component;
+						new_block.static_porperties[property].value_	   = static_porperties[property].values_[property_index];
 
 					}
+
+					new_block.dynamic_properties.resize(dynamic_properties.size());
 
 					for ( std::size_t property = 0;  property < dynamic_properties.size();  ++property )
 					{
 
-						new_block.dynamic_properties.name  	   = dynamic_properties[property].name;
-						new_block.dynamic_properties.unit  	   = dynamic_properties[property].unit;
-						new_block.dynamic_properties.variable_name = dynamic_properties[property].variable_name;
-						new_block.dynamic_properties.component     = dynamic_properties[property].component;
-						new_block.dynamic_properties.values_	   = dynamic_properties[property].values_[i/8];
+						std::cout << "new_block.dynamic_properties.name : " << dynamic_properties[property].name << std::endl;
+						std::cout << "new_block.dynamic_properties.unit : " << dynamic_properties[property].unit << std::endl;
+						std::cout << "new_block.dynamic_properties.variable_name : " << dynamic_properties[property].variable_name << std::endl;
+						std::cout << "new_block.dynamic_properties.component : " << dynamic_properties[property].component << std::endl;
+
+						new_block.dynamic_properties[property].name  	     = dynamic_properties[property].name;
+						new_block.dynamic_properties[property].unit  	     = dynamic_properties[property].unit;
+						new_block.dynamic_properties[property].variable_name = dynamic_properties[property].variable_name;
+						new_block.dynamic_properties[property].component     = dynamic_properties[property].component;
+						new_block.dynamic_properties[property].values_	     = dynamic_properties[property].values_[property_index];
 
 					}
 
-
-					blocks[i/8] =  new_block;
+					blocks[property_index] =  new_block;
 
 					i += 8;
+					property_index += 1;
 
 				}  // end of looping list of blocks
 				else
 				{
 					i += 1;
+					property_index += 1;
 				}
+
 			}
 
 			std::cout << " Size of List of Blocks " << blocks.size ( ) << std::endl;

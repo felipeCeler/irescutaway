@@ -69,8 +69,8 @@ namespace IRES
 
 			Celer::BoundingBox3<float> 	     AABB;
 
-			Block::Dynamic_Property 	     dynamic_properties;
-			Block::Static_Property 	     	     static_porperties;
+			std::vector<Block::Dynamic_Property> 	     dynamic_properties;
+			std::vector<Block::Static_Property> 	     static_porperties;
 
 			int id ( ) const { return id_; }
 			void setIdentification ( int id ) { id_ = id; };

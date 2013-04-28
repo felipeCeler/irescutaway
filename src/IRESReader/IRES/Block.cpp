@@ -34,11 +34,6 @@ namespace IRES
 
 		AABB      = new_block.AABB;
 
-		static_porperties  = new_block.static_porperties;
-		dynamic_properties = new_block.dynamic_properties;
-
-
-
 	}
 
 	Block::~Block ( )

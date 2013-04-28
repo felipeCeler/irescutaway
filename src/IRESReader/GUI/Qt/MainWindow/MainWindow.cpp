@@ -63,6 +63,8 @@ void MainWindow::open(QString pFilename,bool who ) {
 	if ( glWidget->isIresWasOpenedSucessufully( ))
 	{
 
+		updateDoubleSpinMax( 0 );
+		updateDoubleSpinMin( 0 );
 		ui->properties_tableWidget_->setRowCount(glWidget->reservoir_model_.static_porperties.size( ));
 
 		for ( int i = 0 ; i < glWidget->reservoir_model_.static_porperties.size( ); ++i )
