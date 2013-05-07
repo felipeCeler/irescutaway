@@ -50,10 +50,7 @@ void GLWidget::initializeGL ( )
 	setAutoFillBackground ( false );
 	setAcceptDrops(true);
 
-	JumpFloodingStep = 0;
-	VertexShaderStep = 0;
-	FragmentShaderStep = 0;
-	
+
 	LoadShaders ( );
 
 	ires_has_been_open_sucessefully = 0;
@@ -74,7 +71,6 @@ void GLWidget::initializeGL ( )
 
 	fboStep[0] 	  = new  QGLFramebufferObject ( width() , height() , format );
 	fboStep[1] 	  = new  QGLFramebufferObject ( width() , height() , format );
-	fboInitialization = new  QGLFramebufferObject ( width() , height() , format );
 
 	glGenVertexArrays ( 1 , &vertexArray);
 		glGenBuffers ( 1, &reservoir_vertices_buffer );
@@ -101,7 +97,8 @@ void GLWidget::initializeGL ( )
 	draw_secondary = 1;
 	draw_primary = 0;
 
-	isCutaway = 0;
+	isBurnsApproach = 0;
+	isBoudingBoxApproach = 0;
 
 	glGenVertexArrays (1, &vertexArray_box);
 		glGenBuffers( 1, &vertexBuffer_box);
@@ -941,8 +938,6 @@ void GLWidget::resizeGL ( int width , int height )
 	if ( fboStep[1] )
 		delete fboStep[1];
 
-	if ( fboInitialization )
-		delete fboInitialization;
 
 	QGLFramebufferObjectFormat format;
 	//format.setAttachment(QGLFramebufferObject::Depth);
@@ -951,8 +946,6 @@ void GLWidget::resizeGL ( int width , int height )
 
 	fboStep[0] = new QGLFramebufferObject ( width , height , format );
 	fboStep[1] = new QGLFramebufferObject ( width , height , format );
-	fboInitialization = new QGLFramebufferObject ( width , height , format );
-
 
 	glBindVertexArray(vertexArrayScreen);
 
@@ -1002,13 +995,17 @@ void GLWidget::paintGL ( )
 	glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 	glClearColor ( 0.0 , 0.0 , 0.0 , 1.0 );
 
-	if ( isCutaway )
+	if ( isBurnsApproach )
 	{
 		BurnsCutawaySetup ( );
 	}
+	else if ( isBoudingBoxApproach )
+	{
+		BoundingVolumeCutawaySetup ( );
+	}
 	else
 	{
-		TridimensionalSetUp ( );
+		NoCutawaySetUp ( );
 	}
 
 
@@ -1016,10 +1013,98 @@ void GLWidget::paintGL ( )
 }
 
 
-void GLWidget::EmilioSetup( )
+void GLWidget::BoundingVolumeCutawaySetup( )
 {
 
+	glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
+	camera_.setViewByMouse ( );
+
+	if ( buttonRelease_ )
+	{
+		processMultiKeys ( );
+	}
+
+	camera_.computerViewMatrix( );
+
+	camera_.setPerspectiveProjectionMatrix ( zoom_angle_ , camera_.aspectRatio ( ) , 1.0 , 1000.0 * box.diagonal ( ) );
+
+
+ 	if ( ires_has_been_open_sucessefully )
+	{
+
+
+
+ 		if ( cutVolumes.size( ) > 0)
+ 		{
+			BoundingBoxInitialization.active ( );
+
+			fboStep[1]->bind ( );
+
+			glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
+			glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+			glDisable ( GL_BLEND );
+
+			glBindVertexArray ( vertexArray );
+
+			glUniform4fv ( BoundingBoxInitialization.uniforms_["min_point"].location , 1 , Celer::Vector4<float> ( cutVolumes[0].min ( ) , 1.0f ) );
+			glUniform4fv ( BoundingBoxInitialization.uniforms_["max_point"].location , 1 , Celer::Vector4<float> ( cutVolumes[0].max ( ) , 1.0f ) );
+			glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+			glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+			//VAO
+
+			glDrawArrays ( GL_POINTS , 0 , 1 );
+			glBindVertexArray ( 0 );
+
+			fboStep[1]->release ( );
+
+			BoundingBoxInitialization.deactive ( );
+
+ 		}
+
+		if ( draw_secondary )
+		{
+			BoundingBoxCutaway.active ( );
+ 			glActiveTexture ( GL_TEXTURE0 );
+ 			glBindTexture ( GL_TEXTURE_RECTANGLE , fboStep[1]->texture ( ) );
+
+ 			glUniform3fv ( BoundingBoxCutaway.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
+
+ 			glUniform3i ( BoundingBoxCutaway.uniforms_["min_IJK"].location , min_I_, min_J_, min_K_ );
+ 			glUniform3i ( BoundingBoxCutaway.uniforms_["max_IJK"].location , max_I_, max_J_, max_K_ );
+
+			glUniform2f ( BoundingBoxCutaway.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
+
+			glUniformMatrix4fv ( BoundingBoxCutaway.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+			glUniformMatrix4fv ( BoundingBoxCutaway.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+
+			glBindVertexArray(vertexArray);
+			glDrawArrays ( GL_LINES_ADJACENCY , 0 , reservoir_list_of_vertices.size());
+			glBindVertexArray(0);
+
+			BoundingBoxCutaway.deactive ( );
+
+		}
+		if ( draw_primary )
+		{
+ 			primary.active ( );
+
+ 			glUniform3fv ( primary.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
+
+			glUniform2f ( primary.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
+
+			glUniformMatrix4fv ( primary.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+			glUniformMatrix4fv ( primary.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+
+			glBindVertexArray(vertexArray);
+			glDrawArrays ( GL_LINES_ADJACENCY , 0 , reservoir_list_of_vertices.size());
+			glBindVertexArray(0);
+
+			primary.deactive ( );
+
+		}
+
+	}
 
 
 }
@@ -1114,7 +1199,7 @@ void GLWidget::BurnsCutawaySetup ( )
 
 		if ( draw_secondary && (reservoir_list_of_vertices.size ( ) != 0) )
 		{
-			BurnsSecundary430Wireframe.active ( );
+			BurnsCutaway430Wireframe.active ( );
 
 			glClearColor ( 1.0 , 1.0 , 1.0 , 1.0 );
 			glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
@@ -1123,12 +1208,12 @@ void GLWidget::BurnsCutawaySetup ( )
 			glEnable ( GL_TEXTURE_RECTANGLE );
 			glBindTexture ( GL_TEXTURE_RECTANGLE , fboStep[i]->texture ( ) );
 
-			glUniform3fv ( BurnsSecundary430Wireframe.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
+			glUniform3fv ( BurnsCutaway430Wireframe.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
 
-			glUniform2f ( BurnsSecundary430Wireframe.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
-			glUniform1i ( BurnsSecundary430Wireframe.uniforms_["cutaway"].location , 1 );
-			glUniformMatrix4fv ( BurnsSecundary430Wireframe.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-			glUniformMatrix4fv ( BurnsSecundary430Wireframe.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+			glUniform2f ( BurnsCutaway430Wireframe.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
+			glUniform1i ( BurnsCutaway430Wireframe.uniforms_["cutaway"].location , 1 );
+			glUniformMatrix4fv ( BurnsCutaway430Wireframe.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+			glUniformMatrix4fv ( BurnsCutaway430Wireframe.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
 
 			//VAO
 			glBindVertexArray(vertexArray);
@@ -1136,7 +1221,7 @@ void GLWidget::BurnsCutawaySetup ( )
 			glBindVertexArray(0);
 			glDisable ( GL_TEXTURE_RECTANGLE );
 
-			BurnsSecundary430Wireframe.deactive ( );
+			BurnsCutaway430Wireframe.deactive ( );
 		}
 
 		if ( draw_primary && (reservoir_list_of_vertices.size ( ) != 0)  )
@@ -1181,7 +1266,7 @@ void GLWidget::BurnsCutawaySetup ( )
 
 }
 
-void GLWidget::TridimensionalSetUp ( )
+void GLWidget::NoCutawaySetUp ( )
 {
 	glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
@@ -1265,10 +1350,6 @@ void GLWidget::TridimensionalSetUp ( )
 
 }
 
-void GLWidget::TwodimensionalSetUp ( )
-{
-	glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-}
 
 void GLWidget::gameLooping ( )
 {
@@ -1289,21 +1370,41 @@ void GLWidget::LoadShaders ( )
 	shadersDir.cdUp ();
 	qDebug () << "Directory " << shadersDir.path ();
 
-	textureViewer.create("textureViewer",(shadersDir.path ()+"/share/Shaders/fboTest.vert").toStdString(),(shadersDir.path ()+"/share/Shaders/fboTest.frag").toStdString());
+	textureViewer.create("textureViewer",(shadersDir.path ()+"/share/Shaders/fboTest.vert").toStdString(),
+			                             (shadersDir.path ()+"/share/Shaders/fboTest.frag").toStdString());
 
-	cutVolume.create("cutVolume",(shadersDir.path ()+"/share/Shaders/CutVolume.vert").toStdString(),(shadersDir.path ()+"/share/Shaders/CutVolume.geom").toStdString(),(shadersDir.path ()+"/share/Shaders/CutVolume.frag").toStdString());
+	cutVolume.create("cutVolume",(shadersDir.path ()+"/share/Shaders/CutVolume.vert").toStdString(),
+			                     (shadersDir.path ()+"/share/Shaders/CutVolume.geom").toStdString(),
+			                     (shadersDir.path ()+"/share/Shaders/CutVolume.frag").toStdString());
 
-	primary.create("primary",(shadersDir.path ()+"/share/Shaders/Primary.vert").toStdString(),(shadersDir.path ()+"/share/Shaders/Primary.geom").toStdString(),(shadersDir.path ()+"/share/Shaders/Primary.frag").toStdString());
+	primary.create("primary",(shadersDir.path ()+"/share/Shaders/Primary.vert").toStdString(),
+			                 (shadersDir.path ()+"/share/Shaders/Primary.geom").toStdString(),
+			                 (shadersDir.path ()+"/share/Shaders/Primary.frag").toStdString());
 
-	secondary.create("secondary",(shadersDir.path ()+"/share/Shaders/Secondary.vert").toStdString(),(shadersDir.path ()+"/share/Shaders/Secondary.geom").toStdString(),(shadersDir.path ()+"/share/Shaders/Secondary.frag").toStdString());
+	secondary.create("secondary",(shadersDir.path ()+"/share/Shaders/Secondary.vert").toStdString(),
+			                     (shadersDir.path ()+"/share/Shaders/Secondary.geom").toStdString(),
+			                     (shadersDir.path ()+"/share/Shaders/Secondary.frag").toStdString());
+	// Burns Approach
+	BurnsCutaway430.create("BurnsCutaway430",(shadersDir.path ()+"/share/Shaders/BurnsCutaway430.vert").toStdString(),
+			                         (shadersDir.path ()+"/share/Shaders/BurnsCutaway430.frag").toStdString());
 
-	BurnsSecundary430.create("BurnsSecundary430",(shadersDir.path ()+"/share/Shaders/BurnsSecundary430.vert").toStdString(),(shadersDir.path ()+"/share/Shaders/BurnsSecundary430.frag").toStdString());
+	BurnsCutaway430Wireframe.create("BurnsCutaway430Wireframe",(shadersDir.path ()+"/share/Shaders/BurnsCutaway430Wireframe.vert").toStdString(),
+		                                                   (shadersDir.path ()+"/share/Shaders/BurnsCutaway430Wireframe.geom").toStdString(),
+	                                                           (shadersDir.path ()+"/share/Shaders/BurnsCutaway430Wireframe.frag").toStdString());
 
-	BurnsSecundary430Wireframe.create("BurnsSecundary430Wireframe",(shadersDir.path ()+"/share/Shaders/BurnsSecundary430Wireframe.vert").toStdString(), (shadersDir.path ()+"/share/Shaders/BurnsSecundary430Wireframe.geom").toStdString(),(shadersDir.path ()+"/share/Shaders/BurnsSecundary430Wireframe.frag").toStdString());
+	BurnsJFAInitializing430.create("BurnsJFAInitializing430",(shadersDir.path ()+"/share/Shaders/BurnsJFAInitializing430.vert").toStdString(),
+			                                         (shadersDir.path ()+"/share/Shaders/BurnsJFAInitializing430.frag").toStdString());
 
-	BurnsJFAInitializing430.create("BurnsJFAInitializing430",(shadersDir.path ()+"/share/Shaders/BurnsJFAInitializing430.vert").toStdString(),(shadersDir.path ()+"/share/Shaders/BurnsJFAInitializing430.frag").toStdString());
+	BurnsJFAStep430.create("BurnsJFAStep430",(shadersDir.path ()+"/share/Shaders/BurnsJFAStep430.vert").toStdString(),
+			                         (shadersDir.path ()+"/share/Shaders/BurnsJFAStep430.frag").toStdString());
+	// BoudingBox Approach
+	BoundingBoxInitialization.create ("BoundingBoxApproach",(shadersDir.path ()+"/share/Shaders/BoundingBoxApproach.vert").toStdString(),
+							        (shadersDir.path ()+"/share/Shaders/BoundingBoxApproach.geom").toStdString(),
+							        (shadersDir.path ()+"/share/Shaders/BoundingBoxApproach.frag").toStdString());
 
-	BurnsJFAStep430.create("BurnsJFAStep430",(shadersDir.path ()+"/share/Shaders/BurnsJFAStep430.vert").toStdString(),(shadersDir.path ()+"/share/Shaders/BurnsJFAStep430.frag").toStdString());
+	BoundingBoxCutaway.create ("BoundingBoxCutaway",(shadersDir.path ()+"/share/Shaders/BoundingBoxCutaway.vert").toStdString(),
+							(shadersDir.path ()+"/share/Shaders/BoundingBoxCutaway.geom").toStdString(),
+							(shadersDir.path ()+"/share/Shaders/BoundingBoxCutaway.frag").toStdString());
 
 }
 
@@ -1372,20 +1473,6 @@ void GLWidget::keyPressEvent ( QKeyEvent * event )
 {
 	buttonRelease_ = true;
 	keysPresseds_ += event->key ( );
-
-	if ( ( QApplication::keyboardModifiers ( ) == Qt::ShiftModifier ) && ( event->key ( ) == Qt::Key_F ) )
-	{
-		drawPrimary();
-	}
-
-	if ( ( QApplication::keyboardModifiers ( ) == Qt::ShiftModifier ) && ( event->key ( ) == Qt::Key_G ) )
-	{
-		drawSecondary();
-	}
-	if ( ( QApplication::keyboardModifiers ( ) == Qt::ShiftModifier ) && ( event->key ( ) == Qt::Key_T ) )
-	{
-		isCutaway = !isCutaway;
-	}
 
 	updateGL();
 }
@@ -1536,15 +1623,17 @@ void GLWidget::dragLeaveEvent(QDragLeaveEvent *event)
 		event->accept ( );
 }
 
-void GLWidget::drawPrimary(  )
+void GLWidget::setPrimaryVisibility( bool visibility )
 {
 	if ( reservoir_list_of_vertices.size( ) > 0 )
-		draw_primary = !draw_primary;
+		draw_primary = visibility;
+	updateGL();
 }
 
-void GLWidget::drawSecondary( )
+void GLWidget::setSecondaryVisibility( bool visibility )
 {
 	if ( reservoir_list_of_vertices.size( ) > 0 )
-		draw_secondary = !draw_secondary;
+		draw_secondary = visibility;
+	updateGL();
 }
 

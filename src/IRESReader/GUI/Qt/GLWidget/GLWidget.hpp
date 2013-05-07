@@ -72,10 +72,6 @@ class GLWidget: public QGLWidget
 
 		void gameLooping ( );
 		void animate ( );
-		void TridimensionalSetUp ( );
-		void TwodimensionalSetUp ( );
-		void BurnsCutawaySetup ( );
-		void EmilioSetup ( );
 		void LoadShaders ( );
 		void CutVolumeGenerator ( );
 		void openIRES ( const std::string& filename );
@@ -92,8 +88,19 @@ class GLWidget: public QGLWidget
 		void changeMinJ ( const int& value);
 		void changeMinK ( const int& value);
 
-		void drawPrimary ( );
-		void drawSecondary (  );
+		void setPrimaryVisibility ( bool );
+		void setSecondaryVisibility ( bool );
+
+
+		void NoCutawaySetUp ( );
+		void BurnsCutawaySetup ( );
+		void BoundingVolumeCutawaySetup ( );
+
+		void setNoCutawayVisibility     ( bool visibility ) { isNoCutaway 	   = visibility; updateGL(); }
+		void setBoundingBoxVisibility   ( bool visibility ) { isBoudingBoxApproach = visibility; updateGL();}
+		void setBurnsApproachVisibility ( bool visibility ) { isBurnsApproach      = visibility; updateGL();}
+
+
 
 	protected:
 		void dragEnterEvent ( QDragEnterEvent *event );
@@ -146,8 +153,6 @@ private:
 
 	GLuint reservoir_indices_buffer;
 
-	bool draw_secondary;
-	bool draw_primary;
 
 	bool ires_has_been_open_sucessefully;
 
@@ -173,27 +178,34 @@ private:
 
 	float pm_sz;
 
-	QGLFramebufferObject*   fboInitialization;
-	Celer::OpenGL::ShaderManager	BurnsJFAInitializing430;
-
 	QGLFramebufferObject*   fboStep[2];
+
+	// Burns Approach
+	Celer::OpenGL::ShaderManager	BurnsJFAInitializing430;
 	Celer::OpenGL::ShaderManager	BurnsJFAStep430;
+	Celer::OpenGL::ShaderManager	BurnsCutaway430;
+	Celer::OpenGL::ShaderManager	BurnsCutaway430Wireframe;
 
 
-	QGLShaderProgram *JumpFloodingStep;
-	QGLShader *VertexShaderStep, *FragmentShaderStep;
-
-
+	// BoudingBox Visualization
 	Celer::OpenGL::ShaderManager	cutVolume;
+	Celer::OpenGL::ShaderManager    BoundingBoxInitialization;
+	Celer::OpenGL::ShaderManager    BoundingBoxCutaway;
+
+	// No cutaway Visualization
 	Celer::OpenGL::ShaderManager	primary;
 	Celer::OpenGL::ShaderManager	secondary;
-	Celer::OpenGL::ShaderManager	BurnsSecundary430;
-	Celer::OpenGL::ShaderManager	BurnsSecundary430Wireframe;
 
 	QImage fbo;
 	float  angle;
 	float  zoom_angle_;
-	bool   isCutaway;
+
+	bool  isBurnsApproach;
+	bool  isBoudingBoxApproach;
+	bool  isNoCutaway;
+
+	bool draw_secondary;
+	bool draw_primary;
 
 	int max_I_;
 	int min_I_;

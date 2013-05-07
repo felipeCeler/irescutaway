@@ -39,30 +39,28 @@ void main()
 //	normal = normalize(normalMatrix * normals);
 //
 //	color = colors;
-//( (IJK.z > min_IJK.z) && (IJK.z < max_IJK.z) )
-	if ( ( IJK.x > min_IJK.x ) && ( IJK.x < max_IJK.x )  ||
-	     ( IJK.y > min_IJK.y ) && ( IJK.y < max_IJK.y )  ||
-	     ( IJK.z > min_IJK.z ) && ( IJK.z < max_IJK.z ) )
-	{
-		vertexShader_VertexData.propertyColor = colors; //vec4(1.0,0.0,0.0,1.0);
-		gl_Position = ProjectionMatrix * ViewMatrix * vec4(0.0,0.0,0.0,0.0);//vertices;
-	}else
-	{
 
-		vertexShader_VertexData.propertyColor = colors; //vec4(1.0,0.0,0.0,1.0);
-		gl_Position = ProjectionMatrix * ViewMatrix * vertices;
+	if ( focus.x == 0.0 )
+	{
+		vertexShader_VertexData.propertyColor = colors;
+		gl_Position = ProjectionMatrix * ViewMatrix * vec4(1.0,0.0,0.0,0.0);
+
 	}
+	else
+	{
 
-//	if ( focus.x == 0.0 )
-//	{
-//		vertexShader_VertexData.propertyColor = colors; //vec4(1.0,0.0,0.0,1.0);
-//		gl_Position = ProjectionMatrix * ViewMatrix * vec4(1.0,0.0,0.0,0.0);
-//	}
-//	else
-//	{
-//		vertexShader_VertexData.propertyColor = colors;
-//		gl_Position = ProjectionMatrix * ViewMatrix * vertices;
-//	}
+		if ( ( IJK.x > min_IJK.x ) && ( IJK.x < max_IJK.x ) || ( IJK.y > min_IJK.y ) && ( IJK.y < max_IJK.y ) || ( IJK.z > min_IJK.z ) && ( IJK.z < max_IJK.z ) )
+		{
+			vertexShader_VertexData.propertyColor = colors; //vec4(1.0,0.0,0.0,1.0);
+			gl_Position = ProjectionMatrix * ViewMatrix * vec4 ( 0.0 , 0.0 , 0.0 , 0.0 ); //vertices;
+		}
+		else
+		{
+
+			vertexShader_VertexData.propertyColor = colors; //vec4(1.0,0.0,0.0,1.0);
+			gl_Position = ProjectionMatrix * ViewMatrix * vertices;
+		}
+	}
 
 
 

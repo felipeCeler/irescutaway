@@ -53,6 +53,19 @@ MainWindow::MainWindow ( QMainWindow *parent ) :
 	// About Widget
 	connect(ui->action_About, SIGNAL(triggered()), aboutIRESReader, SLOT(show()));
 
+	QActionGroup* CutawayTypeGroup = new QActionGroup ( this );
+	CutawayTypeGroup->setExclusive(1);
+	CutawayTypeGroup->addAction ( ui->action_Bounding_Box_Approach );
+	CutawayTypeGroup->addAction ( ui->action_Burns_Approach );
+	CutawayTypeGroup->addAction ( ui->action_No_Cutaway );
+
+	// Change the Cutaway Type
+	connect(ui->action_No_Cutaway,            SIGNAL(toggled(bool)), glWidget, SLOT(setNoCutawayVisibility(bool)));
+	connect(ui->action_Bounding_Box_Approach, SIGNAL(toggled(bool)), glWidget, SLOT(setBoundingBoxVisibility(bool)));
+	connect(ui->action_Burns_Approach,        SIGNAL(toggled(bool)), glWidget, SLOT(setBurnsApproachVisibility(bool)));
+	// Change visibility  of cells
+	connect(ui->action_Show_Primary_Cells,   SIGNAL(toggled(bool)), glWidget, SLOT(setPrimaryVisibility(bool)));
+	connect(ui->action_Show_Secondary_Cells, SIGNAL(toggled(bool)), glWidget, SLOT(setSecondaryVisibility(bool)));
 
 }
 
@@ -219,6 +232,17 @@ void MainWindow::on_action_Load_Shaders_triggered()
 {
 	glWidget->LoadShaders();
 }
+
+
+void MainWindow::on_action_Bounding_Box_Approach_triggered ( )
+{
+
+}
+void MainWindow::on_action_Burns_Approach_triggered ( )
+{
+
+}
+
 
 void MainWindow::keyPressEvent(QKeyEvent *e)
 {

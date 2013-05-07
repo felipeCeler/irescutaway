@@ -8,7 +8,7 @@
     <x>0</x>
     <y>0</y>
     <width>1263</width>
-    <height>788</height>
+    <height>789</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -100,7 +100,7 @@
      <x>0</x>
      <y>0</y>
      <width>1263</width>
-     <height>20</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -121,7 +121,6 @@
     <property name="title">
      <string>Help</string>
     </property>
-    <addaction name="action_keyBindings"/>
     <addaction name="separator"/>
     <addaction name="action_About"/>
    </widget>
@@ -129,7 +128,15 @@
     <property name="title">
      <string>View</string>
     </property>
+    <addaction name="separator"/>
     <addaction name="action_Show_Layers_Widget"/>
+    <addaction name="separator"/>
+    <addaction name="action_Show_Primary_Cells"/>
+    <addaction name="action_Show_Secondary_Cells"/>
+    <addaction name="separator"/>
+    <addaction name="action_No_Cutaway"/>
+    <addaction name="action_Bounding_Box_Approach"/>
+    <addaction name="action_Burns_Approach"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuTools"/>
@@ -218,7 +225,7 @@
      <item row="1" column="0">
       <widget class="QGroupBox" name="groupBox_viewCells_">
        <property name="title">
-        <string>Property View</string>
+        <string>Property Viewer</string>
        </property>
        <layout class="QFormLayout" name="formLayout_3">
         <property name="fieldGrowthPolicy">
@@ -261,11 +268,11 @@
           <property name="minimumSize">
            <size>
             <width>200</width>
-            <height>0</height>
+            <height>12</height>
            </size>
           </property>
           <property name="frameShape">
-           <enum>QFrame::WinPanel</enum>
+           <enum>QFrame::StyledPanel</enum>
           </property>
           <property name="text">
            <string/>
@@ -300,7 +307,7 @@
         </sizepolicy>
        </property>
        <property name="title">
-        <string>IJK View</string>
+        <string>IJK Viewer</string>
        </property>
        <layout class="QFormLayout" name="formLayout">
         <item row="0" column="0">
@@ -412,17 +419,17 @@
        </layout>
       </widget>
      </item>
-     <item row="2" column="0">
-      <widget class="QPushButton" name="pushButton_changePropertyRange">
-       <property name="text">
-        <string>Change Property</string>
-       </property>
-      </widget>
-     </item>
      <item row="4" column="0">
       <widget class="QPushButton" name="pushButton_changeIJK">
        <property name="text">
         <string>Change IJK</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QPushButton" name="pushButton_changePropertyRange">
+       <property name="text">
+        <string>Change Property</string>
        </property>
       </widget>
      </item>
@@ -456,7 +463,76 @@
   </action>
   <action name="action_Show_Layers_Widget">
    <property name="text">
-    <string>Show Layers Widget</string>
+    <string>Show Proeperties Viewer</string>
+   </property>
+  </action>
+  <action name="actionShow_Cutaway_Viewer">
+   <property name="text">
+    <string>Show Cutaway Viewer</string>
+   </property>
+  </action>
+  <action name="action_Show_Primary_Cells">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show Primary Cells</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+1</string>
+   </property>
+  </action>
+  <action name="action_Show_Secondary_Cells">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show Secondary Cells</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+2</string>
+   </property>
+  </action>
+  <action name="action_Burns_Approach">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Burns Approach</string>
+   </property>
+   <property name="shortcut">
+    <string>F7</string>
+   </property>
+  </action>
+  <action name="action_Bounding_Box_Approach">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Bounding Box Approach</string>
+   </property>
+   <property name="shortcut">
+    <string>F6</string>
+   </property>
+  </action>
+  <action name="action_No_Cutaway">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>No Cutaway</string>
+   </property>
+   <property name="toolTip">
+    <string>No technique applied</string>
+   </property>
+   <property name="shortcut">
+    <string>F5</string>
    </property>
   </action>
  </widget>
