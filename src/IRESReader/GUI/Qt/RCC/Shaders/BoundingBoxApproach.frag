@@ -13,6 +13,6 @@ in vec2 texcoord;
 
 void main(void)
 {
-	//outputColor =  vec4 ( VertexOut.normal , gl_FragCoord.z );//VertexOut.color;
-	outputColor =  VertexOut.color;
+	outputColor =  vec4 ( VertexOut.normal , gl_FragCoord.z );//VertexOut.color;
+	//outputColor =  VertexOut.color;
 }

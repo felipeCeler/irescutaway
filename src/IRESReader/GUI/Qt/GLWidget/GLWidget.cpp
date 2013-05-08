@@ -823,7 +823,7 @@ void GLWidget::openIRES ( const std::string& filename )
 
 		std::cout << camera_.position ( );
 
-		camera_.setBehavior ( Celer::Camera<float>::FIRST_PERSON );
+		camera_.setBehavior ( Celer::Camera<float>::REVOLVE_AROUND_MODE );
 
 		cameraStep_ = 0.1f;
 
@@ -1037,13 +1037,13 @@ void GLWidget::BoundingVolumeCutawaySetup( )
 	{
 
 
- 		glEnable(GL_BLEND);
- 		glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+// 		glEnable(GL_BLEND);
+// 		glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
  		if ( cutVolumes.size( ) > 0)
  		{
 			BoundingBoxInitialization.active ( );
 
-			//fboStep[1]->bind ( );
+			fboStep[1]->bind ( );
 
 			glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
 			glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
@@ -1058,12 +1058,12 @@ void GLWidget::BoundingVolumeCutawaySetup( )
 			glDrawArrays ( GL_POINTS , 0 , 1 );
 			glBindVertexArray ( 0 );
 
-			//fboStep[1]->release ( );
+			fboStep[1]->release ( );
 
 			BoundingBoxInitialization.deactive ( );
 
  		}
- 		glDisable(GL_BLEND);
+// 		glDisable(GL_BLEND);
 
 		if ( draw_secondary )
 		{
