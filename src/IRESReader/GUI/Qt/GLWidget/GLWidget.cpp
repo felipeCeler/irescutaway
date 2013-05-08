@@ -823,9 +823,9 @@ void GLWidget::openIRES ( const std::string& filename )
 
 		std::cout << camera_.position ( );
 
-		camera_.setBehavior ( Celer::Camera<float>::REVOLVE_AROUND_MODE );
+		camera_.setBehavior ( Celer::Camera<float>::FIRST_PERSON );
 
-		cameraStep_ = 10.0f;
+		cameraStep_ = 0.1f;
 
 
 		glBindVertexArray(vertexArray);
@@ -1001,6 +1001,8 @@ void GLWidget::paintGL ( )
 	}
 	else if ( isBoudingBoxApproach )
 	{
+
+		camera_.setTarget( cutVolumes[0].center() );
 		BoundingVolumeCutawaySetup ( );
 	}
 	else
@@ -1030,21 +1032,21 @@ void GLWidget::BoundingVolumeCutawaySetup( )
 	camera_.setPerspectiveProjectionMatrix ( zoom_angle_ , camera_.aspectRatio ( ) , 1.0 , 1000.0 * box.diagonal ( ) );
 
 
+
  	if ( ires_has_been_open_sucessefully )
 	{
 
 
-
+ 		glEnable(GL_BLEND);
+ 		glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
  		if ( cutVolumes.size( ) > 0)
  		{
 			BoundingBoxInitialization.active ( );
 
-			fboStep[1]->bind ( );
+			//fboStep[1]->bind ( );
 
 			glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
 			glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-			glDisable ( GL_BLEND );
-
 			glBindVertexArray ( vertexArray );
 
 			glUniform4fv ( BoundingBoxInitialization.uniforms_["min_point"].location , 1 , Celer::Vector4<float> ( cutVolumes[0].min ( ) , 1.0f ) );
@@ -1056,11 +1058,12 @@ void GLWidget::BoundingVolumeCutawaySetup( )
 			glDrawArrays ( GL_POINTS , 0 , 1 );
 			glBindVertexArray ( 0 );
 
-			fboStep[1]->release ( );
+			//fboStep[1]->release ( );
 
 			BoundingBoxInitialization.deactive ( );
 
  		}
+ 		glDisable(GL_BLEND);
 
 		if ( draw_secondary )
 		{
@@ -1374,8 +1377,8 @@ void GLWidget::LoadShaders ( )
 			                             (shadersDir.path ()+"/share/Shaders/fboTest.frag").toStdString());
 
 	cutVolume.create("cutVolume",(shadersDir.path ()+"/share/Shaders/CutVolume.vert").toStdString(),
-			                     (shadersDir.path ()+"/share/Shaders/CutVolume.geom").toStdString(),
-			                     (shadersDir.path ()+"/share/Shaders/CutVolume.frag").toStdString());
+			             (shadersDir.path ()+"/share/Shaders/CutVolume.geom").toStdString(),
+			             (shadersDir.path ()+"/share/Shaders/CutVolume.frag").toStdString());
 
 	primary.create("primary",(shadersDir.path ()+"/share/Shaders/Primary.vert").toStdString(),
 			                 (shadersDir.path ()+"/share/Shaders/Primary.geom").toStdString(),

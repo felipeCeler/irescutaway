@@ -40,7 +40,7 @@ void main()
 	if ( focus.x == 0.0 )
 	{
 		vertexShader_VertexData.propertyColor = colors;
-		gl_Position = ProjectionMatrix * ViewMatrix * (1.5*vertices);
+		gl_Position = ProjectionMatrix * ViewMatrix * vertices;
 	}
 	else
 	{

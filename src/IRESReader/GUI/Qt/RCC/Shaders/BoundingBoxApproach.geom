@@ -12,6 +12,7 @@ uniform mat4 ViewMatrix;
 uniform mat4 ProjectionMatrix;
 
 
+
 out VertexData
 {
    vec4 color;
@@ -22,28 +23,31 @@ out VertexData
 void main(void)
 {
 
+	float near = 0.1;
+	float far  = 500.0;
+
 	vec4 v[8];
 
-	// Top face in World Space
 	v[0] = vec4( max_point.x , max_point.y , max_point.z, 1.0 );
 	v[1] = vec4( max_point.x , max_point.y , min_point.z, 1.0 );
 	v[2] = vec4( min_point.x , max_point.y , min_point.z, 1.0 );
 	v[3] = vec4( min_point.x , max_point.y , max_point.z, 1.0 );
-        // Bottom face in World Space
+
 	v[4] = vec4( max_point.x , min_point.y , max_point.z, 1.0 );
 	v[5] = vec4( min_point.x , min_point.y , max_point.z, 1.0 );
 	v[6] = vec4( min_point.x , min_point.y , min_point.z, 1.0 );
 	v[7] = vec4( max_point.x , min_point.y , min_point.z, 1.0 );
 
-	v[0] =  ProjectionMatrix * ViewMatrix * v[0];
-	v[1] =  ProjectionMatrix * ViewMatrix * v[1];
-	v[2] =  ProjectionMatrix * ViewMatrix * v[2];
-	v[3] =  ProjectionMatrix * ViewMatrix * v[3];
+	v[0] =  ViewMatrix * v[0];
+	v[1] =  ViewMatrix * v[1];
+	v[2] =  ViewMatrix * v[2];
+	v[3] =  ViewMatrix * v[3];
 
-	v[4] =  ProjectionMatrix * ViewMatrix * v[4];
-	v[5] =  ProjectionMatrix * ViewMatrix * v[5];
-	v[6] =  ProjectionMatrix * ViewMatrix * v[6];
-	v[7] =  ProjectionMatrix * ViewMatrix * v[7];
+	v[4] =  ViewMatrix * v[4];
+	v[5] =  ViewMatrix * v[5];
+	v[6] =  ViewMatrix * v[6];
+	v[7] =  ViewMatrix * v[7];
+
 
 	vec4 pmin = v[0];
 	vec4 pmax = pmin;
@@ -58,6 +62,7 @@ void main(void)
 		{
 			pmax.x = v[i].x;
 		}
+
 		if ( pmin.y > v[i].y )
 		{
 			pmin.y = v[i].y;
@@ -66,37 +71,44 @@ void main(void)
 		{
 			pmax.y = v[i].y;
 		}
+
 		if ( pmin.z > v[i].z )
 		{
 			pmin.z = v[i].z;
-			pmin.w = v[i].w;
+
 
 		}else if ( pmax.z < v[i].z )
 		{
 			pmax.z = v[i].z;
-			pmax.w = v[i].w;
+
+
 		}
 	}
 
 
-	// Back Face in Eyes Space
-	v[0] = vec4( pmin.x , pmax.y , pmax.z, pmax.w );
-	v[1] = vec4( pmax.x , pmax.y , pmax.z, pmax.w );
-	v[2] = vec4( pmin.x , pmin.y , pmax.z, pmax.w );
-	v[3] = vec4( pmax.x , pmin.y , pmax.z, pmax.w );
-//
-//
-	float x = 60.0;
-        float y = 60.0;
-	// Front Face in Eyes Space
-	v[4] = vec4( x*pmin.x , y*pmax.y , pmin.z/pmin.w, pmin.w );
-	v[5] = vec4( x*pmax.x , y*pmax.y , pmin.z/pmin.w, pmin.w );
-	v[6] = vec4( x*pmin.x , y*pmin.y , pmin.z/pmin.w, pmin.w );
-	v[7] = vec4( x*pmax.x , y*pmin.y , pmin.z/pmin.w, pmin.w );
+	v[0] = vec4( pmin.x , pmax.y , pmax.z, 1.0 );
+	v[1] = vec4( pmax.x , pmax.y , pmax.z, 1.0 );
+	v[2] = vec4( pmin.x , pmin.y , pmax.z, 1.0 );
+	v[3] = vec4( pmax.x , pmin.y , pmax.z, 1.0 );
+
+	v[4] = vec4( pmin.x , pmax.y , pmin.z/300, 1.0 );
+	v[5] = vec4( pmax.x , pmax.y , pmin.z/300, 1.0 );
+	v[6] = vec4( pmin.x , pmin.y , pmin.z/300, 1.0 );
+	v[7] = vec4( pmax.x , pmin.y , pmin.z/300, 1.0 );
+
+	v[0] =  ProjectionMatrix * v[0];
+	v[1] =  ProjectionMatrix * v[1];
+	v[2] =  ProjectionMatrix * v[2];
+	v[3] =  ProjectionMatrix * v[3];
+
+	v[4] =  ProjectionMatrix * v[4];
+	v[5] =  ProjectionMatrix * v[5];
+	v[6] =  ProjectionMatrix * v[6];
+	v[7] =  ProjectionMatrix * v[7];
 
 
 	//back face
-	vec3 back_normal = -normalize (cross ( (v[1] - v[0]).xyz, (v[1] - v[3]).xyz ) );
+	vec3 back_normal = normalize (cross ( (v[1] - v[0]).xyz, (v[1] - v[3]).xyz ) );
 	VertexOut.color = vec4( 1.0,0.0,0.0,0.25);
 	VertexOut.normal = back_normal;
 	gl_Position = v[0]/v[0].w;
