@@ -28,11 +28,10 @@ void main(void)
 	}
 	else
 	{
-		if ( !gl_FrontFacing )
-		{
 
-		}
+		outputColor = I * vec4(0.0, 0.0, 0.0, 1.0) + (1.0 - I) * (VertexIn.color + vec4(0.05,0.05,0.05,1.0));
 
-		outputColor = I * vec4(0.0, 1.0, 0.0, 1.0) + (1.0 - I) * (VertexIn.color + vec4(0.05,0.05,0.05,1.0));
+
+
 	}
 }

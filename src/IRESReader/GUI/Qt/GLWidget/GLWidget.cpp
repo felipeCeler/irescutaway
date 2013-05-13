@@ -1067,6 +1067,26 @@ void GLWidget::BoundingVolumeCutawaySetup( )
 
 		if ( draw_secondary )
 		{
+
+//			if ( cutVolumes.size ( ) > 0 )
+//			{
+//				BoundingBoxDebug.active ( );
+//
+//				glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
+//				glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+//
+//				glUniform4fv ( BoundingBoxDebug.uniforms_["min_point"].location , 1 , Celer::Vector4<float> ( cutVolumes[0].min ( ) , 1.0f ) );
+//				glUniform4fv ( BoundingBoxDebug.uniforms_["max_point"].location , 1 , Celer::Vector4<float> ( cutVolumes[0].max ( ) , 1.0f ) );
+//				glUniformMatrix4fv ( BoundingBoxDebug.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+//				glUniformMatrix4fv ( BoundingBoxDebug.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+//				//VAO
+//				glBindVertexArray ( vertexArray );
+//				glDrawArrays ( GL_POINTS , 0 , 1 );
+//				glBindVertexArray ( 0 );
+//
+//				BoundingBoxDebug.deactive ( );
+//			}
+
 			BoundingBoxCutaway.active ( );
  			glActiveTexture ( GL_TEXTURE0 );
  			glBindTexture ( GL_TEXTURE_RECTANGLE , fboStep[1]->texture ( ) );
@@ -1404,6 +1424,10 @@ void GLWidget::LoadShaders ( )
 	BoundingBoxInitialization.create ("BoundingBoxApproach",(shadersDir.path ()+"/share/Shaders/BoundingBoxApproach.vert").toStdString(),
 							        (shadersDir.path ()+"/share/Shaders/BoundingBoxApproach.geom").toStdString(),
 							        (shadersDir.path ()+"/share/Shaders/BoundingBoxApproach.frag").toStdString());
+
+	BoundingBoxDebug.create ("BoundingBoxApproach Debug",(shadersDir.path ()+"/share/Shaders/BoundingBoxApproach.vert").toStdString(),
+							     (shadersDir.path ()+"/share/Shaders/BoundingBoxApproach.geom").toStdString(),
+							     (shadersDir.path ()+"/share/Shaders/BoundingBoxApproachDebug.frag").toStdString());
 
 	BoundingBoxCutaway.create ("BoundingBoxCutaway",(shadersDir.path ()+"/share/Shaders/BoundingBoxCutaway.vert").toStdString(),
 							(shadersDir.path ()+"/share/Shaders/BoundingBoxCutaway.geom").toStdString(),

@@ -22,6 +22,6 @@ void main(void)
 	float I = exp2(-2 * d * d);
 
 	//fragmentColor = I * vec4 ( 0.0 , 0.0 , 0.0 , 1.0 ) + ( 1.0 - I ) * (geometryShader_VertexData.propertyColor);
-	fragmentColor = I * vec4 ( 0.0 , 0.0 , 0.0 , 1.0 ) + ( 1.0 - I ) * (vec4(1.0,1.0,1.0,1.0));
+	fragmentColor = I * vec4 ( 0.0 , 0.0 , 0.0 , 1.0 ) + ( 1.0 - I ) * (vec4(0.3,0.3,0.3,1.0));
 
 }

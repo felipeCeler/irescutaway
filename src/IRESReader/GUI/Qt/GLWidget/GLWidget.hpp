@@ -190,6 +190,7 @@ private:
 	// BoudingBox Visualization
 	Celer::OpenGL::ShaderManager	cutVolume;
 	Celer::OpenGL::ShaderManager    BoundingBoxInitialization;
+	Celer::OpenGL::ShaderManager    BoundingBoxDebug;
 	Celer::OpenGL::ShaderManager    BoundingBoxCutaway;
 
 	// No cutaway Visualization
