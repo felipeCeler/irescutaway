@@ -29,8 +29,17 @@ void main(void)
 	else
 	{
 
-		outputColor = I * vec4(0.0, 0.0, 0.0, 1.0) + (1.0 - I) * (VertexIn.color + vec4(0.05,0.05,0.05,1.0));
+		float s = abs(dot(cutaway.xyz,vec3(0.0,0.0,1.0)) * 1.0 );
 
+		if ( abs(gl_FragCoord.z - cutaway.w ) < 0.0005 )
+		{
+			outputColor = vec4(0.0,0.0,0.0,1.0);
+
+		}else
+		{
+
+		outputColor = I * vec4(0.0, 0.0, 0.0, 1.0) + (1.0 - I) * (VertexIn.color + vec4(s,s,s,1.0));
+		}
 
 
 	}

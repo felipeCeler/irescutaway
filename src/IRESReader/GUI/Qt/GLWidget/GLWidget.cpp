@@ -924,7 +924,7 @@ void GLWidget::resizeGL ( int width , int height )
 
 	camera_.setAspectRatio ( width  , height  );
 	camera_.setPerspectiveProjectionMatrix ( 0 , camera_.aspectRatio ( ) , 1.0 , 100.0*box.diagonal() );
-	camera_.setOrthographicProjectionMatrix( 0.0f, (float)width , 0.0f, (float)height, -1.0, 1.0 );
+	camera_.setOrthographicProjectionMatrix( 0.0f, (float)width , 0.0f, (float)height, -100.0, 100.0 );
 
 
 	centerX_ = static_cast<float> ( width * 0.5 );
@@ -1030,7 +1030,6 @@ void GLWidget::BoundingVolumeCutawaySetup( )
 	camera_.computerViewMatrix( );
 
 	camera_.setPerspectiveProjectionMatrix ( zoom_angle_ , camera_.aspectRatio ( ) , 1.0 , 1000.0 * box.diagonal ( ) );
-
 
 
  	if ( ires_has_been_open_sucessefully )

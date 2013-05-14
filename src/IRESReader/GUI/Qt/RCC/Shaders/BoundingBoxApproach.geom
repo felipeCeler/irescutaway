@@ -106,16 +106,18 @@ void main(void)
 	}
 
 
-	float scaled = 9.0;
+	float scaledy = 9.0;
+	float scaledx = 19.0;
+	float max_z = -1;
 	/// Back and Front Face
 	/// Como ajustar o Z min/max , parametricamente.
-	v[0] = vec4( pmax.x*scaled , pmax.y*scaled , pmax.z/2, 1.0 );
+	v[0] = vec4( pmax.x*scaledx , pmax.y*scaledy , max_z, 1.0 );
 	v[1] = vec4( pmax.x , pmax.y , pmin.z, 1.0 );
 	v[2] = vec4( pmin.x , pmax.y , pmin.z, 1.0 );
-	v[3] = vec4( pmin.x*scaled , pmax.y*scaled , pmax.z/2, 1.0 );
+	v[3] = vec4( pmin.x*scaledx , pmax.y*scaledy , max_z, 1.0 );
 
-	v[4] = vec4( pmax.x*scaled , pmin.y*scaled , pmax.z/2, 1.0 );
-	v[5] = vec4( pmin.x*scaled , pmin.y*scaled , pmax.z/2, 1.0 );
+	v[4] = vec4( pmax.x*scaledx , pmin.y*scaledy , max_z, 1.0 );
+	v[5] = vec4( pmin.x*scaledx , pmin.y*scaledy , max_z, 1.0 );
 	v[6] = vec4( pmin.x , pmin.y , pmin.z, 1.0  );
 	v[7] = vec4( pmax.x , pmin.y , pmin.z, 1.0 );
 
