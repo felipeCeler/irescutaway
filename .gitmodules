@@ -1,3 +1,4 @@
 [submodule "libs/Celer"]
 	path = libs/Celer
-	url = git@git.lcg.ufrj.br:celergl/celer-sources.git
+	url = git@github.com:felipeCeler/celer-sources.git
+
