@@ -1,1 +1,4 @@
 
+[submodule "libs/Celer"]
+	path = libs/Celer
+	url = git@github.com:felipeCeler/celer-sources.git
