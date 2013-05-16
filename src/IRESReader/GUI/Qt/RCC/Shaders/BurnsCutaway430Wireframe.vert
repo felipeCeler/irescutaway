@@ -12,6 +12,8 @@ layout (location = 3 ) in vec4 colors;
 layout (location = 4 ) in vec4 focus;
 layout (location = 5 ) in ivec4 IJK;
 
+uniform ivec3 min_IJK;
+uniform ivec3 max_IJK;
 
 out VertexData
 {
@@ -47,8 +49,21 @@ void main()
 	}
 	else
 	{
-		vertexShader_VertexData.propertyColor = colors;
-		gl_Position = ProjectionMatrix * ViewMatrix * vertices;
+
+		if ( ( IJK.x > min_IJK.x ) && ( IJK.x < max_IJK.x ) || ( IJK.y > min_IJK.y ) && ( IJK.y < max_IJK.y ) || ( IJK.z > min_IJK.z ) && ( IJK.z < max_IJK.z ) )
+		{
+			vertexShader_VertexData.propertyColor = colors; //vec4(1.0,0.0,0.0,1.0);
+			gl_Position = ProjectionMatrix * ViewMatrix * vec4 ( 0.0 , 0.0 , 0.0 , 0.0 ); //vertices;
+		}
+		else
+		{
+
+			vertexShader_VertexData.propertyColor = colors; //vec4(1.0,0.0,0.0,1.0);
+			gl_Position = ProjectionMatrix * ViewMatrix * vertices;
+		}
+
+//		vertexShader_VertexData.propertyColor = colors;
+//		gl_Position = ProjectionMatrix * ViewMatrix * vertices;
 	}
 
 

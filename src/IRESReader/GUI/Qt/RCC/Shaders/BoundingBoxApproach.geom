@@ -42,15 +42,17 @@ void main(void)
 	v[7] = vec4( max_point.x , min_point.y , min_point.z, 1.0 );
 
 
-	v[0] =  ViewMatrix * v[0];
-	v[1] =  ViewMatrix * v[1];
-	v[2] =  ViewMatrix * v[2];
-	v[3] =  ViewMatrix * v[3];
+	mat4 matrix = ViewMatrix;
 
-	v[4] =  ViewMatrix * v[4];
-	v[5] =  ViewMatrix * v[5];
-	v[6] =  ViewMatrix * v[6];
-	v[7] =  ViewMatrix * v[7];
+	v[0] = matrix * v[0];
+	v[1] = matrix * v[1];
+	v[2] = matrix * v[2];
+	v[3] = matrix * v[3];
+
+	v[4] = matrix * v[4];
+	v[5] = matrix * v[5];
+	v[6] = matrix * v[6];
+	v[7] = matrix * v[7];
 
 
 	mat3 normalMatrix = mat3(1.0);

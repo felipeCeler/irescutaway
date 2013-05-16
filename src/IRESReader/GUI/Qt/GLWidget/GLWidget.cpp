@@ -1,9 +1,7 @@
 #include <QtGui/QtGui>
 
-
 #include <GUI/Qt/GLWidget/GLWidget.hpp>
 // Se quiser usar QPainter Ver exemplo no QT demo - Manda Qt em wave animation !!!
-
 
 GLWidget::GLWidget ( const QGLFormat& format , QWidget* parent , const QGLWidget* shareWidget , Qt::WindowFlags f ) :
 	QGLWidget ( format , parent , shareWidget , f )
@@ -16,7 +14,6 @@ GLWidget::GLWidget (  QWidget* parent , const QGLWidget* shareWidget , Qt::Windo
 {
 
 }
-
 /// OpenGL
 void GLWidget::initializeGL ( )
 {
@@ -579,7 +576,6 @@ void GLWidget::changeMinK ( const int& value )
 	updateGL();
 }
 
-
 void GLWidget::openIRES ( const std::string& filename )
 {
 
@@ -701,7 +697,7 @@ void GLWidget::openIRES ( const std::string& filename )
 				};
 
 
-				Celer::Vector3<GLfloat> topNormal 	= ((v1 - v0) ^ (v3 - v0)).norm();
+				Celer::Vector3<GLfloat> topNormal 	= (((v1 - v0) ^ (v3 - v0)).norm());
 				//std::cout << topNormal << std::endl;
 				Celer::Vector3<GLfloat> bottomNormal 	= ((v7 - v4) ^ (v5 - v4)).norm();
 				//std::cout << bottomNormal << std::endl;
@@ -983,11 +979,9 @@ void GLWidget::resizeGL ( int width , int height )
 
 
 }
-
 /// For DropArea's implementation, we clear invoke clear() and then accept the proposed event.
 /// The clear() function sets the text in DropArea to "<drop content>" and sets the backgroundRole to
 /// QPalette::Dark. Lastly, it emits the changed() signal.
-
 /// Real Looping
 void GLWidget::paintGL ( )
 {
@@ -1013,7 +1007,6 @@ void GLWidget::paintGL ( )
 
 
 }
-
 
 void GLWidget::BoundingVolumeCutawaySetup( )
 {
@@ -1042,6 +1035,7 @@ void GLWidget::BoundingVolumeCutawaySetup( )
  		{
 			BoundingBoxInitialization.active ( );
 
+
 			fboStep[1]->bind ( );
 
 			glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
@@ -1050,6 +1044,7 @@ void GLWidget::BoundingVolumeCutawaySetup( )
 
 			glUniform4fv ( BoundingBoxInitialization.uniforms_["min_point"].location , 1 , Celer::Vector4<float> ( cutVolumes[0].min ( ) , 1.0f ) );
 			glUniform4fv ( BoundingBoxInitialization.uniforms_["max_point"].location , 1 , Celer::Vector4<float> ( cutVolumes[0].max ( ) , 1.0f ) );
+			glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ModelMatrix"].location , 1 , GL_TRUE , camera_.orientation ( ).to4x4Matrix() );
 			glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
 			glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
 			//VAO
@@ -1232,6 +1227,9 @@ void GLWidget::BurnsCutawaySetup ( )
 
 			glUniform3fv ( BurnsCutaway430Wireframe.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
 
+ 			glUniform3i ( BurnsCutaway430Wireframe.uniforms_["min_IJK"].location , min_I_, min_J_, min_K_ );
+ 			glUniform3i ( BurnsCutaway430Wireframe.uniforms_["max_IJK"].location , max_I_, max_J_, max_K_ );
+
 			glUniform2f ( BurnsCutaway430Wireframe.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
 			glUniform1i ( BurnsCutaway430Wireframe.uniforms_["cutaway"].location , 1 );
 			glUniformMatrix4fv ( BurnsCutaway430Wireframe.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
@@ -1372,7 +1370,6 @@ void GLWidget::NoCutawaySetUp ( )
 
 }
 
-
 void GLWidget::gameLooping ( )
 {
 	updateGL ( );
@@ -1433,7 +1430,6 @@ void GLWidget::LoadShaders ( )
 							(shadersDir.path ()+"/share/Shaders/BoundingBoxCutaway.frag").toStdString());
 
 }
-
 /// KeyInput
 void GLWidget::processMultiKeys ( )
 {
