@@ -71,7 +71,7 @@ MainWindow::MainWindow ( QMainWindow *parent ) :
 
 void MainWindow::open(QString pFilename,bool who ) {
 
-	glWidget->openIRES( pFilename.toLocal8Bit().constData() );
+	glWidget->openIRES2( pFilename.toLocal8Bit().constData() );
 
 	if ( glWidget->isIresWasOpenedSucessufully( ))
 	{
