@@ -597,14 +597,14 @@ void GLWidget::openIRES ( const std::string& filename )
 
 		box.fromPointCloud ( reservoir_model_.vertices.begin ( ) , reservoir_model_.vertices.end ( ) );
 
-		for ( std::size_t  i = 0; i < reservoir_model_.vertices.size ( ) ; i++)
-		{
-			reservoir_model_.vertices[i] -= box.center();
-			reservoir_model_.vertices[i].x /= box.diagonal();
-			reservoir_model_.vertices[i].y /= box.diagonal();
-			reservoir_model_.vertices[i].z /= box.diagonal();
-			//std::cout << " Vector " <<  reservoir_model_.vertices[i] << std::endl;
-		}
+//		for ( std::size_t  i = 0; i < reservoir_model_.vertices.size ( ) ; i++)
+//		{
+//			reservoir_model_.vertices[i] -= box.center();
+//			reservoir_model_.vertices[i].x /= box.diagonal();
+//			reservoir_model_.vertices[i].y /= box.diagonal();
+//			reservoir_model_.vertices[i].z /= box.diagonal();
+//			//std::cout << " Vector " <<  reservoir_model_.vertices[i] << std::endl;
+//		}
 
 		box.fromPointCloud ( reservoir_model_.vertices.begin ( ) , reservoir_model_.vertices.end ( ) );
 
@@ -910,6 +910,38 @@ void GLWidget::openIRES ( const std::string& filename )
 	}
 
 
+}
+
+void GLWidget::openIRES2 ( const std::string& filename )
+{
+	reservoir_model_.openIRES(filename);
+
+	if ( reservoir_model_.blocks.size( ) )
+	{
+
+		for ( int i = 0; i < reservoir_model_.blocks.size( ) ; i++)
+		{
+
+			reservoir_list_of_vertices.clear ( );
+			reservoir_list_of_normals.clear ( );
+			reservoir_list_of_colors.clear ( );
+			reservoir_list_of_IJKs.clear ( );
+			reservoir_list_of_renderFlag.clear( );
+			reservoir_list_of_indices.clear ( );
+
+			box = Celer::BoundingBox3<double> ( );
+
+			box.fromPointCloud ( reservoir_model_.vertices.begin ( ) , reservoir_model_.vertices.end ( ) );
+
+
+		}
+
+		ires_has_been_open_sucessefully = 1;
+	}
+	else
+	{
+		ires_has_been_open_sucessefully = 0;
+	}
 }
 
 void GLWidget::resizeGL ( int width , int height )

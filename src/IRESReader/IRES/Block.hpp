@@ -46,7 +46,7 @@ namespace IRES
 					// From Ires.dynamic_ name/units/variable_name/components
 
 					// FIXME std::pair< timeStep, values for each block >
-					std::pair<int, std::vector<float> >  values_;
+					std::vector<std::pair<int, float > >  values_;
 
 			};
 

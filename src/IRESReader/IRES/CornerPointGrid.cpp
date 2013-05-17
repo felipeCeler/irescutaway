@@ -398,7 +398,7 @@ namespace IRES
 
 			// To hold new Modelos Blocks;
 			blocks.clear();
-			blocks.resize( header_.number_of_Blocks );
+			//blocks.resize( header_.number_of_Blocks );
 
 			int property_index = 0;
 
@@ -598,20 +598,24 @@ namespace IRES
 					for ( std::size_t property = 0;  property < dynamic_properties.size();  ++property )
 					{
 
-						std::cout << "new_block.dynamic_properties.name : " << dynamic_properties[property].name << std::endl;
-						std::cout << "new_block.dynamic_properties.unit : " << dynamic_properties[property].unit << std::endl;
-						std::cout << "new_block.dynamic_properties.variable_name : " << dynamic_properties[property].variable_name << std::endl;
-						std::cout << "new_block.dynamic_properties.component : " << dynamic_properties[property].component << std::endl;
+//						std::cout << "new_block.dynamic_properties.name : " << dynamic_properties[property].name << std::endl;
+//						std::cout << "new_block.dynamic_properties.unit : " << dynamic_properties[property].unit << std::endl;
+//						std::cout << "new_block.dynamic_properties.variable_name : " << dynamic_properties[property].variable_name << std::endl;
+//						std::cout << "new_block.dynamic_properties.component : " << dynamic_properties[property].component << std::endl;
 
 						new_block.dynamic_properties[property].name  	     = dynamic_properties[property].name;
 						new_block.dynamic_properties[property].unit  	     = dynamic_properties[property].unit;
 						new_block.dynamic_properties[property].variable_name = dynamic_properties[property].variable_name;
 						new_block.dynamic_properties[property].component     = dynamic_properties[property].component;
-						new_block.dynamic_properties[property].values_	     = dynamic_properties[property].values_[property_index];
+
+						for ( std::vector<std::pair<int, std::vector<float> > >::iterator it = dynamic_properties[property].values_.begin() ; it != dynamic_properties[property].values_.end() ; ++it)
+						{
+							new_block.dynamic_properties[property].values_.push_back( std::make_pair<int,float>( it->first,it->second[i] ) ) ;
+						}
 
 					}
 
-					blocks[property_index] =  new_block;
+					blocks.push_back(new_block);
 
 					i += 8;
 					property_index += 1;

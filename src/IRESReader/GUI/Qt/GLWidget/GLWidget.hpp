@@ -75,6 +75,7 @@ class GLWidget: public QGLWidget
 		void LoadShaders ( );
 		void CutVolumeGenerator ( );
 		void openIRES ( const std::string& filename );
+		void openIRES2 ( const std::string& filename );
 		bool isIresWasOpenedSucessufully () const;
 		void changeProperty ( int property_index );
 		void changePropertyRange ( const double& min, const double& max, int property_index );
