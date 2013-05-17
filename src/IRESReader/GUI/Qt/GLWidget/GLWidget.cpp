@@ -1202,6 +1202,20 @@ void GLWidget::BoundingVolumeCutawaySetup( )
 
 	camera_.setPerspectiveProjectionMatrix ( zoom_angle_ , camera_.aspectRatio ( ) , 1.0 , 1000.0 * box.diagonal ( ) );
 
+	Celer::Vector3<float> new_z =  camera_.position() - cutVolumes[0].center();
+
+	new_z.normalize();
+
+	Celer::Vector3<float> new_x = new_z ^ camera_.UpVector();
+
+	new_x.normalize();
+
+	Celer::Vector3<float> new_y = new_z ^ new_x;
+
+	new_y.normalize();
+
+	Celer::Matrix4x4<float> lookatCamera ( new_x, new_y , new_z  );
+
 
  	if ( ires_has_been_open_sucessefully )
 	{
@@ -1221,7 +1235,7 @@ void GLWidget::BoundingVolumeCutawaySetup( )
 
 			glUniform4fv ( BoundingBoxInitialization.uniforms_["min_point"].location , 1 , Celer::Vector4<float> ( cutVolumes[0].min ( ) , 1.0f ) );
 			glUniform4fv ( BoundingBoxInitialization.uniforms_["max_point"].location , 1 , Celer::Vector4<float> ( cutVolumes[0].max ( ) , 1.0f ) );
-			glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ModelMatrix"].location , 1 , GL_TRUE , camera_.orientation ( ).to4x4Matrix() );
+			glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ModelMatrix"].location , 1 , GL_TRUE , lookatCamera );
 			glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
 			glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
 			//VAO
@@ -1239,24 +1253,25 @@ void GLWidget::BoundingVolumeCutawaySetup( )
 		if ( draw_secondary )
 		{
 
-//			if ( cutVolumes.size ( ) > 0 )
-//			{
-//				BoundingBoxDebug.active ( );
-//
-//				glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
-//				glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-//
-//				glUniform4fv ( BoundingBoxDebug.uniforms_["min_point"].location , 1 , Celer::Vector4<float> ( cutVolumes[0].min ( ) , 1.0f ) );
-//				glUniform4fv ( BoundingBoxDebug.uniforms_["max_point"].location , 1 , Celer::Vector4<float> ( cutVolumes[0].max ( ) , 1.0f ) );
-//				glUniformMatrix4fv ( BoundingBoxDebug.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-//				glUniformMatrix4fv ( BoundingBoxDebug.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
-//				//VAO
-//				glBindVertexArray ( vertexArray );
-//				glDrawArrays ( GL_POINTS , 0 , 1 );
-//				glBindVertexArray ( 0 );
-//
-//				BoundingBoxDebug.deactive ( );
-//			}
+			if ( cutVolumes.size ( ) > 0 )
+			{
+				BoundingBoxDebug.active ( );
+
+				glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
+				glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
+				glUniform4fv ( BoundingBoxDebug.uniforms_["min_point"].location , 1 , Celer::Vector4<float> ( cutVolumes[0].min ( ) , 1.0f ) );
+				glUniform4fv ( BoundingBoxDebug.uniforms_["max_point"].location , 1 , Celer::Vector4<float> ( cutVolumes[0].max ( ) , 1.0f ) );
+				glUniformMatrix4fv ( BoundingBoxDebug.uniforms_["ModelMatrix"].location , 1 , GL_TRUE , lookatCamera );
+				glUniformMatrix4fv ( BoundingBoxDebug.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+				glUniformMatrix4fv ( BoundingBoxDebug.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+				//VAO
+				glBindVertexArray ( vertexArray );
+				glDrawArrays ( GL_POINTS , 0 , 1 );
+				glBindVertexArray ( 0 );
+
+				BoundingBoxDebug.deactive ( );
+			}
 
 			BoundingBoxCutaway.active ( );
  			glActiveTexture ( GL_TEXTURE0 );
