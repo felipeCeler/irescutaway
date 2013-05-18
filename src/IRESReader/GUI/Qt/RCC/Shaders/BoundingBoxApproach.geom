@@ -11,15 +11,12 @@ uniform mat4 ModelMatrix;
 uniform mat4 ViewMatrix;
 uniform mat4 ProjectionMatrix;
 
-
-
 out VertexData
 {
    vec4 color;
    vec3 vert;
    vec3 normal;
 } VertexOut;
-
 
 void main(void)
 {
@@ -42,17 +39,17 @@ void main(void)
 	v[7] = vec4( max_point.x , min_point.y , min_point.z, 1.0 );
 
 
-	mat4 matrix = ViewMatrix;
+	mat4 base = ModelMatrix;
 
-	v[0] = matrix * v[0];
-	v[1] = matrix * v[1];
-	v[2] = matrix * v[2];
-	v[3] = matrix * v[3];
+	v[0] = base * v[0];
+	v[1] = base * v[1];
+	v[2] = base * v[2];
+	v[3] = base * v[3];
 
-	v[4] = matrix * v[4];
-	v[5] = matrix * v[5];
-	v[6] = matrix * v[6];
-	v[7] = matrix * v[7];
+	v[4] = base * v[4];
+	v[5] = base * v[5];
+	v[6] = base * v[6];
+	v[7] = base * v[7];
 
 
 	mat3 normalMatrix = mat3(1.0);
@@ -108,9 +105,9 @@ void main(void)
 	}
 
 
-	float scaledy = 9.0;
-	float scaledx = 19.0;
-	float max_z = -1;
+	float scaledy = 20.0;
+	float scaledx = 20.0;
+	float max_z   = -1;
 	/// Back and Front Face
 	/// Como ajustar o Z min/max , parametricamente.
 	v[0] = vec4( pmax.x*scaledx , pmax.y*scaledy , max_z, 1.0 );
@@ -143,16 +140,29 @@ void main(void)
 	vec3 normal_left = normalize (cross ( (v[3] - v[2]).xyz, (v[6] - v[2]).xyz ) );
 	normal_left = normalize(normalMatrix * normal_left);
 
+	mat4 projection = ProjectionMatrix * ViewMatrix ;
 
-	v[0] =  ProjectionMatrix * v[0];
-	v[1] =  ProjectionMatrix * v[1];
-	v[2] =  ProjectionMatrix * v[2];
-	v[3] =  ProjectionMatrix * v[3];
 
-	v[4] =  ProjectionMatrix * v[4];
-	v[5] =  ProjectionMatrix * v[5];
-	v[6] =  ProjectionMatrix * v[6];
-	v[7] =  ProjectionMatrix * v[7];
+	v[0] = inverse(base) * v[0];
+	v[1] = inverse(base) * v[1];
+	v[2] = inverse(base) * v[2];
+	v[3] = inverse(base) * v[3];
+
+	v[4] = inverse(base) * v[4];
+	v[5] = inverse(base) * v[5];
+	v[6] = inverse(base) * v[6];
+	v[7] = inverse(base) * v[7];
+
+
+	v[0] =  projection * v[0];
+	v[1] =  projection * v[1];
+	v[2] =  projection * v[2];
+	v[3] =  projection * v[3];
+
+	v[4] =  projection * v[4];
+	v[5] =  projection * v[5];
+	v[6] =  projection * v[6];
+	v[7] =  projection * v[7];
 
 	//Top face
 	VertexOut.color = vec4( 1.0,0.0,0.0,1.0);

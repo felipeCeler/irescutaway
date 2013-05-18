@@ -7,21 +7,35 @@
 
 #include "Cube.hpp"
 
-#include <Celer/Core/Geometry/Math/Vector3.hpp>
-
 Cube::Cube ( )
 {
 
 	isCreated_ = 0;
 	/// Vertex Array for the cube
-	vertexArray_for_the_Cube = 0;
-		/// Buffer Object which hold the data.
-		vertexBuffer_cube_vertices = 0;
-		vertexBuffer_cube_indices  = 0;
-		/// Vertex location
-		verticesSlot	= 0;
-		/// Color location
-		colorSlot	= 1;
+	vertexArray_for_the_Cube_ = 0;
+
+	////// Vertex Buffers
+		vertexBuffer_cube_24vertices_ = 0;
+		vertices_24slot_ = 0;
+		vertexBuffer_cube_24normals_ = 0;
+		normals_24slot_ = 1;
+		vertexBuffer_cube_24colors_ = 0;
+		colors_24slot_ = 2;
+		vertexBuffer_cube_24verticesIndices_ = 0;
+
+		vertexBuffer_cube_quadStrip_ = 0;
+		vertices_quadStripSlot_ = 3;
+		vertexBuffer_cube_quadStripNormals_ = 0 ;
+		normals_quadStripSlot_ = 4;
+		vertexBuffer_cube_quadStripColors_ = 0;
+		colors_quadStripSlot_ = 5;
+
+		vertexBuffer_cube_8vertices_ = 0;
+		vertices_8slot_ = 6;
+		vertexBuffer_cube_8verticesIndices_ = 0;
+
+		vertexBuffer_boundingBox_vertices_ = 0;
+		boundingBox_slot_ = 10;
 
 }
 
@@ -30,12 +44,12 @@ bool Cube::isCreated ( )
 	return isCreated_;
 }
 
-void Cube::creatBuffers( )
+
+
+void Cube::create24Vertices ()
 {
 
-	// Is there an OpenGL Context ?
-	Celer::OpenGL::OpenGLContext::instance ( )->glewInitialize ( "File Cube.cpp line 39" );
-	// Cube ///////////////////////////////////////////////////////////////////////
+	// Cube /////////////////////////////////////////////////////////////////////////////////////
 	//    v2----- v1
 	//   /|      /|
 	//  v3------v0|
@@ -44,91 +58,379 @@ void Cube::creatBuffers( )
 	//  |/      |/
 	//  v5------v4
 
-	// Vertex coords array for glDrawArrays() =====================================
+	// Vertex coords array for glDrawArrays() ====================================================
 	// A cube has 6 sides and each side has 2 triangles, therefore, a cube consists
-	// of 8 vertices and 12 triangle difined by indices. And, each vertex is 3 components
-	// (x,y,z) of floats, therefore, the size of vertex array is 8 * 3 * sizeof(float).
+	// of 8 vertices and 12 triangle defined by indices. And, each vertex is 3 components
+	// (x,y,z) of floats, therefore, the size of vertex array in bytes is 8 * 3 * sizeof(GLfloat).
 
+	vertices.clear();
+	normals.clear();
+	indices.clear();
 
-//		GLfloat g_vertex_buffer_data[] =
-//		{
-//		    // X Y Z R G B
-//		       3.0f, 3.0f, 3.0f, 1.0, 0.0, 0.0, // vertex 0
-//		       3.0f, 3.0f,-3.0f, 1.0, 0.0, 0.0, // vertex 1
-//		      -3.0f, 3.0f,-3.0f, 0.0, 0.0, 1.0, // vertex 2
-//		      -3.0f, 3.0f, 3.0f, 0.0, 1.0, 0.0, // vertex 3
-//
-//		       3.0f,-3.0f, 3.0f, 1.0, 0.0, 0.0, // vertex 4
-//		      -3.0f,-3.0f, 3.0f, 0.0, 1.0, 0.0, // vertex 5
-//		      -3.0f,-3.0f,-3.0f, 0.0, 0.0, 1.0, // vertex 6
-//		       3.0f,-3.0f,-3.0f, 1.0, 0.0, 0.0, // vertex 7
-//		}; // 4 vertices with 6 components (floats) each\
-
-	float x = 5878424.7906;
-
-	points.push_back ( Celer::Vector3<GLdouble> ( 2440863.6397 , 5878424.7906 , 1015.6089 ) );
-	points.push_back ( Celer::Vector3<GLdouble> ( 2440938.7195 , 5878414.9469 , 969.90140 ) );
-	points.push_back ( Celer::Vector3<GLdouble> ( 2440950.3564 , 5878486.1683 , 972.00260 ) );
-	points.push_back ( Celer::Vector3<GLdouble> ( 2440875.6062 , 5878495.3373 , 1023.9014 ) );
-	points.push_back ( Celer::Vector3<GLdouble> ( 2440863.6397 , 5878424.7906 , 1065.6089 ) );
-	points.push_back ( Celer::Vector3<GLdouble> ( 2440938.7195 , 5878414.9469 , 1019.9014 ) );
-	points.push_back ( Celer::Vector3<GLdouble> ( 2440950.3564 , 5878486.1683 , 1022.0026 ) );
-	points.push_back ( Celer::Vector3<GLdouble> ( 2440875.6062 , 5878495.3373 , 1073.9014 ) );
-
-//	points.push_back ( Celer::Vector3<GLdouble> ( x * 1.0f , x * 1.0f , x * 1.0f ) );
-//	points.push_back ( Celer::Vector3<GLdouble> ( x * 1.0f , x * 1.0f ,-x * 1.0f ) );
-//	points.push_back ( Celer::Vector3<GLdouble> (-x * 1.0f , x * 1.0f ,-x * 1.0f ) );
-//	points.push_back ( Celer::Vector3<GLdouble> (-x * 1.0f , x * 1.0f , x * 1.0f ) );
-//	points.push_back ( Celer::Vector3<GLdouble> ( x * 1.0f ,-x * 1.0f , x * 1.0f ) );
-//	points.push_back ( Celer::Vector3<GLdouble> (-x * 1.0f ,-x * 1.0f , x * 1.0f ) );
-//	points.push_back ( Celer::Vector3<GLdouble> (-x * 1.0f ,-x * 1.0f ,-x * 1.0f ) );
-//	points.push_back ( Celer::Vector3<GLdouble> ( x * 1.0f ,-x * 1.0f ,-x * 1.0f ) );
-
-	box.fromPointCloud ( points.begin ( ) , points.end ( ) );
-
-
-	std::cout << "center " << box.center() << std::endl;
-	std::cout << "min " << box.min() << std::endl;
-	std::cout << "max " << box.max() << std::endl;
-	std::cout << "diagonal " << box.diagonal() << std::endl;
-
-//	points.clear ( );
-//
-//	points.push_back ( box.max ( ) );
-//	points.push_back ( Celer::Vector3<GLdouble> ( box.max ( ).x , box.max ( ).y , box.min ( ).z ) );
-//	points.push_back ( Celer::Vector3<GLdouble> ( box.min ( ).x , box.max ( ).y , box.min ( ).z ) );
-//	points.push_back ( Celer::Vector3<GLdouble> ( box.min ( ).x , box.max ( ).y , box.max ( ).z ) );
-//
-//	points.push_back ( Celer::Vector3<GLdouble> ( box.max ( ).x , box.min ( ).y , box.max ( ).z ) );
-//	points.push_back ( Celer::Vector3<GLdouble> ( box.min ( ).x , box.min ( ).y , box.max ( ).z ) );
-//	points.push_back ( box.min ( ) );
-//	points.push_back ( Celer::Vector3<GLdouble> ( box.max ( ).x , box.min ( ).y , box.min ( ).z ) );
-
-
-
-	int ires_indices_charles [ ] =
-	{
-	 // Top Face 	      // Bottom Face
-         0, 1, 2, 2, 3, 0,    4, 5, 6, 6, 7, 4,
-         // Front Face	      // Back Face
-         0, 4, 5, 5, 1, 0,    2, 6, 7, 7, 4, 2,
-         // Right Face	      // Left Face
-         0, 3, 7, 7, 4, 0,     1, 5, 6, 6, 2 ,1
-	};
-
-	int vertex_indices_obj [ ] =
-	{
-          4, 1, 0, 5, 1, 4,    5 ,2 ,1, 6, 2, 5,
-          6, 3, 2, 7, 3, 6,    7 ,0 ,3, 4, 0, 7,
-          0, 2, 3, 1, 2, 0,    7 ,5 ,4, 6, 5, 7
+	Celer::Vector3<GLfloat> vertex_data[] = {
+		//  Top Face
+		Celer::Vector3<GLfloat>(1.0f, 1.0f, -1.0f),
+		Celer::Vector3<GLfloat>(-1.0f, 1.0f, -1.0f),
+		Celer::Vector3<GLfloat>(-1.0f, 1.0f, 1.0f),
+		Celer::Vector3<GLfloat>(1.0f, 1.0f, 1.0f),
+		// Bottom Face
+		Celer::Vector3<GLfloat>(1.0f, -1.0f, 1.0f),
+		Celer::Vector3<GLfloat>(-1.0f, -1.0f, 1.0f),
+		Celer::Vector3<GLfloat>(-1.0f, -1.0f, -1.0f),
+		Celer::Vector3<GLfloat>(1.0f, -1.0f, -1.0f),
+		// Front Face
+		Celer::Vector3<GLfloat>(-1.0f, 1.0f, 1.0f),
+		Celer::Vector3<GLfloat>(-1.0f, -1.0f, 1.0f),
+		Celer::Vector3<GLfloat>(1.0f, -1.0f, 1.0f),
+		Celer::Vector3<GLfloat>(1.0f, 1.0f, 1.0f),
+		// Back Face
+		Celer::Vector3<GLfloat>(-1.0f, 1.0f, -1.0f),
+		Celer::Vector3<GLfloat>(1.0f, 1.0f, -1.0f),
+		Celer::Vector3<GLfloat>(1.0f, -1.0f, -1.0f),
+		Celer::Vector3<GLfloat>(-1.0f, -1.0f, -1.0f),
+		// Right Face
+		Celer::Vector3<GLfloat>(1.0f, -1.0f, -1.0f),
+		Celer::Vector3<GLfloat>(1.0f, 1.0f, -1.0f),
+		Celer::Vector3<GLfloat>(1.0f, 1.0f, 1.0f),
+		Celer::Vector3<GLfloat>(1.0f, -1.0f, 1.0f),
+		// Left Face
+		Celer::Vector3<GLfloat>(-1.0f, 1.0f, -1.0f),
+		Celer::Vector3<GLfloat>(-1.0f, -1.0f, -1.0f),
+		Celer::Vector3<GLfloat>(-1.0f, -1.0f, 1.0f),
+		Celer::Vector3<GLfloat>(-1.0f, 1.0f, 1.0f)
 	};
 
 
+	Celer::Vector3<GLfloat> normal_data[] = {
+		// Top Face
+		Celer::Vector3<GLfloat>(0.0f, 1.0f, 0.0f),
+		Celer::Vector3<GLfloat>(0.0f, 1.0f, 0.0f),
+		Celer::Vector3<GLfloat>(0.0f, 1.0f, 0.0f),
+		Celer::Vector3<GLfloat>(0.0f, 1.0f, 0.0f),
+		// Bottom Face
+		Celer::Vector3<GLfloat>(0.0f, 1.0f, 0.0f),
+		Celer::Vector3<GLfloat>(0.0f, 1.0f, 0.0f),
+		Celer::Vector3<GLfloat>(0.0f, 1.0f, 0.0f),
+		Celer::Vector3<GLfloat>(0.0f, 1.0f, 0.0f),
+		// Front Face
+		Celer::Vector3<GLfloat>(0.0f, 0.0f, 1.0f),
+		Celer::Vector3<GLfloat>(0.0f, 0.0f, 1.0f),
+		Celer::Vector3<GLfloat>(0.0f, 0.0f, 1.0f),
+		Celer::Vector3<GLfloat>(0.0f, 0.0f, 1.0f),
+		// Back Face
+		Celer::Vector3<GLfloat>(0.0f, 0.0f, 1.0f),
+		Celer::Vector3<GLfloat>(0.0f, 0.0f, 1.0f),
+		Celer::Vector3<GLfloat>(0.0f, 0.0f, 1.0f),
+		Celer::Vector3<GLfloat>(0.0f, 0.0f, 1.0f),
+		// Right Face
+		Celer::Vector3<GLfloat>(1.0f, 0.0f, 0.0f),
+		Celer::Vector3<GLfloat>(1.0f, 0.0f, 0.0f),
+		Celer::Vector3<GLfloat>(1.0f, 0.0f, 0.0f),
+		Celer::Vector3<GLfloat>(1.0f, 0.0f, 0.0f),
+		// Left Face
+		Celer::Vector3<GLfloat>(1.0f, 0.0f, 0.0f),
+		Celer::Vector3<GLfloat>(1.0f, 0.0f, 0.0f),
+		Celer::Vector3<GLfloat>(1.0f, 0.0f, 0.0f),
+		Celer::Vector3<GLfloat>(1.0f, 0.0f, 0.0f)
 
-//	// 2 Triangle per face.
-	GLuint g_vertex_indices[] =
+	};
+	GLuint vertex_indices[] =
 	{
-           // Top Face 		// Bottom
+		 0,  1,  2,
+		 0,  2,  3,
+		 4,  5,  6,
+		 4,  6,  7,
+		 8,  9,  10,
+		 8,  10, 11,
+		 12, 13, 14,
+		 12, 14, 15,
+		 16, 17, 18,
+		 16, 18, 19,
+		 20, 21, 22,
+		 20, 22, 23
+	};
+
+	std::copy( vertex_data	 , vertex_data + 24	, std::back_inserter ( vertices ) );
+	std::copy( normal_data	 , normal_data + 24	, std::back_inserter ( normals ) );
+	std::copy( vertex_indices, vertex_indices + 36	, std::back_inserter ( indices ) );
+
+
+
+	/// Requesting Vertex Buffers to the GPU
+	glGenBuffers ( 1 , &vertexBuffer_cube_24vertices_ );
+		glBindBuffer ( GL_ARRAY_BUFFER , vertexBuffer_cube_24vertices_ );
+		glBufferData ( GL_ARRAY_BUFFER , vertices.size( ) * sizeof(vertices[0]) , &vertices[0] , GL_STATIC_DRAW );
+		// Set up generic attributes pointers
+		glEnableVertexAttribArray(vertices_24slot_);
+		glVertexAttribPointer(vertices_24slot_, 3, GL_FLOAT, GL_FALSE, 0, 0);
+		/// Requesting Vertex Buffers to the GPU
+	glGenBuffers ( 1 , &vertexBuffer_cube_24normals_ );
+		glBindBuffer ( GL_ARRAY_BUFFER , vertexBuffer_cube_24normals_ );
+		glBufferData ( GL_ARRAY_BUFFER , normals.size( ) * sizeof(normals[0]) , &normals[0] , GL_STATIC_DRAW );
+		// Set up generic attributes pointers
+		glEnableVertexAttribArray(normals_24slot_);
+		glVertexAttribPointer(normals_24slot_, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+	glGenBuffers ( 1 , &vertexBuffer_cube_24colors_ );
+		glBindBuffer ( GL_ARRAY_BUFFER , vertexBuffer_cube_24colors_ );
+		glBufferData ( GL_ARRAY_BUFFER , normals.size( ) * sizeof(normals[0]) , &normals[0] , GL_STATIC_DRAW );
+		// Set up generic attributes pointers
+		glEnableVertexAttribArray(colors_24slot_);
+		glVertexAttribPointer(colors_24slot_, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+	/// Requesting Indices
+	glGenBuffers ( 1 , & vertexBuffer_cube_24verticesIndices_);
+		glBindBuffer ( GL_ELEMENT_ARRAY_BUFFER, vertexBuffer_cube_24verticesIndices_ );
+		glBufferData ( GL_ELEMENT_ARRAY_BUFFER , indices.size( ) * sizeof(indices[0]) , &indices[0] , GL_STATIC_DRAW );
+
+
+
+}
+void Cube::createQuadStrips ()
+{
+
+
+	// Cube /////////////////////////////////////////////////////////////////////////////////////
+	//    v2----- v1
+	//   /|      /|
+	//  v3------v0|
+	//  | |     | |
+	//  | |v6---|-|v7
+	//  |/      |/
+	//  v5------v4
+
+	// Vertex coords array for glDrawArrays() ====================================================
+	// A cube has 6 sides and each side has 2 triangles, therefore, a cube consists
+	// of 8 vertices and 12 triangle defined by indices. And, each vertex is 3 components
+	// (x,y,z) of floats, therefore, the size of vertex array in bytes is 8 * 3 * sizeof(GLfloat).
+
+	vertices.clear();
+	normals.clear();
+	colors.clear();
+	indices.clear();
+
+	Celer::Vector3<GLfloat> vertex_data[] = {
+		//  Top Face
+		Celer::Vector3<GLfloat>( 3.0f, 1.0f,-1.0f),
+		Celer::Vector3<GLfloat>(-3.0f, 1.0f,-1.0f),
+		Celer::Vector3<GLfloat>(-3.0f, 1.0f, 1.0f),
+		Celer::Vector3<GLfloat>( 3.0f, 1.0f, 1.0f),
+		// Bottom Face
+		Celer::Vector3<GLfloat>( 3.0f, -1.0f, 1.0f),
+		Celer::Vector3<GLfloat>(-3.0f, -1.0f, 1.0f),
+		Celer::Vector3<GLfloat>(-3.0f, -1.0f,-1.0f),
+		Celer::Vector3<GLfloat>( 3.0f, -1.0f,-1.0f),
+		// Front Face
+		Celer::Vector3<GLfloat>(-3.0f, 1.0f, 1.0f),
+		Celer::Vector3<GLfloat>(-3.0f,-1.0f, 1.0f),
+		Celer::Vector3<GLfloat>( 3.0f,-1.0f, 1.0f),
+		Celer::Vector3<GLfloat>( 3.0f, 1.0f, 1.0f),
+		// Back Face
+		Celer::Vector3<GLfloat>(-3.0f, 1.0f,-1.0f),
+		Celer::Vector3<GLfloat>( 3.0f, 1.0f,-1.0f),
+		Celer::Vector3<GLfloat>( 3.0f,-1.0f,-1.0f),
+		Celer::Vector3<GLfloat>(-3.0f,-1.0f,-1.0f),
+		// Right Face
+		Celer::Vector3<GLfloat>(3.0f, -1.0f,-1.0f),
+		Celer::Vector3<GLfloat>(3.0f,  1.0f,-1.0f),
+		Celer::Vector3<GLfloat>(3.0f,  1.0f, 1.0f),
+		Celer::Vector3<GLfloat>(3.0f, -1.0f, 1.0f),
+		// Left Face
+		Celer::Vector3<GLfloat>(-3.0f, 1.0f,-1.0f),
+		Celer::Vector3<GLfloat>(-3.0f,-3.0f,-1.0f),
+		Celer::Vector3<GLfloat>(-3.0f,-1.0f, 1.0f),
+		Celer::Vector3<GLfloat>(-3.0f, 1.0f, 1.0f)
+	};
+
+
+	Celer::Vector3<GLfloat> normal_data[] = {
+		// Top Face
+		Celer::Vector3<GLfloat>(0.0f, 1.0f, 0.0f),
+		Celer::Vector3<GLfloat>(0.0f, 1.0f, 0.0f),
+		Celer::Vector3<GLfloat>(0.0f, 1.0f, 0.0f),
+		Celer::Vector3<GLfloat>(0.0f, 1.0f, 0.0f),
+		// Bottom Face
+		Celer::Vector3<GLfloat>(0.0f, 1.0f, 0.0f),
+		Celer::Vector3<GLfloat>(0.0f, 1.0f, 0.0f),
+		Celer::Vector3<GLfloat>(0.0f, 1.0f, 0.0f),
+		Celer::Vector3<GLfloat>(0.0f, 1.0f, 0.0f),
+		// Front Face
+		Celer::Vector3<GLfloat>(0.0f, 0.0f, 1.0f),
+		Celer::Vector3<GLfloat>(0.0f, 0.0f, 1.0f),
+		Celer::Vector3<GLfloat>(0.0f, 0.0f, 1.0f),
+		Celer::Vector3<GLfloat>(0.0f, 0.0f, 1.0f),
+		// Back Face
+		Celer::Vector3<GLfloat>(0.0f, 0.0f, 1.0f),
+		Celer::Vector3<GLfloat>(0.0f, 0.0f, 1.0f),
+		Celer::Vector3<GLfloat>(0.0f, 0.0f, 1.0f),
+		Celer::Vector3<GLfloat>(0.0f, 0.0f, 1.0f),
+		// Right Face
+		Celer::Vector3<GLfloat>(1.0f, 0.0f, 0.0f),
+		Celer::Vector3<GLfloat>(1.0f, 0.0f, 0.0f),
+		Celer::Vector3<GLfloat>(1.0f, 0.0f, 0.0f),
+		Celer::Vector3<GLfloat>(1.0f, 0.0f, 0.0f),
+		// Left Face
+		Celer::Vector3<GLfloat>(1.0f, 0.0f, 0.0f),
+		Celer::Vector3<GLfloat>(1.0f, 0.0f, 0.0f),
+		Celer::Vector3<GLfloat>(1.0f, 0.0f, 0.0f),
+		Celer::Vector3<GLfloat>(1.0f, 0.0f, 0.0f)
+
+	};
+
+
+	Celer::Vector3<GLfloat> color_data[] = {
+		// Top Face
+		Celer::Vector3<GLfloat>(0.0f, 1.0f, 0.0f),
+		Celer::Vector3<GLfloat>(0.0f, 1.0f, 0.0f),
+		Celer::Vector3<GLfloat>(0.0f, 1.0f, 0.0f),
+		Celer::Vector3<GLfloat>(0.0f, 1.0f, 0.0f),
+		// Bottom Face
+		Celer::Vector3<GLfloat>(0.0f, 1.0f, 0.0f),
+		Celer::Vector3<GLfloat>(0.0f, 1.0f, 0.0f),
+		Celer::Vector3<GLfloat>(0.0f, 1.0f, 0.0f),
+		Celer::Vector3<GLfloat>(0.0f, 1.0f, 0.0f),
+		// Front Face
+		Celer::Vector3<GLfloat>(0.0f, 0.0f, 1.0f),
+		Celer::Vector3<GLfloat>(0.0f, 0.0f, 1.0f),
+		Celer::Vector3<GLfloat>(0.0f, 0.0f, 1.0f),
+		Celer::Vector3<GLfloat>(0.0f, 0.0f, 1.0f),
+		// Back Face
+		Celer::Vector3<GLfloat>(0.0f, 0.0f, 1.0f),
+		Celer::Vector3<GLfloat>(0.0f, 0.0f, 1.0f),
+		Celer::Vector3<GLfloat>(0.0f, 0.0f, 1.0f),
+		Celer::Vector3<GLfloat>(0.0f, 0.0f, 1.0f),
+		// Right Face
+		Celer::Vector3<GLfloat>(1.0f, 0.0f, 0.0f),
+		Celer::Vector3<GLfloat>(1.0f, 0.0f, 0.0f),
+		Celer::Vector3<GLfloat>(1.0f, 0.0f, 0.0f),
+		Celer::Vector3<GLfloat>(1.0f, 0.0f, 0.0f),
+		// Left Face
+		Celer::Vector3<GLfloat>(1.0f, 0.0f, 0.0f),
+		Celer::Vector3<GLfloat>(1.0f, 0.0f, 0.0f),
+		Celer::Vector3<GLfloat>(1.0f, 0.0f, 0.0f),
+		Celer::Vector3<GLfloat>(1.0f, 0.0f, 0.0f)
+
+	};
+
+
+
+	Celer::Vector3<GLfloat> vertex_data_strip[] =
+	{
+		// Top Face
+		vertex_data[0],vertex_data[1],vertex_data[3],vertex_data[2],/* 0 - 5*/
+		// Bottom Face
+		vertex_data[4],vertex_data[7],vertex_data[5],vertex_data[6],/* 6 - 11 */
+		// Front Face
+		vertex_data[0],vertex_data[7],vertex_data[3],vertex_data[4],/* 12 - 17*/
+		// Back Face
+		vertex_data[1],vertex_data[2],vertex_data[6],vertex_data[5],/* 18 - 23*/
+		// Right Face
+		vertex_data[2],vertex_data[3],vertex_data[5],vertex_data[4],/* 24 - 29*/
+		// Left Face
+		vertex_data[0],vertex_data[1],vertex_data[7],vertex_data[6] /* 30 - 35*/
+	};
+
+	Celer::Vector3<GLfloat> normal_data_strip[] =
+	{
+		// Top Face
+		normal_data[0],normal_data[1],normal_data[3],normal_data[2],/* 0 - 5*/
+		// Bottom Face
+		normal_data[4],normal_data[7],normal_data[5],normal_data[6],/* 6 - 11 */
+		// Front Face
+		normal_data[0],normal_data[7],normal_data[3],normal_data[4],/* 12 - 17*/
+		// Back Face
+		normal_data[1],normal_data[2],normal_data[6],normal_data[5],/* 18 - 23*/
+		// Right Face
+		normal_data[2],normal_data[3],normal_data[5],normal_data[4],/* 24 - 29*/
+		// Left Face
+		normal_data[0],normal_data[1],normal_data[7],normal_data[6] /* 30 - 35*/
+	};
+
+	std::copy( vertex_data_strip	 , vertex_data_strip + 24	, std::back_inserter ( vertices ) );
+	std::copy( normal_data_strip	 , normal_data_strip + 24	, std::back_inserter ( normals ) );
+	std::copy( color_data		 , color_data + 24		, std::back_inserter ( colors ) );
+
+
+
+	/// Requesting Vertex Buffers to the GPU
+	glGenBuffers ( 1 , &vertexBuffer_cube_quadStrip_ );
+		glBindBuffer ( GL_ARRAY_BUFFER , vertexBuffer_cube_quadStrip_ );
+		glBufferData ( GL_ARRAY_BUFFER , vertices.size ( ) * sizeof ( vertices[0] ) , &vertices[0] , GL_STATIC_DRAW );
+		// Set up generic attributes pointers
+		glEnableVertexAttribArray(vertices_quadStripSlot_);
+		glVertexAttribPointer(vertices_quadStripSlot_, 3, GL_FLOAT, GL_FALSE, 0, 0);
+		/// Requesting Vertex Buffers to the GPU
+	glGenBuffers ( 1 , &vertexBuffer_cube_quadStripNormals_ );
+		glBindBuffer ( GL_ARRAY_BUFFER , vertexBuffer_cube_quadStripNormals_ );
+		glBufferData ( GL_ARRAY_BUFFER , normals.size ( ) * sizeof ( normals[0] ) , &normals[0] , GL_STATIC_DRAW );
+		// Set up generic attributes pointers
+		glEnableVertexAttribArray(normals_quadStripSlot_);
+		glVertexAttribPointer(normals_quadStripSlot_, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+	glGenBuffers ( 1 , &vertexBuffer_cube_quadStripColors_ );
+		glBindBuffer ( GL_ARRAY_BUFFER , vertexBuffer_cube_quadStripColors_ );
+		glBufferData ( GL_ARRAY_BUFFER , colors.size ( ) * sizeof ( colors[0] ) , &colors[0] , GL_STATIC_DRAW );
+		// Set up generic attributes pointers
+		glEnableVertexAttribArray(colors_quadStripSlot_);
+		glVertexAttribPointer(colors_quadStripSlot_, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+
+		box.fromPointCloud ( vertices.begin ( ) , vertices.end ( ) );
+
+		std::cout << "center " 		<< box.center ( ) 	<< std::endl;
+		std::cout << "min " 		<< box.min ( ) 		<< std::endl;
+		std::cout << "max " 		<< box.max ( ) 		<< std::endl;
+		std::cout << "diagonal " 	<< box.diagonal ( ) 	<< std::endl;
+}
+
+
+void Cube::createBoundingBox()
+{
+
+	bb_vertices.clear();
+	bb_indices.clear();
+
+//	box.fromPointCloud ( vertices.begin ( ) , vertices.end ( ) );
+//
+//	std::cout << "center " << box.center() << std::endl;
+//	std::cout << "min " << box.min() << std::endl;
+//	std::cout << "max " << box.max() << std::endl;
+//	std::cout << "diagonal " << box.diagonal() << std::endl;
+
+
+	Celer::Vector3<GLfloat> v0 ( 3.0f*box.max ( ).x , 3.0f*box.max ( ).y , 3.0f*box.max ( ).z );
+	Celer::Vector3<GLfloat> v1 ( box.max ( ).x , box.max ( ).y , box.min ( ).z );
+	Celer::Vector3<GLfloat> v2 ( box.min ( ).x , box.max ( ).y , box.min ( ).z );
+	Celer::Vector3<GLfloat> v3 ( 3.0f*box.min ( ).x , 3.0f*box.max ( ).y , 3.0f*box.max ( ).z );
+
+	Celer::Vector3<GLfloat> v4 ( 3.0f*box.max ( ).x , 3.0f*box.min ( ).y , 3.0f*box.max ( ).z );
+	Celer::Vector3<GLfloat> v5 ( 3.0f*box.min ( ).x , 3.0f*box.min ( ).y , 3.0f*box.max ( ).z );
+	Celer::Vector3<GLfloat> v6 ( box.min ( ).x , box.min ( ).y , box.min ( ).z );
+	Celer::Vector3<GLfloat> v7 ( box.max ( ).x , box.min ( ).y , box.min ( ).z );
+
+
+	// Care about the type: GL_DOUBLE or GL_FLOAT
+	Celer::Vector3<GLfloat> vertex_bb[] =
+	{
+	  // X Y Z
+		//  Top Face
+		v0,v1,v3,v2,
+		// Bottom Face
+		v4,v5,v7,v6,
+		// Front Face
+		/*v0,v3,v4,v5,*/
+		// Back Face
+		v2,v1,v6,v7,
+		// Right Face
+		v0,v4,v1,v7,
+		// Left Face
+		v2,v6,v3,v5
+	};
+
+	// Care about the type: GL_INT
+	GLuint vertex_bb_indices [] =
+	{
+	   // Top Face 		// Bottom
 	   0, 1, 2, 2, 3, 0,    4, 5, 6, 6, 7, 4,
 
 	   // Front 		// Back
@@ -136,60 +438,170 @@ void Cube::creatBuffers( )
 
 	   // Right   	 	// Left
 	   0, 4, 7, 7, 1, 0,    2, 6, 5, 5, 3, 2
-	};
+	};// 2 Triangle per face.
 
-	indices = std::vector<GLuint>(vertex_indices_obj,vertex_indices_obj+36);
+	std::copy( vertex_bb	    , vertex_bb + 24	     , std::back_inserter ( bb_vertices ) );
+	std::copy( vertex_bb_indices, vertex_bb_indices + 36 , std::back_inserter ( bb_indices ) );
 
-	verticesSlot	= 0;
 
-	glGenVertexArrays ( 1 , &vertexArray_for_the_Cube);
-	glBindVertexArray(vertexArray_for_the_Cube);
+	glGenBuffers ( 1 , &vertexBuffer_boundingBox_vertices_ );
+		glBindBuffer ( GL_ARRAY_BUFFER , vertexBuffer_boundingBox_vertices_ );
+		glBufferData ( GL_ARRAY_BUFFER , bb_vertices.size ( ) * sizeof ( bb_vertices[0] ) , &bb_vertices[0] , GL_STATIC_DRAW );
+		// Set up generic attributes pointers
+		glEnableVertexAttribArray(boundingBox_slot_);
+		glVertexAttribPointer(boundingBox_slot_, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
-		/// Requesting Vertex Buffers to the GPU
-		glGenBuffers ( 1 , &vertexBuffer_cube_vertices );
-			glBindBuffer ( GL_ARRAY_BUFFER , vertexBuffer_cube_vertices );
-			glBufferData ( GL_ARRAY_BUFFER , points.size( ) * sizeof(points[0]) , &points[0] , GL_STATIC_DRAW );
+}
 
-		/// Requesting Indices
-		glGenBuffers ( 1 , &vertexBuffer_cube_indices);
-			glBindBuffer ( GL_ELEMENT_ARRAY_BUFFER, vertexBuffer_cube_indices );
-			glBufferData ( GL_ELEMENT_ARRAY_BUFFER , indices.size( ) * sizeof(indices[0]) , &indices[0] , GL_STATIC_DRAW );
+void Cube::create8VerticesIndices ()
+{
 
-	   // Set up generic attributes pointers
-	glEnableVertexAttribArray(verticesSlot);
-	glVertexAttribPointer(verticesSlot, 3, GL_DOUBLE, GL_FALSE, 0, 0);
+	vertices.clear();
+	indices.clear();
 
+	// Care about the type: GL_DOUBLE or GL_FLOAT
+	Celer::Vector3<GLfloat> vertex_data_8[8] =
+	{
+	 // X Y Z
+	      Celer::Vector3<GLfloat> ( 1.0, 1.0, 1.0), // vertex 0
+	      Celer::Vector3<GLfloat> ( 1.0, 1.0,-1.0), // vertex 1
+	      Celer::Vector3<GLfloat> (-1.0, 1.0,-1.0), // vertex 2
+	      Celer::Vector3<GLfloat> (-1.0, 1.0, 1.0), // vertex 3
+
+	      Celer::Vector3<GLfloat> ( 1.0,-1.0, 1.0), // vertex 4
+	      Celer::Vector3<GLfloat> (-1.0,-1.0, 1.0), // vertex 5
+	      Celer::Vector3<GLfloat> (-1.0,-1.0,-1.0), // vertex 6
+	      Celer::Vector3<GLfloat> ( 1.0,-1.0,-1.0)  // vertex 7
+	}; // 8 vertices with 3 components ( Real ) each.
+
+	// Care about the type: GL_INT
+	GLuint vertex_indices_8[] =
+	{
+	   // Top Face 		// Bottom
+	   0, 1, 2, 2, 3, 0,    4, 5, 6, 6, 7, 4,
+
+	   // Front 		// Back
+	   0, 3, 5, 5, 4, 0,   2, 1, 7, 7, 6, 2,
+
+	   // Right   	 	// Left
+	   0, 4, 7, 7, 1, 0,    2, 6, 5, 5, 3, 2
+	};// 2 Triangle per face.
+
+
+	std::copy( vertex_data_8   , vertex_data_8    + 8  , std::back_inserter ( vertices ) );
+	std::copy( vertex_indices_8, vertex_indices_8 + 36 , std::back_inserter ( indices ) );
+
+	/// Requesting Vertex Buffers to the GPU
+	glGenBuffers ( 1 , &vertexBuffer_cube_8vertices_ );
+		glBindBuffer ( GL_ARRAY_BUFFER , vertexBuffer_cube_8vertices_ );
+		glBufferData ( GL_ARRAY_BUFFER , vertices.size( ) * sizeof(vertices[0]) , &vertices[0] , GL_STATIC_DRAW );
+		// Set up generic attributes pointers
+		glEnableVertexAttribArray(vertices_8slot_);
+		glVertexAttribPointer(vertices_8slot_, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+	/// Requesting Indices
+	glGenBuffers ( 1 , &vertexBuffer_cube_8verticesIndices_ );
+		glBindBuffer ( GL_ELEMENT_ARRAY_BUFFER, vertexBuffer_cube_8verticesIndices_ );
+		glBufferData ( GL_ELEMENT_ARRAY_BUFFER , indices.size( ) * sizeof(indices[0]) , &indices[0] , GL_STATIC_DRAW );
+
+}
+
+
+void Cube::create8Bufffers()
+{
+
+}
+void Cube::createBuffers( )
+{
+
+	// Is there an OpenGL Context ?
+	Celer::OpenGL::OpenGLContext::instance ( )->glewInitialize ( "File Cube.cpp line 37" );
+
+	glGenVertexArrays ( 1 , &vertexArray_for_the_Cube_);
+	glBindVertexArray(vertexArray_for_the_Cube_);
+
+	create24Vertices();
+	createQuadStrips();
+	create8VerticesIndices();
+	createBoundingBox();
 
 	glBindVertexArray(0);
+
 
 	isCreated_ = 1;
 
 
 }
 
-void Cube::draw()
+void Cube::draw24Vertices()
 {
 
 	// 1rst attribute buffer : vertices
 
-	glBindVertexArray(vertexArray_for_the_Cube);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertexBuffer_cube_indices);
-	// Draw the triangle !
+	glBindVertexArray(vertexArray_for_the_Cube_);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertexBuffer_cube_24verticesIndices_);
+//	// Draw the triangle !
+	glDrawElements(GL_TRIANGLES, 36 , GL_UNSIGNED_INT, 0);
+
+	//glDrawArrays(GL_LINES_ADJACENCY , 0 , vertices.size());
+
+	glBindVertexArray(0);
+}
+
+void Cube::drawQuadStrips()
+{
+
+	// 1rst attribute buffer : vertices
+	glBindVertexArray(vertexArray_for_the_Cube_);
+//	// Draw the triangle !
+	glDrawArrays(GL_LINES_ADJACENCY , 0 , 24);
+
+	glBindVertexArray(0);
+}
+
+
+void Cube::draw8Vertices()
+{
+
+	glBindVertexArray(vertexArray_for_the_Cube_);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertexBuffer_cube_8verticesIndices_);
+//	// Draw the triangle !
 	glDrawElements(GL_TRIANGLES, 36 , GL_UNSIGNED_INT, 0);
 
 	glBindVertexArray(0);
-
 }
+
+void Cube::drawBoundingBox()
+{
+
+	// 1rst attribute buffer : vertices
+	glBindVertexArray(vertexArray_for_the_Cube_);
+//	// Draw the triangle !
+	glDrawArrays(GL_LINES_ADJACENCY , 0 , 24);
+
+	glBindVertexArray(0);
+}
+
+
 
 Cube::~Cube ( )
 {
 
 	// TODO Auto-generated destructor stub
 
-	glDeleteBuffers ( 1 , &vertexBuffer_cube_vertices );
-	glDeleteBuffers ( 1 , &vertexBuffer_cube_indices );
+	glBindVertexArray ( 0 );
+	glBindBuffer ( GL_ARRAY_BUFFER , 0 );
+	glBindBuffer ( GL_ELEMENT_ARRAY_BUFFER , 0 );
 
-	glDeleteVertexArrays(1, &vertexArray_for_the_Cube);
+	glDeleteBuffers ( 1 , &vertexBuffer_cube_24vertices_ );
+	glDeleteBuffers ( 1 , &vertexBuffer_cube_24normals_ );
+	glDeleteBuffers ( 1 , &vertexBuffer_cube_24colors_ );
+	glDeleteBuffers ( 1 , &vertexBuffer_cube_24verticesIndices_ );
+
+	glDeleteBuffers ( 1 , &vertexBuffer_cube_8vertices_ );
+	glDeleteBuffers ( 1 , &vertexBuffer_cube_8verticesIndices_ );
+
+	glDeleteVertexArrays(1, &vertexArray_for_the_Cube_);
 
 	isCreated_ = 0;
 

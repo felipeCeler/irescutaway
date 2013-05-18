@@ -4,6 +4,7 @@
 in VertexData
 {
    vec4 color;
+   vec3 vert;
    vec3 normal;
 } VertexOut;
 
