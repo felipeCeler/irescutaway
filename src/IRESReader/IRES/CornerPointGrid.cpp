@@ -379,16 +379,14 @@ namespace IRES
 		if ( block_indices.size ( ) > 0 )
 		{
 
-			Celer::BoundingBox3<double> box;
-
 			box.fromPointCloud ( vertices.begin ( ) , vertices.end ( ) );
 
 			for ( std::size_t  i = 0; i < vertices.size ( ) ; i++)
 			{
 				vertices[i] -= box.center();
-				vertices[i].x /= box.diagonal();
-				vertices[i].y /= box.diagonal();
-				vertices[i].z /= box.diagonal();
+				vertices[i].x /= (box.diagonal()/10);
+				vertices[i].y /= (box.diagonal()/10);
+				vertices[i].z /= (box.diagonal()/10);
 				//std::cout << " Vector " <<  vertices[i] << std::endl;
 			}
 

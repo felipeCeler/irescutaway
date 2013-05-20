@@ -123,6 +123,11 @@ private:
 	float centerX_;
 	float centerY_;
 
+	Cube cube_;
+
+	Celer::OpenGL::ShaderManager    wireframe;
+	Celer::OpenGL::ShaderManager    orientedBoxApproach;
+
 	QPoint lastPos;
 	/// Avoid camera_ movement issues
 	QSet<int> keysPresseds_;

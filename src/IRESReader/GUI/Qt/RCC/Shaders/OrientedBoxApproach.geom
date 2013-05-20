@@ -39,7 +39,7 @@ void main(void)
 	v[7] = vec4( max_point.x , min_point.y , min_point.z, 1.0 );
 
 
-	mat4 base = ViewMatrix;
+	mat4 base = ModelMatrix;
 
 	v[0] = base * v[0];
 	v[1] = base * v[1];
@@ -105,10 +105,9 @@ void main(void)
 	}
 
 
-	float scaledy = 20;
-	float scaledx = 20;
-	float max_z   = -0.001;
-
+	float scaledy = 1.0;
+	float scaledx = 2.0;
+	float max_z   = 1;
 	/// Back and Front Face
 	/// Como ajustar o Z min/max , parametricamente.
 	v[0] = vec4( pmax.x*scaledx , pmax.y*scaledy , max_z, 1.0 );
@@ -141,19 +140,30 @@ void main(void)
 	vec3 normal_left = normalize (cross ( (v[3] - v[2]).xyz, (v[6] - v[2]).xyz ) );
 	normal_left = normalize(normalMatrix * normal_left);
 
-	mat4 projection = ProjectionMatrix ;
+	mat4 projection = ProjectionMatrix * ViewMatrix;
 
 
-//	v[0] = inverse(base) * v[0];
-//	v[1] = inverse(base) * v[1];
-//	v[2] = inverse(base) * v[2];
-//	v[3] = inverse(base) * v[3];
-//
-//	v[4] = inverse(base) * v[4];
-//	v[5] = inverse(base) * v[5];
-//	v[6] = inverse(base) * v[6];
-//	v[7] = inverse(base) * v[7];
-//
+	v[0] = inverse(base) * v[0];
+	v[1] = inverse(base) * v[1];
+	v[2] = inverse(base) * v[2];
+	v[3] = inverse(base) * v[3];
+
+	v[4] = inverse(base) * v[4];
+	v[5] = inverse(base) * v[5];
+	v[6] = inverse(base) * v[6];
+	v[7] = inverse(base) * v[7];
+
+
+
+	vertex[0] = v[0];
+	vertex[1] = v[1];
+	vertex[2] = v[2];
+	vertex[3] = v[3];
+
+	vertex[4] = v[4];
+	vertex[5] = v[5];
+	vertex[6] = v[6];
+	vertex[7] = v[7];
 
 	v[0] =  projection * v[0];
 	v[1] =  projection * v[1];

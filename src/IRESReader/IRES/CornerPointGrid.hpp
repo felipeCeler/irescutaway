@@ -31,7 +31,7 @@
 namespace IRES
 {
 
-	//! Corner Point Geometry and Properties from - © Computer Modelling Group | CMG.
+	//! Corner Point Geometry and Properties from - ï¿½ Computer Modelling Group | CMG.
 	/*!
 	 * What is Corner Point Grid ...
 	 *
@@ -184,6 +184,8 @@ namespace IRES
 			std::vector<int> 			block_indices;
 
 			std::vector<IRES::Block>                blocks;
+
+			Celer::BoundingBox3<double> box;
 
 		public:
 
