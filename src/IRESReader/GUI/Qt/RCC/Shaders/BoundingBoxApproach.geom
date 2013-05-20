@@ -107,7 +107,7 @@ void main(void)
 
 	float scaledy = 20;
 	float scaledx = 20;
-	float max_z   = -0.001;
+	float max_z   = -1;
 
 	/// Back and Front Face
 	/// Como ajustar o Z min/max , parametricamente.

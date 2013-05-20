@@ -800,11 +800,10 @@ void GLWidget::openIRES ( const std::string& filename )
 		std::cout << reservoir_model_.box.diagonal ( );
 		camera_.setOffset ( 3.0 * reservoir_model_.box.diagonal ( ) );
 
-		camera_.setPerspectiveProjectionMatrix ( 60 , camera_.aspectRatio ( ) , 1.0 , 500 );
 
 		std::cout << camera_.position ( );
 
-		camera_.setBehavior ( Celer::Camera<float>::FIRST_PERSON );
+		camera_.setBehavior ( Celer::Camera<float>::REVOLVE_AROUND_MODE );
 
 		cameraStep_ = 0.1f;
 
@@ -976,8 +975,6 @@ void GLWidget::openIRES2 ( const std::string& filename )
 		std::cout << reservoir_model_.box.diagonal ( );
 		camera_.setOffset ( 3.0 * reservoir_model_.box.diagonal ( ) );
 
-		camera_.setPerspectiveProjectionMatrix ( 60 , camera_.aspectRatio ( ) , 1.0 , 500 );
-
 		std::cout << camera_.position ( );
 
 		camera_.setBehavior ( Celer::Camera<float>::FIRST_PERSON );
@@ -1079,7 +1076,7 @@ void GLWidget::resizeGL ( int width , int height )
 
 
 	camera_.setAspectRatio ( width  , height  );
-	camera_.setPerspectiveProjectionMatrix ( 0 , camera_.aspectRatio ( ) , 0.1 , 500 );
+	camera_.setPerspectiveProjectionMatrix ( 0 , camera_.aspectRatio ( ) , 1.0 , 500 );
 	camera_.setOrthographicProjectionMatrix( 0.0f, (float)width , 0.0f, (float)height, -100.0, 100.0 );
 
 
@@ -1158,7 +1155,7 @@ void GLWidget::paintGL ( )
 
 	camera_.computerViewMatrix( );
 
-	camera_.setPerspectiveProjectionMatrix ( zoom_angle_ , camera_.aspectRatio ( ) , 0.1 , 500 );
+	camera_.setPerspectiveProjectionMatrix ( zoom_angle_ , camera_.aspectRatio ( ) , 1.0 , 500 );
 
 	if 	( isBurnsApproach )
 	{
@@ -1306,31 +1303,31 @@ void GLWidget::BoundingVolumeCutawaySetup( )
 //	wireframe.deactive();
 
 
-	Celer::Vector3<float> new_z =  cutVolumes[0].center() - camera_.position();
-
-	new_z.normalize();
-
-	Celer::Vector3<float> new_x = new_z ^ camera_.UpVector();
-
-	new_x.normalize();
-
-	Celer::Vector3<float> new_y = new_z ^ new_x;
-
-	new_y.normalize();
-
-	Celer::Matrix4x4<float> lookatCamera ( new_x, new_y , new_z  );
-
-	orientedBoxApproach.active ( );
-	glBindVertexArray ( vertexArray );
-	glUniform4fv ( orientedBoxApproach.uniforms_["min_point"].location , 1 , Celer::Vector4<float> ( cutVolumes[0].min ( ) , 1.0f ) );
-	glUniform4fv ( orientedBoxApproach.uniforms_["max_point"].location , 1 , Celer::Vector4<float> ( cutVolumes[0].max ( ) , 1.0f ) );
-	glUniform3fv ( orientedBoxApproach.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
-	glUniformMatrix4fv ( orientedBoxApproach.uniforms_["ModelMatrix"].location , 1 , GL_TRUE , lookatCamera );
-	glUniformMatrix4fv ( orientedBoxApproach.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-	glUniformMatrix4fv ( orientedBoxApproach.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
-	glDrawArrays ( GL_POINTS , 0 , 1 );
-	glBindVertexArray ( 0 );
-	orientedBoxApproach.deactive ( );
+//	Celer::Vector3<float> new_z =  cutVolumes[0].center() - camera_.position();
+//
+//	new_z.normalize();
+//
+//	Celer::Vector3<float> new_x = new_z ^ camera_.UpVector();
+//
+//	new_x.normalize();
+//
+//	Celer::Vector3<float> new_y = new_z ^ new_x;
+//
+//	new_y.normalize();
+//
+//	Celer::Matrix4x4<float> lookatCamera ( new_x, new_y , new_z  );
+//
+//	orientedBoxApproach.active ( );
+//	glBindVertexArray ( vertexArray );
+//	glUniform4fv ( orientedBoxApproach.uniforms_["min_point"].location , 1 , Celer::Vector4<float> ( cutVolumes[0].min ( ) , 1.0f ) );
+//	glUniform4fv ( orientedBoxApproach.uniforms_["max_point"].location , 1 , Celer::Vector4<float> ( cutVolumes[0].max ( ) , 1.0f ) );
+//	glUniform3fv ( orientedBoxApproach.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
+//	glUniformMatrix4fv ( orientedBoxApproach.uniforms_["ModelMatrix"].location , 1 , GL_TRUE , lookatCamera );
+//	glUniformMatrix4fv ( orientedBoxApproach.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+//	glUniformMatrix4fv ( orientedBoxApproach.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+//	glDrawArrays ( GL_POINTS , 0 , 1 );
+//	glBindVertexArray ( 0 );
+//	orientedBoxApproach.deactive ( );
 
 
 }
