@@ -651,8 +651,8 @@ void GLWidget::openIRES ( const std::string& filename )
 				{
 				    // Top Face
 				    Celer::Vector4<GLfloat> ( v0, 1.0f),
-				    Celer::Vector4<GLfloat> ( v1, 1.0f),
 				    Celer::Vector4<GLfloat> ( v3, 1.0f),
+				    Celer::Vector4<GLfloat> ( v1, 1.0f),
 				    Celer::Vector4<GLfloat> ( v2, 1.0f),
 				    // Bottom Face
 				    Celer::Vector4<GLfloat> ( v4, 1.0f),
@@ -682,7 +682,7 @@ void GLWidget::openIRES ( const std::string& filename )
 				};
 
 
-				Celer::Vector3<GLfloat> topNormal 	= (((v1 - v0) ^ (v3 - v0)).norm());
+				Celer::Vector3<GLfloat> topNormal 	= ((v3 - v0) ^ (v1 - v0)).norm();
 				//std::cout << topNormal << std::endl;
 				Celer::Vector3<GLfloat> bottomNormal 	= ((v7 - v4) ^ (v5 - v4)).norm();
 				//std::cout << bottomNormal << std::endl;
@@ -1159,6 +1159,7 @@ void GLWidget::paintGL ( )
 
 	if 	( isBurnsApproach )
 	{
+		camera_.setTarget( reservoir_model_.box.center( ) );
 		BurnsCutawaySetup ( );
 	}
 	else if ( isBoudingBoxApproach )
@@ -1250,6 +1251,18 @@ void GLWidget::BoundingVolumeCutawaySetup( )
 			glBindVertexArray(0);
 
 			BoundingBoxCutaway.deactive ( );
+
+
+			debugNormal.active( );
+
+			glUniformMatrix4fv ( debugNormal.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+			glUniformMatrix4fv ( debugNormal.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+
+			glBindVertexArray(vertexArray);
+			glDrawArrays ( GL_LINES_ADJACENCY , 0 , reservoir_list_of_vertices.size());
+			glBindVertexArray(0);
+
+			debugNormal.deactive( );
 
 		}
 		if ( draw_primary )
@@ -1507,6 +1520,20 @@ void GLWidget::NoCutawaySetUp ( )
 
 			secondary.deactive ( );
 
+
+
+//			debugNormal.active( );
+//
+//			glUniformMatrix4fv ( debugNormal.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+//			glUniformMatrix4fv ( debugNormal.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+//
+//			glBindVertexArray(vertexArray);
+//			glDrawArrays ( GL_LINES_ADJACENCY , 0 , reservoir_list_of_vertices.size());
+//			glBindVertexArray(0);
+//
+//			debugNormal.deactive( );
+
+
 		}
 		if ( draw_primary )
 		{
@@ -1610,6 +1637,11 @@ void GLWidget::LoadShaders ( )
 	BoundingBoxCutaway.create ("BoundingBoxCutaway",(shadersDir.path ()+"/share/Shaders/BoundingBoxCutaway.vert").toStdString(),
 							(shadersDir.path ()+"/share/Shaders/BoundingBoxCutaway.geom").toStdString(),
 							(shadersDir.path ()+"/share/Shaders/BoundingBoxCutaway.frag").toStdString());
+
+
+	debugNormal.create   ("DebugNormal",  (shadersDir.path ()+"/share/Shaders/DebugNormal.vert").toStdString(),
+			   (shadersDir.path ()+"/share/Shaders/DebugNormal.geom").toStdString(),
+			   (shadersDir.path ()+"/share/Shaders/DebugNormal.frag").toStdString());
 
 
 	wireframe.create   ("SinglePassWireframe",  (shadersDir.path ()+"/share/Shaders/SinglePassWireframe.vert").toStdString(),

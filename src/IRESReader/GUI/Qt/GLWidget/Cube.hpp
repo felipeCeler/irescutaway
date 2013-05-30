@@ -15,7 +15,7 @@
 #include <Celer/Core/Geometry/Math/Vector3.hpp>
 #include <Celer/Core/Physics/BoundingBox3.hpp>
 /// Celer::OpenGL Wrapper
-#include <Celer/OpenGLFramework/OpenGLContext.hpp>
+#include <Celer/OpenGL/OpenGLContext.hpp>
 
 class Cube
 {

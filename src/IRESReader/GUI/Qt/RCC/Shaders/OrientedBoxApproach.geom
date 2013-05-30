@@ -107,7 +107,7 @@ void main(void)
 
 	float scaledy = 1.0;
 	float scaledx = 2.0;
-	float max_z   = 1;
+	float max_z   = -1;
 	/// Back and Front Face
 	/// Como ajustar o Z min/max , parametricamente.
 	v[0] = vec4( pmax.x*scaledx , pmax.y*scaledy , max_z, 1.0 );

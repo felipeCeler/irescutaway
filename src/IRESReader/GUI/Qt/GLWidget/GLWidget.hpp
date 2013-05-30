@@ -6,10 +6,10 @@
 #include "Cube.hpp"
 /// Celer::Libraries
 	/// OpenGL
-#include <Celer/OpenGLFramework/OpenGLContext.hpp>
-#include <Celer/OpenGLFramework/GLTexture.hpp>
-#include <Celer/OpenGLFramework/Shader.hpp>
-#include <Celer/OpenGLFramework/ShaderManager.hpp>
+#include <Celer/OpenGL/OpenGLContext.hpp>
+#include <Celer/OpenGL/Texture.hpp>
+#include <Celer/OpenGL/Shader.hpp>
+#include <Celer/OpenGL/ShaderManager.hpp>
 	/// Math
 
 #include <Celer/Core/Geometry/Math/Vector3.hpp>
@@ -127,6 +127,7 @@ private:
 
 	Celer::OpenGL::ShaderManager    wireframe;
 	Celer::OpenGL::ShaderManager    orientedBoxApproach;
+	Celer::OpenGL::ShaderManager	debugNormal;
 
 	QPoint lastPos;
 	/// Avoid camera_ movement issues

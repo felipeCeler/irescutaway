@@ -8,9 +8,10 @@ layout (location = 5 ) in ivec4 IJK;
 
 out VertexData
 {
-    vec4 color;
-    vec4 normal;
-
+	vec4 vert;
+	vec4 color;
+	vec4 normal;
+   flat vec4 IJK;
 } VertexOut;
 
 // For while, all transformations come from the Celer::Camera.
@@ -21,8 +22,15 @@ uniform mat4 ProjectionMatrix;
 void main(void)
 {
 
-	VertexOut.color = colors;
-	VertexOut.normal = normals;
+
+	mat3 normalMatrix = mat3(ViewMatrix);
+	normalMatrix = inverse( normalMatrix );
+	normalMatrix = transpose( normalMatrix);
+
+	VertexOut.color  = colors;
+	VertexOut.vert 	 =  ViewMatrix * vertices;
+	VertexOut.normal =  vec4(normalize(normalMatrix * normals.xyz),0.0);
+	VertexOut.IJK = IJK;
 
 	if ( focus.x == 0.0 )
 	{

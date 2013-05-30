@@ -64,16 +64,21 @@ layout(triangle_strip, max_vertices=4) out;
 uniform vec2 WIN_SCALE;
 
 noperspective out vec4 dist;
+
 in VertexData
 {
+	vec4 vert;
 	vec4 color;
 	vec4 normal;
+   flat vec4 IJK;
 } VertexIn[4];
 
 out VertexData
 {
-   vec4 color;
-   vec4 normal;
+	vec4 vert;
+	vec4 color;
+	vec4 normal;
+   flat vec4 IJK;
 } VertexOut;
 
 void main(void)
@@ -96,26 +101,34 @@ void main(void)
 	float area4 = abs(v2.x * v5.y - v2.y * v5.x);
 
 	dist = vec4(area4/length(v4), area3/length(v3), 0, 0);
-	VertexOut.color = VertexIn[0].color;
+	VertexOut.vert   = VertexIn[0].vert;
+	VertexOut.color  = VertexIn[0].color;
 	VertexOut.normal = VertexIn[0].normal;
+	VertexOut.IJK	 = VertexIn[0].IJK;
 	gl_Position = gl_in[0].gl_Position;
 	EmitVertex();
 
 	dist = vec4(area2/length(v4), 0, 0, area1/length(v2));
-	VertexOut.color = VertexIn[1].color;
+	VertexOut.vert   = VertexIn[1].vert;
+	VertexOut.color  = VertexIn[1].color;
 	VertexOut.normal = VertexIn[1].normal;
+	VertexOut.IJK	 = VertexIn[1].IJK;
 	gl_Position = gl_in[1].gl_Position;
 	EmitVertex();
 
 	dist = vec4(0, area2/length(v3), area1/length(v0), 0);
-	VertexOut.color = VertexIn[2].color;
+	VertexOut.vert   = VertexIn[2].vert;
+	VertexOut.color  = VertexIn[2].color;
 	VertexOut.normal = VertexIn[2].normal;
+	VertexOut.IJK	 = VertexIn[2].IJK;
 	gl_Position = gl_in[2].gl_Position;
 	EmitVertex();
 
 	dist = vec4(0, 0, area3/length(v0), area4/length(v2));
-	VertexOut.color = VertexIn[3].color;
+	VertexOut.vert   = VertexIn[3].vert;
+	VertexOut.color  = VertexIn[3].color;
 	VertexOut.normal = VertexIn[3].normal;
+	VertexOut.IJK	 = VertexIn[3].IJK;
 	gl_Position = gl_in[3].gl_Position;
 	EmitVertex();
 

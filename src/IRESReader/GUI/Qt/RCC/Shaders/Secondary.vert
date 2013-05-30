@@ -31,13 +31,13 @@ out VertexData
 void main()
 {
 //	vert = (ViewMatrix * vec4(vertices,1.0)).xyz;
-//
+
 //	mat3 normalMatrix = mat3(ViewMatrix);
 //	normalMatrix = transpose(normalMatrix);
 //	normalMatrix = inverse(normalMatrix);
 //
-//	normal = normalize(normalMatrix * normals);
-//
+//	vertexShader_VertexData.normal = vec4(normalize(normalMatrix * normals),0.0);
+
 //	color = colors;
 
 	if ( focus.x == 0.0 )

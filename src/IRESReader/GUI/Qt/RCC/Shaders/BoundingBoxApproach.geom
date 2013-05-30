@@ -54,9 +54,9 @@ void main(void)
 
 	mat3 normalMatrix = mat3(1.0);
 
-	//mat3 normalMatrix = mat3(ViewMatrix);
-	//normalMatrix = inverse(normalMatrix);
-	//normalMatrix = transpose(normalMatrix);
+//	mat3 normalMatrix = mat3(ViewMatrix);
+//	normalMatrix = inverse(normalMatrix);
+//	normalMatrix = transpose(normalMatrix);
 
 
 	vertex[0] = v[0];
