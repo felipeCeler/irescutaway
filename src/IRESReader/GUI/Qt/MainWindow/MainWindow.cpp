@@ -195,7 +195,6 @@ void MainWindow::on_action_Open_IRES_triggered()
 	}
 }
 
-
 void MainWindow::on_pushButton_Reset_IJK_clicked( )
 {
 	ui->label_I_range->setText("[ 0 - "+QString::number(glWidget->reservoir_model_.header_.number_of_Blocks_in_I_Direction)+" ]");
@@ -228,22 +227,20 @@ void MainWindow::on_pushButton_changeIJK_clicked()
 	                     ui->horizontalslider_min_K->value(), ui->horizontalslider_max_K->value());
 }
 
-
 void MainWindow::on_action_Load_Shaders_triggered()
 {
 	glWidget->LoadShaders();
 }
 
-
 void MainWindow::on_action_Bounding_Box_Approach_triggered ( )
 {
 
 }
+
 void MainWindow::on_action_Burns_Approach_triggered ( )
 {
 
 }
-
 
 void MainWindow::keyPressEvent(QKeyEvent *e)
 {
@@ -260,4 +257,9 @@ void MainWindow::keyPressEvent(QKeyEvent *e)
 		e->accept();
 	}
 	else e->ignore();
+}
+
+void MainWindow::on_spinBox_Cluster_Number_valueChanged  ( int i)
+{
+	glWidget->updateCluster(i);
 }

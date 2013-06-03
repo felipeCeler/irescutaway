@@ -23,17 +23,22 @@ void main(void)
 	float d = min(dist[0], min(dist[1], min(dist[2], dist[3])));
 	float I = exp2(-2.0 * d * d);
 
+
+	vec3 newNormal = VertexIn.normal.xyz;
+	vec3 newVert = VertexIn.vert.xyz;
+
+	vec2 vector = gl_FragCoord.xy - ( cutaway.xy );
+
 	if ( gl_FragCoord.z < ( cutaway.w ) )
 	{
 		discard;
-
 	}
 	else
 	{
 
 		float s = dot(VertexIn.normal.xyz,vec3(0.0,0.0,1.0));
 
-		if ( abs(gl_FragCoord.z - cutaway.w ) < 0.00005 )
+		if ( (abs(gl_FragCoord.z - cutaway.w ) < 0.00002 ))
 		{
 			outputColor = vec4(0.0,0.0,0.0,1.0);
 
@@ -43,8 +48,9 @@ void main(void)
 		{
 
 
-			vec3 newNormal = VertexIn.normal.xyz;
-			vec3 newVert = cutaway.xyz;
+			newNormal = vec3(-vector,length(vector)*0.5);
+			newVert = cutaway.xyz;
+			newVert.z = cutaway.w;
 
 			newNormal = normalize ( newNormal );
 
@@ -60,13 +66,13 @@ void main(void)
 			vec4 ld = color_t * 0.9 * max ( 0.0 , dot ( newNormal , light_dir ) );
 			vec4 ls = color_t * 0.4 * pow ( max ( 0.0 , dot ( eye_dir , ref ) ) , 5.0 );
 
-
-			if (  ( VertexIn.IJK.z > 1 ) && ( VertexIn.IJK.z <  6) )
-			{
-				outputColor =  vec4 ( la.rgb + ld.xyz + ls.rgb , 1.0 ) ;
-				//outputColor =  ( VertexIn.color );
-			}
-			else
+//
+//			if (  ( VertexIn.IJK.z > 1 ) && ( VertexIn.IJK.x <  0) )
+//			{
+//				//outputColor =  vec4 ( la.rgb + ld.xyz + ls.rgb , 1.0 ) ;
+//				outputColor =  ( VertexIn.color );
+//			}
+//			else
 			{
 				//outputColor = I * vec4(0.0, 0.0, 0.0, 1.0) + (1.0 - I) * ( vec4 ( la.rgb + ld.xyz + ls.rgb , 1.0 ) );
 				outputColor = I * vec4(0.0, 0.0, 0.0, 1.0) + (1.0 - I) * ( VertexIn.color );

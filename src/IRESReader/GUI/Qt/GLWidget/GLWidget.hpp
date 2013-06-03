@@ -95,7 +95,8 @@ class GLWidget: public QGLWidget
 
 		void NoCutawaySetUp ( );
 		void BurnsCutawaySetup ( );
-		void BoundingVolumeCutawaySetup ( );
+		void BoundingVolumeCutawaySetup ( int cluster );
+		void updateCluster( int i ) { cluster = i; updateGL();}
 
 		void setNoCutawayVisibility     ( bool visibility ) { isNoCutaway 	   = visibility; updateGL(); }
 		void setBoundingBoxVisibility   ( bool visibility ) { isBoudingBoxApproach = visibility; updateGL();}
@@ -207,6 +208,7 @@ private:
 	QImage fbo;
 	float  angle;
 	float  zoom_angle_;
+	int cluster;
 
 	bool  isBurnsApproach;
 	bool  isBoudingBoxApproach;

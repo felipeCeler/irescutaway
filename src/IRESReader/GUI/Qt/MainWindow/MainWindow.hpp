@@ -33,6 +33,10 @@ class MainWindow: public QMainWindow
 		void updateDoubleSpinMax( int property_index );
 		void updateDoubleSpinMin( int property_index );
 
+		void on_spinBox_Cluster_Number_valueChanged  ( int i);
+
+
+
 
 
 	private:
