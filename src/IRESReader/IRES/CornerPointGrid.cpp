@@ -606,9 +606,9 @@ namespace IRES
 						new_block.dynamic_properties[property].variable_name = dynamic_properties[property].variable_name;
 						new_block.dynamic_properties[property].component     = dynamic_properties[property].component;
 
-						for ( std::vector<std::pair<int, std::vector<float> > >::iterator it = dynamic_properties[property].values_.begin() ; it != dynamic_properties[property].values_.end() ; ++it)
+						for ( size_t  it = 0 ; it < dynamic_properties[property].values_.size() ; ++it)
 						{
-							new_block.dynamic_properties[property].values_.push_back( std::make_pair<int,float>( it->first,it->second[i] ) ) ;
+							new_block.dynamic_properties[property].values_.push_back( std::make_pair<int,float>( dynamic_properties[property].values_[it].first, 1.0f ) ) ;
 						}
 
 					}
