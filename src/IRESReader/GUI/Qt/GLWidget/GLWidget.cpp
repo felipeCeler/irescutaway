@@ -76,10 +76,14 @@ void GLWidget::initializeGL ( )
 		glGenBuffers ( 1, &reservoir_renderFlag_buffer );
 		glGenBuffers ( 1, &reservoir_IJK_buffer );
 		glGenBuffers ( 1, &reservoir_indices_buffer );
-
+		// Viewport
 		glGenBuffers ( 1, &screen_buffer);
 		glGenBuffers ( 1, &texture_buffer);
-	glBindVertexArray(vertexArray);
+
+
+	glGenVertexArrays ( 1 , &vertexArray_Cube);
+		// Cube in Geometry Shader
+		glGenBuffers ( 1, &reservoir_vertices_trianngle_adjacency_buffer);
 
 	glGenVertexArrays ( 1 , &vertexArrayScreen );
 
@@ -90,6 +94,8 @@ void GLWidget::initializeGL ( )
 	reservoir_renderFlag_location 	= 4;
 	reservoir_IJK_location 		= 5;
 
+	// Cube in Geomtry Shader
+	reservoir_vertices_triangles_adjacency_location = 6;
 
 	draw_secondary = 1;
 	draw_primary = 0;
@@ -102,7 +108,7 @@ void GLWidget::initializeGL ( )
 		glGenBuffers( 1, &vertexBuffer_box);
 
 
-	cube_.createBuffers();
+	cube_.createBuffers( Celer::Vector3<float>(0,0,0) );
 }
 
 bool GLWidget::isIresWasOpenedSucessufully ( ) const
@@ -594,6 +600,9 @@ void GLWidget::openIRES ( const std::string& filename )
 		reservoir_list_of_renderFlag.clear( );
 		reservoir_list_of_indices.clear ( );
 
+		// Cube in Geometry Shader
+		reservoir_list_of_triangle_adjacency.clear();
+
 		std::size_t i = 0;
 
 		while ( i < reservoir_model_.block_indices.size ( ) )
@@ -607,11 +616,6 @@ void GLWidget::openIRES ( const std::string& filename )
 						          ( ((i/8) / reservoir_model_.header_.number_of_Blocks_in_I_Direction) % reservoir_model_.header_.number_of_Blocks_in_J_Direction ) +1,
 						          (  (i/8) / (reservoir_model_.header_.number_of_Blocks_in_I_Direction * reservoir_model_.header_.number_of_Blocks_in_J_Direction )) +1,
 						          0 );
-
-//				if ( IJK.z == 3 )
-//				{
-//					std::cout << IJK ;
-//				}
 
 				Celer::Vector4<int> IJKs [] =
 				{
@@ -682,6 +686,17 @@ void GLWidget::openIRES ( const std::string& filename )
 				    Celer::Vector4<GLfloat> ( v6, 1.0f)
 				};
 
+				Celer::Vector4<GLfloat> vertices_triangle_adjacency [] =
+				{
+   				     // Top Face
+				     Celer::Vector4<GLfloat> ( v0, v5.x ),
+				     Celer::Vector4<GLfloat> ( v3, v5.y ),
+				     Celer::Vector4<GLfloat> ( v1, v5.z ),
+				     Celer::Vector4<GLfloat> ( v2, v6.x ),
+				     // Bottom Face
+				     Celer::Vector4<GLfloat> ( v4, v6.y ),
+				     Celer::Vector4<GLfloat> ( v7, v6.z )
+				};
 
 				Celer::Vector3<GLfloat> topNormal 	= ((v3 - v0) ^ (v1 - v0)).norm();
 				//std::cout << topNormal << std::endl;
@@ -776,6 +791,9 @@ void GLWidget::openIRES ( const std::string& filename )
 				std::copy ( focus 	, focus    + 24 , std::back_inserter ( reservoir_list_of_renderFlag) );
 				std::copy ( IJKs 	, IJKs     + 24 , std::back_inserter ( reservoir_list_of_IJKs  ) );
 
+				//Cube in Geometry Shader
+				std::copy ( vertices_triangle_adjacency,  vertices_triangle_adjacency + 6 , std::back_inserter (reservoir_list_of_triangle_adjacency) );
+
 
 				i += 8;
 
@@ -808,6 +826,8 @@ void GLWidget::openIRES ( const std::string& filename )
 
 		cameraStep_ = 0.1f;
 
+
+		std::cout << " List of reservoir_list_of_triangle_adjacency.size() " << reservoir_list_of_triangle_adjacency.size() << std::endl;
 
 		glBindVertexArray(vertexArray);
 
@@ -847,7 +867,15 @@ void GLWidget::openIRES ( const std::string& filename )
 		glBindBuffer ( GL_ELEMENT_ARRAY_BUFFER , reservoir_indices_buffer );
 		glBufferData ( GL_ELEMENT_ARRAY_BUFFER , reservoir_list_of_indices.size ( ) * sizeof ( reservoir_list_of_indices[0] ) , &reservoir_list_of_indices[0] , GL_STATIC_DRAW );
 
-		glBindVertexArray(0);
+
+		glBindVertexArray(vertexArray_Cube);
+
+			// Vertex Buffer for Cube in Geometry Shader
+			glBindBuffer ( GL_ARRAY_BUFFER , reservoir_vertices_trianngle_adjacency_buffer );
+			glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_triangle_adjacency.size ( ) * sizeof ( reservoir_list_of_triangle_adjacency[0] ) , &reservoir_list_of_triangle_adjacency[0] , GL_STREAM_DRAW );
+			// Vertex Array : Set up generic attributes pointers
+			glEnableVertexAttribArray ( reservoir_vertices_trianngle_adjacency_buffer );
+			glVertexAttribPointer ( reservoir_vertices_triangles_adjacency_location , 4 , GL_FLOAT , GL_FALSE , 0 , 0 );
 
 		glBindVertexArray(vertexArrayScreen);
 
@@ -1506,23 +1534,47 @@ void GLWidget::NoCutawaySetUp ( )
 
 		if ( draw_secondary )
 		{
- 			secondary.active ( );
 
- 			glUniform3fv ( secondary.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
+//			cube_in_GeometryShader.active();
+//
+//			glUniformMatrix4fv ( cube_in_GeometryShader.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+//			glUniformMatrix4fv ( cube_in_GeometryShader.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+//
+//			glBindVertexArray ( vertexArray_Cube );
+//			glDrawArrays ( GL_TRIANGLES_ADJACENCY , 0 , reservoir_list_of_triangle_adjacency.size());
+//			glBindVertexArray(0);
+//
+//			cube_in_GeometryShader.deactive();
 
- 			glUniform3i ( secondary.uniforms_["min_IJK"].location , min_I_, min_J_, min_K_ );
- 			glUniform3i ( secondary.uniforms_["max_IJK"].location , max_I_, max_J_, max_K_ );
 
-			glUniform2f ( secondary.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
+			camera_.setPosition ( cube_.box.center ( ) );
+			camera_.setTarget ( cube_.box.center ( ) );
+			camera_.setOffset ( 3.0 * cube_.box.diagonal ( ) );
 
-			glUniformMatrix4fv ( secondary.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-			glUniformMatrix4fv ( secondary.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
 
-			glBindVertexArray(vertexArray);
-			glDrawArrays ( GL_LINES_ADJACENCY , 0 , reservoir_list_of_vertices.size());
-			glBindVertexArray(0);
+			cube_in_GeometryShader.active();
+			glUniformMatrix4fv ( cube_in_GeometryShader.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+			glUniformMatrix4fv ( cube_in_GeometryShader.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+			cube_.drawTriangleStripAdjacencyBuffers();
+			cube_in_GeometryShader.deactive();
 
-			secondary.deactive ( );
+// 			secondary.active ( );
+//
+// 			glUniform3fv ( secondary.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
+//
+// 			glUniform3i ( secondary.uniforms_["min_IJK"].location , min_I_, min_J_, min_K_ );
+// 			glUniform3i ( secondary.uniforms_["max_IJK"].location , max_I_, max_J_, max_K_ );
+//
+//			glUniform2f ( secondary.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
+//
+//			glUniformMatrix4fv ( secondary.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+//			glUniformMatrix4fv ( secondary.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+//
+//			glBindVertexArray(vertexArray);
+//			glDrawArrays ( GL_LINES_ADJACENCY , 0 , reservoir_list_of_vertices.size());
+//			glBindVertexArray(0);
+//
+//			secondary.deactive ( );
 
 
 
@@ -1643,20 +1695,25 @@ void GLWidget::LoadShaders ( )
 							(shadersDir.path ()+"/share/Shaders/BoundingBoxCutaway.frag").toStdString());
 
 
-	debugNormal.create   ("DebugNormal",  (shadersDir.path ()+"/share/Shaders/DebugNormal.vert").toStdString(),
+	debugNormal.create ("DebugNormal",  (shadersDir.path ()+"/share/Shaders/DebugNormal.vert").toStdString(),
 			   (shadersDir.path ()+"/share/Shaders/DebugNormal.geom").toStdString(),
 			   (shadersDir.path ()+"/share/Shaders/DebugNormal.frag").toStdString());
 
 
-	wireframe.create   ("SinglePassWireframe",  (shadersDir.path ()+"/share/Shaders/SinglePassWireframe.vert").toStdString(),
-			   (shadersDir.path ()+"/share/Shaders/SinglePassWireframe.geom").toStdString(),
-			   (shadersDir.path ()+"/share/Shaders/SinglePassWireframe.frag").toStdString());
+	wireframe.create ("SinglePassWireframe",  (shadersDir.path ()+"/share/Shaders/SinglePassWireframe.vert").toStdString(),
+			 (shadersDir.path ()+"/share/Shaders/SinglePassWireframe.geom").toStdString(),
+			 (shadersDir.path ()+"/share/Shaders/SinglePassWireframe.frag").toStdString());
 
 
-	orientedBoxApproach.create( "OrientedBoxApproach", (shadersDir.path ()+"/share/Shaders/OrientedBoxApproach.vert").toStdString(),
-			   (shadersDir.path ()+"/share/Shaders/OrientedBoxApproach.geom").toStdString(),
-			   (shadersDir.path ()+"/share/Shaders/OrientedBoxApproach.frag").toStdString());
+	orientedBoxApproach.create ( "OrientedBoxApproach", (shadersDir.path ()+"/share/Shaders/OrientedBoxApproach.vert").toStdString(),
+                                   (shadersDir.path ()+"/share/Shaders/OrientedBoxApproach.geom").toStdString(),
+			           (shadersDir.path ()+"/share/Shaders/OrientedBoxApproach.frag").toStdString());
 
+
+	/// Cube in Geometry Shader
+	cube_in_GeometryShader.create ( "Cube_in_Geometry_Shader", (shadersDir.path ()+"/share/Shaders/Cube_in_Geometry_Shader.vert").toStdString(),
+							           (shadersDir.path ()+"/share/Shaders/Cube_in_Geometry_Shader.geom").toStdString(),
+							           (shadersDir.path ()+"/share/Shaders/Cube_in_Geometry_Shader.frag").toStdString());
 
 }
 /// KeyInput

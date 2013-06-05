@@ -40,7 +40,6 @@ MainWindow::MainWindow ( QMainWindow *parent ) :
 	connect(ui->comboBox_choose_an_property_, SIGNAL(activated(int)), this, SLOT(updateDoubleSpinMax(int)));
 	// Just the name of the function: so changeProperty , not glWidget->changeProperty
 	connect(ui->comboBox_choose_an_property_, SIGNAL(activated(int)), glWidget, SLOT(changeProperty(int)));
-
 	// Sliders
 	connect(ui->horizontalslider_min_I, SIGNAL(valueChanged(int)), glWidget, SLOT(changeMinI (int)));
 	connect(ui->horizontalslider_max_I, SIGNAL(valueChanged(int)), glWidget, SLOT(changeMaxI (int)));
@@ -69,7 +68,7 @@ MainWindow::MainWindow ( QMainWindow *parent ) :
 
 }
 
-void MainWindow::open(QString pFilename,bool who ) {
+void MainWindow::open( QString pFilename,bool who ) {
 
 	glWidget->openIRES( pFilename.toLocal8Bit().constData() );
 

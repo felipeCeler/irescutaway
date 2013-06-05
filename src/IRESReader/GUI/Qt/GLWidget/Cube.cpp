@@ -37,6 +37,9 @@ Cube::Cube ( )
 		vertexBuffer_boundingBox_vertices_ = 0;
 		boundingBox_slot_ = 10;
 
+		vertexBuffer_TrianglesStripAdjacency_ = 0;
+		vertices_TrianglesStripAdjacency_slot_ = 11;
+
 }
 
 bool Cube::isCreated ( )
@@ -44,9 +47,7 @@ bool Cube::isCreated ( )
 	return isCreated_;
 }
 
-
-
-void Cube::create24Vertices ()
+void Cube::create24Vertices ( const Celer::Vector3<float> translate )
 {
 
 	// Cube /////////////////////////////////////////////////////////////////////////////////////
@@ -69,35 +70,35 @@ void Cube::create24Vertices ()
 
 	Celer::Vector3<GLfloat> vertex_data[] = {
 		//  Top Face
-		Celer::Vector3<GLfloat>(1.0f, 1.0f, -1.0f),
-		Celer::Vector3<GLfloat>(-1.0f, 1.0f, -1.0f),
-		Celer::Vector3<GLfloat>(-1.0f, 1.0f, 1.0f),
-		Celer::Vector3<GLfloat>(1.0f, 1.0f, 1.0f),
+		Celer::Vector3<GLfloat>(1.0f, 1.0f, -1.0f) + translate,
+		Celer::Vector3<GLfloat>(-1.0f, 1.0f, -1.0f)+ translate,
+		Celer::Vector3<GLfloat>(-1.0f, 1.0f, 1.0f) + translate,
+		Celer::Vector3<GLfloat>(1.0f, 1.0f, 1.0f) + translate,
 		// Bottom Face
-		Celer::Vector3<GLfloat>(1.0f, -1.0f, 1.0f),
-		Celer::Vector3<GLfloat>(-1.0f, -1.0f, 1.0f),
-		Celer::Vector3<GLfloat>(-1.0f, -1.0f, -1.0f),
-		Celer::Vector3<GLfloat>(1.0f, -1.0f, -1.0f),
+		Celer::Vector3<GLfloat>(1.0f, -1.0f, 1.0f)+ translate,
+		Celer::Vector3<GLfloat>(-1.0f, -1.0f, 1.0f)+ translate,
+		Celer::Vector3<GLfloat>(-1.0f, -1.0f, -1.0f)+ translate,
+		Celer::Vector3<GLfloat>(1.0f, -1.0f, -1.0f)+ translate,
 		// Front Face
-		Celer::Vector3<GLfloat>(-1.0f, 1.0f, 1.0f),
-		Celer::Vector3<GLfloat>(-1.0f, -1.0f, 1.0f),
-		Celer::Vector3<GLfloat>(1.0f, -1.0f, 1.0f),
-		Celer::Vector3<GLfloat>(1.0f, 1.0f, 1.0f),
+		Celer::Vector3<GLfloat>(-1.0f, 1.0f, 1.0f)+ translate,
+		Celer::Vector3<GLfloat>(-1.0f, -1.0f, 1.0f)+ translate,
+		Celer::Vector3<GLfloat>(1.0f, -1.0f, 1.0f)+ translate,
+		Celer::Vector3<GLfloat>(1.0f, 1.0f, 1.0f)+ translate,
 		// Back Face
-		Celer::Vector3<GLfloat>(-1.0f, 1.0f, -1.0f),
-		Celer::Vector3<GLfloat>(1.0f, 1.0f, -1.0f),
-		Celer::Vector3<GLfloat>(1.0f, -1.0f, -1.0f),
-		Celer::Vector3<GLfloat>(-1.0f, -1.0f, -1.0f),
+		Celer::Vector3<GLfloat>(-1.0f, 1.0f, -1.0f)+ translate,
+		Celer::Vector3<GLfloat>(1.0f, 1.0f, -1.0f)+ translate,
+		Celer::Vector3<GLfloat>(1.0f, -1.0f, -1.0f)+ translate,
+		Celer::Vector3<GLfloat>(-1.0f, -1.0f, -1.0f)+ translate,
 		// Right Face
-		Celer::Vector3<GLfloat>(1.0f, -1.0f, -1.0f),
-		Celer::Vector3<GLfloat>(1.0f, 1.0f, -1.0f),
-		Celer::Vector3<GLfloat>(1.0f, 1.0f, 1.0f),
-		Celer::Vector3<GLfloat>(1.0f, -1.0f, 1.0f),
+		Celer::Vector3<GLfloat>(1.0f, -1.0f, -1.0f)+ translate,
+		Celer::Vector3<GLfloat>(1.0f, 1.0f, -1.0f)+ translate,
+		Celer::Vector3<GLfloat>(1.0f, 1.0f, 1.0f)+ translate,
+		Celer::Vector3<GLfloat>(1.0f, -1.0f, 1.0f)+ translate,
 		// Left Face
-		Celer::Vector3<GLfloat>(-1.0f, 1.0f, -1.0f),
-		Celer::Vector3<GLfloat>(-1.0f, -1.0f, -1.0f),
-		Celer::Vector3<GLfloat>(-1.0f, -1.0f, 1.0f),
-		Celer::Vector3<GLfloat>(-1.0f, 1.0f, 1.0f)
+		Celer::Vector3<GLfloat>(-1.0f, 1.0f, -1.0f)+ translate,
+		Celer::Vector3<GLfloat>(-1.0f, -1.0f, -1.0f)+ translate,
+		Celer::Vector3<GLfloat>(-1.0f, -1.0f, 1.0f)+ translate,
+		Celer::Vector3<GLfloat>(-1.0f, 1.0f, 1.0f)+ translate
 	};
 
 
@@ -108,30 +109,30 @@ void Cube::create24Vertices ()
 		Celer::Vector3<GLfloat>(0.0f, 1.0f, 0.0f),
 		Celer::Vector3<GLfloat>(0.0f, 1.0f, 0.0f),
 		// Bottom Face
-		Celer::Vector3<GLfloat>(0.0f, 1.0f, 0.0f),
-		Celer::Vector3<GLfloat>(0.0f, 1.0f, 0.0f),
-		Celer::Vector3<GLfloat>(0.0f, 1.0f, 0.0f),
-		Celer::Vector3<GLfloat>(0.0f, 1.0f, 0.0f),
+		Celer::Vector3<GLfloat>(0.0f, -1.0f, 0.0f),
+		Celer::Vector3<GLfloat>(0.0f, -1.0f, 0.0f),
+		Celer::Vector3<GLfloat>(0.0f, -1.0f, 0.0f),
+		Celer::Vector3<GLfloat>(0.0f, -1.0f, 0.0f),
 		// Front Face
 		Celer::Vector3<GLfloat>(0.0f, 0.0f, 1.0f),
 		Celer::Vector3<GLfloat>(0.0f, 0.0f, 1.0f),
 		Celer::Vector3<GLfloat>(0.0f, 0.0f, 1.0f),
 		Celer::Vector3<GLfloat>(0.0f, 0.0f, 1.0f),
 		// Back Face
-		Celer::Vector3<GLfloat>(0.0f, 0.0f, 1.0f),
-		Celer::Vector3<GLfloat>(0.0f, 0.0f, 1.0f),
-		Celer::Vector3<GLfloat>(0.0f, 0.0f, 1.0f),
-		Celer::Vector3<GLfloat>(0.0f, 0.0f, 1.0f),
+		Celer::Vector3<GLfloat>(0.0f, 0.0f, -1.0f),
+		Celer::Vector3<GLfloat>(0.0f, 0.0f, -1.0f),
+		Celer::Vector3<GLfloat>(0.0f, 0.0f, -1.0f),
+		Celer::Vector3<GLfloat>(0.0f, 0.0f, -1.0f),
 		// Right Face
 		Celer::Vector3<GLfloat>(1.0f, 0.0f, 0.0f),
 		Celer::Vector3<GLfloat>(1.0f, 0.0f, 0.0f),
 		Celer::Vector3<GLfloat>(1.0f, 0.0f, 0.0f),
 		Celer::Vector3<GLfloat>(1.0f, 0.0f, 0.0f),
 		// Left Face
-		Celer::Vector3<GLfloat>(1.0f, 0.0f, 0.0f),
-		Celer::Vector3<GLfloat>(1.0f, 0.0f, 0.0f),
-		Celer::Vector3<GLfloat>(1.0f, 0.0f, 0.0f),
-		Celer::Vector3<GLfloat>(1.0f, 0.0f, 0.0f)
+		Celer::Vector3<GLfloat>(-1.0f, 0.0f, 0.0f),
+		Celer::Vector3<GLfloat>(-1.0f, 0.0f, 0.0f),
+		Celer::Vector3<GLfloat>(-1.0f, 0.0f, 0.0f),
+		Celer::Vector3<GLfloat>(-1.0f, 0.0f, 0.0f)
 
 	};
 	GLuint vertex_indices[] =
@@ -186,7 +187,8 @@ void Cube::create24Vertices ()
 
 
 }
-void Cube::createQuadStrips ()
+
+void Cube::createQuadStrips ( const Celer::Vector3<float> translate )
 {
 
 
@@ -211,37 +213,36 @@ void Cube::createQuadStrips ()
 
 	Celer::Vector3<GLfloat> vertex_data[] = {
 		//  Top Face
-		Celer::Vector3<GLfloat>( 3.0f, 1.0f,-1.0f),
-		Celer::Vector3<GLfloat>(-3.0f, 1.0f,-1.0f),
-		Celer::Vector3<GLfloat>(-3.0f, 1.0f, 1.0f),
-		Celer::Vector3<GLfloat>( 3.0f, 1.0f, 1.0f),
+		Celer::Vector3<GLfloat>( 1.0f, 1.0f, 1.0f) + translate,
+		Celer::Vector3<GLfloat>( 1.0f, 1.0f,-1.0f) + translate,
+		Celer::Vector3<GLfloat>(-1.0f, 1.0f,-1.0f) + translate,
+		Celer::Vector3<GLfloat>(-1.0f, 1.0f, 1.0f) + translate,
 		// Bottom Face
-		Celer::Vector3<GLfloat>( 3.0f, -1.0f, 1.0f),
-		Celer::Vector3<GLfloat>(-3.0f, -1.0f, 1.0f),
-		Celer::Vector3<GLfloat>(-3.0f, -1.0f,-1.0f),
-		Celer::Vector3<GLfloat>( 3.0f, -1.0f,-1.0f),
+		Celer::Vector3<GLfloat>( 1.0f, -1.0f, 1.0f) + translate,
+		Celer::Vector3<GLfloat>(-1.0f, -1.0f, 1.0f) + translate,
+		Celer::Vector3<GLfloat>(-1.0f, -1.0f,-1.0f) + translate,
+		Celer::Vector3<GLfloat>( 1.0f, -1.0f,-1.0f) + translate,
 		// Front Face
-		Celer::Vector3<GLfloat>(-3.0f, 1.0f, 1.0f),
-		Celer::Vector3<GLfloat>(-3.0f,-1.0f, 1.0f),
-		Celer::Vector3<GLfloat>( 3.0f,-1.0f, 1.0f),
-		Celer::Vector3<GLfloat>( 3.0f, 1.0f, 1.0f),
+		Celer::Vector3<GLfloat>( 1.0f, 1.0f, 1.0f) + translate,
+		Celer::Vector3<GLfloat>(-1.0f, 1.0f, 1.0f) + translate,
+		Celer::Vector3<GLfloat>(-1.0f,-1.0f, 1.0f) + translate,
+		Celer::Vector3<GLfloat>( 1.0f,-1.0f, 1.0f) + translate,
 		// Back Face
-		Celer::Vector3<GLfloat>(-3.0f, 1.0f,-1.0f),
-		Celer::Vector3<GLfloat>( 3.0f, 1.0f,-1.0f),
-		Celer::Vector3<GLfloat>( 3.0f,-1.0f,-1.0f),
-		Celer::Vector3<GLfloat>(-3.0f,-1.0f,-1.0f),
+		Celer::Vector3<GLfloat>( 1.0f, 1.0f,-1.0f) + translate,
+		Celer::Vector3<GLfloat>( 1.0f,-1.0f,-1.0f) + translate,
+		Celer::Vector3<GLfloat>(-1.0f,-1.0f,-1.0f) + translate,
+		Celer::Vector3<GLfloat>(-1.0f, 1.0f,-1.0f) + translate,
 		// Right Face
-		Celer::Vector3<GLfloat>(3.0f, -1.0f,-1.0f),
-		Celer::Vector3<GLfloat>(3.0f,  1.0f,-1.0f),
-		Celer::Vector3<GLfloat>(3.0f,  1.0f, 1.0f),
-		Celer::Vector3<GLfloat>(3.0f, -1.0f, 1.0f),
+		Celer::Vector3<GLfloat>(1.0f, 1.0f, 1.0f) + translate,
+		Celer::Vector3<GLfloat>(1.0f,-1.0f, 1.0f) + translate,
+		Celer::Vector3<GLfloat>(1.0f,-1.0f,-1.0f) + translate,
+		Celer::Vector3<GLfloat>(1.0f, 1.0f,-1.0f) + translate,
 		// Left Face
-		Celer::Vector3<GLfloat>(-3.0f, 1.0f,-1.0f),
-		Celer::Vector3<GLfloat>(-3.0f,-3.0f,-1.0f),
-		Celer::Vector3<GLfloat>(-3.0f,-1.0f, 1.0f),
-		Celer::Vector3<GLfloat>(-3.0f, 1.0f, 1.0f)
+		Celer::Vector3<GLfloat>(-1.0f, 1.0f,-1.0f) + translate,
+		Celer::Vector3<GLfloat>(-1.0f,-0.0f,-1.0f) + translate,
+		Celer::Vector3<GLfloat>(-1.0f,-1.0f, 1.0f) + translate,
+		Celer::Vector3<GLfloat>(-1.0f, 1.0f, 1.0f) + translate
 	};
-
 
 	Celer::Vector3<GLfloat> normal_data[] = {
 		// Top Face
@@ -250,30 +251,30 @@ void Cube::createQuadStrips ()
 		Celer::Vector3<GLfloat>(0.0f, 1.0f, 0.0f),
 		Celer::Vector3<GLfloat>(0.0f, 1.0f, 0.0f),
 		// Bottom Face
-		Celer::Vector3<GLfloat>(0.0f, 1.0f, 0.0f),
-		Celer::Vector3<GLfloat>(0.0f, 1.0f, 0.0f),
-		Celer::Vector3<GLfloat>(0.0f, 1.0f, 0.0f),
-		Celer::Vector3<GLfloat>(0.0f, 1.0f, 0.0f),
+		Celer::Vector3<GLfloat>(0.0f, -1.0f, 0.0f),
+		Celer::Vector3<GLfloat>(0.0f, -1.0f, 0.0f),
+		Celer::Vector3<GLfloat>(0.0f, -1.0f, 0.0f),
+		Celer::Vector3<GLfloat>(0.0f, -1.0f, 0.0f),
 		// Front Face
 		Celer::Vector3<GLfloat>(0.0f, 0.0f, 1.0f),
 		Celer::Vector3<GLfloat>(0.0f, 0.0f, 1.0f),
 		Celer::Vector3<GLfloat>(0.0f, 0.0f, 1.0f),
 		Celer::Vector3<GLfloat>(0.0f, 0.0f, 1.0f),
 		// Back Face
-		Celer::Vector3<GLfloat>(0.0f, 0.0f, 1.0f),
-		Celer::Vector3<GLfloat>(0.0f, 0.0f, 1.0f),
-		Celer::Vector3<GLfloat>(0.0f, 0.0f, 1.0f),
-		Celer::Vector3<GLfloat>(0.0f, 0.0f, 1.0f),
+		Celer::Vector3<GLfloat>(0.0f, 0.0f, -1.0f),
+		Celer::Vector3<GLfloat>(0.0f, 0.0f, -1.0f),
+		Celer::Vector3<GLfloat>(0.0f, 0.0f, -1.0f),
+		Celer::Vector3<GLfloat>(0.0f, 0.0f, -1.0f),
 		// Right Face
 		Celer::Vector3<GLfloat>(1.0f, 0.0f, 0.0f),
 		Celer::Vector3<GLfloat>(1.0f, 0.0f, 0.0f),
 		Celer::Vector3<GLfloat>(1.0f, 0.0f, 0.0f),
 		Celer::Vector3<GLfloat>(1.0f, 0.0f, 0.0f),
 		// Left Face
-		Celer::Vector3<GLfloat>(1.0f, 0.0f, 0.0f),
-		Celer::Vector3<GLfloat>(1.0f, 0.0f, 0.0f),
-		Celer::Vector3<GLfloat>(1.0f, 0.0f, 0.0f),
-		Celer::Vector3<GLfloat>(1.0f, 0.0f, 0.0f)
+		Celer::Vector3<GLfloat>(-1.0f, 0.0f, 0.0f),
+		Celer::Vector3<GLfloat>(-1.0f, 0.0f, 0.0f),
+		Celer::Vector3<GLfloat>(-1.0f, 0.0f, 0.0f),
+		Celer::Vector3<GLfloat>(-1.0f, 0.0f, 0.0f)
 
 	};
 
@@ -319,15 +320,15 @@ void Cube::createQuadStrips ()
 		// Top Face
 		vertex_data[0],vertex_data[1],vertex_data[3],vertex_data[2],/* 0 - 5*/
 		// Bottom Face
-		vertex_data[4],vertex_data[7],vertex_data[5],vertex_data[6],/* 6 - 11 */
+		vertex_data[4],vertex_data[5],vertex_data[7],vertex_data[6],/* 6 - 11 */
 		// Front Face
-		vertex_data[0],vertex_data[7],vertex_data[3],vertex_data[4],/* 12 - 17*/
+		vertex_data[0],vertex_data[3],vertex_data[4],vertex_data[5],/* 12 - 17*/
 		// Back Face
-		vertex_data[1],vertex_data[2],vertex_data[6],vertex_data[5],/* 18 - 23*/
+		vertex_data[1],vertex_data[7],vertex_data[2],vertex_data[6],/* 18 - 23*/
 		// Right Face
-		vertex_data[2],vertex_data[3],vertex_data[5],vertex_data[4],/* 24 - 29*/
+		vertex_data[0],vertex_data[4],vertex_data[1],vertex_data[7],/* 24 - 29*/
 		// Left Face
-		vertex_data[0],vertex_data[1],vertex_data[7],vertex_data[6] /* 30 - 35*/
+		vertex_data[2],vertex_data[6],vertex_data[3],vertex_data[5] /* 30 - 35*/
 	};
 
 	Celer::Vector3<GLfloat> normal_data_strip[] =
@@ -335,15 +336,15 @@ void Cube::createQuadStrips ()
 		// Top Face
 		normal_data[0],normal_data[1],normal_data[3],normal_data[2],/* 0 - 5*/
 		// Bottom Face
-		normal_data[4],normal_data[7],normal_data[5],normal_data[6],/* 6 - 11 */
+		normal_data[4],normal_data[5],normal_data[7],normal_data[6],/* 6 - 11 */
 		// Front Face
-		normal_data[0],normal_data[7],normal_data[3],normal_data[4],/* 12 - 17*/
+		normal_data[0],normal_data[3],normal_data[4],normal_data[5],/* 12 - 17*/
 		// Back Face
-		normal_data[1],normal_data[2],normal_data[6],normal_data[5],/* 18 - 23*/
+		normal_data[1],normal_data[7],normal_data[2],normal_data[6],/* 18 - 23*/
 		// Right Face
-		normal_data[2],normal_data[3],normal_data[5],normal_data[4],/* 24 - 29*/
+		normal_data[0],normal_data[4],normal_data[1],normal_data[7],/* 24 - 29*/
 		// Left Face
-		normal_data[0],normal_data[1],normal_data[7],normal_data[6] /* 30 - 35*/
+		normal_data[2],normal_data[6],normal_data[3],normal_data[5] /* 30 - 35*/
 	};
 
 	std::copy( vertex_data_strip	 , vertex_data_strip + 24	, std::back_inserter ( vertices ) );
@@ -382,7 +383,6 @@ void Cube::createQuadStrips ()
 		std::cout << "max " 		<< box.max ( ) 		<< std::endl;
 		std::cout << "diagonal " 	<< box.diagonal ( ) 	<< std::endl;
 }
-
 
 void Cube::createBoundingBox()
 {
@@ -506,12 +506,48 @@ void Cube::create8VerticesIndices ()
 
 }
 
-
-void Cube::create8Bufffers()
+void Cube::createTriangleStripAdjacencyBufffers()
 {
 
+	// Care about the type: GL_DOUBLE or GL_FLOAT
+	Celer::Vector4<GLfloat> vertex_triangle_ajacency[6] =
+	{
+	 // X Y Z
+	      Celer::Vector4<GLfloat> ( 1.0, 1.0, 1.0,-1.0), // vertex 0
+	      Celer::Vector4<GLfloat> ( 1.0, 1.0,-1.0,-1.0), // vertex 1
+	      Celer::Vector4<GLfloat> (-1.0, 1.0,-1.0,-1.0), // vertex 2
+	      Celer::Vector4<GLfloat> (-1.0, 1.0, 1.0, 1.0), // vertex 3
+
+	      Celer::Vector4<GLfloat> ( 1.0,-1.0, 1.0,-1.0), // vertex 4
+	      Celer::Vector4<GLfloat> (-1.0,-1.0, 1.0,-1.0) // vertex 5
+
+	}; // 6 vertices with 4 components ( Real ) each.
+
+
+
+	/// Requesting Vertex Buffers to the GPU
+	glGenBuffers ( 1 , &vertexBuffer_TrianglesStripAdjacency_ );
+		glBindBuffer ( GL_ARRAY_BUFFER , vertexBuffer_TrianglesStripAdjacency_ );
+		glBufferData ( GL_ARRAY_BUFFER , 6 * sizeof(vertex_triangle_ajacency[0]) , vertex_triangle_ajacency , GL_STATIC_DRAW );
+		// Set up generic attributes pointers
+		glEnableVertexAttribArray(vertices_TrianglesStripAdjacency_slot_);
+		glVertexAttribPointer(vertices_TrianglesStripAdjacency_slot_, 4, GL_FLOAT, GL_FALSE, 0, 0);
+
 }
-void Cube::createBuffers( )
+
+void Cube::drawTriangleStripAdjacencyBuffers()
+{
+
+	// 1rst attribute buffer : vertices
+	glBindVertexArray(vertexArray_for_the_Cube_);
+//	// Draw the triangle !
+	glDrawArrays(GL_TRIANGLES_ADJACENCY , 0 , 6);
+
+	glBindVertexArray(0);
+
+}
+
+void Cube::createBuffers( const Celer::Vector3<float> translate )
 {
 
 	// Is there an OpenGL Context ?
@@ -520,9 +556,10 @@ void Cube::createBuffers( )
 	glGenVertexArrays ( 1 , &vertexArray_for_the_Cube_);
 	glBindVertexArray(vertexArray_for_the_Cube_);
 
-	create24Vertices();
-	createQuadStrips();
+	create24Vertices( translate );
+	createQuadStrips( translate );
 	create8VerticesIndices();
+	createTriangleStripAdjacencyBufffers();
 	createBoundingBox();
 
 	glBindVertexArray(0);
@@ -559,7 +596,6 @@ void Cube::drawQuadStrips()
 	glBindVertexArray(0);
 }
 
-
 void Cube::draw8Vertices()
 {
 
@@ -581,8 +617,6 @@ void Cube::drawBoundingBox()
 
 	glBindVertexArray(0);
 }
-
-
 
 Cube::~Cube ( )
 {

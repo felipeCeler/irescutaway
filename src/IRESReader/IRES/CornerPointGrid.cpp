@@ -608,8 +608,7 @@ namespace IRES
 
 						for ( size_t  it = 0 ; it < dynamic_properties[property].values_.size() ; ++it)
 						{
-							new_block.dynamic_properties[property].values_.push_back( std::make_pair<int,float>( dynamic_properties[property].values_[it].first, 1.0f ) ) ;
-						}
+							new_block.dynamic_properties[property].values_.push_back( std::pair<int,float>( dynamic_properties[property].values_[it].first, dynamic_properties[property].values_[it].second[property] ) ) ;					}
 
 					}
 

@@ -22,7 +22,7 @@ class Cube
 	public:
 		Cube ( );
 		virtual ~Cube ( );
-		void createBuffers ( );
+		void createBuffers ( const Celer::Vector3<float> translate);
 		bool isCreated();
 		void draw ( );
 
@@ -36,14 +36,14 @@ class Cube
 
 		Celer::BoundingBox3<GLfloat> 		box;
 
-		void create24Vertices ();
+		void create24Vertices ( const Celer::Vector3<float> translate );
 		void draw24Vertices();
-		void createQuadStrips ();
+		void createQuadStrips ( const Celer::Vector3<float> translate );
 		void drawQuadStrips();
 		void create8VerticesIndices ();
 		void draw8Vertices();
-		void create8Bufffers();
-		void draw8Buffers();
+		void createTriangleStripAdjacencyBufffers();
+		void drawTriangleStripAdjacencyBuffers();
 
 		void createBoundingBox();
 		void drawBoundingBox();
@@ -79,15 +79,8 @@ class Cube
 			GLuint vertexBuffer_boundingBox_vertices_;
 			GLuint boundingBox_slot_;
 
-			GLuint vertexBuffer_8Buffers_;
-			GLuint vertices_0_8buffer_slot_;
-			GLuint vertices_1_8buffer_slot_;
-			GLuint vertices_2_8buffer_slot_;
-			GLuint vertices_3_8buffer_slot_;
-			GLuint vertices_4_8buffer_slot_;
-			GLuint vertices_5_8buffer_slot_;
-			GLuint vertices_6_8buffer_slot_;
-			GLuint vertices_7_8buffer_slot_;
+			GLuint vertexBuffer_TrianglesStripAdjacency_;
+			GLuint vertices_TrianglesStripAdjacency_slot_;
 
 
 

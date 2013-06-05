@@ -171,6 +171,14 @@ private:
 	std::vector<Celer::Vector4<GLint> >     reservoir_list_of_IJKs;
 	std::vector<Celer::Vector4<GLfloat> >   reservoir_list_of_renderFlag;
 
+	// Cube in Geometry Shader
+	GLuint vertexArray_Cube;
+	GLuint reservoir_vertices_trianngle_adjacency_buffer;
+	GLuint reservoir_vertices_triangles_adjacency_location;
+	std::vector<Celer::Vector4<GLfloat> > 	reservoir_list_of_triangle_adjacency;
+
+	Celer::OpenGL::ShaderManager cube_in_GeometryShader;
+
 
 	Celer::BoundingBox3<double> 		   box;
 	std::list  <Celer::BoundingBox3<GLfloat> > boxes;
