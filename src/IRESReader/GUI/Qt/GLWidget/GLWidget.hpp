@@ -173,7 +173,7 @@ private:
 
 	// Cube in Geometry Shader
 	GLuint vertexArray_Cube;
-	GLuint reservoir_vertices_trianngle_adjacency_buffer;
+	GLuint reservoir_vertices_triangles_adjacency_buffer;
 	GLuint reservoir_vertices_triangles_adjacency_location;
 	std::vector<Celer::Vector4<GLfloat> > 	reservoir_list_of_triangle_adjacency;
 

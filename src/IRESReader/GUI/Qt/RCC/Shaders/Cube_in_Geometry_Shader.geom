@@ -22,14 +22,14 @@ void main(void)
 
 	v[0] = vec4 ( gl_in[0].gl_Position.xyz , 1.0 );
 	v[1] = vec4 ( gl_in[1].gl_Position.xyz , 1.0 );
-	v[2] = vec4 ( gl_in[2].gl_Position.xyz , 1.0 );
 	v[3] = vec4 ( gl_in[3].gl_Position.xyz , 1.0 );
+	v[2] = vec4 ( gl_in[2].gl_Position.xyz , 1.0 );
 
 	v[4] = vec4 ( gl_in[4].gl_Position.xyz , 1.0 );
-	v[5] = vec4 ( gl_in[5].gl_Position.xyz , 1.0 );
+	v[7] = vec4 ( gl_in[5].gl_Position.xyz , 1.0 );
 
-	v[6] = vec4 ( gl_in[0].gl_Position.w , gl_in[1].gl_Position.w , gl_in[2].gl_Position.w , 1.0 );
-	v[7] = vec4 ( gl_in[3].gl_Position.w , gl_in[4].gl_Position.w , gl_in[5].gl_Position.w , 1.0 );
+	v[5] = vec4 ( gl_in[0].gl_Position.w , gl_in[1].gl_Position.w , gl_in[2].gl_Position.w , 1.0 );
+	v[6] = vec4 ( gl_in[3].gl_Position.w , gl_in[4].gl_Position.w , gl_in[5].gl_Position.w , 1.0 );
 
 
 	mat3 normalMatrix = inverse(transpose(mat3(ViewMatrix)));
@@ -62,30 +62,30 @@ void main(void)
 	EndPrimitive();
 
 	// Bottom
-//	VertexOut.normal = normalize(cross( (v[5]-v[4]).xyz , (v[7]-v[4]).xyz));
-//
-//	gl_Position =  ProjectionMatrix * ViewMatrix  * v[4];
-//	VertexOut.vertice = ViewMatrix * v[4];
-//	VertexOut.normal = normalMatrix * VertexOut.normal;
-//	VertexOut.color  = vec4 (VertexOut.normal,1.0);
-//	EmitVertex();
-//	gl_Position =  ProjectionMatrix * ViewMatrix  * v[5];
-//	VertexOut.vertice = ViewMatrix * v[5];
-//	VertexOut.normal = normalMatrix * VertexOut.normal;
-//	VertexOut.color  = vec4 (VertexOut.normal,1.0);
-//	EmitVertex();
-//	gl_Position =  ProjectionMatrix * ViewMatrix  * v[7];
-//	VertexOut.vertice = ViewMatrix * v[7];
-//	VertexOut.normal = normalMatrix * VertexOut.normal;
-//	VertexOut.color  = vec4 (VertexOut.normal,1.0);
-//	EmitVertex();
-//	gl_Position =  ProjectionMatrix * ViewMatrix  * v[6];
-//	VertexOut.vertice = ViewMatrix * v[6];
-//	VertexOut.normal = normalMatrix * VertexOut.normal;
-//	VertexOut.color  = vec4 (VertexOut.normal,1.0);
-//	EmitVertex();
-//
-//	EndPrimitive();
+	VertexOut.normal = normalize(cross( (v[5]-v[4]).xyz , (v[7]-v[4]).xyz));
+
+	gl_Position =  ProjectionMatrix * ViewMatrix  * v[4];
+	VertexOut.vertice = ViewMatrix * v[4];
+	VertexOut.normal = normalMatrix * VertexOut.normal;
+	VertexOut.color  = vec4 (VertexOut.normal,1.0);
+	EmitVertex();
+	gl_Position =  ProjectionMatrix * ViewMatrix  * v[5];
+	VertexOut.vertice = ViewMatrix * v[5];
+	VertexOut.normal = VertexOut.normal;
+	VertexOut.color  = vec4 (VertexOut.normal,1.0);
+	EmitVertex();
+	gl_Position =  ProjectionMatrix * ViewMatrix  * v[7];
+	VertexOut.vertice = ViewMatrix * v[7];
+	VertexOut.normal = VertexOut.normal;
+	VertexOut.color  = vec4 (VertexOut.normal,1.0);
+	EmitVertex();
+	gl_Position =  ProjectionMatrix * ViewMatrix  * v[6];
+	VertexOut.vertice = ViewMatrix * v[6];
+	VertexOut.normal = VertexOut.normal;
+	VertexOut.color  = vec4 (VertexOut.normal,1.0);
+	EmitVertex();
+
+	EndPrimitive();
 //
 //	// Back
 //	VertexOut.normal = normalize(cross( (v[7]-v[1]).xyz , (v[2]-v[1]).xyz));

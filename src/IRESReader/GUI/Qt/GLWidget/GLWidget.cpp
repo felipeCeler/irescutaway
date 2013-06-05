@@ -83,7 +83,7 @@ void GLWidget::initializeGL ( )
 
 	glGenVertexArrays ( 1 , &vertexArray_Cube);
 		// Cube in Geometry Shader
-		glGenBuffers ( 1, &reservoir_vertices_trianngle_adjacency_buffer);
+		glGenBuffers ( 1, &reservoir_vertices_triangles_adjacency_buffer);
 
 	glGenVertexArrays ( 1 , &vertexArrayScreen );
 
@@ -95,7 +95,7 @@ void GLWidget::initializeGL ( )
 	reservoir_IJK_location 		= 5;
 
 	// Cube in Geomtry Shader
-	reservoir_vertices_triangles_adjacency_location = 6;
+	reservoir_vertices_triangles_adjacency_location = 11;
 
 	draw_secondary = 1;
 	draw_primary = 0;
@@ -190,7 +190,7 @@ void GLWidget::CutVolumeGenerator( )
 			// Bottom Face
 			v4,v5,v7,v6,
 			// Front Face
-		      //v0,v3,v4,v5,
+		  //v0,v3,v4,v5,
 			// Back Face
 			v2,v1,v6,v7,
 			// Right Face
@@ -827,8 +827,6 @@ void GLWidget::openIRES ( const std::string& filename )
 		cameraStep_ = 0.1f;
 
 
-		std::cout << " List of reservoir_list_of_triangle_adjacency.size() " << reservoir_list_of_triangle_adjacency.size() << std::endl;
-
 		glBindVertexArray(vertexArray);
 
 
@@ -867,26 +865,26 @@ void GLWidget::openIRES ( const std::string& filename )
 		glBindBuffer ( GL_ELEMENT_ARRAY_BUFFER , reservoir_indices_buffer );
 		glBufferData ( GL_ELEMENT_ARRAY_BUFFER , reservoir_list_of_indices.size ( ) * sizeof ( reservoir_list_of_indices[0] ) , &reservoir_list_of_indices[0] , GL_STATIC_DRAW );
 
-
+		// FIXME DONT PUT VERTEX BUFFER ID at glEnableVertexAttribArray mad BOY ouvindo RAULZITO!!
 		glBindVertexArray(vertexArray_Cube);
 
 			// Vertex Buffer for Cube in Geometry Shader
-			glBindBuffer ( GL_ARRAY_BUFFER , reservoir_vertices_trianngle_adjacency_buffer );
+			glBindBuffer ( GL_ARRAY_BUFFER , reservoir_vertices_triangles_adjacency_buffer );
 			glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_triangle_adjacency.size ( ) * sizeof ( reservoir_list_of_triangle_adjacency[0] ) , &reservoir_list_of_triangle_adjacency[0] , GL_STREAM_DRAW );
 			// Vertex Array : Set up generic attributes pointers
-			glEnableVertexAttribArray ( reservoir_vertices_trianngle_adjacency_buffer );
+			glEnableVertexAttribArray ( reservoir_vertices_triangles_adjacency_location );
 			glVertexAttribPointer ( reservoir_vertices_triangles_adjacency_location , 4 , GL_FLOAT , GL_FALSE , 0 , 0 );
 
 		glBindVertexArray(vertexArrayScreen);
 
 
 		GLfloat openGLScreenCoordinates[] = {
-		       -1.0f,  1.0f,
+		   -1.0f,  1.0f,
 			1.0f,  1.0f,
 			1.0f, -1.0f,
 			1.0f, -1.0f,
-		       -1.0f, -1.0f,
-		       -1.0f,  1.0f
+		   -1.0f, -1.0f,
+		   -1.0f,  1.0f
 		  };
 
 		GLfloat textureCoordinates[] =
@@ -1535,28 +1533,28 @@ void GLWidget::NoCutawaySetUp ( )
 		if ( draw_secondary )
 		{
 
-//			cube_in_GeometryShader.active();
-//
-//			glUniformMatrix4fv ( cube_in_GeometryShader.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-//			glUniformMatrix4fv ( cube_in_GeometryShader.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
-//
-//			glBindVertexArray ( vertexArray_Cube );
-//			glDrawArrays ( GL_TRIANGLES_ADJACENCY , 0 , reservoir_list_of_triangle_adjacency.size());
-//			glBindVertexArray(0);
-//
-//			cube_in_GeometryShader.deactive();
-
-
-			camera_.setPosition ( cube_.box.center ( ) );
-			camera_.setTarget ( cube_.box.center ( ) );
-			camera_.setOffset ( 3.0 * cube_.box.diagonal ( ) );
-
-
 			cube_in_GeometryShader.active();
+
 			glUniformMatrix4fv ( cube_in_GeometryShader.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
 			glUniformMatrix4fv ( cube_in_GeometryShader.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
-			cube_.drawTriangleStripAdjacencyBuffers();
+
+			glBindVertexArray ( vertexArray_Cube );
+			glDrawArrays ( GL_TRIANGLES_ADJACENCY , 0 , reservoir_list_of_triangle_adjacency.size());
+			glBindVertexArray(0);
+
 			cube_in_GeometryShader.deactive();
+
+
+//			camera_.setPosition ( cube_.box.center ( ) );
+//			camera_.setTarget ( cube_.box.center ( ) );
+//			camera_.setOffset ( 3.0 * cube_.box.diagonal ( ) );
+//
+//
+//			cube_in_GeometryShader.active();
+//			glUniformMatrix4fv ( cube_in_GeometryShader.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+//			glUniformMatrix4fv ( cube_in_GeometryShader.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+//			cube_.drawTriangleStripAdjacencyBuffers();
+//			cube_in_GeometryShader.deactive();
 
 // 			secondary.active ( );
 //
