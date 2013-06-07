@@ -18,96 +18,112 @@ uniform mat4 ModelMatrix;
 uniform mat4 ViewMatrix;
 uniform mat4 ProjectionMatrix;
 
-void main(void)
+
+vec4 cutVolume[8];
+
+bool intersect_point_volume ( in vec4 p )
 {
 
+	if ( (p.z > cutVolume[0].z) || (p.z < cutVolume[1].z) )
+		return false;
 
-//	// Top  and Bottom Face
-//	v[0] = vec4( max_point.x , max_point.y , max_point.z, 1.0 );
-//	v[1] = vec4( max_point.x , max_point.y , min_point.z, 1.0 );
-//	v[2] = vec4( min_point.x , max_point.y , min_point.z, 1.0 );
-//	v[3] = vec4( min_point.x , max_point.y , max_point.z, 1.0 );
-//
-//	v[4] = vec4( max_point.x , min_point.y , max_point.z, 1.0 );
-//	v[5] = vec4( min_point.x , min_point.y , max_point.z, 1.0 );
-//	v[6] = vec4( min_point.x , min_point.y , min_point.z, 1.0 );
-//	v[7] = vec4( max_point.x , min_point.y , min_point.z, 1.0 );
-//
-//	mat4 base = ViewMatrix;
-//
-//	v[0] = base * v[0];
-//	v[1] = base * v[1];
-//	v[2] = base * v[2];
-//	v[3] = base * v[3];
-//
-//	v[4] = base * v[4];
-//	v[5] = base * v[5];
-//	v[6] = base * v[6];
-//	v[7] = base * v[7];
-//
-//	mat3 normalMatrix = mat3(1.0);
-//
-//	vertex[0] = v[0];
-//	vertex[1] = v[1];
-//	vertex[2] = v[2];
-//	vertex[3] = v[3];
-//
-//	vertex[4] = v[4];
-//	vertex[5] = v[5];
-//	vertex[6] = v[6];
-//	vertex[7] = v[7];
-//
-//
-//	vec4 pmin = v[0];
-//	vec4 pmax = pmin;
-//
-//	for ( int i = 0; i < 8; i++ )
-//	{
-//		if ( pmin.x > v[i].x )
-//		{
-//			pmin.x = v[i].x;
-//
-//		}else if ( pmax.x < v[i].x )
-//		{
-//			pmax.x = v[i].x;
-//		}
-//
-//		if ( pmin.y > v[i].y )
-//		{
-//			pmin.y = v[i].y;
-//
-//		}else if ( pmax.y < v[i].y )
-//		{
-//			pmax.y = v[i].y;
-//		}
-//
-//		if ( pmin.z > v[i].z )
-//		{
-//			pmin.z = v[i].z;
-//
-//		}else if ( pmax.z < v[i].z )
-//		{
-//			pmax.z = v[i].z;
-//
-//		}
-//	}
-//
-//
-//	float scaledy = 20;
-//	float scaledx = 20;
-//	float max_z   = 10;
-//
-//	/// Back and Front Face
-//	/// Como ajustar o Z min/max , parametricamente.
-//	v[0] = vec4( pmax.x*scaledx , pmax.y*scaledy , max_z, 1.0 );
-//	v[1] = vec4( pmax.x , pmax.y , pmin.z, 1.0 );
-//	v[2] = vec4( pmin.x , pmax.y , pmin.z, 1.0 );
-//	v[3] = vec4( pmin.x*scaledx , pmax.y*scaledy , max_z, 1.0 );
-//
-//	v[4] = vec4( pmax.x*scaledx , pmin.y*scaledy , max_z, 1.0 );
-//	v[5] = vec4( pmin.x*scaledx , pmin.y*scaledy , max_z, 1.0 );
-//	v[6] = vec4( pmin.x , pmin.y , pmin.z, 1.0  );
-//	v[7] = vec4( pmax.x , pmin.y , pmin.z, 1.0 );
+	if ( (p.y > cutVolume[0].y) || (p.z > cutVolume[1].y) || (p.y < cutVolume[4].y) || (p.z < cutVolume[7].y) )
+		return false;
+
+	if ( (p.x > cutVolume[0].y) || (p.x < cutVolume[7].x) || (p.x < cutVolume[3].x) || (p.z < cutVolume[2].x) )
+		return false;
+
+	return ( true ) ;
+
+}
+
+void main(void)
+{
+	// Top  and Bottom Face
+	cutVolume[0] = vec4( max_point.x , max_point.y , max_point.z, 1.0 );
+	cutVolume[1] = vec4( max_point.x , max_point.y , min_point.z, 1.0 );
+	cutVolume[2] = vec4( min_point.x , max_point.y , min_point.z, 1.0 );
+	cutVolume[3] = vec4( min_point.x , max_point.y , max_point.z, 1.0 );
+
+	cutVolume[4] = vec4( max_point.x , min_point.y , max_point.z, 1.0 );
+	cutVolume[5] = vec4( min_point.x , min_point.y , max_point.z, 1.0 );
+	cutVolume[6] = vec4( min_point.x , min_point.y , min_point.z, 1.0 );
+	cutVolume[7] = vec4( max_point.x , min_point.y , min_point.z, 1.0 );
+
+	mat4 base = ViewMatrix;
+
+	cutVolume[0] = base * cutVolume[0];
+	cutVolume[1] = base * cutVolume[1];
+	cutVolume[2] = base * cutVolume[2];
+	cutVolume[3] = base * cutVolume[3];
+
+	cutVolume[4] = base * cutVolume[4];
+	cutVolume[5] = base * cutVolume[5];
+	cutVolume[6] = base * cutVolume[6];
+	cutVolume[7] = base * cutVolume[7];
+
+	vec4 pmin = cutVolume[0];
+	vec4 pmax = pmin;
+
+	for ( int i = 0; i < 8; i++ )
+	{
+		if ( pmin.x > cutVolume[i].x )
+		{
+			pmin.x = cutVolume[i].x;
+
+		}else if ( pmax.x < cutVolume[i].x )
+		{
+			pmax.x = cutVolume[i].x;
+		}
+
+		if ( pmin.y > cutVolume[i].y )
+		{
+			pmin.y = cutVolume[i].y;
+
+		}else if ( pmax.y < cutVolume[i].y )
+		{
+			pmax.y = cutVolume[i].y;
+		}
+
+		if ( pmin.z > cutVolume[i].z )
+		{
+			pmin.z = cutVolume[i].z;
+
+		}else if ( pmax.z < cutVolume[i].z )
+		{
+			pmax.z = cutVolume[i].z;
+
+		}
+	}
+
+	float scaledy = 20;
+	float scaledx = 20;
+	float max_z   = 10;
+
+	/// Back and Front Face
+	/// Como ajustar o Z min/max , parametricamente.
+	cutVolume[0] = vec4( pmax.x*scaledx , pmax.y*scaledy , max_z, 1.0 );
+	cutVolume[1] = vec4( pmax.x , pmax.y , pmin.z, 1.0 );
+	cutVolume[2] = vec4( pmin.x , pmax.y , pmin.z, 1.0 );
+	cutVolume[3] = vec4( pmin.x*scaledx , pmax.y*scaledy , max_z, 1.0 );
+
+	cutVolume[4] = vec4( pmax.x*scaledx , pmin.y*scaledy , max_z, 1.0 );
+	cutVolume[5] = vec4( pmin.x*scaledx , pmin.y*scaledy , max_z, 1.0 );
+	cutVolume[6] = vec4( pmin.x , pmin.y , pmin.z, 1.0  );
+	cutVolume[7] = vec4( pmax.x , pmin.y , pmin.z, 1.0 );
+
+
+	base = inverse(ViewMatrix);
+
+	cutVolume[0] = base * cutVolume[0];
+	cutVolume[1] = base * cutVolume[1];
+	cutVolume[2] = base * cutVolume[2];
+	cutVolume[3] = base * cutVolume[3];
+
+	cutVolume[4] = base * cutVolume[4];
+	cutVolume[5] = base * cutVolume[5];
+	cutVolume[6] = base * cutVolume[6];
+	cutVolume[7] = base * cutVolume[7];
 
 	// --- When Emit
 
@@ -127,58 +143,65 @@ void main(void)
 	mat3 normalMatrix = inverse(transpose(mat3(ViewMatrix)));
 
 	// Top
-	VertexOut.normal = normalize(cross( (v[3].xyz-v[0].xyz) , (v[1].xyz-v[0].xyz) ));
 
-	gl_Position =  ProjectionMatrix * ViewMatrix  * v[0];
-	VertexOut.vertice =  ViewMatrix * v[0];
-	VertexOut.normal = normalMatrix * VertexOut.normal;
-	VertexOut.color  = vec4 (VertexOut.normal,1.0);
-	EmitVertex();
-	gl_Position =  ProjectionMatrix * ViewMatrix  * v[3];
-	VertexOut.vertice =  ViewMatrix * v[3];
-	VertexOut.normal = VertexOut.normal;
-	VertexOut.color  = vec4 (VertexOut.normal,1.0);
-	EmitVertex();
-	gl_Position =  ProjectionMatrix * ViewMatrix  * v[1];
-	VertexOut.vertice =  ViewMatrix * v[1];
-	VertexOut.normal = VertexOut.normal;
-	VertexOut.color  = vec4 (VertexOut.normal,1.0);
-	EmitVertex();
-	gl_Position =  ProjectionMatrix * ViewMatrix  * v[2];
-	VertexOut.vertice =  ViewMatrix * v[2];
-	VertexOut.normal = VertexOut.normal;
-	VertexOut.color  = vec4 (VertexOut.normal,1.0);
-	EmitVertex();
+	if ( intersect_point_volume ( v[0] ) && intersect_point_volume ( v[1] ) && intersect_point_volume ( v[2] ) && intersect_point_volume ( v[0] ) )
+	{
+		VertexOut.normal = normalize ( cross ( ( v[3].xyz - v[0].xyz ) , ( v[1].xyz - v[0].xyz ) ) );
 
-	EndPrimitive();
+		gl_Position = ProjectionMatrix * ViewMatrix * v[0];
+		VertexOut.vertice = ViewMatrix * v[0];
+		VertexOut.normal = normalMatrix * VertexOut.normal;
+		VertexOut.color = vec4 ( VertexOut.normal , 1.0 );
+		EmitVertex ( );
+		gl_Position = ProjectionMatrix * ViewMatrix * v[3];
+		VertexOut.vertice = ViewMatrix * v[3];
+		VertexOut.normal = VertexOut.normal;
+		VertexOut.color = vec4 ( VertexOut.normal , 1.0 );
+		EmitVertex ( );
+		gl_Position = ProjectionMatrix * ViewMatrix * v[1];
+		VertexOut.vertice = ViewMatrix * v[1];
+		VertexOut.normal = VertexOut.normal;
+		VertexOut.color = vec4 ( VertexOut.normal , 1.0 );
+		EmitVertex ( );
+		gl_Position = ProjectionMatrix * ViewMatrix * v[2];
+		VertexOut.vertice = ViewMatrix * v[2];
+		VertexOut.normal = VertexOut.normal;
+		VertexOut.color = vec4 ( VertexOut.normal , 1.0 );
+		EmitVertex ( );
 
+		EndPrimitive ( );
+	}
 	// Bottom
-	VertexOut.normal = normalize(cross( (v[7]-v[4]).xyz , (v[5]-v[4]).xyz));
+	if ( intersect_point_volume ( v[4] ) && intersect_point_volume ( v[5] ) && intersect_point_volume ( v[6] ) && intersect_point_volume ( v[7] ) )
+	{
+		VertexOut.normal = normalize ( cross ( ( v[7] - v[4] ).xyz , ( v[5] - v[4] ).xyz ) );
 
-	gl_Position =  ProjectionMatrix * ViewMatrix  * v[4];
-	VertexOut.vertice = ViewMatrix * v[4];
-	VertexOut.normal = normalMatrix * VertexOut.normal;
-	VertexOut.color  = vec4 (VertexOut.normal,1.0);
-	EmitVertex();
-	gl_Position =  ProjectionMatrix * ViewMatrix  * v[5];
-	VertexOut.vertice = ViewMatrix * v[5];
-	VertexOut.normal = VertexOut.normal;
-	VertexOut.color  = vec4 (VertexOut.normal,1.0);
-	EmitVertex();
-	gl_Position =  ProjectionMatrix * ViewMatrix  * v[7];
-	VertexOut.vertice = ViewMatrix * v[7];
-	VertexOut.normal = VertexOut.normal;
-	VertexOut.color  = vec4 (VertexOut.normal,1.0);
-	EmitVertex();
-	gl_Position =  ProjectionMatrix * ViewMatrix  * v[6];
-	VertexOut.vertice = ViewMatrix * v[6];
-	VertexOut.normal = VertexOut.normal;
-	VertexOut.color  = vec4 (VertexOut.normal,1.0);
-	EmitVertex();
+		gl_Position = ProjectionMatrix * ViewMatrix * v[4];
+		VertexOut.vertice = ViewMatrix * v[4];
+		VertexOut.normal = normalMatrix * VertexOut.normal;
+		VertexOut.color = vec4 ( VertexOut.normal , 1.0 );
+		EmitVertex ( );
+		gl_Position = ProjectionMatrix * ViewMatrix * v[5];
+		VertexOut.vertice = ViewMatrix * v[5];
+		VertexOut.normal = VertexOut.normal;
+		VertexOut.color = vec4 ( VertexOut.normal , 1.0 );
+		EmitVertex ( );
+		gl_Position = ProjectionMatrix * ViewMatrix * v[7];
+		VertexOut.vertice = ViewMatrix * v[7];
+		VertexOut.normal = VertexOut.normal;
+		VertexOut.color = vec4 ( VertexOut.normal , 1.0 );
+		EmitVertex ( );
+		gl_Position = ProjectionMatrix * ViewMatrix * v[6];
+		VertexOut.vertice = ViewMatrix * v[6];
+		VertexOut.normal = VertexOut.normal;
+		VertexOut.color = vec4 ( VertexOut.normal , 1.0 );
+		EmitVertex ( );
 
-	EndPrimitive();
-
+		EndPrimitive ( );
+	}
 	// Front
+	if ( intersect_point_volume ( v[0] ) && intersect_point_volume ( v[3] ) && intersect_point_volume ( v[4] ) && intersect_point_volume ( v[7] ) )
+	{
 	VertexOut.normal = normalize(cross( (v[7]-v[0]).xyz , (v[3]-v[0]).xyz));
 
 	gl_Position =  ProjectionMatrix * ViewMatrix  * v[0];
@@ -203,8 +226,10 @@ void main(void)
 	EmitVertex();
 
 	EndPrimitive();
-
+	}
 //	// Back
+	if ( intersect_point_volume ( v[0] ) && intersect_point_volume ( v[2] ) && intersect_point_volume ( v[6] ) && intersect_point_volume ( v[5] ) )
+	{
 	VertexOut.normal = normalize(cross( (v[2]-v[1]).xyz , (v[6]-v[1]).xyz));
 
 	gl_Position =  ProjectionMatrix * ViewMatrix  * v[1];
@@ -229,8 +254,10 @@ void main(void)
 	EmitVertex();
 
 	EndPrimitive();
-
+	}
 //	// Right
+	if ( intersect_point_volume ( v[2] ) && intersect_point_volume ( v[3] ) && intersect_point_volume ( v[5] ) && intersect_point_volume ( v[4] ) )
+	{
 	VertexOut.normal = normalize(cross( (v[3]-v[2]).xyz , (v[5]-v[2]).xyz));
 
 	gl_Position =  ProjectionMatrix * ViewMatrix  * v[2];
@@ -255,8 +282,10 @@ void main(void)
 	EmitVertex();
 
 	EndPrimitive();
-
+	}
 	// Left
+	if ( intersect_point_volume ( v[0] ) && intersect_point_volume ( v[1] ) && intersect_point_volume ( v[7] ) && intersect_point_volume ( v[6] ) )
+	{
 	VertexOut.normal = normalize(cross( (v[1]-v[0]).xyz , (v[7]-v[0]).xyz));
 
 	gl_Position =  ProjectionMatrix * ViewMatrix  * v[0];
@@ -281,5 +310,5 @@ void main(void)
 	EmitVertex();
 
 	EndPrimitive();
-
+	}
 }

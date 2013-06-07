@@ -19,7 +19,6 @@ void main(void)
 	vec3 newNormal = VertexOut.normal.xyz;
 	vec3 newVert = VertexOut.vert.xyz;
 
-
 	newNormal = normalize ( newNormal );
 
 	vec3 toLight = normalize ( -lightDirection.xyz );
@@ -35,7 +34,6 @@ void main(void)
 	vec4 ls = color_t * 0.4 * pow ( max ( 0.0 , dot ( eye_dir , ref ) ) , 5.0 );
 
 	outputColor =    vec4 ( la.rgb + ld.xyz + ls.rgb , 1.0 ) ;
-
 
 	//outputColor = vec4(abs(VertexOut.normal),1.0) ;
 }
