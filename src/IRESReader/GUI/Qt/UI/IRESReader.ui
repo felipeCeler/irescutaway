@@ -108,6 +108,7 @@
      <string>File</string>
     </property>
     <addaction name="action_Open_IRES"/>
+    <addaction name="action_Open_IRES2"/>
     <addaction name="separator"/>
     <addaction name="action_Quit"/>
    </widget>
@@ -543,6 +544,11 @@
    </property>
    <property name="shortcut">
     <string>F5</string>
+   </property>
+  </action>
+  <action name="action_Open_IRES2">
+   <property name="text">
+    <string>Open Ires2 *.ires</string>
    </property>
   </action>
  </widget>

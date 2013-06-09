@@ -194,6 +194,19 @@ void MainWindow::on_action_Open_IRES_triggered()
 	}
 }
 
+void MainWindow::on_action_Open_IRES2_triggered( )
+{
+
+	// Asks for a file name to open.
+	QString filename = QFileDialog::getOpenFileName (
+			this,
+			tr("Choose a Reservoir *.ires file"),
+			".",
+			tr("ires reservoir model (*.ires)"));
+
+	glWidget->openIRESCharles(filename.toLocal8Bit().constData());
+}
+
 void MainWindow::on_pushButton_Reset_IJK_clicked( )
 {
 	ui->label_I_range->setText("[ 0 - "+QString::number(glWidget->reservoir_model_.header_.number_of_Blocks_in_I_Direction)+" ]");

@@ -4,6 +4,9 @@
 
 ///
 #include "Cube.hpp"
+
+/// Ires Library
+#include <ires/ires.h>
 /// Celer::Libraries
 	/// OpenGL
 #include <Celer/OpenGL/OpenGLContext.hpp>
@@ -53,6 +56,7 @@ class GLWidget: public QGLWidget
 		//	   widget with data form another one.
 
 		IRES::CornerPointGrid reservoir_model_;
+		ires::Ires	      reservoir_model_eclipse;
 		// From QGLWidget
 		explicit GLWidget ( const QGLFormat& format , QWidget* parent = 0 , const QGLWidget* shareWidget = 0 , Qt::WindowFlags f = 0 );
 		explicit GLWidget ( QWidget* parent = 0 , const QGLWidget* shareWidget = 0 , Qt::WindowFlags f = 0 );
@@ -74,8 +78,9 @@ class GLWidget: public QGLWidget
 		void animate ( );
 		void LoadShaders ( );
 		void CutVolumeGenerator ( );
-		void openIRES ( const std::string& filename );
+		void openIRES  ( const std::string& filename );
 		void openIRES2 ( const std::string& filename );
+		void openIRESCharles  ( const std::string& filename );
 		bool isIresWasOpenedSucessufully () const;
 		void changeProperty ( int property_index );
 		void changePropertyRange ( const double& min, const double& max, int property_index );

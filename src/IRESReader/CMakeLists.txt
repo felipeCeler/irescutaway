@@ -17,6 +17,8 @@ INCLUDE(${QT_USE_FILE})
 include_directories(
 		##- Celer Library
 		${CMAKE_SOURCE_DIR}/libs/Celer/src
+		##- Ires Library
+		${CMAKE_SOURCE_DIR}/libs/Ires
         ##- Qt     
         ${QT_INCLUDE_DIR}
         ${QT_QTCORE_INCLUDE_DIR}
@@ -73,7 +75,7 @@ ELSE(WIN32)
 	ADD_EXECUTABLE(${CMAKE_PROJECT_NAME} ${${PROJECT_NAME}_SOURCES} ${${PROJECT_NAME}_HEADERS} ${MOC_SOURCES} ${UI_HEADERS} ${RCC_HEADERS})	
 ENDIF(WIN32)
               
-TARGET_LINK_LIBRARIES(${CMAKE_PROJECT_NAME} ${QT_LIBRARIES} ${QT_QTMAIN_LIBRARY} ${OPENGL_LIBRARIES} CelerMath CelerScene CelerOpenGL )
+TARGET_LINK_LIBRARIES(${CMAKE_PROJECT_NAME} ${QT_LIBRARIES} ${QT_QTMAIN_LIBRARY} ${OPENGL_LIBRARIES} CelerMath CelerScene CelerOpenGL IresReader)
 
 # Do a better solution. This one is Ungly !!!
 SET (SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/GUI/Qt/RCC/Shaders")

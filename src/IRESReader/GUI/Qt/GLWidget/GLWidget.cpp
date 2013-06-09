@@ -4,13 +4,13 @@
 // Se quiser usar QPainter Ver exemplo no QT demo - Manda Qt em wave animation !!!
 
 GLWidget::GLWidget ( const QGLFormat& format , QWidget* parent , const QGLWidget* shareWidget , Qt::WindowFlags f ) :
-	QGLWidget ( format , parent , shareWidget , f )
+	QGLWidget ( format , parent , shareWidget , f ) , reservoir_model_eclipse(true)
 {
 
 }
 
 GLWidget::GLWidget (  QWidget* parent , const QGLWidget* shareWidget , Qt::WindowFlags f ) :
-	QGLWidget ( parent , shareWidget , f )
+	QGLWidget ( parent , shareWidget , f ) , reservoir_model_eclipse(true)
 {
 
 }
@@ -1101,6 +1101,20 @@ void GLWidget::openIRES2 ( const std::string& filename )
 	}
 }
 
+void GLWidget::openIRESCharles( const std::string& filename )
+{
+
+	ires::Ires file(true);
+
+	//reservoir_model_eclipse.readFile( filename );
+	bool result = file.readFile( filename );
+
+	if ( result)
+		std::cout <<  " ok " << std::endl;
+	else
+		std::cout <<  " WHAT " << std::endl;
+}
+
 void GLWidget::resizeGL ( int width , int height )
 {
 	glViewport ( 0 , 0 , width , height );
@@ -1193,8 +1207,8 @@ void GLWidget::paintGL ( )
 	}
 	else if ( isBoudingBoxApproach )
 	{
-		//camera_.setTarget( cutVolumes[cluster].center() );
-		camera_.setTarget( reservoir_model_.box.center( ) );
+		if ( cutVolumes.size() > 0)
+			camera_.setTarget( cutVolumes[cluster].center() );
 		BoundingVolumeCutawaySetup ( cluster );
 	}
 	else
@@ -1389,6 +1403,145 @@ void GLWidget::BoundingVolumeCutawaySetup( int cluster )
 
 }
 
+void GLWidget::NoCutawaySetUp ( )
+{
+	glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
+
+ 	if ( ires_has_been_open_sucessefully )
+	{
+
+		if ( draw_secondary )
+		{
+
+			if ( cutVolumes.size ( ) > 0 )
+			{
+
+				cube_in_GeometryShader.active ( );
+
+				glUniform4fv ( cube_in_GeometryShader.uniforms_["min_point"].location , 1 , Celer::Vector4<float> ( cutVolumes[cluster].min ( ) , 1.0f ) );
+				glUniform4fv ( cube_in_GeometryShader.uniforms_["max_point"].location , 1 , Celer::Vector4<float> ( cutVolumes[cluster].max ( ) , 1.0f ) );
+
+				glUniformMatrix4fv ( cube_in_GeometryShader.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+				glUniformMatrix4fv ( cube_in_GeometryShader.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+
+				glBindVertexArray ( vertexArray_Cube );
+				glDrawArrays ( GL_TRIANGLES_ADJACENCY , 0 , reservoir_list_of_triangle_adjacency.size ( ) );
+				glBindVertexArray ( 0 );
+
+				cube_in_GeometryShader.deactive ( );
+
+
+				BoundingBoxDebug.active ( );
+
+//				new_z =  camera_.position( ) - cutVolumes[cluster].center( );
+//
+//				new_z.normalize();
+//
+//				new_x = new_z ^ camera_.UpVector();
+//
+//				new_x.normalize();
+//
+//				new_y = new_z ^ new_x;
+//
+//				new_y.normalize();
+//
+//				lookatCamera = Celer::Matrix4x4<float>( new_x, new_y , new_z  );
+
+				// FIXME Throw an Exception when std::map doesnt find A VARIABLE !!!
+				glUniform4fv ( BoundingBoxDebug.uniforms_["min_point"].location , 1 , Celer::Vector4<float> ( cutVolumes[cluster].min ( ) , 1.0f ) );
+				glUniform4fv ( BoundingBoxDebug.uniforms_["max_point"].location , 1 , Celer::Vector4<float> ( cutVolumes[cluster].max ( ) , 1.0f ) );
+				glUniform3fv ( BoundingBoxDebug.uniforms_["lightDirection"].location , 1 , camera_.position ( ) );
+				//glUniformMatrix4fv ( BoundingBoxDebug.uniforms_["ModelMatrix"].location , 1 , GL_TRUE , lookatCamera );
+				glUniformMatrix4fv ( BoundingBoxDebug.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+				glUniformMatrix4fv ( BoundingBoxDebug.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+				//VAO
+				glBindVertexArray ( vertexArray );
+				glDrawArrays ( GL_POINTS , 0 , 1 );
+				glBindVertexArray ( 0 );
+
+				BoundingBoxDebug.deactive ( );
+
+			}
+
+
+// 			secondary.active ( );
+//
+// 			glUniform3fv ( secondary.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
+//
+// 			glUniform3i ( secondary.uniforms_["min_IJK"].location , min_I_, min_J_, min_K_ );
+// 			glUniform3i ( secondary.uniforms_["max_IJK"].location , max_I_, max_J_, max_K_ );
+//
+//			glUniform2f ( secondary.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
+//
+//			glUniformMatrix4fv ( secondary.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+//			glUniformMatrix4fv ( secondary.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+//
+//			glBindVertexArray(vertexArray);
+//			glDrawArrays ( GL_LINES_ADJACENCY , 0 , reservoir_list_of_vertices.size());
+//			glBindVertexArray(0);
+//
+//			secondary.deactive ( );
+
+
+
+//			debugNormal.active( );
+//
+//			glUniformMatrix4fv ( debugNormal.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+//			glUniformMatrix4fv ( debugNormal.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+//
+//			glBindVertexArray(vertexArray);
+//			glDrawArrays ( GL_LINES_ADJACENCY , 0 , reservoir_list_of_vertices.size());
+//			glBindVertexArray(0);
+//
+//			debugNormal.deactive( );
+
+
+		}
+		if ( draw_primary )
+		{
+
+ 			primary.active ( );
+
+ 			glUniform3fv ( primary.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
+
+			glUniform2f ( primary.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
+
+			glUniformMatrix4fv ( primary.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+			glUniformMatrix4fv ( primary.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+
+			glBindVertexArray(vertexArray);
+			glDrawArrays ( GL_LINES_ADJACENCY , 0 , reservoir_list_of_vertices.size());
+			glBindVertexArray(0);
+
+			primary.deactive ( );
+
+//			glEnable ( GL_BLEND );
+//			glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+
+			cutVolume.active ( );
+
+			glUniform3fv ( cutVolume.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
+
+			glUniform2f ( cutVolume.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
+
+			glUniformMatrix4fv ( cutVolume.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+			glUniformMatrix4fv ( cutVolume.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+
+			glBindVertexArray ( vertexArray_box );
+			glDrawArrays ( GL_LINES_ADJACENCY , 0 , box_vertices.size() );
+			glBindVertexArray ( 0 );
+
+			cutVolume.deactive ( );
+			//glDisable ( GL_BLEND );
+
+
+		}
+
+	}
+
+}
+
 void GLWidget::BurnsCutawaySetup ( )
 {
 
@@ -1536,112 +1689,6 @@ void GLWidget::BurnsCutawaySetup ( )
 
 }
 
-void GLWidget::NoCutawaySetUp ( )
-{
-	glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-
-
- 	if ( ires_has_been_open_sucessefully )
-	{
-
-		if ( draw_secondary )
-		{
-
-			if ( cutVolumes.size ( ) > 0 )
-			{
-
-				cube_in_GeometryShader.active ( );
-
-				glUniform4fv ( cube_in_GeometryShader.uniforms_["min_point"].location , 1 , Celer::Vector4<float> ( cutVolumes[cluster].min ( ) , 1.0f ) );
-				glUniform4fv ( cube_in_GeometryShader.uniforms_["max_point"].location , 1 , Celer::Vector4<float> ( cutVolumes[cluster].max ( ) , 1.0f ) );
-
-				glUniformMatrix4fv ( cube_in_GeometryShader.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-				glUniformMatrix4fv ( cube_in_GeometryShader.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
-
-				glBindVertexArray ( vertexArray_Cube );
-				glDrawArrays ( GL_TRIANGLES_ADJACENCY , 0 , reservoir_list_of_triangle_adjacency.size ( ) );
-				glBindVertexArray ( 0 );
-
-				cube_in_GeometryShader.deactive ( );
-			}
-
-
-// 			secondary.active ( );
-//
-// 			glUniform3fv ( secondary.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
-//
-// 			glUniform3i ( secondary.uniforms_["min_IJK"].location , min_I_, min_J_, min_K_ );
-// 			glUniform3i ( secondary.uniforms_["max_IJK"].location , max_I_, max_J_, max_K_ );
-//
-//			glUniform2f ( secondary.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
-//
-//			glUniformMatrix4fv ( secondary.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-//			glUniformMatrix4fv ( secondary.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
-//
-//			glBindVertexArray(vertexArray);
-//			glDrawArrays ( GL_LINES_ADJACENCY , 0 , reservoir_list_of_vertices.size());
-//			glBindVertexArray(0);
-//
-//			secondary.deactive ( );
-
-
-
-//			debugNormal.active( );
-//
-//			glUniformMatrix4fv ( debugNormal.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-//			glUniformMatrix4fv ( debugNormal.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
-//
-//			glBindVertexArray(vertexArray);
-//			glDrawArrays ( GL_LINES_ADJACENCY , 0 , reservoir_list_of_vertices.size());
-//			glBindVertexArray(0);
-//
-//			debugNormal.deactive( );
-
-
-		}
-		if ( draw_primary )
-		{
-
- 			primary.active ( );
-
- 			glUniform3fv ( primary.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
-
-			glUniform2f ( primary.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
-
-			glUniformMatrix4fv ( primary.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-			glUniformMatrix4fv ( primary.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
-
-			glBindVertexArray(vertexArray);
-			glDrawArrays ( GL_LINES_ADJACENCY , 0 , reservoir_list_of_vertices.size());
-			glBindVertexArray(0);
-
-			primary.deactive ( );
-
-//			glEnable ( GL_BLEND );
-//			glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
-
-			cutVolume.active ( );
-
-			glUniform3fv ( cutVolume.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
-
-			glUniform2f ( cutVolume.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
-
-			glUniformMatrix4fv ( cutVolume.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-			glUniformMatrix4fv ( cutVolume.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
-
-			glBindVertexArray ( vertexArray_box );
-			glDrawArrays ( GL_LINES_ADJACENCY , 0 , box_vertices.size() );
-			glBindVertexArray ( 0 );
-
-			cutVolume.deactive ( );
-			//glDisable ( GL_BLEND );
-
-
-		}
-		
-	}
-
-}
 
 void GLWidget::gameLooping ( )
 {
@@ -1658,70 +1705,134 @@ void GLWidget::LoadShaders ( )
 	qDebug ( ) << "ATIM !!";
 	QDir shadersDir = QDir ( qApp->applicationDirPath ( ) );
 
+	QString shaderDirectory ("/media/d/Workspace/IRESReader/src/IRESReader/GUI/Qt/RCC/Shaders/");
+
 	qDebug () << "Directory " << shadersDir.path ();
 	shadersDir.cdUp ();
 	qDebug () << "Directory " << shadersDir.path ();
 
-	textureViewer.create("textureViewer",(shadersDir.path ()+"/share/Shaders/fboTest.vert").toStdString(),
-			                             (shadersDir.path ()+"/share/Shaders/fboTest.frag").toStdString());
+	textureViewer.create("textureViewer",(shaderDirectory + "fboTest.vert").toStdString(),
+				             (shaderDirectory + "fboTest.frag").toStdString());
 
-	cutVolume.create("cutVolume",(shadersDir.path ()+"/share/Shaders/CutVolume.vert").toStdString(),
-			             (shadersDir.path ()+"/share/Shaders/CutVolume.geom").toStdString(),
-			             (shadersDir.path ()+"/share/Shaders/CutVolume.frag").toStdString());
+	cutVolume.create("cutVolume",(shaderDirectory + "CutVolume.vert").toStdString(),
+				     (shaderDirectory + "CutVolume.geom").toStdString(),
+				     (shaderDirectory + "CutVolume.frag").toStdString());
 
-	primary.create("primary",(shadersDir.path ()+"/share/Shaders/Primary.vert").toStdString(),
-			                 (shadersDir.path ()+"/share/Shaders/Primary.geom").toStdString(),
-			                 (shadersDir.path ()+"/share/Shaders/Primary.frag").toStdString());
+	primary.create("primary",(shaderDirectory + "Primary.vert").toStdString(),
+				 (shaderDirectory + "Primary.geom").toStdString(),
+				 (shaderDirectory + "Primary.frag").toStdString());
 
-	secondary.create("secondary",(shadersDir.path ()+"/share/Shaders/Secondary.vert").toStdString(),
-			                     (shadersDir.path ()+"/share/Shaders/Secondary.geom").toStdString(),
-			                     (shadersDir.path ()+"/share/Shaders/Secondary.frag").toStdString());
+	secondary.create("secondary",(shaderDirectory + "Secondary.vert").toStdString(),
+			             (shaderDirectory + "Secondary.geom").toStdString(),
+				     (shaderDirectory + "Secondary.frag").toStdString());
 	// Burns Approach
-	BurnsCutaway430.create("BurnsCutaway430",(shadersDir.path ()+"/share/Shaders/BurnsCutaway430.vert").toStdString(),
-			                         (shadersDir.path ()+"/share/Shaders/BurnsCutaway430.frag").toStdString());
+	BurnsCutaway430.create("BurnsCutaway430",(shaderDirectory + "BurnsCutaway430.vert").toStdString(),
+						 (shaderDirectory + "BurnsCutaway430.frag").toStdString());
 
-	BurnsCutaway430Wireframe.create("BurnsCutaway430Wireframe",(shadersDir.path ()+"/share/Shaders/BurnsCutaway430Wireframe.vert").toStdString(),
-		                                                   (shadersDir.path ()+"/share/Shaders/BurnsCutaway430Wireframe.geom").toStdString(),
-	                                                           (shadersDir.path ()+"/share/Shaders/BurnsCutaway430Wireframe.frag").toStdString());
+	BurnsCutaway430Wireframe.create("BurnsCutaway430Wireframe",(shaderDirectory + "BurnsCutaway430Wireframe.vert").toStdString(),
+								   (shaderDirectory + "BurnsCutaway430Wireframe.geom").toStdString(),
+								   (shaderDirectory + "BurnsCutaway430Wireframe.frag").toStdString());
 
-	BurnsJFAInitializing430.create("BurnsJFAInitializing430",(shadersDir.path ()+"/share/Shaders/BurnsJFAInitializing430.vert").toStdString(),
-			                                         (shadersDir.path ()+"/share/Shaders/BurnsJFAInitializing430.frag").toStdString());
+	BurnsJFAInitializing430.create("BurnsJFAInitializing430",(shaderDirectory + "BurnsJFAInitializing430.vert").toStdString(),
+								 (shaderDirectory + "BurnsJFAInitializing430.frag").toStdString());
 
-	BurnsJFAStep430.create("BurnsJFAStep430",(shadersDir.path ()+"/share/Shaders/BurnsJFAStep430.vert").toStdString(),
-			                         (shadersDir.path ()+"/share/Shaders/BurnsJFAStep430.frag").toStdString());
+	BurnsJFAStep430.create("BurnsJFAStep430",(shaderDirectory + "BurnsJFAStep430.vert").toStdString(),
+						 (shaderDirectory + "BurnsJFAStep430.frag").toStdString());
 	// BoudingBox Approach
-	BoundingBoxInitialization.create ("BoundingBoxApproach",(shadersDir.path ()+"/share/Shaders/BoundingBoxApproach.vert").toStdString(),
-							        (shadersDir.path ()+"/share/Shaders/BoundingBoxApproach.geom").toStdString(),
-							        (shadersDir.path ()+"/share/Shaders/BoundingBoxApproach.frag").toStdString());
+	BoundingBoxInitialization.create ("BoundingBoxApproach",(shaderDirectory + "BoundingBoxApproach.vert").toStdString(),
+								(shaderDirectory + "BoundingBoxApproach.geom").toStdString(),
+								(shaderDirectory + "BoundingBoxApproach.frag").toStdString());
 
-	BoundingBoxDebug.create ("BoundingBoxApproach Debug",(shadersDir.path ()+"/share/Shaders/BoundingBoxApproach.vert").toStdString(),
-							     (shadersDir.path ()+"/share/Shaders/BoundingBoxApproach.geom").toStdString(),
-							     (shadersDir.path ()+"/share/Shaders/BoundingBoxApproachDebug.frag").toStdString());
+	BoundingBoxDebug.create ("BoundingBoxApproach Debug",(shaderDirectory + "BoundingBoxApproach.vert").toStdString(),
+							     (shaderDirectory + "BoundingBoxApproach.geom").toStdString(),
+							     (shaderDirectory + "BoundingBoxApproachDebug.frag").toStdString());
 
-	BoundingBoxCutaway.create ("BoundingBoxCutaway",(shadersDir.path ()+"/share/Shaders/BoundingBoxCutaway.vert").toStdString(),
-							(shadersDir.path ()+"/share/Shaders/BoundingBoxCutaway.geom").toStdString(),
-							(shadersDir.path ()+"/share/Shaders/BoundingBoxCutaway.frag").toStdString());
-
-
-	debugNormal.create ("DebugNormal",  (shadersDir.path ()+"/share/Shaders/DebugNormal.vert").toStdString(),
-			   (shadersDir.path ()+"/share/Shaders/DebugNormal.geom").toStdString(),
-			   (shadersDir.path ()+"/share/Shaders/DebugNormal.frag").toStdString());
+	BoundingBoxCutaway.create ("BoundingBoxCutaway",(shaderDirectory + "BoundingBoxCutaway.vert").toStdString(),
+							(shaderDirectory + "BoundingBoxCutaway.geom").toStdString(),
+							(shaderDirectory + "BoundingBoxCutaway.frag").toStdString());
 
 
-	wireframe.create ("SinglePassWireframe",  (shadersDir.path ()+"/share/Shaders/SinglePassWireframe.vert").toStdString(),
-			 (shadersDir.path ()+"/share/Shaders/SinglePassWireframe.geom").toStdString(),
-			 (shadersDir.path ()+"/share/Shaders/SinglePassWireframe.frag").toStdString());
+	debugNormal.create ("DebugNormal",  (shaderDirectory + "DebugNormal.vert").toStdString(),
+			   (shaderDirectory + "DebugNormal.geom").toStdString(),
+			   (shaderDirectory + "DebugNormal.frag").toStdString());
 
 
-	orientedBoxApproach.create ( "OrientedBoxApproach", (shadersDir.path ()+"/share/Shaders/OrientedBoxApproach.vert").toStdString(),
-                                   (shadersDir.path ()+"/share/Shaders/OrientedBoxApproach.geom").toStdString(),
-			           (shadersDir.path ()+"/share/Shaders/OrientedBoxApproach.frag").toStdString());
+	wireframe.create ("SinglePassWireframe",  (shaderDirectory + "SinglePassWireframe.vert").toStdString(),
+			 (shaderDirectory + "SinglePassWireframe.geom").toStdString(),
+			 (shaderDirectory + "SinglePassWireframe.frag").toStdString());
+
+
+	orientedBoxApproach.create ( "OrientedBoxApproach", (shaderDirectory + "OrientedBoxApproach.vert").toStdString(),
+				   (shaderDirectory + "OrientedBoxApproach.geom").toStdString(),
+				   (shaderDirectory + "OrientedBoxApproach.frag").toStdString());
 
 
 	/// Cube in Geometry Shader
-	cube_in_GeometryShader.create ( "Cube_in_Geometry_Shader", (shadersDir.path ()+"/share/Shaders/Cube_in_Geometry_Shader.vert").toStdString(),
-							           (shadersDir.path ()+"/share/Shaders/Cube_in_Geometry_Shader.geom").toStdString(),
-							           (shadersDir.path ()+"/share/Shaders/Cube_in_Geometry_Shader.frag").toStdString());
+	cube_in_GeometryShader.create ( "Cube_in_Geometry_Shader", (shaderDirectory + "Cube_in_Geometry_Shader.vert").toStdString(),
+								   (shaderDirectory + "Cube_in_Geometry_Shader.geom").toStdString(),
+								   (shaderDirectory + "Cube_in_Geometry_Shader.frag").toStdString());
+
+
+//	textureViewer.create("textureViewer",(shadersDir.path ()+"/share/Shaders/fboTest.vert").toStdString(),
+//			                             (shadersDir.path ()+"/share/Shaders/fboTest.frag").toStdString());
+//
+//	cutVolume.create("cutVolume",(shadersDir.path ()+"/share/Shaders/CutVolume.vert").toStdString(),
+//			             (shadersDir.path ()+"/share/Shaders/CutVolume.geom").toStdString(),
+//			             (shadersDir.path ()+"/share/Shaders/CutVolume.frag").toStdString());
+//
+//	primary.create("primary",(shadersDir.path ()+"/share/Shaders/Primary.vert").toStdString(),
+//			                 (shadersDir.path ()+"/share/Shaders/Primary.geom").toStdString(),
+//			                 (shadersDir.path ()+"/share/Shaders/Primary.frag").toStdString());
+//
+//	secondary.create("secondary",(shadersDir.path ()+"/share/Shaders/Secondary.vert").toStdString(),
+//			                     (shadersDir.path ()+"/share/Shaders/Secondary.geom").toStdString(),
+//			                     (shadersDir.path ()+"/share/Shaders/Secondary.frag").toStdString());
+//	// Burns Approach
+//	BurnsCutaway430.create("BurnsCutaway430",(shadersDir.path ()+"/share/Shaders/BurnsCutaway430.vert").toStdString(),
+//			                         (shadersDir.path ()+"/share/Shaders/BurnsCutaway430.frag").toStdString());
+//
+//	BurnsCutaway430Wireframe.create("BurnsCutaway430Wireframe",(shadersDir.path ()+"/share/Shaders/BurnsCutaway430Wireframe.vert").toStdString(),
+//		                                                   (shadersDir.path ()+"/share/Shaders/BurnsCutaway430Wireframe.geom").toStdString(),
+//	                                                           (shadersDir.path ()+"/share/Shaders/BurnsCutaway430Wireframe.frag").toStdString());
+//
+//	BurnsJFAInitializing430.create("BurnsJFAInitializing430",(shadersDir.path ()+"/share/Shaders/BurnsJFAInitializing430.vert").toStdString(),
+//			                                         (shadersDir.path ()+"/share/Shaders/BurnsJFAInitializing430.frag").toStdString());
+//
+//	BurnsJFAStep430.create("BurnsJFAStep430",(shadersDir.path ()+"/share/Shaders/BurnsJFAStep430.vert").toStdString(),
+//			                         (shadersDir.path ()+"/share/Shaders/BurnsJFAStep430.frag").toStdString());
+//	// BoudingBox Approach
+//	BoundingBoxInitialization.create ("BoundingBoxApproach",(shadersDir.path ()+"/share/Shaders/BoundingBoxApproach.vert").toStdString(),
+//							        (shadersDir.path ()+"/share/Shaders/BoundingBoxApproach.geom").toStdString(),
+//							        (shadersDir.path ()+"/share/Shaders/BoundingBoxApproach.frag").toStdString());
+//
+//	BoundingBoxDebug.create ("BoundingBoxApproach Debug",(shadersDir.path ()+"/share/Shaders/BoundingBoxApproach.vert").toStdString(),
+//							     (shadersDir.path ()+"/share/Shaders/BoundingBoxApproach.geom").toStdString(),
+//							     (shadersDir.path ()+"/share/Shaders/BoundingBoxApproachDebug.frag").toStdString());
+//
+//	BoundingBoxCutaway.create ("BoundingBoxCutaway",(shadersDir.path ()+"/share/Shaders/BoundingBoxCutaway.vert").toStdString(),
+//							(shadersDir.path ()+"/share/Shaders/BoundingBoxCutaway.geom").toStdString(),
+//							(shadersDir.path ()+"/share/Shaders/BoundingBoxCutaway.frag").toStdString());
+//
+//
+//	debugNormal.create ("DebugNormal",  (shadersDir.path ()+"/share/Shaders/DebugNormal.vert").toStdString(),
+//			   (shadersDir.path ()+"/share/Shaders/DebugNormal.geom").toStdString(),
+//			   (shadersDir.path ()+"/share/Shaders/DebugNormal.frag").toStdString());
+//
+//
+//	wireframe.create ("SinglePassWireframe",  (shadersDir.path ()+"/share/Shaders/SinglePassWireframe.vert").toStdString(),
+//			 (shadersDir.path ()+"/share/Shaders/SinglePassWireframe.geom").toStdString(),
+//			 (shadersDir.path ()+"/share/Shaders/SinglePassWireframe.frag").toStdString());
+//
+//
+//	orientedBoxApproach.create ( "OrientedBoxApproach", (shadersDir.path ()+"/share/Shaders/OrientedBoxApproach.vert").toStdString(),
+//                                   (shadersDir.path ()+"/share/Shaders/OrientedBoxApproach.geom").toStdString(),
+//			           (shadersDir.path ()+"/share/Shaders/OrientedBoxApproach.frag").toStdString());
+//
+//
+//	/// Cube in Geometry Shader
+//	cube_in_GeometryShader.create ( "Cube_in_Geometry_Shader", (shadersDir.path ()+"/share/Shaders/Cube_in_Geometry_Shader.vert").toStdString(),
+//							           (shadersDir.path ()+"/share/Shaders/Cube_in_Geometry_Shader.geom").toStdString(),
+//							           (shadersDir.path ()+"/share/Shaders/Cube_in_Geometry_Shader.frag").toStdString());
 
 }
 /// KeyInput

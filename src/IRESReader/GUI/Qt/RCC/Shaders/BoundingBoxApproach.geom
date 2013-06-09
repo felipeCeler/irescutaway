@@ -59,7 +59,6 @@ void works ( )
 	//normalMatrix = inverse(normalMatrix);
 	//normalMatrix = transpose(normalMatrix);
 
-
 	vertex[0] = v[0];
 	vertex[1] = v[1];
 	vertex[2] = v[2];
@@ -315,7 +314,7 @@ void justBox()
 	v[7] = vec4( max_point.x , min_point.y , min_point.z, 1.0 );
 
 
-	mat4 base = ModelMatrix;
+	mat4 base = ViewMatrix;
 
 	v[0] = base * v[0];
 	v[1] = base * v[1];
@@ -329,12 +328,12 @@ void justBox()
 
 
 	mat3 normalMatrix = mat3(1.0);
-
-	//mat3 normalMatrix = mat3(ViewMatrix);
-	//normalMatrix = inverse(normalMatrix);
-	//normalMatrix = transpose(normalMatrix);
-
-
+//
+//	//mat3 normalMatrix = mat3(ViewMatrix);
+//	//normalMatrix = inverse(normalMatrix);
+//	//normalMatrix = transpose(normalMatrix);
+//
+//
 	vertex[0] = v[0];
 	vertex[1] = v[1];
 	vertex[2] = v[2];
@@ -381,20 +380,21 @@ void justBox()
 	}
 
 
-	float scaledy = 2;
-	float scaledx = 2;
+	float scaledy = 6;
+	float scaledx = 6;
 	float max_z   = pmax.z;
+	float min_z   = pmin.z;
 	/// Back and Front Face
 	/// Como ajustar o Z min/max , parametricamente.
 	v[0] = vec4( pmax.x*scaledx , pmax.y*scaledy , max_z, 1.0 );
-	v[1] = vec4( pmax.x , pmax.y , pmin.z, 1.0 );
-	v[2] = vec4( pmin.x , pmax.y , pmin.z, 1.0 );
+	v[1] = vec4( pmax.x , pmax.y , min_z, 1.0 );
+	v[2] = vec4( pmin.x , pmax.y , min_z, 1.0 );
 	v[3] = vec4( pmin.x*scaledx , pmax.y*scaledy , max_z, 1.0 );
 
 	v[4] = vec4( pmax.x*scaledx , pmin.y*scaledy , max_z, 1.0 );
 	v[5] = vec4( pmin.x*scaledx , pmin.y*scaledy , max_z, 1.0 );
-	v[6] = vec4( pmin.x , pmin.y , pmin.z, 1.0  );
-	v[7] = vec4( pmax.x , pmin.y , pmin.z, 1.0 );
+	v[6] = vec4( pmin.x , pmin.y , min_z, 1.0  );
+	v[7] = vec4( pmax.x , pmin.y , min_z, 1.0 );
 
 	// Top Face
 	vec3 normal_top = normalize (cross ( (v[3] - v[0]).xyz, (v[1] - v[0]).xyz ) );
@@ -428,8 +428,6 @@ void justBox()
 	v[5] = inverse(base) * v[5];
 	v[6] = inverse(base) * v[6];
 	v[7] = inverse(base) * v[7];
-
-
 
 	vertex[0] = v[0];
 	vertex[1] = v[1];
