@@ -32,6 +32,7 @@
 #include <iterator>
 #include <list>
 #include <vector>
+#include <functional>
 
 
 #include <QtGui/QMdiSubWindow>
@@ -128,6 +129,11 @@ private:
 	float scrollStep_;
 	float centerX_;
 	float centerY_;
+
+	bool getVertices(unsigned int , float * vertices );
+
+	void IRES_v1_to_IRESv2 ( const std::string& filename );
+
 
 	Cube cube_;
 

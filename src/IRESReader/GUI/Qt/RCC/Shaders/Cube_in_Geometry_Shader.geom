@@ -32,10 +32,9 @@ bool intersect_point_volume ( in vec4 p )
 	{
 		return false;
 	}
-
 	else
 	{
-		return  true ;
+		return true ;
 	}
 
 }
@@ -43,91 +42,94 @@ bool intersect_point_volume ( in vec4 p )
 void main(void)
 {
 	// Top  and Bottom Face
-	cutVolume[0] = vec4( max_point.x , max_point.y , max_point.z, 1.0 );
-	cutVolume[1] = vec4( max_point.x , max_point.y , min_point.z, 1.0 );
-	cutVolume[2] = vec4( min_point.x , max_point.y , min_point.z, 1.0 );
-	cutVolume[3] = vec4( min_point.x , max_point.y , max_point.z, 1.0 );
-
-	cutVolume[4] = vec4( max_point.x , min_point.y , max_point.z, 1.0 );
-	cutVolume[5] = vec4( min_point.x , min_point.y , max_point.z, 1.0 );
-	cutVolume[6] = vec4( min_point.x , min_point.y , min_point.z, 1.0 );
-	cutVolume[7] = vec4( max_point.x , min_point.y , min_point.z, 1.0 );
-
-	mat4 base = ViewMatrix;
+//	cutVolume[0] = vec4( max_point.x , max_point.y , max_point.z, 1.0 );
+//	cutVolume[1] = vec4( max_point.x , max_point.y , min_point.z, 1.0 );
+//	cutVolume[2] = vec4( min_point.x , max_point.y , min_point.z, 1.0 );
+//	cutVolume[3] = vec4( min_point.x , max_point.y , max_point.z, 1.0 );
 //
-	cutVolume[0] = base * cutVolume[0];
-	cutVolume[1] = base * cutVolume[1];
-	cutVolume[2] = base * cutVolume[2];
-	cutVolume[3] = base * cutVolume[3];
-
-	cutVolume[4] = base * cutVolume[4];
-	cutVolume[5] = base * cutVolume[5];
-	cutVolume[6] = base * cutVolume[6];
-	cutVolume[7] = base * cutVolume[7];
+//	cutVolume[4] = vec4( max_point.x , min_point.y , max_point.z, 1.0 );
+//	cutVolume[5] = vec4( min_point.x , min_point.y , max_point.z, 1.0 );
+//	cutVolume[6] = vec4( min_point.x , min_point.y , min_point.z, 1.0 );
+//	cutVolume[7] = vec4( max_point.x , min_point.y , min_point.z, 1.0 );
 //
-	vec4 pmin = cutVolume[0];
-	vec4 pmax = pmin;
+//	mat4 base = ViewMatrix;
+////
+//	cutVolume[0] = base * cutVolume[0];
+//	cutVolume[1] = base * cutVolume[1];
+//	cutVolume[2] = base * cutVolume[2];
+//	cutVolume[3] = base * cutVolume[3];
 //
-	for ( int i = 0; i < 8; i++ )
-	{
-		if ( pmin.x > cutVolume[i].x )
-		{
-			pmin.x = cutVolume[i].x;
-
-		}else if ( pmax.x < cutVolume[i].x )
-		{
-			pmax.x = cutVolume[i].x;
-		}
-
-		if ( pmin.y > cutVolume[i].y )
-		{
-			pmin.y = cutVolume[i].y;
-
-		}else if ( pmax.y < cutVolume[i].y )
-		{
-			pmax.y = cutVolume[i].y;
-		}
-
-		if ( pmin.z > cutVolume[i].z )
-		{
-			pmin.z = cutVolume[i].z;
-
-		}else if ( pmax.z < cutVolume[i].z )
-		{
-			pmax.z = cutVolume[i].z;
-
-		}
-	}
+//	cutVolume[4] = base * cutVolume[4];
+//	cutVolume[5] = base * cutVolume[5];
+//	cutVolume[6] = base * cutVolume[6];
+//	cutVolume[7] = base * cutVolume[7];
+////
+//	vec4 pmin = cutVolume[0];
+//	vec4 pmax = pmin;
 //
-	float scaledy = 1;
-	float scaledx = 1;
-	float max_z   = pmax.z;
-	float min_z   = pmin.z;
+//	for ( int i = 0; i < 8; i++ )
+//	{
+//		if ( pmin.x > cutVolume[i].x )
+//		{
+//			pmin.x = cutVolume[i].x;
+//
+//		}else if ( pmax.x < cutVolume[i].x )
+//		{
+//			pmax.x = cutVolume[i].x;
+//		}
+//
+//		if ( pmin.y > cutVolume[i].y )
+//		{
+//			pmin.y = cutVolume[i].y;
+//
+//		}else if ( pmax.y < cutVolume[i].y )
+//		{
+//			pmax.y = cutVolume[i].y;
+//		}
+//
+//		if ( pmin.z > cutVolume[i].z )
+//		{
+//			pmin.z = cutVolume[i].z;
+//
+//		}else if ( pmax.z < cutVolume[i].z )
+//		{
+//			pmax.z = cutVolume[i].z;
+//
+//		}
+//	}
+//
+	vec4 pmin = min_point;
+	vec4 pmax = max_point;
+
+	float scaledy = 10;
+	float scaledx = 10;
+	float max_z   = 10*pmax.z;
+	float min_z   = 10*pmin.z;
 
 	/// Top and Bottom Faces
 	/// Como ajustar o Z min/max , parametricamente.
 	cutVolume[0] = vec4( pmax.x*scaledx , pmax.y*scaledy , max_z, 1.0 );
-	cutVolume[1] = vec4( pmax.x , pmax.y , min_z, 1.0 );
-	cutVolume[2] = vec4( pmin.x , pmax.y , min_z, 1.0 );
+	cutVolume[1] = vec4( pmax.x*scaledx , pmax.y*scaledy , min_z, 1.0 );
+	cutVolume[2] = vec4( pmin.x*scaledx , pmax.y*scaledy , min_z, 1.0 );
 	cutVolume[3] = vec4( pmin.x*scaledx , pmax.y*scaledy , max_z, 1.0 );
 
 	cutVolume[4] = vec4( pmax.x*scaledx , pmin.y*scaledy , max_z, 1.0 );
 	cutVolume[5] = vec4( pmin.x*scaledx , pmin.y*scaledy , max_z, 1.0 );
-	cutVolume[6] = vec4( pmin.x , pmin.y , min_z, 1.0  );
-	cutVolume[7] = vec4( pmax.x , pmin.y , min_z, 1.0 );
+	cutVolume[6] = vec4( pmin.x*scaledx , pmin.y*scaledy , min_z, 1.0 );
+	cutVolume[7] = vec4( pmax.x*scaledx , pmin.y*scaledy , min_z, 1.0 );
 //
 //
-	base = inverse(ViewMatrix);
-
-	cutVolume[0] = base * cutVolume[0];
-	cutVolume[1] = base * cutVolume[1];
-	cutVolume[2] = base * cutVolume[2];
-	cutVolume[3] = base * cutVolume[3];
-
-	cutVolume[4] = base * cutVolume[4];
-	cutVolume[5] = base * cutVolume[5];
-	cutVolume[6] = base * cutVolume[6];
-	cutVolume[7] = base * cutVolume[7];
+//	base = inverse(ViewMatrix);
+//
+//	cutVolume[0] = base * cutVolume[0];
+//	cutVolume[1] = base * cutVolume[1];
+//	cutVolume[2] = base * cutVolume[2];
+//	cutVolume[3] = base * cutVolume[3];
+//
+//	cutVolume[4] = base * cutVolume[4];
+//	cutVolume[5] = base * cutVolume[5];
+//	cutVolume[6] = base * cutVolume[6];
+//	cutVolume[7] = base * cutVolume[7];
 //
 	p_min = cutVolume[6];
 	p_max = cutVolume[0];

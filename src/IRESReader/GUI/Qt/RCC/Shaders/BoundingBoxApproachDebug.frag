@@ -33,7 +33,13 @@ void main(void)
 	vec4 ld = color_t * 0.9 * max ( 0.0 , dot ( newNormal , light_dir ) );
 	vec4 ls = color_t * 0.4 * pow ( max ( 0.0 , dot ( eye_dir , ref ) ) , 5.0 );
 
-	outputColor =    vec4 ( la.rgb + ld.xyz + ls.rgb , 1.0 ) ;
+//	if (VertexOut.color.g == 1.0)
+//	{
+//		outputColor = vec4(abs(VertexOut.normal),1.0) ;
+//	}else
+//	{
+		outputColor =    vec4 ( la.rgb + ld.xyz + ls.rgb , 1.0 ) ;
+//	}
 
 	//outputColor = vec4(abs(VertexOut.normal),1.0) ;
 }
