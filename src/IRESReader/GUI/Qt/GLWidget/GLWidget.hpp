@@ -108,7 +108,7 @@ class GLWidget: public QGLWidget
 		void setBoundingBoxVisibility   ( bool visibility ) { isBoudingBoxApproach = visibility; updateGL();}
 		void setBurnsApproachVisibility ( bool visibility ) { isBurnsApproach      = visibility; updateGL();}
 
-
+		void IRES_v1_to_IRESv2 ( const std::string& filename );
 
 	protected:
 		void dragEnterEvent ( QDragEnterEvent *event );
@@ -131,8 +131,6 @@ private:
 	float centerY_;
 
 	bool getVertices(unsigned int , float * vertices );
-
-	void IRES_v1_to_IRESv2 ( const std::string& filename );
 
 
 	Cube cube_;
@@ -187,8 +185,15 @@ private:
 	GLuint reservoir_vertices_triangles_adjacency_buffer;
 	GLuint reservoir_vertices_triangles_adjacency_location;
 	std::vector<Celer::Vector4<GLfloat> > 	reservoir_list_of_triangle_adjacency;
-
 	Celer::OpenGL::ShaderManager cube_in_GeometryShader;
+
+	// Charles IRES v2
+	GLuint vertexArray_Charles;
+	GLuint reservoir_vertices_charles_buffer;
+	GLuint reservoir_vertices_charles_location;
+	std::vector<Celer::Vector4<GLfloat> > 	reservoir_list_of_charles;
+	Celer::OpenGL::ShaderManager charles_Shader;
+
 
 
 	Celer::BoundingBox3<double> 		   box;
@@ -235,6 +240,8 @@ private:
 
 	bool draw_secondary;
 	bool draw_primary;
+
+	int cont;
 
 	int max_I_;
 	int min_I_;

@@ -7,7 +7,7 @@ layout(triangle_strip, max_vertices=24) out;
 uniform vec4 max_point;
 uniform vec4 min_point;
 
-uniform vec4  centroid;
+uniform vec4  box_centroid;
 uniform float diagonal;
 
 uniform mat4 ModelMatrix;
@@ -24,15 +24,15 @@ out VertexData
 void byCentroid()
 {
 
-	v[0] = vec4( centroid + (vec4(.0,0.0,0.0,1.0)*diagonal) );
-	v[1] = vec4( max_point.x , max_point.y , min_point.z, 1.0 );
-	v[2] = vec4( min_point.x , max_point.y , min_point.z, 1.0 );
-	v[3] = vec4( min_point.x , max_point.y , max_point.z, 1.0 );
-
-	v[4] = vec4( max_point.x , min_point.y , max_point.z, 1.0 );
-	v[5] = vec4( min_point.x , min_point.y , max_point.z, 1.0 );
-	v[6] = vec4( min_point.x , min_point.y , min_point.z, 1.0 );
-	v[7] = vec4( max_point.x , min_point.y , min_point.z, 1.0 );
+//	v[0] = vec4( centroid + (vec4(.0,0.0,0.0,1.0)*diagonal) );
+//	v[1] = vec4( max_point.x , max_point.y , min_point.z, 1.0 );
+//	v[2] = vec4( min_point.x , max_point.y , min_point.z, 1.0 );
+//	v[3] = vec4( min_point.x , max_point.y , max_point.z, 1.0 );
+//
+//	v[4] = vec4( max_point.x , min_point.y , max_point.z, 1.0 );
+//	v[5] = vec4( min_point.x , min_point.y , max_point.z, 1.0 );
+//	v[6] = vec4( min_point.x , min_point.y , min_point.z, 1.0 );
+//	v[7] = vec4( max_point.x , min_point.y , min_point.z, 1.0 );
 
 }
 void works ( )

@@ -87,6 +87,10 @@ void GLWidget::initializeGL ( )
 
 	glGenVertexArrays ( 1 , &vertexArrayScreen );
 
+	// Charles Ires v 2
+	glGenVertexArrays ( 1, &vertexArray_Charles);
+		glGenBuffers ( 1, &reservoir_vertices_charles_buffer );
+
 
 	reservoir_vertices_location 	= 1;
 	reservoir_normal_location 	= 2;
@@ -592,75 +596,51 @@ void GLWidget::changeMinK ( const int& value )
 bool GLWidget::getVertices( unsigned int blockIndex, float * vertices )
 {
 
-	if ( (blockIndex > 0) && ( blockIndex < reservoir_model_.blocks.size())  )
+
+	if ( (blockIndex >= 0) && ( blockIndex < reservoir_model_.blocks.size())  )
 	{
 
-		if ( reservoir_model_.block_indices[blockIndex]  != -1 )
+		if ( reservoir_model_.blocks[blockIndex].valid  )
 		{
-			int i = blockIndex;
+			vertices[0] = reservoir_model_.blocks[blockIndex].vertices[5].x;
+			vertices[1] = reservoir_model_.blocks[blockIndex].vertices[5].y;
+			vertices[2] = reservoir_model_.blocks[blockIndex].vertices[5].z;
 
-			int index [] =
-			{
-			    // Top Face
-			    reservoir_model_.block_indices[i+0],reservoir_model_.block_indices[i+1],reservoir_model_.block_indices[i+3],reservoir_model_.block_indices[i+2],/* 0 - 5*/
-			    // Bottom Face
-			    reservoir_model_.block_indices[i+4],reservoir_model_.block_indices[i+7],reservoir_model_.block_indices[i+5],reservoir_model_.block_indices[i+6],/* 6 - 11 */
-			    // Front Face
-			    reservoir_model_.block_indices[i+0],reservoir_model_.block_indices[i+7],reservoir_model_.block_indices[i+3],reservoir_model_.block_indices[i+4],/* 12 - 17*/
-			    // Back Face
-			    reservoir_model_.block_indices[i+1],reservoir_model_.block_indices[i+2],reservoir_model_.block_indices[i+6],reservoir_model_.block_indices[i+5],/* 18 - 23*/
-			    // Right Face
-			    reservoir_model_.block_indices[i+2],reservoir_model_.block_indices[i+3],reservoir_model_.block_indices[i+5],reservoir_model_.block_indices[i+4],/* 24 - 29*/
-			    // Left Face
-			    reservoir_model_.block_indices[i+0],reservoir_model_.block_indices[i+1],reservoir_model_.block_indices[i+7],reservoir_model_.block_indices[i+6] /* 30 - 35*/
-			};
+			vertices[3] = reservoir_model_.blocks[blockIndex].vertices[4].x;
+			vertices[4] = reservoir_model_.blocks[blockIndex].vertices[4].y;
+			vertices[5] = reservoir_model_.blocks[blockIndex].vertices[4].z;
 
-			// Top Face
-			Celer::Vector3<GLfloat> v0( static_cast<GLfloat>(reservoir_model_.vertices[index[0]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[0]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[0]].z));
-			Celer::Vector3<GLfloat> v3( static_cast<GLfloat>(reservoir_model_.vertices[index[1]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[1]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[1]].z));
-			Celer::Vector3<GLfloat> v1( static_cast<GLfloat>(reservoir_model_.vertices[index[2]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[2]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[2]].z));
-			Celer::Vector3<GLfloat> v2( static_cast<GLfloat>(reservoir_model_.vertices[index[3]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[3]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[3]].z));
-			// Bottom Face
-			Celer::Vector3<GLfloat> v4( static_cast<GLfloat>(reservoir_model_.vertices[index[4]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[4]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[4]].z));
-			Celer::Vector3<GLfloat> v7( static_cast<GLfloat>(reservoir_model_.vertices[index[5]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[5]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[5]].z));
-			Celer::Vector3<GLfloat> v5( static_cast<GLfloat>(reservoir_model_.vertices[index[6]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[6]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[6]].z));
-			Celer::Vector3<GLfloat> v6( static_cast<GLfloat>(reservoir_model_.vertices[index[7]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[7]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[7]].z));
+			vertices[6] = reservoir_model_.blocks[blockIndex].vertices[6].x;
+			vertices[7] = reservoir_model_.blocks[blockIndex].vertices[6].y;
+			vertices[8] = reservoir_model_.blocks[blockIndex].vertices[6].z;
 
-			vertices[0] = v0.x;
-			vertices[1] = v0.y;
-			vertices[2] = v0.z;
+			vertices[9]  = reservoir_model_.blocks[blockIndex].vertices[7].x;
+			vertices[10] = reservoir_model_.blocks[blockIndex].vertices[7].y;
+			vertices[11] = reservoir_model_.blocks[blockIndex].vertices[7].z;
 
-			vertices[3] = v3.x;
-			vertices[4] = v3.y;
-			vertices[5] = v3.z;
+			vertices[12] = reservoir_model_.blocks[blockIndex].vertices[0].x;
+			vertices[13] = reservoir_model_.blocks[blockIndex].vertices[0].y;
+			vertices[14] = reservoir_model_.blocks[blockIndex].vertices[0].z;
 
-			vertices[6] = v1.x;
-			vertices[7] = v1.y;
-			vertices[8] = v1.z;
+			vertices[15] = reservoir_model_.blocks[blockIndex].vertices[2].x;
+			vertices[16] = reservoir_model_.blocks[blockIndex].vertices[2].y;
+			vertices[17] = reservoir_model_.blocks[blockIndex].vertices[2].z;
 
-			vertices[9]  = v2.x;
-			vertices[10] = v2.y;
-			vertices[11] = v2.z;
+			vertices[18] = reservoir_model_.blocks[blockIndex].vertices[3].x;
+			vertices[19] = reservoir_model_.blocks[blockIndex].vertices[3].y;
+			vertices[20] = reservoir_model_.blocks[blockIndex].vertices[3].z;
 
-			vertices[12] = v4.x;
-			vertices[13] = v4.y;
-			vertices[14] = v4.z;
+			vertices[21] = reservoir_model_.blocks[blockIndex].vertices[1].x;
+			vertices[22] = reservoir_model_.blocks[blockIndex].vertices[1].y;
+			vertices[23] = reservoir_model_.blocks[blockIndex].vertices[1].z;
 
-			vertices[15] = v5.x;
-			vertices[16] = v5.y;
-			vertices[17] = v5.z;
-
-			vertices[18] = v6.x;
-			vertices[19] = v6.y;
-			vertices[20] = v6.z;
-
-			vertices[21] = v7.x;
-			vertices[22] = v7.y;
-			vertices[23] = v7.z;
+			cont = blockIndex;
 
 			return true;
+
 		}else
 		{
+
 			return false;
 		}
 
@@ -673,89 +653,81 @@ bool GLWidget::getVertices( unsigned int blockIndex, float * vertices )
 void GLWidget::IRES_v1_to_IRESv2( const std::string& filename )
 {
 
-	reservoir_model_.openIRES(filename);
+	ires::Ires new_reservoir_file_(true);
 
-	if ( reservoir_model_.block_indices.size ( ) > 0 )
+	std::function<bool (unsigned int , float * )> fn = std::bind(&GLWidget::getVertices, this, std::placeholders::_1, std::placeholders::_2);
+
+	cont = 0;
+
+	new_reservoir_file_.buildVertexBlockLists(reservoir_model_.header_.number_of_Blocks_in_I_Direction,
+						  reservoir_model_.header_.number_of_Blocks_in_J_Direction,
+						  reservoir_model_.header_.number_of_Blocks_in_K_Direction, fn);
+
+
+
+
+	std::vector<std::string> names;
+	names.resize(reservoir_model_.static_porperties.size( ));
+	std::vector<float> values;
+
+	for ( int i = 0 ; i < reservoir_model_.static_porperties.size( ) ; i++)
 	{
-		ires::Ires new_reservoir_file_(true);
+		names[i] = reservoir_model_.static_porperties[i].name;
+		std::copy ( reservoir_model_.static_porperties[i].values_.begin() 	, reservoir_model_.static_porperties[i].values_.end() , std::back_inserter ( values  ) );
+	}
 
-		std::function<bool (unsigned int , float * )> fn = std::bind(&GLWidget::getVertices, this, std::placeholders::_1, std::placeholders::_2);
+	new_reservoir_file_.setStaticProps(names,values);
 
-		new_reservoir_file_.buildVertexBlockLists(reservoir_model_.header_.number_of_Blocks_in_I_Direction,
-							  reservoir_model_.header_.number_of_Blocks_in_J_Direction,
-							  reservoir_model_.header_.number_of_Blocks_in_K_Direction, fn);
+	std::cout << " Block Index " << cont  << std::endl;
 
+	new_reservoir_file_.setHeaderData("Test IRES 2!", ires::Date(ires::Date::Year(2013), ires::Date::Month(6), ires::Date::Day(10)), 0);
 
-		new_reservoir_file_.setHeaderData("Test IRES 2!", ires::Date(ires::Date::Year(2013), ires::Date::Month(6), ires::Date::Day(10)), 0);
+	bool result = new_reservoir_file_.writeFile("NewIRES");
 
-		bool result = new_reservoir_file_.writeFile("NewIRES");
+	std::cout << "result" << result << std::endl;
 
+	if (result )
+	{
 		new_reservoir_file_.readFile( "NewIRES.ires" );
-
-//		unsigned int i;
-//		unsigned int j;
-//		unsigned int k;
-//
-//		new_reservoir_file_.getNumIJK( i,j, k);
-//
-//		std::cout << " I J K " <<  i << " : " << j << " : " << k <<  std::endl;
+	}
 
 
-		std::size_t i = 0;
+	std::size_t i = cont;
 
-		while ( i < reservoir_model_.block_indices.size ( ) )
+	std::vector<std::string > new_names;
+	std::vector<float> new_values;
+
+	if ( reservoir_model_.blocks[i].valid )
+	{
+
+		float v[24];
+		new_reservoir_file_.getBlockVertices(i, v);
+
+		new_reservoir_file_.getStaticPropertyNames(new_names);
+		new_reservoir_file_.getStaticPropertyValues(0 , new_values );
+
+		std::cout << " Static " <<  new_names.size() << std::endl;
+
+
+		for ( int i = 0 ; i < new_names.size( ); i++)
 		{
-			if ( reservoir_model_.block_indices[i] != -1)
-			{
-				float v[24];
-
-				new_reservoir_file_.getBlockVertices(i, v);
-
-
-				int index [] =
-				{
-				    // Top Face
-				    reservoir_model_.block_indices[i+0],reservoir_model_.block_indices[i+1],reservoir_model_.block_indices[i+3],reservoir_model_.block_indices[i+2],/* 0 - 5*/
-				    // Bottom Face
-				    reservoir_model_.block_indices[i+4],reservoir_model_.block_indices[i+7],reservoir_model_.block_indices[i+5],reservoir_model_.block_indices[i+6],/* 6 - 11 */
-				    // Front Face
-				    reservoir_model_.block_indices[i+0],reservoir_model_.block_indices[i+7],reservoir_model_.block_indices[i+3],reservoir_model_.block_indices[i+4],/* 12 - 17*/
-				    // Back Face
-				    reservoir_model_.block_indices[i+1],reservoir_model_.block_indices[i+2],reservoir_model_.block_indices[i+6],reservoir_model_.block_indices[i+5],/* 18 - 23*/
-				    // Right Face
-				    reservoir_model_.block_indices[i+2],reservoir_model_.block_indices[i+3],reservoir_model_.block_indices[i+5],reservoir_model_.block_indices[i+4],/* 24 - 29*/
-				    // Left Face
-				    reservoir_model_.block_indices[i+0],reservoir_model_.block_indices[i+1],reservoir_model_.block_indices[i+7],reservoir_model_.block_indices[i+6] /* 30 - 35*/
-				};
-
-				// Top Face
-				Celer::Vector3<GLfloat> v0( static_cast<GLfloat>(reservoir_model_.vertices[index[0]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[0]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[0]].z));
-				Celer::Vector3<GLfloat> v1( static_cast<GLfloat>(reservoir_model_.vertices[index[1]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[1]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[1]].z));
-				Celer::Vector3<GLfloat> v3( static_cast<GLfloat>(reservoir_model_.vertices[index[2]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[2]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[2]].z));
-				Celer::Vector3<GLfloat> v2( static_cast<GLfloat>(reservoir_model_.vertices[index[3]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[3]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[3]].z));
-				// Bottom Face
-				Celer::Vector3<GLfloat> v4( static_cast<GLfloat>(reservoir_model_.vertices[index[4]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[4]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[4]].z));
-				Celer::Vector3<GLfloat> v7( static_cast<GLfloat>(reservoir_model_.vertices[index[5]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[5]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[5]].z));
-				Celer::Vector3<GLfloat> v5( static_cast<GLfloat>(reservoir_model_.vertices[index[6]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[6]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[6]].z));
-				Celer::Vector3<GLfloat> v6( static_cast<GLfloat>(reservoir_model_.vertices[index[7]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[7]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[7]].z));
-
-				i += 8;
-
-				if ( i < 9 )
-				{
-					std::cout << " From IRES 2 " << v[0] << " : " << v[1] << " : " << v[2] << std::endl;
-					std::cout << " From IRES 2 " << v[3] << " : " << v[4] << " : " << v[5] << std::endl;
-					std::cout << " From IRES 2 " << v[6] << " : " << v[7] << " : " << v[8] << std::endl;
-					std::cout << " From IRES 1 " << v0;
-				}
-
-			}else
-			{
-				i += 1;
-			}
+			std::cout << " names " << new_names[i] << std::endl;
 		}
 
+
+		for  ( int j = 0 ; j <  reservoir_model_.static_porperties.size() ; j++)
+		{
+			new_reservoir_file_.getStaticPropertyValues(j , new_values );
+			std::cout << " Ires 1.0 " << reservoir_model_.static_porperties[j].name << " : " << reservoir_model_.static_porperties[j].values_[cont] << std::endl;
+			std::cout << " Ires 2.0 " << new_names[j] <<  " : " << new_values[cont] << std::endl;
+
+		}
+
+
+
+
 	}
+
 }
 
 void GLWidget::openIRES ( const std::string& filename )
@@ -767,7 +739,7 @@ void GLWidget::openIRES ( const std::string& filename )
 	{
 
 
-		//IRES_v1_to_IRESv2(filename);
+		IRES_v1_to_IRESv2(filename);
 
 		ires_has_been_open_sucessefully = 1;
 
@@ -1098,6 +1070,7 @@ void GLWidget::openIRES ( const std::string& filename )
 		ires_has_been_open_sucessefully = 0;
 	}
 
+	std::cout << "Number of Blocks " << reservoir_model_.blocks.size( ) << std::endl;
 
 }
 
@@ -1279,6 +1252,8 @@ void GLWidget::openIRESCharles( const std::string& filename )
 
 	ires::Ires file(true);
 
+	reservoir_list_of_charles.clear();
+
 	//reservoir_model_eclipse.readFile( filename );
 	bool result = file.readFile( filename );
 
@@ -1292,6 +1267,125 @@ void GLWidget::openIRESCharles( const std::string& filename )
 	file.getNumIJK(i,j,k);
 
 	std::cout <<  " I J K  " << i*j*k << std::endl;
+
+	//file.generateTriangleList( 0,0,0,i,j,k,reservoir_list_of_charles,false,false,false);
+
+
+	float v[24];
+
+	Celer::Vector4<GLfloat> vecs[8];
+
+
+	for ( int index = 0 ; index < i*j*k ; index++)
+	{
+		file.getBlockVertices(index,v);
+
+		vecs[0].x = v[0];
+		vecs[0].y = v[1];
+		vecs[0].z = v[2];
+		vecs[0].w = 1.0f;
+
+		vecs[1].x = v[3];
+		vecs[1].y = v[4];
+		vecs[1].z = v[5];
+		vecs[1].w = 1.0f;
+
+		vecs[2].x = v[6];
+		vecs[2].y = v[7];
+		vecs[2].z = v[8];
+		vecs[2].w = 1.0f;
+
+		vecs[3].x = v[9];
+		vecs[3].y = v[10];
+		vecs[3].z = v[11];
+		vecs[3].w = 1.0f;
+
+		vecs[4].x = v[12];
+		vecs[4].y = v[13];
+		vecs[4].z = v[14];
+		vecs[4].w = 1.0f;
+
+		vecs[5].x = v[15];
+		vecs[5].y = v[16];
+		vecs[5].z = v[17];
+		vecs[5].w = 1.0f;
+
+		vecs[6].x = v[18];
+		vecs[6].y = v[19];
+		vecs[6].z = v[20];
+		vecs[6].w = 1.0f;
+
+		vecs[7].x = v[21];
+		vecs[7].y = v[22];
+		vecs[7].z = v[23];
+		vecs[7].w = 1.0f;
+
+		Celer::Vector4<GLfloat> vertices [24] =
+		{
+			vecs[4],vecs[5],vecs[7],vecs[6],
+
+			vecs[0],vecs[3],vecs[1],vecs[2],
+
+			vecs[4],vecs[0],vecs[5],vecs[1],
+
+			vecs[2],vecs[3],vecs[6],vecs[7],
+
+			vecs[1],vecs[2],vecs[5],vecs[6],
+
+			vecs[0],vecs[3],vecs[4],vecs[7]
+		};
+
+		std::copy ( vertices 	, vertices + 24 , std::back_inserter ( reservoir_list_of_charles  ) );
+
+	}
+
+
+
+
+	std::cout << " reservoir_list_of_charles.size() " << reservoir_list_of_charles.size() << std::endl;
+
+	float minx, miny, minz, maxx, maxy, maxz;
+	file.getMinMax(minx,miny,minz,maxx,maxy,maxz);
+
+
+	Celer::Vector3<GLfloat> vmin(minx,miny,minz);
+	Celer::Vector3<GLfloat> vmax(maxx,maxy,maxz);
+
+	Celer::Vector3<GLfloat> center;
+
+	center.x = (float)((maxx + minx)/2.0);
+	center.y = (float)((maxy + miny)/2.0);
+	center.z = (float)((maxz + minz)/2.0);
+
+	float diagonal = vmin.length ( vmax );
+
+
+	camera_.setPosition ( center  );
+	camera_.setTarget ( center  );
+	std::cout << diagonal;
+	camera_.setOffset ( 3.0 * diagonal );
+
+
+	std::cout << camera_.position ( );
+
+	camera_.setBehavior ( Celer::Camera<float>::REVOLVE_AROUND_MODE );
+
+	cameraStep_ = 0.1f;
+
+
+	glBindVertexArray(vertexArray_Charles);
+
+
+	glBindBuffer ( GL_ARRAY_BUFFER , reservoir_vertices_charles_buffer );
+	glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_charles.size ( ) * sizeof ( reservoir_list_of_charles[0] ) , &reservoir_list_of_charles[0] , GL_STATIC_DRAW );
+	// Vertex Array : Set up generic attributes pointers
+	glEnableVertexAttribArray ( 0 );
+	glVertexAttribPointer ( 0 , 4 , GL_FLOAT , GL_FALSE , 0 , 0 );
+
+	glBindVertexArray(0);
+
+
+
 }
 
 void GLWidget::resizeGL ( int width , int height )
@@ -1377,7 +1471,7 @@ void GLWidget::paintGL ( )
 
 	camera_.computerViewMatrix( );
 
-	camera_.setPerspectiveProjectionMatrix ( zoom_angle_ , camera_.aspectRatio ( ) , 1.0 , 500 );
+	camera_.setPerspectiveProjectionMatrix ( zoom_angle_ , camera_.aspectRatio ( ) , 1.0 , 50000000 );
 
 	if 	( isBurnsApproach )
 	{
@@ -1586,6 +1680,23 @@ void GLWidget::NoCutawaySetUp ( )
 {
 	glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
+
+	if ( reservoir_list_of_charles.size() > 0 )
+	{
+
+
+		charles_Shader.active ( );
+
+		glUniformMatrix4fv ( charles_Shader.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+		glUniformMatrix4fv ( charles_Shader.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+		glUniform2f ( charles_Shader.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
+		glBindVertexArray ( vertexArray_Charles );
+		glDrawArrays ( GL_LINES_ADJACENCY , 0 , reservoir_list_of_charles.size ( ) );
+		glBindVertexArray ( 0 );
+
+		charles_Shader.deactive ( );
+
+	}
 
  	if ( ires_has_been_open_sucessefully )
 	{
@@ -1868,7 +1979,6 @@ void GLWidget::BurnsCutawaySetup ( )
 
 }
 
-
 void GLWidget::gameLooping ( )
 {
 	updateGL ( );
@@ -1889,6 +1999,10 @@ void GLWidget::LoadShaders ( )
 	qDebug () << "Directory " << shadersDir.path ();
 	shadersDir.cdUp ();
 	qDebug () << "Directory " << shadersDir.path ();
+
+	charles_Shader.create( "Charles Shader" ,(shaderDirectory + "Charles.vert").toStdString(),
+						 (shaderDirectory + "Charles.geom").toStdString(),
+						 (shaderDirectory + "Charles.frag").toStdString() );
 
 	textureViewer.create("textureViewer",(shaderDirectory + "fboTest.vert").toStdString(),
 				             (shaderDirectory + "fboTest.frag").toStdString());

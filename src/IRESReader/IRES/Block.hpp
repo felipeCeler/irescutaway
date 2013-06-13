@@ -65,7 +65,9 @@ namespace IRES
 			// To draw using glDrawElements*
 			std::vector<int>	 	     indices;
 			// FIXME Crazy structure on Corner Point
-			std::vector< Celer::Vector4<int> > IJK;
+			std::vector< Celer::Vector4<int> >   IJK;
+
+			bool 				     valid;
 
 			Celer::BoundingBox3<float> 	     AABB;
 

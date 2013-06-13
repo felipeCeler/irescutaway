@@ -326,7 +326,7 @@ namespace IRES
 			// FIXME Temporary array of values.
 			std::vector<float> blocks_values;
 
-			//dynamic_properties_values.resize(header_.number_of_Dynamic_Properties );
+			// dynamic_properties_values.resize(header_.number_of_Dynamic_Properties );
 			// For each time step ....
 			for ( int name_index = 0; name_index < header_.number_of_Dynamic_Properties; name_index++ )
 			{
@@ -402,10 +402,10 @@ namespace IRES
 
 			while ( i < block_indices.size ( ) )
 			{
+				IRES::Block new_block;
+
 				if ( block_indices[i] != -1)
 				{
-
-					IRES::Block new_block;
 
 					/// From Nicole`s presentation
 					Celer::Vector4<int> IJK ( (  (property_index) % header_.number_of_Blocks_in_I_Direction) + 1,
@@ -608,11 +608,13 @@ namespace IRES
 
 						for ( size_t  it = 0 ; it < dynamic_properties[property].values_.size() ; ++it)
 						{
-							new_block.dynamic_properties[property].values_.push_back( std::pair<int,float>( dynamic_properties[property].values_[it].first, dynamic_properties[property].values_[it].second[property] ) ) ;					}
+							new_block.dynamic_properties[property].values_.push_back( std::pair<int,float>( dynamic_properties[property].values_[it].first, dynamic_properties[property].values_[it].second[property] ) ) ;
+						}
 
 					}
 
-					blocks.push_back(new_block);
+					new_block.valid = true;
+
 
 					i += 8;
 					property_index += 1;
@@ -620,9 +622,47 @@ namespace IRES
 				}  // end of looping list of blocks
 				else
 				{
+
+					new_block.setIdentification ( property_index );
+
+					new_block.static_porperties.resize(static_porperties.size());
+
+					for ( std::size_t property = 0;  property < static_porperties.size();  ++property )
+					{
+
+						new_block.static_porperties[property].name  	     = static_porperties[property].name;
+						new_block.static_porperties[property].unit  	     = static_porperties[property].unit;
+						new_block.static_porperties[property].variable_name  = static_porperties[property].variable_name;
+						new_block.static_porperties[property].component      = static_porperties[property].component;
+						new_block.static_porperties[property].value_	     = static_porperties[property].values_[property_index];
+
+					}
+
+					new_block.dynamic_properties.resize(dynamic_properties.size());
+
+					for ( std::size_t property = 0;  property < dynamic_properties.size();  ++property )
+					{
+
+						new_block.dynamic_properties[property].name  	     = dynamic_properties[property].name;
+						new_block.dynamic_properties[property].unit  	     = dynamic_properties[property].unit;
+						new_block.dynamic_properties[property].variable_name = dynamic_properties[property].variable_name;
+						new_block.dynamic_properties[property].component     = dynamic_properties[property].component;
+
+						for ( size_t  it = 0 ; it < dynamic_properties[property].values_.size() ; ++it)
+						{
+							new_block.dynamic_properties[property].values_.push_back( std::pair<int,float>( dynamic_properties[property].values_[it].first, dynamic_properties[property].values_[it].second[property] ) ) ;
+						}
+
+					}
+
+
 					i += 1;
 					property_index += 1;
+
 				}
+
+				blocks.push_back(new_block);
+
 
 			}
 
