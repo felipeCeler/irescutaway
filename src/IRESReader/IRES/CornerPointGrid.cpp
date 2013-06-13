@@ -49,6 +49,7 @@ namespace IRES
 		header_.number_of_Blocks_in_I_Direction = header_v2_.numI;
 		header_.number_of_Blocks_in_J_Direction = header_v2_.numJ;
 		header_.number_of_Blocks_in_K_Direction = header_v2_.numK;
+		header_.number_of_Blocks = header_v2_.numI * header_v2_.numJ * header_v2_.numK;
 
 		std::vector<std::string> 	static_names;
 
@@ -67,13 +68,239 @@ namespace IRES
 
  		}
 
-		/* TODO Fazer getVertices return boolean , not false;
-		 * 	Get for std::vector<F32> m_vertexList;
-	         *	        std::vector<U32> m_blockList;	  // Contains indices into the vertex list.
-	         *              std::vector<int> m_blockIndexList;
-	         */
+		float 			v[24];
+		Celer::Vector3<float> vecs[8];
+
+		this->blocks.clear( );
+		this->blocks.resize( header_.number_of_Blocks );
+
+		this->box_v2.reset();
+
+		for ( int i = 0; i < header_.number_of_Blocks; i++)
+		{
+			IRES::Block new_block;
+
+			new_block.setIdentification ( i );
+
+			unsigned int I;
+			unsigned int J;
+			unsigned int K;
+			reservoir_file.getIJKfromIndex( i , I, J, K );
+
+			Celer::Vector4<int> IJK ( I, J, K, 0 );
+
+			Celer::Vector4<int> IJKs [] =
+			{
+
+			     IJK,IJK,IJK,IJK, IJK,IJK,IJK,IJK, IJK,IJK,IJK,IJK, IJK,IJK,IJK,IJK, IJK,IJK,IJK,IJK ,IJK,IJK,IJK,IJK
+
+			};
 
 
+			if ( reservoir_file.getBlockVertices ( i , v ) )
+			{
+				new_block.valid = true;
+
+				vecs[0].x = v[0];
+				vecs[0].y = v[1];
+				vecs[0].z = v[2];
+
+				vecs[1].x = v[3];
+				vecs[1].y = v[4];
+				vecs[1].z = v[5];
+
+				vecs[2].x = v[6];
+				vecs[2].y = v[7];
+				vecs[2].z = v[8];
+
+				vecs[3].x = v[9];
+				vecs[3].y = v[10];
+				vecs[3].z = v[11];
+
+				vecs[4].x = v[12];
+				vecs[4].y = v[13];
+				vecs[4].z = v[14];
+
+				vecs[5].x = v[15];
+				vecs[5].y = v[16];
+				vecs[5].z = v[17];
+
+				vecs[6].x = v[18];
+				vecs[6].y = v[19];
+				vecs[6].z = v[20];
+
+				vecs[7].x = v[21];
+				vecs[7].y = v[22];
+				vecs[7].z = v[23];
+
+
+				Celer::Vector4<float> vertices [] =
+				{
+				    // Top Face
+				    Celer::Vector4<float> ( vecs[4], 1.0f),
+				    Celer::Vector4<float> ( vecs[5], 1.0f),
+				    Celer::Vector4<float> ( vecs[7], 1.0f),
+				    Celer::Vector4<float> ( vecs[6], 1.0f),
+				    // Bottom Face
+				    Celer::Vector4<float> ( vecs[0], 1.0f),
+				    Celer::Vector4<float> ( vecs[3], 1.0f),
+				    Celer::Vector4<float> ( vecs[1], 1.0f),
+				    Celer::Vector4<float> ( vecs[2], 1.0f),
+				    // Front Face
+				    Celer::Vector4<float> ( vecs[4], 1.0f),
+				    Celer::Vector4<float> ( vecs[0], 1.0f),
+				    Celer::Vector4<float> ( vecs[5], 1.0f),
+				    Celer::Vector4<float> ( vecs[1], 1.0f),
+				    // Back Face
+				    Celer::Vector4<float> ( vecs[2], 1.0f),
+				    Celer::Vector4<float> ( vecs[3], 1.0f),
+				    Celer::Vector4<float> ( vecs[6], 1.0f),
+				    Celer::Vector4<float> ( vecs[7], 1.0f),
+				    // Right Face
+				    Celer::Vector4<float> ( vecs[1], 1.0f),
+				    Celer::Vector4<float> ( vecs[2], 1.0f),
+				    Celer::Vector4<float> ( vecs[5], 1.0f),
+				    Celer::Vector4<float> ( vecs[6], 1.0f),
+				    // Left Face
+				    Celer::Vector4<float> ( vecs[0], 1.0f),
+				    Celer::Vector4<float> ( vecs[3], 1.0f),
+				    Celer::Vector4<float> ( vecs[4], 1.0f),
+				    Celer::Vector4<float> ( vecs[7], 1.0f)
+				};
+
+				Celer::Vector3<float> topNormal 	= ((vecs[5] - vecs[4]) ^ (vecs[7] - vecs[4])).norm();
+				//std::cout << topNormal << std::endl;
+				Celer::Vector3<float> bottomNormal 	= ((vecs[3] - vecs[0]) ^ (vecs[1] - vecs[0])).norm();
+				//std::cout << bottomNormal << std::endl;
+				Celer::Vector3<float> frontNormal 	= ((vecs[1] - vecs[0]) ^ (vecs[4] - vecs[0])).norm();
+				//std::cout << frontNormal << std::endl;
+				Celer::Vector3<float> backmNormal 	= ((vecs[3] - vecs[2]) ^ (vecs[6] - vecs[2])).norm();
+				//std::cout << backmNormal << std::endl;
+				Celer::Vector3<float> rightNormal 	= ((vecs[2] - vecs[1]) ^ (vecs[5] - vecs[1])).norm();
+				//std::cout << rightNormal << std::endl;
+				Celer::Vector3<float> leftNormal 	= ((vecs[4] - vecs[0]) ^ (vecs[3] - vecs[0])).norm();
+				//std::cout << leftNormal << std::endl;
+
+				// Care about the type: GL_DOUBLE or GL_FLOAT
+				Celer::Vector4<float> normals[] =
+				{
+					//  Top Face
+					Celer::Vector4<float> ( topNormal, 1.0f),
+					Celer::Vector4<float> ( topNormal, 1.0f),
+					Celer::Vector4<float> ( topNormal, 1.0f),
+					Celer::Vector4<float> ( topNormal, 1.0f),
+					// Bottom Face
+					Celer::Vector4<float> ( bottomNormal, 1.0f),
+					Celer::Vector4<float> ( bottomNormal, 1.0f),
+					Celer::Vector4<float> ( bottomNormal, 1.0f),
+					Celer::Vector4<float> ( bottomNormal, 1.0f),
+					// Front Face
+					Celer::Vector4<float> ( frontNormal, 1.0f),
+					Celer::Vector4<float> ( frontNormal, 1.0f),
+					Celer::Vector4<float> ( frontNormal, 1.0f),
+					Celer::Vector4<float> ( frontNormal, 1.0f),
+					// Back Face
+					Celer::Vector4<float> ( backmNormal, 1.0f),
+					Celer::Vector4<float> ( backmNormal, 1.0f),
+					Celer::Vector4<float> ( backmNormal, 1.0f),
+					Celer::Vector4<float> ( backmNormal, 1.0f),
+					// Right Face
+					Celer::Vector4<float> ( rightNormal, 1.0f),
+					Celer::Vector4<float> ( rightNormal, 1.0f),
+					Celer::Vector4<float> ( rightNormal, 1.0f),
+					Celer::Vector4<float> ( rightNormal, 1.0f),
+					// Left Face
+					Celer::Vector4<float> ( leftNormal, 1.0f),
+					Celer::Vector4<float> ( leftNormal, 1.0f),
+					Celer::Vector4<float> ( leftNormal, 1.0f),
+					Celer::Vector4<float> ( leftNormal, 1.0f)
+				};
+
+				Celer::Vector4<float> focus [] =
+				{
+				    // Top Face
+				    Celer::Vector4<float> ( 1.0,1.0,1.0,1.0f),
+				    Celer::Vector4<float> ( 1.0,1.0,1.0,1.0f),
+				    Celer::Vector4<float> ( 1.0,1.0,1.0,1.0f),
+				    Celer::Vector4<float> ( 1.0,1.0,1.0,1.0f),
+				    // Bottom Face
+				    Celer::Vector4<float> ( 1.0,1.0,1.0,1.0f),
+				    Celer::Vector4<float> ( 1.0,1.0,1.0,1.0f),
+				    Celer::Vector4<float> ( 1.0,1.0,1.0,1.0f),
+				    Celer::Vector4<float> ( 1.0,1.0,1.0,1.0f),
+				    // Front Face
+				    Celer::Vector4<float> ( 1.0,1.0,1.0,1.0f),
+				    Celer::Vector4<float> ( 1.0,1.0,1.0,1.0f),
+				    Celer::Vector4<float> ( 1.0,1.0,1.0,1.0f),
+				    Celer::Vector4<float> ( 1.0,1.0,1.0,1.0f),
+				    // Back Face
+				    Celer::Vector4<float> ( 1.0,1.0,1.0,1.0f),
+				    Celer::Vector4<float> ( 1.0,1.0,1.0,1.0f),
+				    Celer::Vector4<float> ( 1.0,1.0,1.0,1.0f),
+				    Celer::Vector4<float> ( 1.0,1.0,1.0,1.0f),
+				    // Right Face
+				    Celer::Vector4<float> ( 1.0,1.0,1.0,1.0f),
+				    Celer::Vector4<float> ( 1.0,1.0,1.0,1.0f),
+				    Celer::Vector4<float> ( 1.0,1.0,1.0,1.0f),
+				    Celer::Vector4<float> ( 1.0,1.0,1.0,1.0f),
+				    // Left Face
+				    Celer::Vector4<float> ( 1.0,1.0,1.0,1.0f),
+				    Celer::Vector4<float> ( 1.0,1.0,1.0,1.0f),
+				    Celer::Vector4<float> ( 1.0,1.0,1.0,1.0f),
+				    Celer::Vector4<float> ( 1.0,1.0,1.0,1.0f)
+				};
+
+
+				std::copy ( vertices 	, vertices + 24 , std::back_inserter ( new_block.vertices  ) );
+				std::copy ( normals 	, normals  + 24 , std::back_inserter ( new_block.normals) );
+				std::copy ( focus 	, focus    + 24 , std::back_inserter ( new_block.focus) );
+				std::copy ( IJKs 	, IJKs     + 24 , std::back_inserter ( new_block.IJK  ) );
+
+				new_block.AABB.fromPointCloud( new_block.vertices.begin() , new_block.vertices.end() );
+
+				this->box_v2 = this->box_v2 + new_block.AABB;
+
+			}else
+			{
+
+				new_block.valid = false;
+
+			}
+
+			new_block.static_porperties.resize(static_porperties.size());
+
+			for ( std::size_t property = 0;  property < static_porperties.size();  ++property )
+			{
+
+				new_block.static_porperties[property].name  	     = static_porperties[property].name;
+				new_block.static_porperties[property].unit  	     = static_porperties[property].unit;
+				new_block.static_porperties[property].variable_name  = static_porperties[property].variable_name;
+				new_block.static_porperties[property].component      = static_porperties[property].component;
+				new_block.static_porperties[property].value_	     = static_porperties[property].values_[i];
+
+			}
+
+			new_block.dynamic_properties.resize(dynamic_properties.size());
+
+			for ( std::size_t property = 0;  property < dynamic_properties.size();  ++property )
+			{
+
+				new_block.dynamic_properties[property].name  	     = dynamic_properties[property].name;
+				new_block.dynamic_properties[property].unit  	     = dynamic_properties[property].unit;
+				new_block.dynamic_properties[property].variable_name = dynamic_properties[property].variable_name;
+				new_block.dynamic_properties[property].component     = dynamic_properties[property].component;
+
+				for ( size_t  it = 0 ; it < dynamic_properties[property].values_.size() ; ++it)
+				{
+					new_block.dynamic_properties[property].values_.push_back( std::pair<int,float>( dynamic_properties[property].values_[it].first, dynamic_properties[property].values_[it].second[property] ) ) ;
+				}
+
+			}
+
+			this->blocks[i] = new_block;
+
+
+		}// for
 	}
 
 	void CornerPointGrid::openIRES ( const std::string& filename )

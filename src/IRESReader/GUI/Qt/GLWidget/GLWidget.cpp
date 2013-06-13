@@ -1252,7 +1252,108 @@ void GLWidget::openIRESCharles( const std::string& filename )
 
 	reservoir_model_.openIRES_Version_2( filename );
 
-	ires_has_been_open_sucessefully = 1;
+	if ( reservoir_model_.blocks.size( ) > 0 )
+	{
+		reservoir_list_of_vertices.clear ( );
+		reservoir_list_of_normals.clear ( );
+		reservoir_list_of_colors.clear ( );
+		reservoir_list_of_IJKs.clear ( );
+		reservoir_list_of_renderFlag.clear( );
+		reservoir_list_of_indices.clear ( );
+
+		for ( std::size_t i = 0; i < reservoir_model_.blocks.size( ) ; i++)
+		{
+
+			if ( reservoir_model_.blocks[i].valid )
+			{
+
+				std::copy(reservoir_model_.blocks[i].vertices.begin(), reservoir_model_.blocks[i].vertices.end(),
+						std::back_inserter(reservoir_list_of_vertices));
+				std::copy(reservoir_model_.blocks[i].normals.begin(), reservoir_model_.blocks[i].normals.end(),
+						std::back_inserter(reservoir_list_of_normals));
+				std::copy(reservoir_model_.blocks[i].focus.begin(), reservoir_model_.blocks[i].focus.end(),
+						 std::back_inserter(reservoir_list_of_renderFlag));
+				std::copy(reservoir_model_.blocks[i].IJK.begin(), reservoir_model_.blocks[i].IJK.end(),
+						 std::back_inserter(reservoir_list_of_IJKs));
+
+			}
+			else
+			{
+
+			}
+		}
+
+
+		max_I_ = 0;
+		min_I_ = 0;
+		max_J_ = 0;
+		min_J_ = 0;
+		max_K_ = 0;
+		min_K_ = 0;
+
+
+		camera_.setPosition ( reservoir_model_.box_v2.center ( ) );
+		camera_.setTarget ( reservoir_model_.box_v2.center ( ) );
+		std::cout << reservoir_model_.box_v2.diagonal ( );
+		camera_.setOffset ( 3.0 * reservoir_model_.box_v2.diagonal ( ) );
+
+		std::cout << camera_.position ( );
+
+		camera_.setBehavior ( Celer::Camera<float>::REVOLVE_AROUND_MODE );
+
+		cameraStep_ = 0.1f;
+
+
+		glBindVertexArray(vertexArray);
+
+
+		glBindBuffer ( GL_ARRAY_BUFFER , reservoir_vertices_buffer );
+		glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_vertices.size ( ) * sizeof ( reservoir_list_of_vertices[0] ) , &reservoir_list_of_vertices[0] , GL_STATIC_DRAW );
+		// Vertex Array : Set up generic attributes pointers
+		glEnableVertexAttribArray ( reservoir_vertices_location );
+		glVertexAttribPointer ( reservoir_vertices_location , 4 , GL_FLOAT , GL_FALSE , 0 , 0 );
+
+		glBindBuffer ( GL_ARRAY_BUFFER , reservoir_normal_buffer );
+		glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_normals.size ( ) * sizeof ( reservoir_list_of_normals[0] ) , &reservoir_list_of_normals[0] , GL_STREAM_DRAW );
+		// Vertex Array : Set up generic attributes pointers
+		glEnableVertexAttribArray ( reservoir_normal_location );
+		glVertexAttribPointer ( reservoir_normal_location , 4 , GL_FLOAT , GL_FALSE , 0 , 0 );
+
+
+		glBindBuffer ( GL_ARRAY_BUFFER , reservoir_color_buffer );
+		glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_colors.size ( ) * sizeof ( reservoir_list_of_colors[0] ) , &reservoir_list_of_colors[0] , GL_STREAM_DRAW );
+		// Vertex Array : Set up generic attributes pointers
+		glEnableVertexAttribArray ( reservoir_color_location );
+		glVertexAttribPointer ( reservoir_color_location , 4 , GL_FLOAT , GL_FALSE , 0 , 0 );
+
+		glBindBuffer ( GL_ARRAY_BUFFER , reservoir_renderFlag_buffer );
+		glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_renderFlag.size ( ) * sizeof ( reservoir_list_of_renderFlag[0] ) , &reservoir_list_of_renderFlag[0] , GL_STREAM_DRAW );
+		// Vertex Array : Set up generic attributes pointers
+		glEnableVertexAttribArray ( reservoir_renderFlag_buffer );
+		glVertexAttribPointer ( reservoir_renderFlag_location , 4 , GL_FLOAT , GL_FALSE , 0 , 0 );
+
+		// FIXME glVertexAttribIPointer FOR INTEGERS!
+		glBindBuffer ( GL_ARRAY_BUFFER , reservoir_IJK_buffer );
+		glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_IJKs.size ( ) * sizeof ( reservoir_list_of_IJKs[0] ) , &reservoir_list_of_IJKs[0] , GL_STREAM_DRAW );
+		// Vertex Array : Set up generic attributes pointers
+		glEnableVertexAttribArray ( reservoir_IJK_buffer );
+		glVertexAttribIPointer ( reservoir_IJK_location , 4 , GL_INT, 0 , 0 );
+
+		glBindBuffer ( GL_ELEMENT_ARRAY_BUFFER , reservoir_indices_buffer );
+		glBufferData ( GL_ELEMENT_ARRAY_BUFFER , reservoir_list_of_indices.size ( ) * sizeof ( reservoir_list_of_indices[0] ) , &reservoir_list_of_indices[0] , GL_STATIC_DRAW );
+
+		glBindVertexArray(0);
+
+		changeProperty(0);
+
+		ires_has_been_open_sucessefully = 1;
+	}
+	else
+	{
+		ires_has_been_open_sucessefully = 0;
+	}
+
+
 //	ires::Ires file(true);
 //
 //	reservoir_list_of_charles.clear();
@@ -1684,22 +1785,22 @@ void GLWidget::NoCutawaySetUp ( )
 	glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
 
-	if ( reservoir_list_of_charles.size() > 0 )
-	{
-
-
-		charles_Shader.active ( );
-
-		glUniformMatrix4fv ( charles_Shader.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-		glUniformMatrix4fv ( charles_Shader.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
-		glUniform2f ( charles_Shader.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
-		glBindVertexArray ( vertexArray_Charles );
-		glDrawArrays ( GL_LINES_ADJACENCY , 0 , reservoir_list_of_charles.size ( ) );
-		glBindVertexArray ( 0 );
-
-		charles_Shader.deactive ( );
-
-	}
+//	if ( reservoir_list_of_charles.size() > 0 )
+//	{
+//
+//
+//		charles_Shader.active ( );
+//
+//		glUniformMatrix4fv ( charles_Shader.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+//		glUniformMatrix4fv ( charles_Shader.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+//		glUniform2f ( charles_Shader.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
+//		glBindVertexArray ( vertexArray_Charles );
+//		glDrawArrays ( GL_LINES_ADJACENCY , 0 , reservoir_list_of_charles.size ( ) );
+//		glBindVertexArray ( 0 );
+//
+//		charles_Shader.deactive ( );
+//
+//	}
 
  	if ( ires_has_been_open_sucessefully )
 	{
@@ -1758,23 +1859,23 @@ void GLWidget::NoCutawaySetUp ( )
 			}
 
 
-// 			secondary.active ( );
-//
-// 			glUniform3fv ( secondary.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
-//
-// 			glUniform3i ( secondary.uniforms_["min_IJK"].location , min_I_, min_J_, min_K_ );
-// 			glUniform3i ( secondary.uniforms_["max_IJK"].location , max_I_, max_J_, max_K_ );
-//
-//			glUniform2f ( secondary.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
-//
-//			glUniformMatrix4fv ( secondary.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-//			glUniformMatrix4fv ( secondary.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
-//
-//			glBindVertexArray(vertexArray);
-//			glDrawArrays ( GL_LINES_ADJACENCY , 0 , reservoir_list_of_vertices.size());
-//			glBindVertexArray(0);
-//
-//			secondary.deactive ( );
+ 			secondary.active ( );
+
+ 			glUniform3fv ( secondary.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
+
+ 			glUniform3i ( secondary.uniforms_["min_IJK"].location , min_I_, min_J_, min_K_ );
+ 			glUniform3i ( secondary.uniforms_["max_IJK"].location , max_I_, max_J_, max_K_ );
+
+			glUniform2f ( secondary.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
+
+			glUniformMatrix4fv ( secondary.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+			glUniformMatrix4fv ( secondary.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+
+			glBindVertexArray(vertexArray);
+			glDrawArrays ( GL_LINES_ADJACENCY , 0 , reservoir_list_of_vertices.size());
+			glBindVertexArray(0);
+
+			secondary.deactive ( );
 
 
 

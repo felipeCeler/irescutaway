@@ -189,6 +189,7 @@ namespace IRES
 			std::vector<IRES::Block>                blocks;
 
 			Celer::BoundingBox3<double> box;
+			Celer::BoundingBox3<float>  box_v2;
 
 			ires::IresHeader header_v2_;
 
