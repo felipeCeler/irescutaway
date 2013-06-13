@@ -20,6 +20,62 @@ namespace IRES
 		// TODO Auto-generated destructor stub
 	}
 
+
+	void CornerPointGrid::openIRES_Version_2 ( const std::string& filename )
+	{
+
+		ires::Ires reservoir_file(true);
+
+		reservoir_file.readFile( filename );
+
+		header_v2_ = reservoir_file.getHeader();
+
+		std::cout << std::setfill ( '-' ) << std::setw ( 55 ) << "-" <<  std::endl;
+
+		std::cout << std::setw(50) << std::left << "Version : " << std::setiosflags(std::ios::right) << header_v2_.version << std::endl;
+		std::cout << std::setw(50) << std::left << "First Title : " << header_v2_.title << std::endl;
+		std::cout << std::setw(50) << std::left << "Run date : " << header_v2_.runDate << std::endl;
+		std::cout << std::setw(50) << std::left << "Number of Blocks in I direction :" << header_v2_.numI << std::endl;
+		std::cout << std::setw(50) << std::left << "Number of Blocks in J direction :" << header_v2_.numJ << std::endl;
+		std::cout << std::setw(50) << std::left << "Number of Blocks in K direction :" << header_v2_.numK << std::endl;
+		std::cout << std::setw(50) << std::left << "Number of Time Steps : " << header_v2_.numTimesteps << std::endl;
+		std::cout << std::setw(50) << std::left << "Number of Dynamic : " << header_v2_.numDynamicProps << std::endl;
+		std::cout << std::setw(50) << std::left << "Number of Static : " << header_v2_.numStaticProps << std::endl;
+
+		std::cout << std::setfill ( '-' ) << std::setw ( 55 ) << "-" << std::endl;
+
+		header_ = TheHeader();
+
+		header_.number_of_Blocks_in_I_Direction = header_v2_.numI;
+		header_.number_of_Blocks_in_J_Direction = header_v2_.numJ;
+		header_.number_of_Blocks_in_K_Direction = header_v2_.numK;
+
+		std::vector<std::string> 	static_names;
+
+		reservoir_file.getStaticPropertyNames(static_names);
+
+		static_porperties.clear();
+		static_porperties.resize( static_names.size( ) );
+
+		for ( int i = 0; i < static_names.size(); i++)
+		{
+
+			static_names[i].erase ( std::remove_if ( static_names[i].begin ( ) , static_names[i].end ( ) , ::iscntrl ) , static_names[i].end ( ) );
+			static_porperties[i].name = static_names[i];
+
+			reservoir_file.getStaticPropertyValues( i, static_porperties[i].values_ );
+
+ 		}
+
+		/* TODO Fazer getVertices return boolean , not false;
+		 * 	Get for std::vector<F32> m_vertexList;
+	         *	        std::vector<U32> m_blockList;	  // Contains indices into the vertex list.
+	         *              std::vector<int> m_blockIndexList;
+	         */
+
+
+	}
+
 	void CornerPointGrid::openIRES ( const std::string& filename )
 	{
 		std::ifstream inFile;
@@ -36,6 +92,9 @@ namespace IRES
 		}
 		else  // Let's ready this piece of "cake".
 		{
+
+			header_ = TheHeader();
+
 			std::cout << " File is successfully opened " << std::endl;
 
 			inFile.read ( (char*) &header_ , sizeof ( header_ ) );

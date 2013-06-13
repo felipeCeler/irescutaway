@@ -70,14 +70,14 @@ MainWindow::MainWindow ( QMainWindow *parent ) :
 
 void MainWindow::open( QString pFilename,bool who ) {
 
-	glWidget->openIRES( pFilename.toLocal8Bit().constData() );
+	glWidget->openIRESCharles( pFilename.toLocal8Bit().constData() );
 
 	if ( glWidget->isIresWasOpenedSucessufully( ))
 	{
 
 		updateDoubleSpinMax( 0 );
 		updateDoubleSpinMin( 0 );
-		ui->properties_tableWidget_->setRowCount(glWidget->reservoir_model_.static_porperties.size( ));
+		ui->properties_tableWidget_->setRowCount(2*glWidget->reservoir_model_.static_porperties.size( ));
 		ui->comboBox_choose_an_property_->clear();
 
 		for ( int i = 0 ; i < glWidget->reservoir_model_.static_porperties.size( ); ++i )

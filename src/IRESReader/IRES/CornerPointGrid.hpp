@@ -28,6 +28,9 @@
 // IRES Classes
 #include <IRES/Block.hpp>
 
+/// Ires Library
+#include <ires/ires.h>
+
 namespace IRES
 {
 
@@ -187,11 +190,15 @@ namespace IRES
 
 			Celer::BoundingBox3<double> box;
 
+			ires::IresHeader header_v2_;
+
 		public:
 
 			CornerPointGrid ( );
 
 			virtual ~CornerPointGrid ( );
+
+			void openIRES_Version_2 ( const std::string& filename );
 
 			void openIRES ( const std::string& filename );
 

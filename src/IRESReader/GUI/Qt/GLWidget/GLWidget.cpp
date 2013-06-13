@@ -1250,139 +1250,142 @@ void GLWidget::openIRES2 ( const std::string& filename )
 void GLWidget::openIRESCharles( const std::string& filename )
 {
 
-	ires::Ires file(true);
+	reservoir_model_.openIRES_Version_2( filename );
 
-	reservoir_list_of_charles.clear();
-
-	//reservoir_model_eclipse.readFile( filename );
-	bool result = file.readFile( filename );
-
-	if ( result)
-		std::cout <<  " ok " << std::endl;
-	else
-		std::cout <<  " WHAT " << std::endl;
-
-	unsigned int i,j,k;
-
-	file.getNumIJK(i,j,k);
-
-	std::cout <<  " I J K  " << i*j*k << std::endl;
-
-	//file.generateTriangleList( 0,0,0,i,j,k,reservoir_list_of_charles,false,false,false);
-
-
-	float v[24];
-
-	Celer::Vector4<GLfloat> vecs[8];
-
-
-	for ( int index = 0 ; index < i*j*k ; index++)
-	{
-		file.getBlockVertices(index,v);
-
-		vecs[0].x = v[0];
-		vecs[0].y = v[1];
-		vecs[0].z = v[2];
-		vecs[0].w = 1.0f;
-
-		vecs[1].x = v[3];
-		vecs[1].y = v[4];
-		vecs[1].z = v[5];
-		vecs[1].w = 1.0f;
-
-		vecs[2].x = v[6];
-		vecs[2].y = v[7];
-		vecs[2].z = v[8];
-		vecs[2].w = 1.0f;
-
-		vecs[3].x = v[9];
-		vecs[3].y = v[10];
-		vecs[3].z = v[11];
-		vecs[3].w = 1.0f;
-
-		vecs[4].x = v[12];
-		vecs[4].y = v[13];
-		vecs[4].z = v[14];
-		vecs[4].w = 1.0f;
-
-		vecs[5].x = v[15];
-		vecs[5].y = v[16];
-		vecs[5].z = v[17];
-		vecs[5].w = 1.0f;
-
-		vecs[6].x = v[18];
-		vecs[6].y = v[19];
-		vecs[6].z = v[20];
-		vecs[6].w = 1.0f;
-
-		vecs[7].x = v[21];
-		vecs[7].y = v[22];
-		vecs[7].z = v[23];
-		vecs[7].w = 1.0f;
-
-		Celer::Vector4<GLfloat> vertices [24] =
-		{
-			vecs[4],vecs[5],vecs[7],vecs[6],
-
-			vecs[0],vecs[3],vecs[1],vecs[2],
-
-			vecs[4],vecs[0],vecs[5],vecs[1],
-
-			vecs[2],vecs[3],vecs[6],vecs[7],
-
-			vecs[1],vecs[2],vecs[5],vecs[6],
-
-			vecs[0],vecs[3],vecs[4],vecs[7]
-		};
-
-		std::copy ( vertices 	, vertices + 24 , std::back_inserter ( reservoir_list_of_charles  ) );
-
-	}
-
-
-
-
-	std::cout << " reservoir_list_of_charles.size() " << reservoir_list_of_charles.size() << std::endl;
-
-	float minx, miny, minz, maxx, maxy, maxz;
-	file.getMinMax(minx,miny,minz,maxx,maxy,maxz);
-
-
-	Celer::Vector3<GLfloat> vmin(minx,miny,minz);
-	Celer::Vector3<GLfloat> vmax(maxx,maxy,maxz);
-
-	Celer::Vector3<GLfloat> center;
-
-	center.x = (float)((maxx + minx)/2.0);
-	center.y = (float)((maxy + miny)/2.0);
-	center.z = (float)((maxz + minz)/2.0);
-
-	float diagonal = vmin.length ( vmax );
-
-
-	camera_.setPosition ( center  );
-	camera_.setTarget ( center  );
-	std::cout << diagonal;
-	camera_.setOffset ( 3.0 * diagonal );
-
-
-	std::cout << camera_.position ( );
-
-	camera_.setBehavior ( Celer::Camera<float>::REVOLVE_AROUND_MODE );
-
-	cameraStep_ = 0.1f;
-
-
-	glBindVertexArray(vertexArray_Charles);
-
-
-	glBindBuffer ( GL_ARRAY_BUFFER , reservoir_vertices_charles_buffer );
-	glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_charles.size ( ) * sizeof ( reservoir_list_of_charles[0] ) , &reservoir_list_of_charles[0] , GL_STATIC_DRAW );
-	// Vertex Array : Set up generic attributes pointers
-	glEnableVertexAttribArray ( 0 );
-	glVertexAttribPointer ( 0 , 4 , GL_FLOAT , GL_FALSE , 0 , 0 );
-
-	glBindVertexArray(0);
+	ires_has_been_open_sucessefully = 1;
+//	ires::Ires file(true);
+//
+//	reservoir_list_of_charles.clear();
+//
+//	//reservoir_model_eclipse.readFile( filename );
+//	bool result = file.readFile( filename );
+//
+//	if ( result)
+//		std::cout <<  " ok " << std::endl;
+//	else
+//		std::cout <<  " WHAT " << std::endl;
+//
+//	unsigned int i,j,k;
+//
+//	file.getNumIJK(i,j,k);
+//
+//	std::cout <<  " I J K  " << i*j*k << std::endl;
+//
+//	//file.generateTriangleList( 0,0,0,i,j,k,reservoir_list_of_charles,false,false,false);
+//
+//
+//	float v[24];
+//
+//	Celer::Vector4<GLfloat> vecs[8];
+//
+//
+//	for ( int index = 0 ; index < i*j*k ; index++)
+//	{
+//		file.getBlockVertices(index,v);
+//
+//		vecs[0].x = v[0];
+//		vecs[0].y = v[1];
+//		vecs[0].z = v[2];
+//		vecs[0].w = 1.0f;
+//
+//		vecs[1].x = v[3];
+//		vecs[1].y = v[4];
+//		vecs[1].z = v[5];
+//		vecs[1].w = 1.0f;
+//
+//		vecs[2].x = v[6];
+//		vecs[2].y = v[7];
+//		vecs[2].z = v[8];
+//		vecs[2].w = 1.0f;
+//
+//		vecs[3].x = v[9];
+//		vecs[3].y = v[10];
+//		vecs[3].z = v[11];
+//		vecs[3].w = 1.0f;
+//
+//		vecs[4].x = v[12];
+//		vecs[4].y = v[13];
+//		vecs[4].z = v[14];
+//		vecs[4].w = 1.0f;
+//
+//		vecs[5].x = v[15];
+//		vecs[5].y = v[16];
+//		vecs[5].z = v[17];
+//		vecs[5].w = 1.0f;
+//
+//		vecs[6].x = v[18];
+//		vecs[6].y = v[19];
+//		vecs[6].z = v[20];
+//		vecs[6].w = 1.0f;
+//
+//		vecs[7].x = v[21];
+//		vecs[7].y = v[22];
+//		vecs[7].z = v[23];
+//		vecs[7].w = 1.0f;
+//
+//		Celer::Vector4<GLfloat> vertices [24] =
+//		{
+//			vecs[4],vecs[5],vecs[7],vecs[6],
+//
+//			vecs[0],vecs[3],vecs[1],vecs[2],
+//
+//			vecs[4],vecs[0],vecs[5],vecs[1],
+//
+//			vecs[2],vecs[3],vecs[6],vecs[7],
+//
+//			vecs[1],vecs[2],vecs[5],vecs[6],
+//
+//			vecs[0],vecs[3],vecs[4],vecs[7]
+//		};
+//
+//		std::copy ( vertices 	, vertices + 24 , std::back_inserter ( reservoir_list_of_charles  ) );
+//
+//	}
+//
+//
+//
+//
+//	std::cout << " reservoir_list_of_charles.size() " << reservoir_list_of_charles.size() << std::endl;
+//
+//	float minx, miny, minz, maxx, maxy, maxz;
+//	file.getMinMax(minx,miny,minz,maxx,maxy,maxz);
+//
+//
+//	Celer::Vector3<GLfloat> vmin(minx,miny,minz);
+//	Celer::Vector3<GLfloat> vmax(maxx,maxy,maxz);
+//
+//	Celer::Vector3<GLfloat> center;
+//
+//	center.x = (float)((maxx + minx)/2.0);
+//	center.y = (float)((maxy + miny)/2.0);
+//	center.z = (float)((maxz + minz)/2.0);
+//
+//	float diagonal = vmin.length ( vmax );
+//
+//
+//	camera_.setPosition ( center  );
+//	camera_.setTarget ( center  );
+//	std::cout << diagonal;
+//	camera_.setOffset ( 3.0 * diagonal );
+//
+//
+//	std::cout << camera_.position ( );
+//
+//	camera_.setBehavior ( Celer::Camera<float>::REVOLVE_AROUND_MODE );
+//
+//	cameraStep_ = 0.1f;
+//
+//
+//	glBindVertexArray(vertexArray_Charles);
+//
+//
+//	glBindBuffer ( GL_ARRAY_BUFFER , reservoir_vertices_charles_buffer );
+//	glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_charles.size ( ) * sizeof ( reservoir_list_of_charles[0] ) , &reservoir_list_of_charles[0] , GL_STATIC_DRAW );
+//	// Vertex Array : Set up generic attributes pointers
+//	glEnableVertexAttribArray ( 0 );
+//	glVertexAttribPointer ( 0 , 4 , GL_FLOAT , GL_FALSE , 0 , 0 );
+//
+//	glBindVertexArray(0);
 
 
 
