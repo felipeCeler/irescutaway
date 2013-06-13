@@ -85,6 +85,10 @@ class GLWidget: public QGLWidget
 		bool isIresWasOpenedSucessufully () const;
 		void changeProperty ( int property_index );
 		void changePropertyRange ( const double& min, const double& max, int property_index );
+
+		void changeProperty2 ( int property_index );
+		void changePropertyRange2 ( const double& min, const double& max, int property_index );
+
 		void changeIJK ( const int& min_i, const int& max_i, const int& min_j, const int& max_j, const int& min_k, const int& max_k );
 
 		void changeMaxI ( const int& value);
@@ -196,7 +200,7 @@ private:
 
 
 
-	Celer::BoundingBox3<double> 		   box;
+	Celer::BoundingBox3<float> 		   box;
 	std::list  <Celer::BoundingBox3<GLfloat> > boxes;
 	std::vector<Celer::BoundingBox3<GLfloat> > cutVolumes;
 	std::vector<Celer::Vector4<GLfloat> >      box_vertices;

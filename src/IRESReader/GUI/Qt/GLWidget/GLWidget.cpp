@@ -263,6 +263,125 @@ void GLWidget::changePropertyRange ( const double& minRange, const double& maxRa
 
 	Celer::Vector4<GLfloat> color;
 
+	for ( int i = 0; i < reservoir_model_.header_.number_of_Blocks; i++)
+	{
+		if ( reservoir_model_.blocks[i].valid )
+		{
+
+			float normalizedColor = ( reservoir_model_.blocks[i].static_porperties[property_index].value_[i] - min ) / ( max - min );
+
+			float regularValue = ( reservoir_model_.blocks[i].static_porperties[property_index].value_[i] );
+
+			Celer::Vector4<GLfloat> color(1.0,1.0,1.0,1.0);
+
+			switch ( (int) ( normalizedColor * 10.0f ) )
+			{
+				case 10:
+					color = Celer::Vector4<GLfloat> ( 1.0f , 0.0f , 0.0f , 1.0f );
+					break;
+				case 9:
+					color = Celer::Vector4<GLfloat> ( 0.5f , 0.25f , 0.0f , 1.0f );
+					break;
+				case 8:
+					color = Celer::Vector4<GLfloat> ( 0.5f , 0.5f , 0.0f , 1.0f );
+					break;
+				case 7:
+					color = Celer::Vector4<GLfloat> ( 0.25f , 0.5f , 0.0f , 1.0f );
+					break;
+				case 6:
+					color = Celer::Vector4<GLfloat> ( 0.0f , 0.25f , 0.0f , 1.0f );
+					break;
+				case 5:
+					color = Celer::Vector4<GLfloat> ( 0.0f , 0.5f , 0.2f , 1.0f );
+					break;
+				case 4:
+					color = Celer::Vector4<GLfloat> ( 0.0f , 0.5f , 0.4f , 1.0f );
+					break;
+				case 3:
+					color = Celer::Vector4<GLfloat> ( 0 , 0.4 , 0.5 , 1.0f );
+					break;
+				case 2:
+					color = Celer::Vector4<GLfloat> ( 0 , 0.2 , 0.5 , 1.0f );
+					break;
+				case 1:
+					color = Celer::Vector4<GLfloat> ( 0 , 0 , 0.5 , 1.0f );
+					break;
+				case 0:
+					color = Celer::Vector4<GLfloat> ( 0 , 0 , 0.375 , 1.0f );
+					break;
+					//if value is equal to max
+				default:
+					color = Celer::Vector4<GLfloat> ( 0.5f , 0.5f , 0.5f , 1.0f );
+					break;
+
+			}
+
+			colors = std::vector<Celer::Vector4<GLfloat> > ( 24 , color );
+
+			if ( ( regularValue >= minRange ) && ( regularValue <= maxRange ) )
+			{
+				renderFlags = std::vector<Celer::Vector4<GLfloat> > ( 24 , Celer::Vector4<GLfloat> ( 0.0f , 1.0f , 0.0f , 1.0f ) );
+
+				box.fromPointCloud ( reservoir_model_.blocks[i].vertices.begin ( ) , reservoir_model_.blocks[i].vertices.end ( ) );
+
+				boxes.push_back( box );
+
+
+			}
+			else
+			{
+				renderFlags = std::vector<Celer::Vector4<GLfloat> > ( 24 , Celer::Vector4<GLfloat> ( 1.0f , 1.0f , 0.0f , 1.0f ) );
+			}
+
+			std::copy ( colors.begin( ) 	, colors.begin( )      + 24 , std::back_inserter ( reservoir_list_of_colors     ) );
+			std::copy ( renderFlags.begin( ), renderFlags.begin( ) + 24 , std::back_inserter ( reservoir_list_of_renderFlag ) );
+			i += 8;
+		}
+		else
+		{
+			i += 1;
+		}
+	}
+
+	// Loop over the boxes
+	CutVolumeGenerator();
+
+	std::cout << " number of boxes " << cutVolumes.size( ) << std::endl;
+
+	glBindVertexArray(vertexArray);
+
+	glBindBuffer ( GL_ARRAY_BUFFER , reservoir_color_buffer );
+	glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_colors.size ( ) * sizeof ( reservoir_list_of_colors[0] ) , &reservoir_list_of_colors[0] , GL_STREAM_DRAW );
+
+	glBindBuffer ( GL_ARRAY_BUFFER , reservoir_renderFlag_buffer );
+	glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_renderFlag.size ( ) * sizeof ( reservoir_list_of_renderFlag[0] ) , &reservoir_list_of_renderFlag[0] , GL_STREAM_DRAW );
+
+	glBindVertexArray(0);
+
+}
+
+void GLWidget::changePropertyRange2 ( const double& minRange, const double& maxRange, int property_index )
+{
+
+
+	reservoir_list_of_colors.clear ( );
+	reservoir_list_of_renderFlag.clear ( );
+
+	boxes.clear ( );
+	cutVolumes.clear();
+
+	std::cout << "Changing the property to : " << reservoir_model_.static_porperties[property_index].name << std::endl;
+
+	float min = *std::min_element ( reservoir_model_.static_porperties[property_index].values_.begin ( ) , reservoir_model_.static_porperties[property_index].values_.end ( ) );
+	float max = *std::max_element ( reservoir_model_.static_porperties[property_index].values_.begin ( ) , reservoir_model_.static_porperties[property_index].values_.end ( ) );
+
+	std::size_t i = 0;
+
+	std::vector<Celer::Vector4<GLfloat> > colors ( 24 );
+	std::vector<Celer::Vector4<GLfloat> > renderFlags ( 24 );
+
+	Celer::Vector4<GLfloat> color;
+
 	while ( i < reservoir_model_.block_indices.size ( ) )
 	{
 		if ( reservoir_model_.block_indices[i] != -1 )
@@ -401,11 +520,7 @@ void GLWidget::changePropertyRange ( const double& minRange, const double& maxRa
 
 			std::copy ( colors.begin( ) 	, colors.begin( )      + 24 , std::back_inserter ( reservoir_list_of_colors     ) );
 			std::copy ( renderFlags.begin( ), renderFlags.begin( ) + 24 , std::back_inserter ( reservoir_list_of_renderFlag ) );
-			i += 8;
-		}
-		else
-		{
-			i += 1;
+
 		}
 	}
 
@@ -429,7 +544,104 @@ void GLWidget::changePropertyRange ( const double& minRange, const double& maxRa
 void GLWidget::changeProperty ( int property_index )
 {
 
+	reservoir_list_of_colors.clear ( );
 
+	std::cout << "Changing the property to : " << reservoir_model_.static_porperties[property_index].name << std::endl;
+
+	float min = *std::min_element ( reservoir_model_.static_porperties[property_index].values_.begin ( ) , reservoir_model_.static_porperties[property_index].values_.end ( ) );
+	float max = *std::max_element ( reservoir_model_.static_porperties[property_index].values_.begin ( ) , reservoir_model_.static_porperties[property_index].values_.end ( ) );
+
+	std::cout << "Property Max : " << min << std::endl;
+	std::cout << "Property Min : " << max << std::endl;
+
+	std::size_t i = 0;
+
+	for ( int i = 0; i < reservoir_model_.header_.number_of_Blocks; i++)
+	{
+		if ( reservoir_model_.blocks[i].valid )
+		{
+
+			float normalized_color = ( reservoir_model_.blocks[i].static_porperties[property_index].value_[i] - min ) / ( max - min );
+
+			Celer::Vector4<GLfloat> color(1.0,1.0,1.0,1.0);
+
+			switch ( (int) ( normalized_color * 10.0f ) )
+			{
+				case 10:
+					color = Celer::Vector4<GLfloat> ( 1.0f , 0.0f , 0.0f , 1.0f );
+					break;
+				case 9:
+					color = Celer::Vector4<GLfloat> ( 0.5f , 0.25f , 0.0f , 1.0f );
+					break;
+				case 8:
+					color = Celer::Vector4<GLfloat> ( 0.5f , 0.5f , 0.0f , 1.0f );
+					break;
+				case 7:
+					color = Celer::Vector4<GLfloat> ( 0.25f , 0.5f , 0.0f , 1.0f );
+					break;
+				case 6:
+					color = Celer::Vector4<GLfloat> ( 0.0f , 0.25f , 0.0f , 1.0f );
+					break;
+				case 5:
+					color = Celer::Vector4<GLfloat> ( 0.0f , 0.5f , 0.2f , 1.0f );
+					break;
+				case 4:
+					color = Celer::Vector4<GLfloat> ( 0.0f , 0.5f , 0.4f , 1.0f );
+					break;
+				case 3:
+					color = Celer::Vector4<GLfloat> ( 0 , 0.4 , 0.5 , 1.0f );
+					break;
+				case 2:
+					color = Celer::Vector4<GLfloat> ( 0 , 0.2 , 0.5 , 1.0f );
+					break;
+				case 1:
+					color = Celer::Vector4<GLfloat> ( 0 , 0 , 0.5 , 1.0f );
+					break;
+				case 0:
+					color = Celer::Vector4<GLfloat> ( 0 , 0 , 0.375 , 1.0f );
+					break;
+					//if value is equal to max
+				default:
+					color = Celer::Vector4<GLfloat> ( 0.5f , 0.0f , 0.0f , 1.0f );
+					break;
+			}
+
+			Celer::Vector4<GLfloat> colors[] =
+			{
+				color, color, color, color, color, color,
+
+				color, color, color, color, color, color,
+
+				color, color, color, color, color, color,
+
+				color, color, color, color, color, color,
+			};
+
+			std::copy ( colors , colors + 24 , std::back_inserter ( reservoir_list_of_colors ) );
+
+			i += 8;
+
+		}
+		else
+		{
+			i += 1;
+		}
+	}
+
+	glBindVertexArray(vertexArray);
+
+	glBindBuffer ( GL_ARRAY_BUFFER , reservoir_color_buffer );
+	glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_colors.size ( ) * sizeof ( reservoir_list_of_colors[0] ) , &reservoir_list_of_colors[0] , GL_STREAM_DRAW );
+
+	glBindVertexArray(0);
+
+
+
+}
+
+void GLWidget::changeProperty2 ( int property_index )
+{
+	// Vertex Array : Set up generic attributes pointers
 	reservoir_list_of_colors.clear ( );
 
 	std::cout << "Changing the property to : " << reservoir_model_.static_porperties[property_index].name << std::endl;
@@ -522,6 +734,7 @@ void GLWidget::changeProperty ( int property_index )
 	glBindVertexArray(0);
 
 	// Vertex Array : Set up generic attributes pointers
+
 
 }
 
