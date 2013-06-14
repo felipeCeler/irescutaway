@@ -4,4 +4,4 @@
 	url = git@github.com:felipeCeler/celer-sources.git
 [submodule "libs/Ires"]
 	path = libs/Ires
-	url = git@bitbucket.org:cdebavel/iresv2.git
+	url = git@bitbucket.org:celer/iresv2.git
