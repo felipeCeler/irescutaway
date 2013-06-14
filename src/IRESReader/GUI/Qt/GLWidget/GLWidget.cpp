@@ -698,6 +698,7 @@ void GLWidget::openIRESCharles( const std::string& filename )
 			}
 		}
 
+		changeProperty(0);
 
 		max_I_ = 0;
 		min_I_ = 0;
@@ -798,7 +799,6 @@ void GLWidget::openIRESCharles( const std::string& filename )
 
 		glBindVertexArray(0);
 
-		changeProperty(0);
 
 		ires_has_been_open_sucessefully = 1;
 	}
