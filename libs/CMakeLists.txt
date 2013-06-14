@@ -8,13 +8,17 @@ include_directories(
         )
 
 
-set( Ires_SOURCES Ires/ires/ires.cpp ires/reader.cpp ires/writer.cpp ires/kdtree.cpp 
+set( Ires_SOURCES Ires/ires/ires.cpp 
+                  Ires//ires/reader.cpp 
+                  Ires/ires/writer.cpp 
+                  Ires/ires/kdtree.cpp 
                   Ires/ires/snappy/snappy.cc
                   Ires/ires/snappy/snappy-c.cc
                   Ires/ires/snappy/snappy-sinksource.cc
                   Ires/ires/snappy/snappy-stubs-internal.cc )
                   
-set( Ires_HEADERS Ires/ires/ires.h ires/common.h
+set( Ires_HEADERS Ires/ires/ires.h 
+                  Ires/ires/common.h
                   Ires/ires/snappy/snappy.h
                   Ires/ires/snappy/snappy-c.h
                   Ires/ires/snappy/snappy-internal.h
