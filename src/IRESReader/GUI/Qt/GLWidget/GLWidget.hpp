@@ -79,15 +79,10 @@ class GLWidget: public QGLWidget
 		void animate ( );
 		void LoadShaders ( );
 		void CutVolumeGenerator ( );
-		void openIRES  ( const std::string& filename );
-		void openIRES2 ( const std::string& filename );
 		void openIRESCharles  ( const std::string& filename );
 		bool isIresWasOpenedSucessufully () const;
 		void changeProperty ( int property_index );
 		void changePropertyRange ( const double& min, const double& max, int property_index );
-
-		void changeProperty2 ( int property_index );
-		void changePropertyRange2 ( const double& min, const double& max, int property_index );
 
 		void changeIJK ( const int& min_i, const int& max_i, const int& min_j, const int& max_j, const int& min_k, const int& max_k );
 

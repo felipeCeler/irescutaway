@@ -268,9 +268,9 @@ void GLWidget::changePropertyRange ( const double& minRange, const double& maxRa
 		if ( reservoir_model_.blocks[i].valid )
 		{
 
-			float normalizedColor = ( reservoir_model_.blocks[i].static_porperties[property_index].value_[i] - min ) / ( max - min );
+			float normalizedColor = ( reservoir_model_.blocks[i].static_porperties[property_index].value_ - min ) / ( max - min );
 
-			float regularValue = ( reservoir_model_.blocks[i].static_porperties[property_index].value_[i] );
+			float regularValue = ( reservoir_model_.blocks[i].static_porperties[property_index].value_ );
 
 			Celer::Vector4<GLfloat> color(1.0,1.0,1.0,1.0);
 
@@ -333,194 +333,12 @@ void GLWidget::changePropertyRange ( const double& minRange, const double& maxRa
 				renderFlags = std::vector<Celer::Vector4<GLfloat> > ( 24 , Celer::Vector4<GLfloat> ( 1.0f , 1.0f , 0.0f , 1.0f ) );
 			}
 
-			std::copy ( colors.begin( ) 	, colors.begin( )      + 24 , std::back_inserter ( reservoir_list_of_colors     ) );
-			std::copy ( renderFlags.begin( ), renderFlags.begin( ) + 24 , std::back_inserter ( reservoir_list_of_renderFlag ) );
-			i += 8;
+			std::copy ( colors.begin( ) 	, colors.end( )      , std::back_inserter ( reservoir_list_of_colors     ) );
+			std::copy ( renderFlags.begin( ), renderFlags.end( ) , std::back_inserter ( reservoir_list_of_renderFlag ) );
 		}
 		else
 		{
-			i += 1;
-		}
-	}
-
-	// Loop over the boxes
-	CutVolumeGenerator();
-
-	std::cout << " number of boxes " << cutVolumes.size( ) << std::endl;
-
-	glBindVertexArray(vertexArray);
-
-	glBindBuffer ( GL_ARRAY_BUFFER , reservoir_color_buffer );
-	glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_colors.size ( ) * sizeof ( reservoir_list_of_colors[0] ) , &reservoir_list_of_colors[0] , GL_STREAM_DRAW );
-
-	glBindBuffer ( GL_ARRAY_BUFFER , reservoir_renderFlag_buffer );
-	glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_renderFlag.size ( ) * sizeof ( reservoir_list_of_renderFlag[0] ) , &reservoir_list_of_renderFlag[0] , GL_STREAM_DRAW );
-
-	glBindVertexArray(0);
-
-}
-
-void GLWidget::changePropertyRange2 ( const double& minRange, const double& maxRange, int property_index )
-{
-
-
-	reservoir_list_of_colors.clear ( );
-	reservoir_list_of_renderFlag.clear ( );
-
-	boxes.clear ( );
-	cutVolumes.clear();
-
-	std::cout << "Changing the property to : " << reservoir_model_.static_porperties[property_index].name << std::endl;
-
-	float min = *std::min_element ( reservoir_model_.static_porperties[property_index].values_.begin ( ) , reservoir_model_.static_porperties[property_index].values_.end ( ) );
-	float max = *std::max_element ( reservoir_model_.static_porperties[property_index].values_.begin ( ) , reservoir_model_.static_porperties[property_index].values_.end ( ) );
-
-	std::size_t i = 0;
-
-	std::vector<Celer::Vector4<GLfloat> > colors ( 24 );
-	std::vector<Celer::Vector4<GLfloat> > renderFlags ( 24 );
-
-	Celer::Vector4<GLfloat> color;
-
-	while ( i < reservoir_model_.block_indices.size ( ) )
-	{
-		if ( reservoir_model_.block_indices[i] != -1 )
-		{
-
-			float regularValue = ( reservoir_model_.static_porperties[property_index].values_[i / 8] );
-
-			float normalizedColor = ( regularValue - min ) / ( max - min );
-
-			switch ( (int) ( normalizedColor * 10.0f ) )
-			{
-				case 10:
-					color = Celer::Vector4<GLfloat> ( 1.0f , 0.0f , 0.0f , 1.0f );
-					break;
-				case 9:
-					color = Celer::Vector4<GLfloat> ( 0.5f , 0.25f , 0.0f , 1.0f );
-					break;
-				case 8:
-					color = Celer::Vector4<GLfloat> ( 0.5f , 0.5f , 0.0f , 1.0f );
-					break;
-				case 7:
-					color = Celer::Vector4<GLfloat> ( 0.25f , 0.5f , 0.0f , 1.0f );
-					break;
-				case 6:
-					color = Celer::Vector4<GLfloat> ( 0.0f , 0.25f , 0.0f , 1.0f );
-					break;
-				case 5:
-					color = Celer::Vector4<GLfloat> ( 0.0f , 0.5f , 0.2f , 1.0f );
-					break;
-				case 4:
-					color = Celer::Vector4<GLfloat> ( 0.0f , 0.5f , 0.4f , 1.0f );
-					break;
-				case 3:
-					color = Celer::Vector4<GLfloat> ( 0 , 0.4 , 0.5 , 1.0f );
-					break;
-				case 2:
-					color = Celer::Vector4<GLfloat> ( 0 , 0.2 , 0.5 , 1.0f );
-					break;
-				case 1:
-					color = Celer::Vector4<GLfloat> ( 0 , 0 , 0.5 , 1.0f );
-					break;
-				case 0:
-					color = Celer::Vector4<GLfloat> ( 0 , 0 , 0.375 , 1.0f );
-					break;
-					//if value is equal to max
-				default:
-					color = Celer::Vector4<GLfloat> ( 0.5f , 0.5f , 0.5f , 1.0f );
-					break;
-
-			}
-
-			colors = std::vector<Celer::Vector4<GLfloat> > ( 24 , color );
-
-			if ( ( regularValue >= minRange ) && ( regularValue <= maxRange ) )
-			{
-				renderFlags = std::vector<Celer::Vector4<GLfloat> > ( 24 , Celer::Vector4<GLfloat> ( 0.0f , 1.0f , 0.0f , 1.0f ) );
-
-
-
-				int index [] =
-				{
-				    // Top Face
-				    reservoir_model_.block_indices[i+0],reservoir_model_.block_indices[i+1],reservoir_model_.block_indices[i+3],reservoir_model_.block_indices[i+2],/* 0 - 5*/
-				    // Bottom Face
-				    reservoir_model_.block_indices[i+4],reservoir_model_.block_indices[i+7],reservoir_model_.block_indices[i+5],reservoir_model_.block_indices[i+6],/* 6 - 11 */
-				    // Front Face
-				    reservoir_model_.block_indices[i+0],reservoir_model_.block_indices[i+7],reservoir_model_.block_indices[i+3],reservoir_model_.block_indices[i+4],/* 12 - 17*/
-				    // Back Face
-				    reservoir_model_.block_indices[i+1],reservoir_model_.block_indices[i+2],reservoir_model_.block_indices[i+6],reservoir_model_.block_indices[i+5],/* 18 - 23*/
-				    // Right Face
-				    reservoir_model_.block_indices[i+2],reservoir_model_.block_indices[i+3],reservoir_model_.block_indices[i+5],reservoir_model_.block_indices[i+4],/* 24 - 29*/
-				    // Left Face
-				    reservoir_model_.block_indices[i+0],reservoir_model_.block_indices[i+1],reservoir_model_.block_indices[i+7],reservoir_model_.block_indices[i+6] /* 30 - 35*/
-				};
-
-				// Top Face
-				Celer::Vector3<GLfloat> v0( static_cast<GLfloat>(reservoir_model_.vertices[index[0]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[0]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[0]].z));
-				Celer::Vector3<GLfloat> v1( static_cast<GLfloat>(reservoir_model_.vertices[index[1]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[1]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[1]].z));
-				Celer::Vector3<GLfloat> v3( static_cast<GLfloat>(reservoir_model_.vertices[index[2]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[2]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[2]].z));
-				Celer::Vector3<GLfloat> v2( static_cast<GLfloat>(reservoir_model_.vertices[index[3]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[3]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[3]].z));
-				// Bottom Face
-				Celer::Vector3<GLfloat> v4( static_cast<GLfloat>(reservoir_model_.vertices[index[4]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[4]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[4]].z));
-				Celer::Vector3<GLfloat> v7( static_cast<GLfloat>(reservoir_model_.vertices[index[5]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[5]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[5]].z));
-				Celer::Vector3<GLfloat> v5( static_cast<GLfloat>(reservoir_model_.vertices[index[6]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[6]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[6]].z));
-				Celer::Vector3<GLfloat> v6( static_cast<GLfloat>(reservoir_model_.vertices[index[7]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[7]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[7]].z));
-
-
-				std::vector<Celer::Vector4<GLfloat> > vertices;
-				vertices.resize( 24 );
-
-
-				// Top Face
-				vertices[0] = Celer::Vector4<GLfloat> ( v0 , 1.0f );
-				vertices[1] = Celer::Vector4<GLfloat> ( v1 , 1.0f );
-				vertices[2] = Celer::Vector4<GLfloat> ( v3 , 1.0f );
-				vertices[3] = Celer::Vector4<GLfloat> ( v2 , 1.0f );
-				// Bottom Face
-				vertices[4] = Celer::Vector4<GLfloat> ( v4 , 1.0f );
-				vertices[5] = Celer::Vector4<GLfloat> ( v7 , 1.0f );
-				vertices[6] = Celer::Vector4<GLfloat> ( v5 , 1.0f );
-				vertices[7] = Celer::Vector4<GLfloat> ( v6 , 1.0f );
-				// Front Face
-				vertices[8] = Celer::Vector4<GLfloat> ( v0 , 1.0f );
-				vertices[9] = Celer::Vector4<GLfloat> ( v7 , 1.0f );
-				vertices[10] = Celer::Vector4<GLfloat> ( v3 , 1.0f );
-				vertices[11] = Celer::Vector4<GLfloat> ( v4 , 1.0f );
-				// Back Face
-				vertices[12] = Celer::Vector4<GLfloat> ( v1 , 1.0f );
-				vertices[13] = Celer::Vector4<GLfloat> ( v2 , 1.0f );
-				vertices[14] = Celer::Vector4<GLfloat> ( v6 , 1.0f );
-				vertices[15] = Celer::Vector4<GLfloat> ( v5 , 1.0f );
-				// Right Face
-				vertices[16] = Celer::Vector4<GLfloat> ( v2 , 1.0f );
-				vertices[17] = Celer::Vector4<GLfloat> ( v3 , 1.0f );
-				vertices[18] = Celer::Vector4<GLfloat> ( v5 , 1.0f );
-				vertices[19] = Celer::Vector4<GLfloat> ( v4 , 1.0f );
-				// Left Face
-				vertices[20] = Celer::Vector4<GLfloat> ( v0 , 1.0f );
-				vertices[21] = Celer::Vector4<GLfloat> ( v1 , 1.0f );
-				vertices[22] = Celer::Vector4<GLfloat> ( v7 , 1.0f );
-				vertices[23] = Celer::Vector4<GLfloat> ( v6 , 1.0f );
-
-
-				Celer::BoundingBox3<GLfloat> box;
-
-				box.fromPointCloud ( vertices.begin ( ) , vertices.end ( ) );
-
-				boxes.push_back( box );
-
-
-			}
-			else
-			{
-				renderFlags = std::vector<Celer::Vector4<GLfloat> > ( 24 , Celer::Vector4<GLfloat> ( 1.0f , 1.0f , 0.0f , 1.0f ) );
-			}
-
-			std::copy ( colors.begin( ) 	, colors.begin( )      + 24 , std::back_inserter ( reservoir_list_of_colors     ) );
-			std::copy ( renderFlags.begin( ), renderFlags.begin( ) + 24 , std::back_inserter ( reservoir_list_of_renderFlag ) );
-
+			continue;
 		}
 	}
 
@@ -561,7 +379,7 @@ void GLWidget::changeProperty ( int property_index )
 		if ( reservoir_model_.blocks[i].valid )
 		{
 
-			float normalized_color = ( reservoir_model_.blocks[i].static_porperties[property_index].value_[i] - min ) / ( max - min );
+			float normalized_color = ( reservoir_model_.blocks[i].static_porperties[property_index].value_ - min ) / ( max - min );
 
 			Celer::Vector4<GLfloat> color(1.0,1.0,1.0,1.0);
 
@@ -619,12 +437,10 @@ void GLWidget::changeProperty ( int property_index )
 
 			std::copy ( colors , colors + 24 , std::back_inserter ( reservoir_list_of_colors ) );
 
-			i += 8;
-
 		}
 		else
 		{
-			i += 1;
+			continue;
 		}
 	}
 
@@ -635,105 +451,6 @@ void GLWidget::changeProperty ( int property_index )
 
 	glBindVertexArray(0);
 
-
-
-}
-
-void GLWidget::changeProperty2 ( int property_index )
-{
-	// Vertex Array : Set up generic attributes pointers
-	reservoir_list_of_colors.clear ( );
-
-	std::cout << "Changing the property to : " << reservoir_model_.static_porperties[property_index].name << std::endl;
-
-	float min = *std::min_element ( reservoir_model_.static_porperties[property_index].values_.begin ( ) , reservoir_model_.static_porperties[property_index].values_.end ( ) );
-	float max = *std::max_element ( reservoir_model_.static_porperties[property_index].values_.begin ( ) , reservoir_model_.static_porperties[property_index].values_.end ( ) );
-
-	std::cout << "Property Max : " << min << std::endl;
-	std::cout << "Property Min : " << max << std::endl;
-
-	std::size_t i = 0;
-
-	while ( i < reservoir_model_.block_indices.size( ) )
-	{
-		if ( reservoir_model_.block_indices[i] != -1 )
-		{
-
-			float normalized_color = ( reservoir_model_.static_porperties[property_index].values_[i/8] - min ) / ( max - min );
-
-			Celer::Vector4<GLfloat> color(1.0,1.0,1.0,1.0);
-
-			switch ( (int) ( normalized_color * 10.0f ) )
-			{
-				case 10:
-					color = Celer::Vector4<GLfloat> ( 1.0f , 0.0f , 0.0f , 1.0f );
-					break;
-				case 9:
-					color = Celer::Vector4<GLfloat> ( 0.5f , 0.25f , 0.0f , 1.0f );
-					break;
-				case 8:
-					color = Celer::Vector4<GLfloat> ( 0.5f , 0.5f , 0.0f , 1.0f );
-					break;
-				case 7:
-					color = Celer::Vector4<GLfloat> ( 0.25f , 0.5f , 0.0f , 1.0f );
-					break;
-				case 6:
-					color = Celer::Vector4<GLfloat> ( 0.0f , 0.25f , 0.0f , 1.0f );
-					break;
-				case 5:
-					color = Celer::Vector4<GLfloat> ( 0.0f , 0.5f , 0.2f , 1.0f );
-					break;
-				case 4:
-					color = Celer::Vector4<GLfloat> ( 0.0f , 0.5f , 0.4f , 1.0f );
-					break;
-				case 3:
-					color = Celer::Vector4<GLfloat> ( 0 , 0.4 , 0.5 , 1.0f );
-					break;
-				case 2:
-					color = Celer::Vector4<GLfloat> ( 0 , 0.2 , 0.5 , 1.0f );
-					break;
-				case 1:
-					color = Celer::Vector4<GLfloat> ( 0 , 0 , 0.5 , 1.0f );
-					break;
-				case 0:
-					color = Celer::Vector4<GLfloat> ( 0 , 0 , 0.375 , 1.0f );
-					break;
-					//if value is equal to max
-				default:
-					color = Celer::Vector4<GLfloat> ( 0.5f , 0.0f , 0.0f , 1.0f );
-					break;
-			}
-
-			Celer::Vector4<GLfloat> colors[] =
-			{
-				color, color, color, color, color, color,
-
-				color, color, color, color, color, color,
-
-				color, color, color, color, color, color,
-
-				color, color, color, color, color, color,
-			};
-
-			std::copy ( colors , colors + 24 , std::back_inserter ( reservoir_list_of_colors ) );
-
-			i += 8;
-
-		}
-		else
-		{
-			i += 1;
-		}
-	}
-
-	glBindVertexArray(vertexArray);
-
-	glBindBuffer ( GL_ARRAY_BUFFER , reservoir_color_buffer );
-	glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_colors.size ( ) * sizeof ( reservoir_list_of_colors[0] ) , &reservoir_list_of_colors[0] , GL_STREAM_DRAW );
-
-	glBindVertexArray(0);
-
-	// Vertex Array : Set up generic attributes pointers
 
 
 }
@@ -866,6 +583,8 @@ bool GLWidget::getVertices( unsigned int blockIndex, float * vertices )
 void GLWidget::IRES_v1_to_IRESv2( const std::string& filename )
 {
 
+	reservoir_model_.openIRES( filename );
+
 	ires::Ires new_reservoir_file_(true);
 
 	std::function<bool (unsigned int , float * )> fn = std::bind(&GLWidget::getVertices, this, std::placeholders::_1, std::placeholders::_2);
@@ -893,15 +612,15 @@ void GLWidget::IRES_v1_to_IRESv2( const std::string& filename )
 
 	std::cout << " Block Index " << cont  << std::endl;
 
-	new_reservoir_file_.setHeaderData("Test IRES 2!", ires::Date(ires::Date::Year(2013), ires::Date::Month(6), ires::Date::Day(10)), 0);
+	new_reservoir_file_.setHeaderData("sapphire-208000", ires::Date(ires::Date::Year(2013), ires::Date::Month(6), ires::Date::Day(10)), 0);
 
-	bool result = new_reservoir_file_.writeFile("NewIRES");
+	bool result = new_reservoir_file_.writeFile("sapphire-208000.ires2");
 
 	std::cout << "result" << result << std::endl;
 
 	if (result )
 	{
-		new_reservoir_file_.readFile( "NewIRES.ires" );
+		new_reservoir_file_.readFile( "sapphire-208000.ires2.ires" );
 	}
 
 
@@ -941,523 +660,6 @@ void GLWidget::IRES_v1_to_IRESv2( const std::string& filename )
 
 	}
 
-}
-
-void GLWidget::openIRES ( const std::string& filename )
-{
-
-	reservoir_model_.openIRES(filename);
-
-	if ( reservoir_model_.block_indices.size ( ) > 0 )
-	{
-
-
-		IRES_v1_to_IRESv2(filename);
-
-		ires_has_been_open_sucessefully = 1;
-
-		reservoir_list_of_vertices.clear ( );
-		reservoir_list_of_normals.clear ( );
-		reservoir_list_of_colors.clear ( );
-		reservoir_list_of_IJKs.clear ( );
-		reservoir_list_of_renderFlag.clear( );
-		reservoir_list_of_indices.clear ( );
-
-		// Cube in Geometry Shader
-		reservoir_list_of_triangle_adjacency.clear();
-
-		std::size_t i = 0;
-
-		while ( i < reservoir_model_.block_indices.size ( ) )
-		{
-			if ( reservoir_model_.block_indices[i] != -1)
-			{
-
-
-				/// From Nicole`s presentation
-				Celer::Vector4<int> IJK ( (  (i/8) % reservoir_model_.header_.number_of_Blocks_in_I_Direction) + 1,
-						          ( ((i/8) / reservoir_model_.header_.number_of_Blocks_in_I_Direction) % reservoir_model_.header_.number_of_Blocks_in_J_Direction ) +1,
-						          (  (i/8) / (reservoir_model_.header_.number_of_Blocks_in_I_Direction * reservoir_model_.header_.number_of_Blocks_in_J_Direction )) +1,
-						          0 );
-
-				Celer::Vector4<int> IJKs [] =
-				{
-
-				     IJK,IJK,IJK,IJK, IJK,IJK,IJK,IJK, IJK,IJK,IJK,IJK, IJK,IJK,IJK,IJK, IJK,IJK,IJK,IJK ,IJK,IJK,IJK,IJK
-
-				};
-
-
-				int index [] =
-				{
-				    // Top Face
-				    reservoir_model_.block_indices[i+0],reservoir_model_.block_indices[i+1],reservoir_model_.block_indices[i+3],reservoir_model_.block_indices[i+2],/* 0 - 5*/
-				    // Bottom Face
-				    reservoir_model_.block_indices[i+4],reservoir_model_.block_indices[i+7],reservoir_model_.block_indices[i+5],reservoir_model_.block_indices[i+6],/* 6 - 11 */
-				    // Front Face
-				    reservoir_model_.block_indices[i+0],reservoir_model_.block_indices[i+7],reservoir_model_.block_indices[i+3],reservoir_model_.block_indices[i+4],/* 12 - 17*/
-				    // Back Face
-				    reservoir_model_.block_indices[i+1],reservoir_model_.block_indices[i+2],reservoir_model_.block_indices[i+6],reservoir_model_.block_indices[i+5],/* 18 - 23*/
-				    // Right Face
-				    reservoir_model_.block_indices[i+2],reservoir_model_.block_indices[i+3],reservoir_model_.block_indices[i+5],reservoir_model_.block_indices[i+4],/* 24 - 29*/
-				    // Left Face
-				    reservoir_model_.block_indices[i+0],reservoir_model_.block_indices[i+1],reservoir_model_.block_indices[i+7],reservoir_model_.block_indices[i+6] /* 30 - 35*/
-				};
-
-				// Top Face
-				Celer::Vector3<GLfloat> v0( static_cast<GLfloat>(reservoir_model_.vertices[index[0]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[0]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[0]].z));
-				Celer::Vector3<GLfloat> v1( static_cast<GLfloat>(reservoir_model_.vertices[index[1]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[1]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[1]].z));
-				Celer::Vector3<GLfloat> v3( static_cast<GLfloat>(reservoir_model_.vertices[index[2]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[2]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[2]].z));
-				Celer::Vector3<GLfloat> v2( static_cast<GLfloat>(reservoir_model_.vertices[index[3]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[3]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[3]].z));
-				// Bottom Face
-				Celer::Vector3<GLfloat> v4( static_cast<GLfloat>(reservoir_model_.vertices[index[4]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[4]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[4]].z));
-				Celer::Vector3<GLfloat> v7( static_cast<GLfloat>(reservoir_model_.vertices[index[5]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[5]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[5]].z));
-				Celer::Vector3<GLfloat> v5( static_cast<GLfloat>(reservoir_model_.vertices[index[6]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[6]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[6]].z));
-				Celer::Vector3<GLfloat> v6( static_cast<GLfloat>(reservoir_model_.vertices[index[7]].x), static_cast<GLfloat>(reservoir_model_.vertices[index[7]].y), static_cast<GLfloat>(reservoir_model_.vertices[index[7]].z));
-
-				Celer::Vector4<GLfloat> vertices [] =
-				{
-				    // Top Face
-				    Celer::Vector4<GLfloat> ( v0, 1.0f),
-				    Celer::Vector4<GLfloat> ( v3, 1.0f),
-				    Celer::Vector4<GLfloat> ( v1, 1.0f),
-				    Celer::Vector4<GLfloat> ( v2, 1.0f),
-				    // Bottom Face
-				    Celer::Vector4<GLfloat> ( v4, 1.0f),
-				    Celer::Vector4<GLfloat> ( v7, 1.0f),
-				    Celer::Vector4<GLfloat> ( v5, 1.0f),
-				    Celer::Vector4<GLfloat> ( v6, 1.0f),
-				    // Front Face
-				    Celer::Vector4<GLfloat> ( v0, 1.0f),
-				    Celer::Vector4<GLfloat> ( v7, 1.0f),
-				    Celer::Vector4<GLfloat> ( v3, 1.0f),
-				    Celer::Vector4<GLfloat> ( v4, 1.0f),
-				    // Back Face
-				    Celer::Vector4<GLfloat> ( v1, 1.0f),
-				    Celer::Vector4<GLfloat> ( v2, 1.0f),
-				    Celer::Vector4<GLfloat> ( v6, 1.0f),
-				    Celer::Vector4<GLfloat> ( v5, 1.0f),
-				    // Right Face
-				    Celer::Vector4<GLfloat> ( v2, 1.0f),
-				    Celer::Vector4<GLfloat> ( v3, 1.0f),
-				    Celer::Vector4<GLfloat> ( v5, 1.0f),
-				    Celer::Vector4<GLfloat> ( v4, 1.0f),
-				    // Left Face
-				    Celer::Vector4<GLfloat> ( v0, 1.0f),
-				    Celer::Vector4<GLfloat> ( v1, 1.0f),
-				    Celer::Vector4<GLfloat> ( v7, 1.0f),
-				    Celer::Vector4<GLfloat> ( v6, 1.0f)
-				};
-
-				Celer::Vector4<GLfloat> vertices_triangle_adjacency [] =
-				{
-   				     // Top Face
-				     Celer::Vector4<GLfloat> ( v0, v5.x ),
-				     Celer::Vector4<GLfloat> ( v3, v5.y ),
-				     Celer::Vector4<GLfloat> ( v1, v5.z ),
-				     Celer::Vector4<GLfloat> ( v2, v6.x ),
-				     // Bottom Face
-				     Celer::Vector4<GLfloat> ( v4, v6.y ),
-				     Celer::Vector4<GLfloat> ( v7, v6.z )
-				};
-
-				Celer::Vector3<GLfloat> topNormal 	= ((v3 - v0) ^ (v1 - v0)).norm();
-				//std::cout << topNormal << std::endl;
-				Celer::Vector3<GLfloat> bottomNormal 	= ((v7 - v4) ^ (v5 - v4)).norm();
-				//std::cout << bottomNormal << std::endl;
-				Celer::Vector3<GLfloat> frontNormal 	= ((v7 - v0) ^ (v3 - v0)).norm();
-				//std::cout << frontNormal << std::endl;
-				Celer::Vector3<GLfloat> backmNormal 	= ((v2 - v1) ^ (v6 - v1)).norm();
-				//std::cout << backmNormal << std::endl;
-				Celer::Vector3<GLfloat> rightNormal 	= ((v3 - v2) ^ (v5 - v2)).norm();
-				//std::cout << rightNormal << std::endl;
-				Celer::Vector3<GLfloat> leftNormal 	= ((v1 - v0) ^ (v7 - v0)).norm();
-				//std::cout << leftNormal << std::endl;
-//
-//
-				// Care about the type: GL_DOUBLE or GL_FLOAT
-				Celer::Vector4<GLfloat> normals[] =
-				{
-				  // X Y Z
-					//  Top Face
-					Celer::Vector4<GLfloat> ( topNormal, 1.0f),
-					Celer::Vector4<GLfloat> ( topNormal, 1.0f),
-					Celer::Vector4<GLfloat> ( topNormal, 1.0f),
-					Celer::Vector4<GLfloat> ( topNormal, 1.0f),
-					// Bottom Face
-					Celer::Vector4<GLfloat> ( bottomNormal, 1.0f),
-					Celer::Vector4<GLfloat> ( bottomNormal, 1.0f),
-					Celer::Vector4<GLfloat> ( bottomNormal, 1.0f),
-					Celer::Vector4<GLfloat> ( bottomNormal, 1.0f),
-					// Front Face
-					Celer::Vector4<GLfloat> ( frontNormal, 1.0f),
-					Celer::Vector4<GLfloat> ( frontNormal, 1.0f),
-					Celer::Vector4<GLfloat> ( frontNormal, 1.0f),
-					Celer::Vector4<GLfloat> ( frontNormal, 1.0f),
-					// Back Face
-					Celer::Vector4<GLfloat> ( backmNormal, 1.0f),
-					Celer::Vector4<GLfloat> ( backmNormal, 1.0f),
-					Celer::Vector4<GLfloat> ( backmNormal, 1.0f),
-					Celer::Vector4<GLfloat> ( backmNormal, 1.0f),
-					// Right Face
-					Celer::Vector4<GLfloat> ( rightNormal, 1.0f),
-					Celer::Vector4<GLfloat> ( rightNormal, 1.0f),
-					Celer::Vector4<GLfloat> ( rightNormal, 1.0f),
-					Celer::Vector4<GLfloat> ( rightNormal, 1.0f),
-					// Left Face
-					Celer::Vector4<GLfloat> ( leftNormal, 1.0f),
-					Celer::Vector4<GLfloat> ( leftNormal, 1.0f),
-					Celer::Vector4<GLfloat> ( leftNormal, 1.0f),
-					Celer::Vector4<GLfloat> ( leftNormal, 1.0f)
-				};
-
-
-
-				Celer::Vector4<GLfloat> focus [] =
-				{
-				    // Top Face
-				    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f),
-				    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f),
-				    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f),
-				    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f),
-				    // Bottom Face
-				    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f),
-				    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f),
-				    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f),
-				    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f),
-				    // Front Face
-				    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f),
-				    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f),
-				    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f),
-				    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f),
-				    // Back Face
-				    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f),
-				    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f),
-				    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f),
-				    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f),
-				    // Right Face
-				    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f),
-				    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f),
-				    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f),
-				    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f),
-				    // Left Face
-				    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f),
-				    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f),
-				    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f),
-				    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f)
-				};
-
-
-				std::copy ( vertices 	, vertices + 24 , std::back_inserter ( reservoir_list_of_vertices  ) );
-				std::copy ( normals 	, normals  + 24 , std::back_inserter ( reservoir_list_of_normals) );
-				std::copy ( index 	, index    + 24 , std::back_inserter ( reservoir_list_of_indices   ) );
-				std::copy ( focus 	, focus    + 24 , std::back_inserter ( reservoir_list_of_renderFlag) );
-				std::copy ( IJKs 	, IJKs     + 24 , std::back_inserter ( reservoir_list_of_IJKs  ) );
-
-				//Cube in Geometry Shader
-				std::copy ( vertices_triangle_adjacency,  vertices_triangle_adjacency + 6 , std::back_inserter (reservoir_list_of_triangle_adjacency) );
-
-
-				i += 8;
-
-
-
-			}  // end of looping list of blocks
-			else
-			{
-				i += 1;
-			}
-		}
-
-		max_I_ = 0;
-		min_I_ = 0;
-		max_J_ = 0;
-		min_J_ = 0;
-		max_K_ = 0;
-		min_K_ = 0;
-
-
-		camera_.setPosition ( reservoir_model_.box.center ( ) );
-		camera_.setTarget ( reservoir_model_.box.center ( ) );
-		std::cout << reservoir_model_.box.diagonal ( );
-		camera_.setOffset ( 3.0 * reservoir_model_.box.diagonal ( ) );
-
-
-		std::cout << camera_.position ( );
-
-		camera_.setBehavior ( Celer::Camera<float>::REVOLVE_AROUND_MODE );
-
-		cameraStep_ = 0.1f;
-
-
-		glBindVertexArray(vertexArray);
-
-
-		glBindBuffer ( GL_ARRAY_BUFFER , reservoir_vertices_buffer );
-		glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_vertices.size ( ) * sizeof ( reservoir_list_of_vertices[0] ) , &reservoir_list_of_vertices[0] , GL_STATIC_DRAW );
-		// Vertex Array : Set up generic attributes pointers
-		glEnableVertexAttribArray ( reservoir_vertices_location );
-		glVertexAttribPointer ( reservoir_vertices_location , 4 , GL_FLOAT , GL_FALSE , 0 , 0 );
-
-		glBindBuffer ( GL_ARRAY_BUFFER , reservoir_normal_buffer );
-		glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_normals.size ( ) * sizeof ( reservoir_list_of_normals[0] ) , &reservoir_list_of_normals[0] , GL_STREAM_DRAW );
-		// Vertex Array : Set up generic attributes pointers
-		glEnableVertexAttribArray ( reservoir_normal_location );
-		glVertexAttribPointer ( reservoir_normal_location , 4 , GL_FLOAT , GL_FALSE , 0 , 0 );
-
-
-		glBindBuffer ( GL_ARRAY_BUFFER , reservoir_color_buffer );
-		glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_colors.size ( ) * sizeof ( reservoir_list_of_colors[0] ) , &reservoir_list_of_colors[0] , GL_STREAM_DRAW );
-		// Vertex Array : Set up generic attributes pointers
-		glEnableVertexAttribArray ( reservoir_color_location );
-		glVertexAttribPointer ( reservoir_color_location , 4 , GL_FLOAT , GL_FALSE , 0 , 0 );
-
-		glBindBuffer ( GL_ARRAY_BUFFER , reservoir_renderFlag_buffer );
-		glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_renderFlag.size ( ) * sizeof ( reservoir_list_of_renderFlag[0] ) , &reservoir_list_of_renderFlag[0] , GL_STREAM_DRAW );
-		// Vertex Array : Set up generic attributes pointers
-		glEnableVertexAttribArray ( reservoir_renderFlag_buffer );
-		glVertexAttribPointer ( reservoir_renderFlag_location , 4 , GL_FLOAT , GL_FALSE , 0 , 0 );
-
-		// FIXME glVertexAttribIPointer FOR INTEGERS!
-		glBindBuffer ( GL_ARRAY_BUFFER , reservoir_IJK_buffer );
-		glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_IJKs.size ( ) * sizeof ( reservoir_list_of_IJKs[0] ) , &reservoir_list_of_IJKs[0] , GL_STREAM_DRAW );
-		// Vertex Array : Set up generic attributes pointers
-		glEnableVertexAttribArray ( reservoir_IJK_buffer );
-		glVertexAttribIPointer ( reservoir_IJK_location , 4 , GL_INT, 0 , 0 );
-
-		glBindBuffer ( GL_ELEMENT_ARRAY_BUFFER , reservoir_indices_buffer );
-		glBufferData ( GL_ELEMENT_ARRAY_BUFFER , reservoir_list_of_indices.size ( ) * sizeof ( reservoir_list_of_indices[0] ) , &reservoir_list_of_indices[0] , GL_STATIC_DRAW );
-
-		// FIXME DONT PUT VERTEX BUFFER ID at glEnableVertexAttribArray mad BOY ouvindo RAULZITO!!
-		glBindVertexArray(vertexArray_Cube);
-
-			// Vertex Buffer for Cube in Geometry Shader
-			glBindBuffer ( GL_ARRAY_BUFFER , reservoir_vertices_triangles_adjacency_buffer );
-			glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_triangle_adjacency.size ( ) * sizeof ( reservoir_list_of_triangle_adjacency[0] ) , &reservoir_list_of_triangle_adjacency[0] , GL_STREAM_DRAW );
-			// Vertex Array : Set up generic attributes pointers
-			glEnableVertexAttribArray ( reservoir_vertices_triangles_adjacency_location );
-			glVertexAttribPointer ( reservoir_vertices_triangles_adjacency_location , 4 , GL_FLOAT , GL_FALSE , 0 , 0 );
-
-		glBindVertexArray(vertexArrayScreen);
-
-
-		GLfloat openGLScreenCoordinates[] = {
-		   -1.0f,  1.0f,
-			1.0f,  1.0f,
-			1.0f, -1.0f,
-			1.0f, -1.0f,
-		   -1.0f, -1.0f,
-		   -1.0f,  1.0f
-		  };
-
-		GLfloat textureCoordinates[] =
-		{
-			0.0f,  0.0f,
-			0.0f,  1.0f,
-			1.0f,  0.0f,
-
-			0.0f,  1.0f,
-			1.0f,  1.0f,
-			1.0f,  0.0f,
-		};
-
-		glBindBuffer ( GL_ARRAY_BUFFER , screen_buffer );
-		glBufferData ( GL_ARRAY_BUFFER, 12 *  sizeof( openGLScreenCoordinates[0] ), openGLScreenCoordinates, GL_STATIC_DRAW);
-		// Vertex Array : Set up generic attributes pointers
-		glEnableVertexAttribArray(6);
-		glVertexAttribPointer(6, 2, GL_FLOAT, GL_FALSE, 0, 0);
-
-		glBindBuffer ( GL_ARRAY_BUFFER , texture_buffer );
-		glBufferData ( GL_ARRAY_BUFFER, 12 * sizeof( textureCoordinates[0] ), textureCoordinates , GL_STATIC_DRAW);
-		// Vertex Array : Set up generic attributes pointers
-		glEnableVertexAttribArray(7);
-		glVertexAttribPointer(7, 2, GL_FLOAT, GL_FALSE, 0, 0);
-
-		glBindVertexArray(0);
-
-		changeProperty(0);
-
-	}
-	else
-	{
-		ires_has_been_open_sucessefully = 0;
-	}
-
-	std::cout << "Number of Blocks " << reservoir_model_.blocks.size( ) << std::endl;
-
-}
-
-void GLWidget::openIRES2 ( const std::string& filename )
-{
-	reservoir_model_.openIRES(filename);
-
-	if ( reservoir_model_.blocks.size( ) )
-	{
-
-		reservoir_list_of_vertices.clear ( );
-		reservoir_list_of_normals.clear ( );
-		reservoir_list_of_colors.clear ( );
-		reservoir_list_of_IJKs.clear ( );
-		reservoir_list_of_renderFlag.clear( );
-		reservoir_list_of_indices.clear ( );
-
-
-		for ( std::size_t i = 0; i < reservoir_model_.blocks.size( ) ; i++)
-		{
-
-			Celer::Vector4<GLfloat> focus [] =
-			{
-			    // Top Face
-			    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f),
-			    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f),
-			    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f),
-			    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f),
-			    // Bottom Face
-			    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f),
-			    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f),
-			    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f),
-			    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f),
-			    // Front Face
-			    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f),
-			    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f),
-			    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f),
-			    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f),
-			    // Back Face
-			    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f),
-			    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f),
-			    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f),
-			    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f),
-			    // Right Face
-			    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f),
-			    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f),
-			    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f),
-			    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f),
-			    // Left Face
-			    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f),
-			    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f),
-			    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f),
-			    Celer::Vector4<GLfloat> ( 1.0,1.0,1.0,1.0f)
-			};
-
-			std::copy(reservoir_model_.blocks[i].vertices.begin(), reservoir_model_.blocks[i].vertices.end(),
-					std::back_inserter(reservoir_list_of_vertices));
-			std::copy(reservoir_model_.blocks[i].normals.begin(), reservoir_model_.blocks[i].normals.end(),
-					std::back_inserter(reservoir_list_of_normals));
-			std::copy(reservoir_model_.blocks[i].indices.begin(), reservoir_model_.blocks[i].indices.end(),
-					std::back_inserter(reservoir_list_of_indices));
-			std::copy(focus, focus + 24,
-					std::back_inserter(reservoir_list_of_renderFlag));
-			std::copy(reservoir_model_.blocks[i].IJK.begin(), reservoir_model_.blocks[i].IJK.end(),
-					std::back_inserter(reservoir_list_of_IJKs));
-
-		}
-
-
-		max_I_ = 0;
-		min_I_ = 0;
-		max_J_ = 0;
-		min_J_ = 0;
-		max_K_ = 0;
-		min_K_ = 0;
-
-
-		camera_.setPosition ( reservoir_model_.box.center ( ) );
-		camera_.setTarget ( reservoir_model_.box.center ( ) );
-		std::cout << reservoir_model_.box.diagonal ( );
-		camera_.setOffset ( 3.0 * reservoir_model_.box.diagonal ( ) );
-
-		std::cout << camera_.position ( );
-
-		camera_.setBehavior ( Celer::Camera<float>::FIRST_PERSON );
-
-		cameraStep_ = 0.1f;
-
-
-		glBindVertexArray(vertexArray);
-
-
-		glBindBuffer ( GL_ARRAY_BUFFER , reservoir_vertices_buffer );
-		glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_vertices.size ( ) * sizeof ( reservoir_list_of_vertices[0] ) , &reservoir_list_of_vertices[0] , GL_STATIC_DRAW );
-		// Vertex Array : Set up generic attributes pointers
-		glEnableVertexAttribArray ( reservoir_vertices_location );
-		glVertexAttribPointer ( reservoir_vertices_location , 4 , GL_FLOAT , GL_FALSE , 0 , 0 );
-
-		glBindBuffer ( GL_ARRAY_BUFFER , reservoir_normal_buffer );
-		glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_normals.size ( ) * sizeof ( reservoir_list_of_normals[0] ) , &reservoir_list_of_normals[0] , GL_STREAM_DRAW );
-		// Vertex Array : Set up generic attributes pointers
-		glEnableVertexAttribArray ( reservoir_normal_location );
-		glVertexAttribPointer ( reservoir_normal_location , 4 , GL_FLOAT , GL_FALSE , 0 , 0 );
-
-
-		glBindBuffer ( GL_ARRAY_BUFFER , reservoir_color_buffer );
-		glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_colors.size ( ) * sizeof ( reservoir_list_of_colors[0] ) , &reservoir_list_of_colors[0] , GL_STREAM_DRAW );
-		// Vertex Array : Set up generic attributes pointers
-		glEnableVertexAttribArray ( reservoir_color_location );
-		glVertexAttribPointer ( reservoir_color_location , 4 , GL_FLOAT , GL_FALSE , 0 , 0 );
-
-		glBindBuffer ( GL_ARRAY_BUFFER , reservoir_renderFlag_buffer );
-		glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_renderFlag.size ( ) * sizeof ( reservoir_list_of_renderFlag[0] ) , &reservoir_list_of_renderFlag[0] , GL_STREAM_DRAW );
-		// Vertex Array : Set up generic attributes pointers
-		glEnableVertexAttribArray ( reservoir_renderFlag_buffer );
-		glVertexAttribPointer ( reservoir_renderFlag_location , 4 , GL_FLOAT , GL_FALSE , 0 , 0 );
-
-		// FIXME glVertexAttribIPointer FOR INTEGERS!
-		glBindBuffer ( GL_ARRAY_BUFFER , reservoir_IJK_buffer );
-		glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_IJKs.size ( ) * sizeof ( reservoir_list_of_IJKs[0] ) , &reservoir_list_of_IJKs[0] , GL_STREAM_DRAW );
-		// Vertex Array : Set up generic attributes pointers
-		glEnableVertexAttribArray ( reservoir_IJK_buffer );
-		glVertexAttribIPointer ( reservoir_IJK_location , 4 , GL_INT, 0 , 0 );
-
-		glBindBuffer ( GL_ELEMENT_ARRAY_BUFFER , reservoir_indices_buffer );
-		glBufferData ( GL_ELEMENT_ARRAY_BUFFER , reservoir_list_of_indices.size ( ) * sizeof ( reservoir_list_of_indices[0] ) , &reservoir_list_of_indices[0] , GL_STATIC_DRAW );
-
-		glBindVertexArray(0);
-
-		glBindVertexArray(vertexArrayScreen);
-
-
-		GLfloat openGLScreenCoordinates[] = {
-			   -1.0f,  1.0f,
-			1.0f,  1.0f,
-			1.0f, -1.0f,
-			1.0f, -1.0f,
-			   -1.0f, -1.0f,
-			   -1.0f,  1.0f
-		  };
-
-		GLfloat textureCoordinates[] =
-		{
-			0.0f,  0.0f,
-			0.0f,  1.0f,
-			1.0f,  0.0f,
-
-			0.0f,  1.0f,
-			1.0f,  1.0f,
-			1.0f,  0.0f,
-		};
-
-		glBindBuffer ( GL_ARRAY_BUFFER , screen_buffer );
-		glBufferData ( GL_ARRAY_BUFFER, 12 *  sizeof( openGLScreenCoordinates[0] ), openGLScreenCoordinates, GL_STATIC_DRAW);
-		// Vertex Array : Set up generic attributes pointers
-		glEnableVertexAttribArray(6);
-		glVertexAttribPointer(6, 2, GL_FLOAT, GL_FALSE, 0, 0);
-
-		glBindBuffer ( GL_ARRAY_BUFFER , texture_buffer );
-		glBufferData ( GL_ARRAY_BUFFER, 12 * sizeof( textureCoordinates[0] ), textureCoordinates , GL_STATIC_DRAW);
-		// Vertex Array : Set up generic attributes pointers
-		glEnableVertexAttribArray(7);
-		glVertexAttribPointer(7, 2, GL_FLOAT, GL_FALSE, 0, 0);
-
-		glBindVertexArray(0);
-
-		changeProperty(0);
-
-		ires_has_been_open_sucessefully = 1;
-	}
-	else
-	{
-		ires_has_been_open_sucessefully = 0;
-	}
 }
 
 void GLWidget::openIRESCharles( const std::string& filename )
@@ -1554,6 +756,45 @@ void GLWidget::openIRESCharles( const std::string& filename )
 
 		glBindBuffer ( GL_ELEMENT_ARRAY_BUFFER , reservoir_indices_buffer );
 		glBufferData ( GL_ELEMENT_ARRAY_BUFFER , reservoir_list_of_indices.size ( ) * sizeof ( reservoir_list_of_indices[0] ) , &reservoir_list_of_indices[0] , GL_STATIC_DRAW );
+
+		glBindVertexArray(0);
+
+
+		glBindVertexArray(vertexArrayScreen);
+
+
+		GLfloat openGLScreenCoordinates[] =
+		{
+		       -1.0f,  1.0f,
+			1.0f,  1.0f,
+			1.0f, -1.0f,
+		        1.0f, -1.0f,
+		       -1.0f, -1.0f,
+		       -1.0f,  1.0f
+		 };
+
+		GLfloat textureCoordinates[] =
+		{
+			0.0f,  0.0f,
+			0.0f,  1.0f,
+			1.0f,  0.0f,
+
+			0.0f,  1.0f,
+			1.0f,  1.0f,
+			1.0f,  0.0f,
+		};
+
+		glBindBuffer ( GL_ARRAY_BUFFER , screen_buffer );
+		glBufferData ( GL_ARRAY_BUFFER, 12 *  sizeof( openGLScreenCoordinates[0] ), openGLScreenCoordinates, GL_STATIC_DRAW);
+		// Vertex Array : Set up generic attributes pointers
+		glEnableVertexAttribArray(6);
+		glVertexAttribPointer(6, 2, GL_FLOAT, GL_FALSE, 0, 0);
+
+		glBindBuffer ( GL_ARRAY_BUFFER , texture_buffer );
+		glBufferData ( GL_ARRAY_BUFFER, 12 * sizeof( textureCoordinates[0] ), textureCoordinates , GL_STATIC_DRAW);
+		// Vertex Array : Set up generic attributes pointers
+		glEnableVertexAttribArray(7);
+		glVertexAttribPointer(7, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
 		glBindVertexArray(0);
 
@@ -1736,41 +977,6 @@ void GLWidget::resizeGL ( int width , int height )
 	fboStep[0] = new QGLFramebufferObject ( width , height , format );
 	fboStep[1] = new QGLFramebufferObject ( width , height , format );
 
-	glBindVertexArray(vertexArrayScreen);
-
-
-	GLfloat openGLScreenCoordinates[] =
-	{
-	       -1.0f,  1.0f,
-		1.0f,  1.0f,
-		1.0f, -1.0f,
-		1.0f, -1.0f,
-	       -1.0f, -1.0f,
-	       -1.0f,  1.0f
-	};
-
-	GLfloat textureCoordinates[] =
-	{
-		0.0f,  0.0f,
-		0.0f,  1.0f,
-		1.0f,  0.0f,
-
-		0.0f,  1.0f,
-		1.0f,  1.0f,
-		1.0f,  0.0f,
-	};
-
-
-	glBindBuffer ( GL_ARRAY_BUFFER , screen_buffer );
-	glBufferData ( GL_ARRAY_BUFFER, 12 *  sizeof( openGLScreenCoordinates[0] ), openGLScreenCoordinates, GL_STATIC_DRAW);
-	// Vertex Array : Set up generic attributes pointers
-
-	glBindBuffer ( GL_ARRAY_BUFFER , texture_buffer );
-	glBufferData ( GL_ARRAY_BUFFER, 12 * sizeof( textureCoordinates[0] ), textureCoordinates , GL_STATIC_DRAW);
-	// Vertex Array : Set up generic attributes pointers
-	glBindVertexArray(0);
-
-
 }
 /// For DropArea's implementation, we clear invoke clear() and then accept the proposed event.
 /// The clear() function sets the text in DropArea to "<drop content>" and sets the backgroundRole to
@@ -1792,7 +998,7 @@ void GLWidget::paintGL ( )
 
 	if 	( isBurnsApproach )
 	{
-		camera_.setTarget( reservoir_model_.box.center( ) );
+		camera_.setTarget( reservoir_model_.box_v2.center( ) );
 		BurnsCutawaySetup ( );
 	}
 	else if ( isBoudingBoxApproach )
@@ -2245,7 +1451,7 @@ void GLWidget::BurnsCutawaySetup ( )
 			glUniformMatrix4fv ( BurnsCutaway430Wireframe.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
 			glUniformMatrix4fv ( BurnsCutaway430Wireframe.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
 
-			//VAO
+			// VAO
 			glBindVertexArray(vertexArray);
 			glDrawArrays ( GL_LINES_ADJACENCY , 0 , reservoir_list_of_vertices.size());
 			glBindVertexArray(0);

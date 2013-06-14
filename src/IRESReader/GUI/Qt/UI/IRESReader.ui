@@ -108,7 +108,6 @@
      <string>File</string>
     </property>
     <addaction name="action_Open_IRES"/>
-    <addaction name="action_Open_IRES2"/>
     <addaction name="separator"/>
     <addaction name="action_Quit"/>
    </widget>
