@@ -994,7 +994,7 @@ void GLWidget::paintGL ( )
 
 	camera_.computerViewMatrix( );
 
-	camera_.setPerspectiveProjectionMatrix ( zoom_angle_ , camera_.aspectRatio ( ) , 1.0 , 50000000 );
+	camera_.setPerspectiveProjectionMatrix ( zoom_angle_ , camera_.aspectRatio ( ) , 1.0 , 500 );
 
 	if 	( isBurnsApproach )
 	{
@@ -1430,12 +1430,12 @@ void GLWidget::BurnsCutawaySetup ( )
 		BurnsJFAStep430.deactive( ) ;
 
 
+		glClearColor ( 1.0 , 1.0 , 1.0 , 1.0 );
+		glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
 		if ( draw_secondary && (reservoir_list_of_vertices.size ( ) != 0) )
 		{
 			BurnsCutaway430Wireframe.active ( );
-
-			glClearColor ( 1.0 , 1.0 , 1.0 , 1.0 );
-			glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
 			glActiveTexture ( GL_TEXTURE0 );
 			glEnable ( GL_TEXTURE_RECTANGLE );
