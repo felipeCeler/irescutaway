@@ -49,8 +49,7 @@
 
 class GLWidget: public QGLWidget
 {
-		Q_OBJECT
-
+	Q_OBJECT
 
 	public:
 		// FIXME - Putting this as public, but I'm going to search for a better sulution to how feed other
@@ -119,7 +118,6 @@ class GLWidget: public QGLWidget
 
         void changed(const QMimeData *mimeData = 0);
 
-
 private:
 
 	// About Scene
@@ -130,7 +128,6 @@ private:
 	float centerY_;
 
 	bool getVertices(unsigned int , float * vertices );
-
 
 	Cube cube_;
 
@@ -148,7 +145,6 @@ private:
 	/// Celer OpenGL Frameworks
 	Celer::OpenGL::ShaderManager	textureViewer;
 	Celer::OpenGL::Texture2D 	facePhoto;
-
 
 	GLuint vertexArray;
 	GLuint vertexArrayScreen;
@@ -168,7 +164,6 @@ private:
 	GLuint reservoir_IJK_location;
 
 	GLuint reservoir_indices_buffer;
-
 
 	bool ires_has_been_open_sucessefully;
 
@@ -193,8 +188,6 @@ private:
 	std::vector<Celer::Vector4<GLfloat> > 	reservoir_list_of_charles;
 	Celer::OpenGL::ShaderManager charles_Shader;
 
-
-
 	Celer::BoundingBox3<float> 		   box;
 	std::list  <Celer::BoundingBox3<GLfloat> > boxes;
 	std::vector<Celer::BoundingBox3<GLfloat> > cutVolumes;
@@ -216,7 +209,6 @@ private:
 	Celer::OpenGL::ShaderManager	BurnsJFAStep430;
 	Celer::OpenGL::ShaderManager	BurnsCutaway430;
 	Celer::OpenGL::ShaderManager	BurnsCutaway430Wireframe;
-
 
 	// BoudingBox Visualization
 	Celer::OpenGL::ShaderManager	cutVolume;

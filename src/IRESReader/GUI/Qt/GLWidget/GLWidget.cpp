@@ -125,6 +125,7 @@ void GLWidget::CutVolumeGenerator( )
 
 	Celer::BoundingBox3<GLfloat> box;
 
+	cutVolumes.clear();
 
 	while ( boxes.size ( ) != 0 )
 	{
@@ -676,6 +677,9 @@ void GLWidget::openIRESCharles( const std::string& filename )
 		reservoir_list_of_renderFlag.clear( );
 		reservoir_list_of_indices.clear ( );
 
+		/// Triangle Adjacency
+		reservoir_list_of_triangle_adjacency.clear();
+
 		for ( std::size_t i = 0; i < reservoir_model_.blocks.size( ) ; i++)
 		{
 
@@ -690,6 +694,20 @@ void GLWidget::openIRESCharles( const std::string& filename )
 						 std::back_inserter(reservoir_list_of_renderFlag));
 				std::copy(reservoir_model_.blocks[i].IJK.begin(), reservoir_model_.blocks[i].IJK.end(),
 						 std::back_inserter(reservoir_list_of_IJKs));
+
+
+				Celer::Vector4<float> vertices [] =
+				{
+				    Celer::Vector4<float>( reservoir_model_.blocks[i].vertices[0].x,reservoir_model_.blocks[i].vertices[0].y,reservoir_model_.blocks[i].vertices[0].z,reservoir_model_.blocks[i].vertices[6].x),
+				    Celer::Vector4<float>( reservoir_model_.blocks[i].vertices[1].x,reservoir_model_.blocks[i].vertices[1].y,reservoir_model_.blocks[i].vertices[1].z,reservoir_model_.blocks[i].vertices[6].y),
+				    Celer::Vector4<float>( reservoir_model_.blocks[i].vertices[2].x,reservoir_model_.blocks[i].vertices[2].y,reservoir_model_.blocks[i].vertices[2].z,reservoir_model_.blocks[i].vertices[6].z),
+				    Celer::Vector4<float>( reservoir_model_.blocks[i].vertices[3].x,reservoir_model_.blocks[i].vertices[3].y,reservoir_model_.blocks[i].vertices[3].z,reservoir_model_.blocks[i].vertices[7].x),
+
+				    Celer::Vector4<float>( reservoir_model_.blocks[i].vertices[4].x,reservoir_model_.blocks[i].vertices[4].y,reservoir_model_.blocks[i].vertices[4].z,reservoir_model_.blocks[i].vertices[7].y),
+				    Celer::Vector4<float>( reservoir_model_.blocks[i].vertices[5].x,reservoir_model_.blocks[i].vertices[5].y,reservoir_model_.blocks[i].vertices[5].z,reservoir_model_.blocks[i].vertices[7].z)
+				};
+
+				std::copy ( vertices , vertices + 6 , std::back_inserter( reservoir_list_of_triangle_adjacency ));
 
 			}
 			else
@@ -760,6 +778,18 @@ void GLWidget::openIRESCharles( const std::string& filename )
 
 		glBindVertexArray(0);
 
+
+
+		glBindVertexArray(vertexArray_Cube);
+
+
+		glBindBuffer ( GL_ARRAY_BUFFER , reservoir_vertices_triangles_adjacency_buffer );
+		glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_triangle_adjacency.size ( ) * sizeof ( reservoir_list_of_triangle_adjacency[0] ) , &reservoir_list_of_triangle_adjacency[0] , GL_STATIC_DRAW );
+		// Vertex Array : Set up generic attributes pointers
+		glEnableVertexAttribArray ( reservoir_vertices_triangles_adjacency_location );
+		glVertexAttribPointer ( reservoir_vertices_triangles_adjacency_location , 4 , GL_FLOAT , GL_FALSE , 0 , 0 );
+
+		glBindVertexArray(0);
 
 		glBindVertexArray(vertexArrayScreen);
 
@@ -1005,12 +1035,14 @@ void GLWidget::paintGL ( )
 	{
 		if ( cutVolumes.size() > 0)
 			camera_.setTarget( cutVolumes[cluster].center() );
+		camera_.setTarget( reservoir_model_.box_v2.center( ) );
 		BoundingVolumeCutawaySetup ( cluster );
 	}
 	else
 	{
 		if ( cutVolumes.size() > 0)
 			camera_.setTarget( cutVolumes[cluster].center() );
+		camera_.setTarget( reservoir_model_.box_v2.center( ) );
 		NoCutawaySetUp ( );
 	}
 
@@ -1020,7 +1052,7 @@ void GLWidget::BoundingVolumeCutawaySetup( int cluster )
 {
 
 
-	Celer::Vector3<float> new_z =  camera_.position() - reservoir_model_.box.center();
+	Celer::Vector3<float> new_z =  camera_.position() - cutVolumes[cluster].center ( );
 
 	new_z.normalize();
 
@@ -1040,6 +1072,7 @@ void GLWidget::BoundingVolumeCutawaySetup( int cluster )
 
  		if ( cutVolumes.size( ) > 0)
  		{
+
 			BoundingBoxInitialization.active ( );
 
 			fboStep[1]->bind ( );
@@ -1049,6 +1082,10 @@ void GLWidget::BoundingVolumeCutawaySetup( int cluster )
 
 			glUniform4fv ( BoundingBoxInitialization.uniforms_["min_point"].location , 1 , Celer::Vector4<float> ( cutVolumes[cluster].min ( ) , 1.0f ) );
 			glUniform4fv ( BoundingBoxInitialization.uniforms_["max_point"].location , 1 , Celer::Vector4<float> ( cutVolumes[cluster].max ( ) , 1.0f ) );
+			glUniform3fv ( BoundingBoxInitialization.uniforms_["center_point"].location , 1 , cutVolumes[cluster].center ( ) );
+			glUniform3fv ( BoundingBoxInitialization.uniforms_["new_x"].location , 1 ,  new_x );
+			glUniform3fv ( BoundingBoxInitialization.uniforms_["new_y"].location , 1 ,  new_y );
+			glUniform3fv ( BoundingBoxInitialization.uniforms_["new_z"].location , 1 ,  new_z );
 			glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ModelMatrix"].location , 1 , GL_TRUE , lookatCamera );
 			glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
 			glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
@@ -1128,7 +1165,10 @@ void GLWidget::BoundingVolumeCutawaySetup( int cluster )
 				// FIXME Throw an Exception when std::map doesnt find A VARIABLE !!!
 				glUniform4fv ( BoundingBoxDebug.uniforms_["min_point"].location , 1 , Celer::Vector4<float> ( cutVolumes[cluster].min ( ) , 1.0f ) );
 				glUniform4fv ( BoundingBoxDebug.uniforms_["max_point"].location , 1 , Celer::Vector4<float> ( cutVolumes[cluster].max ( ) , 1.0f ) );
-				glUniform3fv ( BoundingBoxDebug.uniforms_["lightDirection"].location , 1 , camera_.position ( ) );
+				glUniform3fv ( BoundingBoxDebug.uniforms_["center_point"].location , 1 , cutVolumes[cluster].center ( ));
+				glUniform3fv ( BoundingBoxDebug.uniforms_["new_x"].location , 1 ,  new_x );
+				glUniform3fv ( BoundingBoxDebug.uniforms_["new_y"].location , 1 ,  new_y );
+				glUniform3fv ( BoundingBoxDebug.uniforms_["new_z"].location , 1 ,  new_z );
 				glUniformMatrix4fv ( BoundingBoxDebug.uniforms_["ModelMatrix"].location , 1 , GL_TRUE , lookatCamera );
 				glUniformMatrix4fv ( BoundingBoxDebug.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
 				glUniformMatrix4fv ( BoundingBoxDebug.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
@@ -1229,11 +1269,30 @@ void GLWidget::NoCutawaySetUp ( )
 
 			if ( cutVolumes.size ( ) > 0 )
 			{
+				Celer::Vector3<float> new_z =  camera_.position() - cutVolumes[cluster].center ( );
+
+				new_z.normalize();
+
+				Celer::Vector3<float> new_x = new_z ^ camera_.UpVector();
+
+				new_x.normalize();
+
+				Celer::Vector3<float> new_y = new_z ^ new_x;
+
+				new_y.normalize();
+
+				Celer::Matrix4x4<float> lookatCamera ( new_x, new_y , new_z );
+
 
 				cube_in_GeometryShader.active ( );
 
 				glUniform4fv ( cube_in_GeometryShader.uniforms_["min_point"].location , 1 , Celer::Vector4<float> ( cutVolumes[cluster].min ( ) , 1.0f ) );
 				glUniform4fv ( cube_in_GeometryShader.uniforms_["max_point"].location , 1 , Celer::Vector4<float> ( cutVolumes[cluster].max ( ) , 1.0f ) );
+
+				glUniform3fv ( cube_in_GeometryShader.uniforms_["center_point"].location , 1 , cutVolumes[cluster].center ( ));
+				glUniform3fv ( cube_in_GeometryShader.uniforms_["new_x"].location , 1 ,  new_x );
+				glUniform3fv ( cube_in_GeometryShader.uniforms_["new_y"].location , 1 ,  new_y );
+				glUniform3fv ( cube_in_GeometryShader.uniforms_["new_z"].location , 1 ,  new_z );
 
 				glUniformMatrix4fv ( cube_in_GeometryShader.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
 				glUniformMatrix4fv ( cube_in_GeometryShader.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
@@ -1247,25 +1306,14 @@ void GLWidget::NoCutawaySetUp ( )
 
 				BoundingBoxDebug.active ( );
 
-//				new_z =  camera_.position( ) - cutVolumes[cluster].center( );
-//
-//				new_z.normalize();
-//
-//				new_x = new_z ^ camera_.UpVector();
-//
-//				new_x.normalize();
-//
-//				new_y = new_z ^ new_x;
-//
-//				new_y.normalize();
-//
-//				lookatCamera = Celer::Matrix4x4<float>( new_x, new_y , new_z  );
-
 				// FIXME Throw an Exception when std::map doesnt find A VARIABLE !!!
 				glUniform4fv ( BoundingBoxDebug.uniforms_["min_point"].location , 1 , Celer::Vector4<float> ( cutVolumes[cluster].min ( ) , 1.0f ) );
 				glUniform4fv ( BoundingBoxDebug.uniforms_["max_point"].location , 1 , Celer::Vector4<float> ( cutVolumes[cluster].max ( ) , 1.0f ) );
-				glUniform3fv ( BoundingBoxDebug.uniforms_["lightDirection"].location , 1 , camera_.position ( ) );
-				//glUniformMatrix4fv ( BoundingBoxDebug.uniforms_["ModelMatrix"].location , 1 , GL_TRUE , lookatCamera );
+				glUniform3fv ( BoundingBoxDebug.uniforms_["center_point"].location , 1 , cutVolumes[cluster].center ( ));
+				glUniform3fv ( BoundingBoxDebug.uniforms_["new_x"].location , 1 ,  new_x );
+				glUniform3fv ( BoundingBoxDebug.uniforms_["new_y"].location , 1 ,  new_y );
+				glUniform3fv ( BoundingBoxDebug.uniforms_["new_z"].location , 1 ,  new_z );
+				glUniformMatrix4fv ( BoundingBoxDebug.uniforms_["ModelMatrix"].location , 1 , GL_TRUE , lookatCamera );
 				glUniformMatrix4fv ( BoundingBoxDebug.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
 				glUniformMatrix4fv ( BoundingBoxDebug.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
 				//VAO
@@ -1278,23 +1326,23 @@ void GLWidget::NoCutawaySetUp ( )
 			}
 
 
- 			secondary.active ( );
-
- 			glUniform3fv ( secondary.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
-
- 			glUniform3i ( secondary.uniforms_["min_IJK"].location , min_I_, min_J_, min_K_ );
- 			glUniform3i ( secondary.uniforms_["max_IJK"].location , max_I_, max_J_, max_K_ );
-
-			glUniform2f ( secondary.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
-
-			glUniformMatrix4fv ( secondary.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-			glUniformMatrix4fv ( secondary.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
-
-			glBindVertexArray(vertexArray);
-			glDrawArrays ( GL_LINES_ADJACENCY , 0 , reservoir_list_of_vertices.size());
-			glBindVertexArray(0);
-
-			secondary.deactive ( );
+// 			secondary.active ( );
+//
+// 			glUniform3fv ( secondary.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
+//
+// 			glUniform3i ( secondary.uniforms_["min_IJK"].location , min_I_, min_J_, min_K_ );
+// 			glUniform3i ( secondary.uniforms_["max_IJK"].location , max_I_, max_J_, max_K_ );
+//
+//			glUniform2f ( secondary.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
+//
+//			glUniformMatrix4fv ( secondary.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+//			glUniformMatrix4fv ( secondary.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+//
+//			glBindVertexArray(vertexArray);
+//			glDrawArrays ( GL_LINES_ADJACENCY , 0 , reservoir_list_of_vertices.size());
+//			glBindVertexArray(0);
+//
+//			secondary.deactive ( );
 
 
 
@@ -1332,20 +1380,20 @@ void GLWidget::NoCutawaySetUp ( )
 //			glEnable ( GL_BLEND );
 //			glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 
-			cutVolume.active ( );
-
-			glUniform3fv ( cutVolume.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
-
-			glUniform2f ( cutVolume.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
-
-			glUniformMatrix4fv ( cutVolume.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-			glUniformMatrix4fv ( cutVolume.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
-
-			glBindVertexArray ( vertexArray_box );
-			glDrawArrays ( GL_LINES_ADJACENCY , 0 , box_vertices.size() );
-			glBindVertexArray ( 0 );
-
-			cutVolume.deactive ( );
+//			cutVolume.active ( );
+//
+//			glUniform3fv ( cutVolume.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
+//
+//			glUniform2f ( cutVolume.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
+//
+//			glUniformMatrix4fv ( cutVolume.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+//			glUniformMatrix4fv ( cutVolume.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+//
+//			glBindVertexArray ( vertexArray_box );
+//			glDrawArrays ( GL_LINES_ADJACENCY , 0 , box_vertices.size() );
+//			glBindVertexArray ( 0 );
+//
+//			cutVolume.deactive ( );
 			//glDisable ( GL_BLEND );
 
 
@@ -1709,6 +1757,7 @@ foreach( int key , keysPresseds_)
 		cameraStep_ -= 0.01;
 	}
 
+
 }
 }
 
@@ -1716,6 +1765,12 @@ void GLWidget::keyPressEvent ( QKeyEvent * event )
 {
 	buttonRelease_ = true;
 	keysPresseds_ += event->key ( );
+
+	if ( event->key() == Qt::Key_F5 )
+	{
+		LoadShaders();
+		qDebug() << " Hello ";
+	}
 
 	updateGL();
 }
