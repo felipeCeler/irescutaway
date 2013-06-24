@@ -80,10 +80,13 @@ void GLWidget::initializeGL ( )
 		glGenBuffers ( 1, &screen_buffer);
 		glGenBuffers ( 1, &texture_buffer);
 
-
+	/// Cube Triangle Adjacency
 	glGenVertexArrays ( 1 , &vertexArray_Cube);
-		// Cube in Geometry Shader
-		glGenBuffers ( 1, &reservoir_vertices_triangles_adjacency_buffer);
+		glGenBuffers ( 1, &reservoir_vertices_triangles_adjacency_buffer );
+		glGenBuffers ( 1, &reservoir_normal_triangles_adjacency_buffer );
+		glGenBuffers ( 1, &reservoir_color_triangles_adjacency_buffer );
+		glGenBuffers ( 1, &reservoir_focus_triangles_adjacency_buffer );
+		glGenBuffers ( 1, &reservoir_IJK_triangles_adjacency_buffer );
 
 	glGenVertexArrays ( 1 , &vertexArrayScreen );
 
@@ -99,7 +102,14 @@ void GLWidget::initializeGL ( )
 	reservoir_IJK_location 		= 5;
 
 	// Cube in Geomtry Shader
-	reservoir_vertices_triangles_adjacency_location = 11;
+
+	reservoir_vertices_triangles_adjacency_location = 1;
+	reservoir_normal_triangles_adjacency_location 	= 2;
+	reservoir_color_triangles_adjacency_location 	= 3;
+	reservoir_focus_triangles_adjacency_location 	= 4;
+	reservoir_IJK_triangles_adjacency_location 	= 5;
+
+	/// ---
 
 	draw_secondary = 1;
 	draw_primary = 0;
@@ -138,7 +148,7 @@ void GLWidget::CutVolumeGenerator( )
 
 		int cont = 0;
 
-		while ( ( box_iterator != boxes.end ( ) ) && ( cont != 10) )
+		while ( ( box_iterator != boxes.end ( ) )  )
 		{
 
 			if ( box.intersect( *box_iterator ) )
@@ -249,6 +259,9 @@ void GLWidget::changePropertyRange ( const double& minRange, const double& maxRa
 	reservoir_list_of_colors.clear ( );
 	reservoir_list_of_renderFlag.clear ( );
 
+	reservoir_list_of_triangles_adjacency_colors.clear();
+	reservoir_list_of_triangles_adjacency_focus.clear();
+
 	boxes.clear ( );
 	cutVolumes.clear();
 
@@ -256,8 +269,6 @@ void GLWidget::changePropertyRange ( const double& minRange, const double& maxRa
 
 	float min = *std::min_element ( reservoir_model_.static_porperties[property_index].values_.begin ( ) , reservoir_model_.static_porperties[property_index].values_.end ( ) );
 	float max = *std::max_element ( reservoir_model_.static_porperties[property_index].values_.begin ( ) , reservoir_model_.static_porperties[property_index].values_.end ( ) );
-
-	std::size_t i = 0;
 
 	std::vector<Celer::Vector4<GLfloat> > colors ( 24 );
 	std::vector<Celer::Vector4<GLfloat> > renderFlags ( 24 );
@@ -336,6 +347,9 @@ void GLWidget::changePropertyRange ( const double& minRange, const double& maxRa
 
 			std::copy ( colors.begin( ) 	, colors.end( )      , std::back_inserter ( reservoir_list_of_colors     ) );
 			std::copy ( renderFlags.begin( ), renderFlags.end( ) , std::back_inserter ( reservoir_list_of_renderFlag ) );
+
+			std::copy ( renderFlags.begin( ), renderFlags.begin( ) + 6, std::back_inserter ( reservoir_list_of_triangles_adjacency_focus ) );
+			std::copy ( colors.begin( ) , colors.begin( ) + 6 , std::back_inserter ( reservoir_list_of_triangles_adjacency_colors ) );
 		}
 		else
 		{
@@ -358,12 +372,24 @@ void GLWidget::changePropertyRange ( const double& minRange, const double& maxRa
 
 	glBindVertexArray(0);
 
+	glBindVertexArray(vertexArray_Cube);
+
+	glBindBuffer ( GL_ARRAY_BUFFER , reservoir_color_triangles_adjacency_buffer );
+	glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_triangles_adjacency_colors.size ( ) * sizeof ( reservoir_list_of_triangles_adjacency_colors[0] ) , &reservoir_list_of_triangles_adjacency_colors[0] , GL_STREAM_DRAW );
+
+	glBindBuffer ( GL_ARRAY_BUFFER , reservoir_focus_triangles_adjacency_buffer );
+	glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_triangles_adjacency_focus.size( ) * sizeof ( reservoir_list_of_triangles_adjacency_focus[0] ) , &reservoir_list_of_triangles_adjacency_focus[0] , GL_STREAM_DRAW );
+
+	glBindVertexArray(0);
+
 }
 
 void GLWidget::changeProperty ( int property_index )
 {
 
 	reservoir_list_of_colors.clear ( );
+
+	reservoir_list_of_triangles_adjacency_colors.clear();
 
 	std::cout << "Changing the property to : " << reservoir_model_.static_porperties[property_index].name << std::endl;
 
@@ -437,6 +463,7 @@ void GLWidget::changeProperty ( int property_index )
 			};
 
 			std::copy ( colors , colors + 24 , std::back_inserter ( reservoir_list_of_colors ) );
+			std::copy ( colors , colors + 6 , std::back_inserter ( reservoir_list_of_triangles_adjacency_colors ) );
 
 		}
 		else
@@ -449,6 +476,14 @@ void GLWidget::changeProperty ( int property_index )
 
 	glBindBuffer ( GL_ARRAY_BUFFER , reservoir_color_buffer );
 	glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_colors.size ( ) * sizeof ( reservoir_list_of_colors[0] ) , &reservoir_list_of_colors[0] , GL_STREAM_DRAW );
+
+	glBindVertexArray(0);
+
+
+	glBindVertexArray(vertexArray_Cube);
+
+	glBindBuffer ( GL_ARRAY_BUFFER , reservoir_color_triangles_adjacency_buffer );
+	glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_triangles_adjacency_colors.size ( ) * sizeof ( reservoir_list_of_triangles_adjacency_colors[0] ) , &reservoir_list_of_triangles_adjacency_colors[0] , GL_STREAM_DRAW );
 
 	glBindVertexArray(0);
 
@@ -603,7 +638,7 @@ void GLWidget::IRES_v1_to_IRESv2( const std::string& filename )
 	names.resize(reservoir_model_.static_porperties.size( ));
 	std::vector<float> values;
 
-	for ( int i = 0 ; i < reservoir_model_.static_porperties.size( ) ; i++)
+	for ( std::size_t i = 0 ; i < reservoir_model_.static_porperties.size( ) ; i++)
 	{
 		names[i] = reservoir_model_.static_porperties[i].name;
 		std::copy ( reservoir_model_.static_porperties[i].values_.begin() 	, reservoir_model_.static_porperties[i].values_.end() , std::back_inserter ( values  ) );
@@ -678,7 +713,11 @@ void GLWidget::openIRESCharles( const std::string& filename )
 		reservoir_list_of_indices.clear ( );
 
 		/// Triangle Adjacency
-		reservoir_list_of_triangle_adjacency.clear();
+		reservoir_list_of_triangles_adjacency_vertices.clear();
+		reservoir_list_of_triangles_adjacency_normals.clear();
+		reservoir_list_of_triangles_adjacency_colors.clear();
+		reservoir_list_of_triangles_adjacency_IJKs.clear();
+		reservoir_list_of_triangles_adjacency_focus.clear();
 
 		for ( std::size_t i = 0; i < reservoir_model_.blocks.size( ) ; i++)
 		{
@@ -707,7 +746,44 @@ void GLWidget::openIRESCharles( const std::string& filename )
 				    Celer::Vector4<float>( reservoir_model_.blocks[i].vertices[5].x,reservoir_model_.blocks[i].vertices[5].y,reservoir_model_.blocks[i].vertices[5].z,reservoir_model_.blocks[i].vertices[7].z)
 				};
 
-				std::copy ( vertices , vertices + 6 , std::back_inserter( reservoir_list_of_triangle_adjacency ));
+				Celer::Vector4<float> normals [] =
+				{
+				    Celer::Vector4<float>( reservoir_model_.blocks[i].normals[0].x,reservoir_model_.blocks[i].normals[0].y,reservoir_model_.blocks[i].normals[0].z,reservoir_model_.blocks[i].normals[6].x),
+				    Celer::Vector4<float>( reservoir_model_.blocks[i].normals[1].x,reservoir_model_.blocks[i].normals[1].y,reservoir_model_.blocks[i].normals[1].z,reservoir_model_.blocks[i].normals[6].y),
+				    Celer::Vector4<float>( reservoir_model_.blocks[i].normals[2].x,reservoir_model_.blocks[i].normals[2].y,reservoir_model_.blocks[i].normals[2].z,reservoir_model_.blocks[i].normals[6].z),
+				    Celer::Vector4<float>( reservoir_model_.blocks[i].normals[3].x,reservoir_model_.blocks[i].normals[3].y,reservoir_model_.blocks[i].normals[3].z,reservoir_model_.blocks[i].normals[7].x),
+
+				    Celer::Vector4<float>( reservoir_model_.blocks[i].normals[4].x,reservoir_model_.blocks[i].normals[4].y,reservoir_model_.blocks[i].normals[4].z,reservoir_model_.blocks[i].normals[7].y),
+				    Celer::Vector4<float>( reservoir_model_.blocks[i].normals[5].x,reservoir_model_.blocks[i].normals[5].y,reservoir_model_.blocks[i].normals[5].z,reservoir_model_.blocks[i].normals[7].z)
+				};
+
+				Celer::Vector4<float> focus [] =
+				{
+				    Celer::Vector4<float>( reservoir_model_.blocks[i].focus[0].x,reservoir_model_.blocks[i].focus[0].y,reservoir_model_.blocks[i].focus[0].z,reservoir_model_.blocks[i].focus[6].x),
+				    Celer::Vector4<float>( reservoir_model_.blocks[i].focus[1].x,reservoir_model_.blocks[i].focus[1].y,reservoir_model_.blocks[i].focus[1].z,reservoir_model_.blocks[i].focus[6].y),
+				    Celer::Vector4<float>( reservoir_model_.blocks[i].focus[2].x,reservoir_model_.blocks[i].focus[2].y,reservoir_model_.blocks[i].focus[2].z,reservoir_model_.blocks[i].focus[6].z),
+				    Celer::Vector4<float>( reservoir_model_.blocks[i].focus[3].x,reservoir_model_.blocks[i].focus[3].y,reservoir_model_.blocks[i].focus[3].z,reservoir_model_.blocks[i].focus[7].x),
+
+				    Celer::Vector4<float>( reservoir_model_.blocks[i].focus[4].x,reservoir_model_.blocks[i].focus[4].y,reservoir_model_.blocks[i].focus[4].z,reservoir_model_.blocks[i].focus[7].y),
+				    Celer::Vector4<float>( reservoir_model_.blocks[i].focus[5].x,reservoir_model_.blocks[i].focus[5].y,reservoir_model_.blocks[i].focus[5].z,reservoir_model_.blocks[i].focus[7].z)
+				};
+
+				Celer::Vector4<int> IJK [] =
+				{
+				    Celer::Vector4<int>( reservoir_model_.blocks[i].IJK[0].x,reservoir_model_.blocks[i].IJK[0].y,reservoir_model_.blocks[i].IJK[0].z,reservoir_model_.blocks[i].IJK[6].x),
+				    Celer::Vector4<int>( reservoir_model_.blocks[i].IJK[1].x,reservoir_model_.blocks[i].IJK[1].y,reservoir_model_.blocks[i].IJK[1].z,reservoir_model_.blocks[i].IJK[6].y),
+				    Celer::Vector4<int>( reservoir_model_.blocks[i].IJK[2].x,reservoir_model_.blocks[i].IJK[2].y,reservoir_model_.blocks[i].IJK[2].z,reservoir_model_.blocks[i].IJK[6].z),
+				    Celer::Vector4<int>( reservoir_model_.blocks[i].IJK[3].x,reservoir_model_.blocks[i].IJK[3].y,reservoir_model_.blocks[i].IJK[3].z,reservoir_model_.blocks[i].IJK[7].x),
+
+				    Celer::Vector4<int>( reservoir_model_.blocks[i].IJK[4].x,reservoir_model_.blocks[i].IJK[4].y,reservoir_model_.blocks[i].IJK[4].z,reservoir_model_.blocks[i].IJK[7].y),
+				    Celer::Vector4<int>( reservoir_model_.blocks[i].IJK[5].x,reservoir_model_.blocks[i].IJK[5].y,reservoir_model_.blocks[i].IJK[5].z,reservoir_model_.blocks[i].IJK[7].z)
+				};
+
+				std::copy ( vertices , vertices + 6 , std::back_inserter( reservoir_list_of_triangles_adjacency_vertices ));
+				std::copy ( normals  , normals + 6 , std::back_inserter( reservoir_list_of_triangles_adjacency_normals ));
+				std::copy ( focus    , focus + 6 , std::back_inserter( reservoir_list_of_triangles_adjacency_focus ));
+				std::copy ( IJK      , IJK + 6 , std::back_inserter( reservoir_list_of_triangles_adjacency_IJKs ));
+
 
 			}
 			else
@@ -782,12 +858,37 @@ void GLWidget::openIRESCharles( const std::string& filename )
 
 		glBindVertexArray(vertexArray_Cube);
 
-
 		glBindBuffer ( GL_ARRAY_BUFFER , reservoir_vertices_triangles_adjacency_buffer );
-		glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_triangle_adjacency.size ( ) * sizeof ( reservoir_list_of_triangle_adjacency[0] ) , &reservoir_list_of_triangle_adjacency[0] , GL_STATIC_DRAW );
+		glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_triangles_adjacency_vertices.size ( ) * sizeof ( reservoir_list_of_triangles_adjacency_vertices[0] ) , &reservoir_list_of_triangles_adjacency_vertices[0] , GL_STATIC_DRAW );
 		// Vertex Array : Set up generic attributes pointers
 		glEnableVertexAttribArray ( reservoir_vertices_triangles_adjacency_location );
 		glVertexAttribPointer ( reservoir_vertices_triangles_adjacency_location , 4 , GL_FLOAT , GL_FALSE , 0 , 0 );
+
+		glBindBuffer ( GL_ARRAY_BUFFER , reservoir_normal_triangles_adjacency_buffer );
+		glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_triangles_adjacency_normals.size ( ) * sizeof ( reservoir_list_of_triangles_adjacency_normals[0] ) , &reservoir_list_of_triangles_adjacency_normals[0] , GL_STREAM_DRAW );
+		// Vertex Array : Set up generic attributes pointers
+		glEnableVertexAttribArray ( reservoir_normal_triangles_adjacency_location );
+		glVertexAttribPointer ( reservoir_normal_triangles_adjacency_location , 4 , GL_FLOAT , GL_FALSE , 0 , 0 );
+
+
+		glBindBuffer ( GL_ARRAY_BUFFER , reservoir_color_triangles_adjacency_buffer );
+		glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_triangles_adjacency_colors.size ( ) * sizeof ( reservoir_list_of_triangles_adjacency_colors[0] ) , &reservoir_list_of_triangles_adjacency_colors[0] , GL_STREAM_DRAW );
+		// Vertex Array : Set up generic attributes pointers
+		glEnableVertexAttribArray ( reservoir_color_triangles_adjacency_location );
+		glVertexAttribPointer ( reservoir_color_triangles_adjacency_location , 4 , GL_FLOAT , GL_FALSE , 0 , 0 );
+
+		glBindBuffer ( GL_ARRAY_BUFFER , reservoir_focus_triangles_adjacency_buffer );
+		glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_triangles_adjacency_focus.size ( ) * sizeof ( reservoir_list_of_triangles_adjacency_focus[0] ) , &reservoir_list_of_triangles_adjacency_focus[0] , GL_STREAM_DRAW );
+		// Vertex Array : Set up generic attributes pointers
+		glEnableVertexAttribArray ( reservoir_focus_triangles_adjacency_location );
+		glVertexAttribPointer ( reservoir_focus_triangles_adjacency_location , 4 , GL_FLOAT , GL_FALSE , 0 , 0 );
+
+		// FIXME glVertexAttribIPointer FOR INTEGERS!
+		glBindBuffer ( GL_ARRAY_BUFFER , reservoir_IJK_triangles_adjacency_buffer );
+		glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_IJKs.size ( ) * sizeof ( reservoir_list_of_IJKs[0] ) , &reservoir_list_of_IJKs[0] , GL_STREAM_DRAW );
+		// Vertex Array : Set up generic attributes pointers
+		glEnableVertexAttribArray ( reservoir_IJK_triangles_adjacency_location );
+		glVertexAttribIPointer ( reservoir_IJK_triangles_adjacency_location , 4 , GL_INT, 0 , 0 );
 
 		glBindVertexArray(0);
 
@@ -1298,7 +1399,7 @@ void GLWidget::NoCutawaySetUp ( )
 				glUniformMatrix4fv ( cube_in_GeometryShader.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
 
 				glBindVertexArray ( vertexArray_Cube );
-				glDrawArrays ( GL_TRIANGLES_ADJACENCY , 0 , reservoir_list_of_triangle_adjacency.size ( ) );
+				glDrawArrays ( GL_TRIANGLES_ADJACENCY , 0 , reservoir_list_of_triangles_adjacency_vertices.size ( ) );
 				glBindVertexArray ( 0 );
 
 				cube_in_GeometryShader.deactive ( );

@@ -174,11 +174,26 @@ private:
 	std::vector<Celer::Vector4<GLint> >     reservoir_list_of_IJKs;
 	std::vector<Celer::Vector4<GLfloat> >   reservoir_list_of_renderFlag;
 
-	// Cube in Geometry Shader
+	/// Cube in Geometry Shader ---
 	GLuint vertexArray_Cube;
+
 	GLuint reservoir_vertices_triangles_adjacency_buffer;
 	GLuint reservoir_vertices_triangles_adjacency_location;
-	std::vector<Celer::Vector4<GLfloat> > 	reservoir_list_of_triangle_adjacency;
+	GLuint reservoir_normal_triangles_adjacency_buffer;
+	GLuint reservoir_normal_triangles_adjacency_location;
+	GLuint reservoir_color_triangles_adjacency_buffer;
+	GLuint reservoir_color_triangles_adjacency_location;
+	GLuint reservoir_focus_triangles_adjacency_buffer;
+	GLuint reservoir_focus_triangles_adjacency_location;
+	GLuint reservoir_IJK_triangles_adjacency_buffer;
+	GLuint reservoir_IJK_triangles_adjacency_location;
+
+	std::vector<Celer::Vector4<GLfloat> > 	reservoir_list_of_triangles_adjacency_vertices;
+	std::vector<Celer::Vector4<GLfloat> > 	reservoir_list_of_triangles_adjacency_normals;
+	std::vector<Celer::Vector4<GLfloat> >   reservoir_list_of_triangles_adjacency_colors;
+	std::vector<Celer::Vector4<GLint> >     reservoir_list_of_triangles_adjacency_IJKs;
+	std::vector<Celer::Vector4<GLfloat> >   reservoir_list_of_triangles_adjacency_focus;
+
 	Celer::OpenGL::ShaderManager cube_in_GeometryShader;
 
 	// Charles IRES v2

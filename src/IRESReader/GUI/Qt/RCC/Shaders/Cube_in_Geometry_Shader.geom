@@ -3,11 +3,24 @@
 layout ( triangles_adjacency ) in;
 layout ( triangle_strip, max_vertices=24 ) out;
 
+in VertexData
+{
+    vec4 vertice;
+    vec3 normal;
+    vec4 color;
+    vec4 focus;
+flat    ivec4 IJK;
+
+} cell_properties[6];
+
 out VertexData
 {
-	vec4 vertice;
-	vec3 normal;
-	vec4 color;
+    vec4 vertice;
+    vec3 normal;
+    vec4 color;
+    vec4 focus;
+flat    ivec4 IJK;
+
 } VertexOut;
 
 uniform vec4 max_point;
@@ -86,14 +99,15 @@ void main(void)
 //	vec3 ext_z = vec3(0,0,1);
 
 	vec3 center_of_mass =  center_point;
+	float t = 0.09;
 
-	cutVolume[0] = vec4(center_of_mass + ext_x + ext_y + ext_z, 1.0);
+	cutVolume[0] = vec4(center_of_mass + ext_x + ext_y + ext_z + ext_x*t, 1.0);
 	cutVolume[1] = vec4(center_of_mass + ext_x + ext_y - ext_z, 1.0);
 	cutVolume[2] = vec4(center_of_mass - ext_x + ext_y - ext_z, 1.0);
-	cutVolume[3] = vec4(center_of_mass - ext_x + ext_y + ext_z, 1.0);
+	cutVolume[3] = vec4(center_of_mass - ext_x + ext_y + ext_z - ext_x*t, 1.0);
 
-	cutVolume[4] = vec4(center_of_mass + ext_x - ext_y + ext_z, 1.0);
-	cutVolume[5] = vec4(center_of_mass - ext_x - ext_y + ext_z, 1.0);
+	cutVolume[4] = vec4(center_of_mass + ext_x - ext_y + ext_z + ext_x*t , 1.0);
+	cutVolume[5] = vec4(center_of_mass - ext_x - ext_y + ext_z - ext_x*t, 1.0);
 	cutVolume[6] = vec4(center_of_mass - ext_x - ext_y - ext_z, 1.0);
 	cutVolume[7] = vec4(center_of_mass + ext_x - ext_y - ext_z, 1.0);
 
@@ -171,29 +185,36 @@ void main(void)
 
 	// Top
 
-	if ( intersect_point_volume (v[0]) )
+	if ( intersect_point_volume (v[0]) &&
+	     intersect_point_volume (v[1]) &&
+	     intersect_point_volume (v[2]) &&
+	     intersect_point_volume (v[3]) &&
+	     intersect_point_volume (v[4]) &&
+	     intersect_point_volume (v[5]) &&
+	     intersect_point_volume (v[6]) &&
+	     intersect_point_volume (v[7]))
 	{
 		VertexOut.normal = normalize ( cross ( ( v[3].xyz - v[0].xyz ) , ( v[1].xyz - v[0].xyz ) ) );
 
 		gl_Position = ProjectionMatrix * ViewMatrix * v[0];
 		VertexOut.vertice = ViewMatrix * v[0];
 		VertexOut.normal = normalMatrix * VertexOut.normal;
-		VertexOut.color = vec4 ( VertexOut.normal , 1.0 );
+		VertexOut.color = cell_properties[0].color;
 		EmitVertex ( );
 		gl_Position = ProjectionMatrix * ViewMatrix * v[3];
 		VertexOut.vertice = ViewMatrix * v[3];
 		VertexOut.normal = VertexOut.normal;
-		VertexOut.color = vec4 ( VertexOut.normal , 1.0 );
+		VertexOut.color = cell_properties[0].color;
 		EmitVertex ( );
 		gl_Position = ProjectionMatrix * ViewMatrix * v[1];
 		VertexOut.vertice = ViewMatrix * v[1];
 		VertexOut.normal = VertexOut.normal;
-		VertexOut.color = vec4 ( VertexOut.normal , 1.0 );
+		VertexOut.color = cell_properties[0].color;
 		EmitVertex ( );
 		gl_Position = ProjectionMatrix * ViewMatrix * v[2];
 		VertexOut.vertice = ViewMatrix * v[2];
 		VertexOut.normal = VertexOut.normal;
-		VertexOut.color = vec4 ( VertexOut.normal , 1.0 );
+		VertexOut.color = cell_properties[0].color;
 		EmitVertex ( );
 
 		EndPrimitive ( );
@@ -205,22 +226,22 @@ void main(void)
 		gl_Position = ProjectionMatrix * ViewMatrix * v[4];
 		VertexOut.vertice = ViewMatrix * v[4];
 		VertexOut.normal = normalMatrix * VertexOut.normal;
-		VertexOut.color = vec4 ( VertexOut.normal , 1.0 );
+		VertexOut.color = cell_properties[0].color;
 		EmitVertex ( );
 		gl_Position = ProjectionMatrix * ViewMatrix * v[5];
 		VertexOut.vertice = ViewMatrix * v[5];
 		VertexOut.normal = VertexOut.normal;
-		VertexOut.color = vec4 ( VertexOut.normal , 1.0 );
+		VertexOut.color = cell_properties[0].color;
 		EmitVertex ( );
 		gl_Position = ProjectionMatrix * ViewMatrix * v[7];
 		VertexOut.vertice = ViewMatrix * v[7];
 		VertexOut.normal = VertexOut.normal;
-		VertexOut.color = vec4 ( VertexOut.normal , 1.0 );
+		VertexOut.color = cell_properties[0].color;
 		EmitVertex ( );
 		gl_Position = ProjectionMatrix * ViewMatrix * v[6];
 		VertexOut.vertice = ViewMatrix * v[6];
 		VertexOut.normal = VertexOut.normal;
-		VertexOut.color = vec4 ( VertexOut.normal , 1.0 );
+		VertexOut.color = cell_properties[0].color;
 		EmitVertex ( );
 
 		EndPrimitive ( );
@@ -232,22 +253,22 @@ void main(void)
 		gl_Position =  ProjectionMatrix * ViewMatrix  * v[4];
 		VertexOut.vertice = ViewMatrix * v[4];
 		VertexOut.normal = normalMatrix * VertexOut.normal;
-		VertexOut.color  = vec4 (VertexOut.normal,1.0);
+		VertexOut.color  = cell_properties[0].color;
 		EmitVertex();
 		gl_Position =  ProjectionMatrix * ViewMatrix  * v[0];
 		VertexOut.vertice = ViewMatrix * v[0];
 		VertexOut.normal = VertexOut.normal;
-		VertexOut.color  = vec4 (VertexOut.normal,1.0);
+		VertexOut.color  = cell_properties[0].color;
 		EmitVertex();
 		gl_Position =  ProjectionMatrix * ViewMatrix  * v[5];
 		VertexOut.vertice = ViewMatrix * v[5];
 		VertexOut.normal = VertexOut.normal;
-		VertexOut.color  = vec4 (VertexOut.normal,1.0);
+		VertexOut.color  = cell_properties[0].color;
 		EmitVertex();
 		gl_Position =  ProjectionMatrix * ViewMatrix  * v[1];
 		VertexOut.vertice = ViewMatrix * v[1];
 		VertexOut.normal = VertexOut.normal;
-		VertexOut.color  = vec4 (VertexOut.normal,1.0);
+		VertexOut.color  = cell_properties[0].color;
 		EmitVertex();
 
 		EndPrimitive();
@@ -259,22 +280,22 @@ void main(void)
 		gl_Position =  ProjectionMatrix * ViewMatrix  * v[2];
 		VertexOut.vertice = ViewMatrix * v[2];
 		VertexOut.normal = normalMatrix * VertexOut.normal;
-		VertexOut.color  = vec4 (VertexOut.normal,1.0);
+		VertexOut.color  = cell_properties[0].color;
 		EmitVertex();
 		gl_Position =  ProjectionMatrix * ViewMatrix  * v[3];
 		VertexOut.vertice = ViewMatrix * v[3];
 		VertexOut.normal = VertexOut.normal;
-		VertexOut.color  = vec4 (VertexOut.normal,1.0);
+		VertexOut.color  = cell_properties[0].color;
 		EmitVertex();
 		gl_Position =  ProjectionMatrix * ViewMatrix  * v[6];
 		VertexOut.vertice = ViewMatrix * v[6];
 		VertexOut.normal = VertexOut.normal;
-		VertexOut.color  = vec4 (VertexOut.normal,1.0);
+		VertexOut.color  = cell_properties[0].color;
 		EmitVertex();
 		gl_Position =  ProjectionMatrix * ViewMatrix  * v[7];
 		VertexOut.vertice = ViewMatrix * v[7];
 		VertexOut.normal = VertexOut.normal;
-		VertexOut.color  = vec4 (VertexOut.normal,1.0);
+		VertexOut.color  = cell_properties[0].color;
 		EmitVertex();
 
 		EndPrimitive();
@@ -286,22 +307,22 @@ void main(void)
 		gl_Position =  ProjectionMatrix * ViewMatrix  * v[1];
 		VertexOut.vertice = ViewMatrix * v[1];
 		VertexOut.normal = normalMatrix * VertexOut.normal;
-		VertexOut.color  = vec4 (VertexOut.normal,1.0);
+		VertexOut.color  = cell_properties[0].color;
 		EmitVertex();
 		gl_Position =  ProjectionMatrix * ViewMatrix  * v[2];
 		VertexOut.vertice = ViewMatrix * v[2];
 		VertexOut.normal =  VertexOut.normal;
-		VertexOut.color  = vec4 (VertexOut.normal,1.0);
+		VertexOut.color  = cell_properties[0].color;
 		EmitVertex();
 		gl_Position =  ProjectionMatrix * ViewMatrix  * v[5];
 		VertexOut.vertice = ViewMatrix * v[5];
 		VertexOut.normal =  VertexOut.normal;
-		VertexOut.color  = vec4 (VertexOut.normal,1.0);
+		VertexOut.color  = cell_properties[0].color;
 		EmitVertex();
 		gl_Position =  ProjectionMatrix * ViewMatrix  * v[6];
 		VertexOut.vertice = ViewMatrix * v[6];
 		VertexOut.normal =  VertexOut.normal;
-		VertexOut.color  = vec4 (VertexOut.normal,1.0);
+		VertexOut.color  = cell_properties[0].color;
 		EmitVertex();
 
 		EndPrimitive();
@@ -313,22 +334,22 @@ void main(void)
 		gl_Position =  ProjectionMatrix * ViewMatrix  * v[0];
 		VertexOut.vertice = ViewMatrix * v[0];
 		VertexOut.normal = normalMatrix * VertexOut.normal;
-		VertexOut.color  = vec4 (VertexOut.normal,1.0);
+		VertexOut.color  = cell_properties[0].color;
 		EmitVertex();
 		gl_Position =  ProjectionMatrix * ViewMatrix  * v[3];
 		VertexOut.vertice = ViewMatrix * v[3];
 		VertexOut.normal =  VertexOut.normal;
-		VertexOut.color  = vec4 (VertexOut.normal,1.0);
+		VertexOut.color  = cell_properties[0].color;
 		EmitVertex();
 		gl_Position =  ProjectionMatrix * ViewMatrix  * v[4];
 		VertexOut.vertice = ViewMatrix * v[4];
 		VertexOut.normal =  VertexOut.normal;
-		VertexOut.color  = vec4 (VertexOut.normal,1.0);
+		VertexOut.color  = cell_properties[0].color;
 		EmitVertex();
 		gl_Position =  ProjectionMatrix * ViewMatrix  * v[7];
 		VertexOut.vertice = ViewMatrix * v[7];
 		VertexOut.normal =  VertexOut.normal;
-		VertexOut.color  = vec4 (VertexOut.normal,1.0);
+		VertexOut.color  = cell_properties[0].color;
 		EmitVertex();
 
 		EndPrimitive();
