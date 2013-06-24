@@ -12,6 +12,8 @@ flat ivec4 IJK;
 
 } VertexIn;
 
+noperspective in vec4 dist;
+
 void main(void)
 {
 
@@ -31,7 +33,13 @@ void main(void)
 	vec4 ls = color_t * 0.4 * pow ( max ( 0.0 , dot ( eye_dir , ref ) ) , 5.0 );
 
 	//outputColor = vec4 ( la.rgb + ld.xyz + ls.rgb , 1.0 );
-	outputColor = VertexIn.color;
+
+	float d = min(dist[0], min(dist[1], min(dist[2], dist[3])));
+	float I = exp2(-2 * d * d);
+
+	outputColor = I * vec4 ( 0.0 , 0.0 , 0.0 , 1.0 ) + ( 1.0 - I ) * (VertexIn.color);
+
+
 
 
 }

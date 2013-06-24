@@ -1370,6 +1370,8 @@ void GLWidget::NoCutawaySetUp ( )
 
 			if ( cutVolumes.size ( ) > 0 )
 			{
+
+
 				Celer::Vector3<float> new_z =  camera_.position() - cutVolumes[cluster].center ( );
 
 				new_z.normalize();
@@ -1395,6 +1397,7 @@ void GLWidget::NoCutawaySetUp ( )
 				glUniform3fv ( cube_in_GeometryShader.uniforms_["new_y"].location , 1 ,  new_y );
 				glUniform3fv ( cube_in_GeometryShader.uniforms_["new_z"].location , 1 ,  new_z );
 
+				glUniform2f ( cube_in_GeometryShader.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
 				glUniformMatrix4fv ( cube_in_GeometryShader.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
 				glUniformMatrix4fv ( cube_in_GeometryShader.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
 
@@ -1405,24 +1408,24 @@ void GLWidget::NoCutawaySetUp ( )
 				cube_in_GeometryShader.deactive ( );
 
 
-				BoundingBoxDebug.active ( );
-
-				// FIXME Throw an Exception when std::map doesnt find A VARIABLE !!!
-				glUniform4fv ( BoundingBoxDebug.uniforms_["min_point"].location , 1 , Celer::Vector4<float> ( cutVolumes[cluster].min ( ) , 1.0f ) );
-				glUniform4fv ( BoundingBoxDebug.uniforms_["max_point"].location , 1 , Celer::Vector4<float> ( cutVolumes[cluster].max ( ) , 1.0f ) );
-				glUniform3fv ( BoundingBoxDebug.uniforms_["center_point"].location , 1 , cutVolumes[cluster].center ( ));
-				glUniform3fv ( BoundingBoxDebug.uniforms_["new_x"].location , 1 ,  new_x );
-				glUniform3fv ( BoundingBoxDebug.uniforms_["new_y"].location , 1 ,  new_y );
-				glUniform3fv ( BoundingBoxDebug.uniforms_["new_z"].location , 1 ,  new_z );
-				glUniformMatrix4fv ( BoundingBoxDebug.uniforms_["ModelMatrix"].location , 1 , GL_TRUE , lookatCamera );
-				glUniformMatrix4fv ( BoundingBoxDebug.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-				glUniformMatrix4fv ( BoundingBoxDebug.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
-				//VAO
-				glBindVertexArray ( vertexArray );
-				glDrawArrays ( GL_POINTS , 0 , 1 );
-				glBindVertexArray ( 0 );
-
-				BoundingBoxDebug.deactive ( );
+//				BoundingBoxDebug.active ( );
+//
+//				// FIXME Throw an Exception when std::map doesnt find A VARIABLE !!!
+//				glUniform4fv ( BoundingBoxDebug.uniforms_["min_point"].location , 1 , Celer::Vector4<float> ( cutVolumes[cluster].min ( ) , 1.0f ) );
+//				glUniform4fv ( BoundingBoxDebug.uniforms_["max_point"].location , 1 , Celer::Vector4<float> ( cutVolumes[cluster].max ( ) , 1.0f ) );
+//				glUniform3fv ( BoundingBoxDebug.uniforms_["center_point"].location , 1 , cutVolumes[cluster].center ( ));
+//				glUniform3fv ( BoundingBoxDebug.uniforms_["new_x"].location , 1 ,  new_x );
+//				glUniform3fv ( BoundingBoxDebug.uniforms_["new_y"].location , 1 ,  new_y );
+//				glUniform3fv ( BoundingBoxDebug.uniforms_["new_z"].location , 1 ,  new_z );
+//				glUniformMatrix4fv ( BoundingBoxDebug.uniforms_["ModelMatrix"].location , 1 , GL_TRUE , lookatCamera );
+//				glUniformMatrix4fv ( BoundingBoxDebug.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+//				glUniformMatrix4fv ( BoundingBoxDebug.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+//				//VAO
+//				glBindVertexArray ( vertexArray );
+//				glDrawArrays ( GL_POINTS , 0 , 1 );
+//				glBindVertexArray ( 0 );
+//
+//				BoundingBoxDebug.deactive ( );
 
 			}
 

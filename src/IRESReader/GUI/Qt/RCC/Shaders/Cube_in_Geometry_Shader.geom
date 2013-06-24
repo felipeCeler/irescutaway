@@ -23,6 +23,10 @@ flat    ivec4 IJK;
 
 } VertexOut;
 
+uniform vec2 WIN_SCALE;
+
+noperspective out vec4 dist;
+
 uniform vec4 max_point;
 uniform vec4 min_point;
 
@@ -99,7 +103,7 @@ void main(void)
 //	vec3 ext_z = vec3(0,0,1);
 
 	vec3 center_of_mass =  center_point;
-	float t = 0.09;
+	float t = 0.01;
 
 	cutVolume[0] = vec4(center_of_mass + ext_x + ext_y + ext_z + ext_x*t, 1.0);
 	cutVolume[1] = vec4(center_of_mass + ext_x + ext_y - ext_z, 1.0);
@@ -181,6 +185,19 @@ void main(void)
 	v[2] = vec4 ( gl_in[3].gl_Position.w , gl_in[4].gl_Position.w , gl_in[5].gl_Position.w , 1.0 );
 
 
+	vec4 vp[8];
+
+	vp[0] = ProjectionMatrix * ViewMatrix * v[0];
+	vp[1] = ProjectionMatrix * ViewMatrix * v[1];
+	vp[2] = ProjectionMatrix * ViewMatrix * v[2];
+	vp[3] = ProjectionMatrix * ViewMatrix * v[3];
+
+	vp[4] = ProjectionMatrix * ViewMatrix * v[4];
+	vp[5] = ProjectionMatrix * ViewMatrix * v[5];
+	vp[6] = ProjectionMatrix * ViewMatrix * v[6];
+	vp[7] = ProjectionMatrix * ViewMatrix * v[7];
+
+
 	mat3 normalMatrix = inverse(transpose(mat3(ViewMatrix)));
 
 	// Top
@@ -194,23 +211,52 @@ void main(void)
 	     intersect_point_volume (v[6]) &&
 	     intersect_point_volume (v[7]))
 	{
+
+
+
+		vec2 p0 = WIN_SCALE * (vp[0].xy / vp[0].w);
+		vec2 p1 = WIN_SCALE * (vp[3].xy / vp[3].w);
+		vec2 p2 = WIN_SCALE * (vp[1].xy / vp[1].w);
+		vec2 p3 = WIN_SCALE * (vp[2].xy / vp[2].w);
+
+		vec2 v0 = p1 - p0;
+		vec2 v1 = p1 - p2;
+		vec2 v2 = p2 - p0;
+		vec2 v3 = p1 - p3;
+		vec2 v4 = p3 - p2;
+		vec2 v5 = p3 - p0;
+		vec2 v6 = p2 - p0;
+
+		float area1 = abs(v1.x * v6.y - v1.y * v6.x);
+		float area2 = abs(v1.x * v4.y - v1.y * v4.x);
+		float area3 = abs(v0.x * v5.y - v0.y * v5.x);
+		float area4 = abs(v2.x * v5.y - v2.y * v5.x);
+
+
 		VertexOut.normal = normalize ( cross ( ( v[3].xyz - v[0].xyz ) , ( v[1].xyz - v[0].xyz ) ) );
 
+		dist = vec4(area4/length(v4), area3/length(v3), 0, 0);
 		gl_Position = ProjectionMatrix * ViewMatrix * v[0];
 		VertexOut.vertice = ViewMatrix * v[0];
 		VertexOut.normal = normalMatrix * VertexOut.normal;
 		VertexOut.color = cell_properties[0].color;
 		EmitVertex ( );
+
+		dist = vec4(area2/length(v4), 0, 0, area1/length(v2));
 		gl_Position = ProjectionMatrix * ViewMatrix * v[3];
 		VertexOut.vertice = ViewMatrix * v[3];
 		VertexOut.normal = VertexOut.normal;
 		VertexOut.color = cell_properties[0].color;
 		EmitVertex ( );
+
+		dist = vec4(0, area2/length(v3), area1/length(v0), 0);
 		gl_Position = ProjectionMatrix * ViewMatrix * v[1];
 		VertexOut.vertice = ViewMatrix * v[1];
 		VertexOut.normal = VertexOut.normal;
 		VertexOut.color = cell_properties[0].color;
 		EmitVertex ( );
+
+		dist = vec4(0, 0, area3/length(v0), area4/length(v2));
 		gl_Position = ProjectionMatrix * ViewMatrix * v[2];
 		VertexOut.vertice = ViewMatrix * v[2];
 		VertexOut.normal = VertexOut.normal;
@@ -219,25 +265,51 @@ void main(void)
 
 		EndPrimitive ( );
 
-	// Bottom
+		// Bottom
+
+
+		p0 = WIN_SCALE * (vp[4].xy / vp[4].w);
+		p1 = WIN_SCALE * (vp[5].xy / vp[5].w);
+		p2 = WIN_SCALE * (vp[7].xy / vp[7].w);
+		p3 = WIN_SCALE * (vp[6].xy / vp[6].w);
+
+		v0 = p1 - p0;
+		v1 = p1 - p2;
+		v2 = p2 - p0;
+		v3 = p1 - p3;
+		v4 = p3 - p2;
+		v5 = p3 - p0;
+		v6 = p2 - p0;
+
+		area1 = abs(v1.x * v6.y - v1.y * v6.x);
+		area2 = abs(v1.x * v4.y - v1.y * v4.x);
+		area3 = abs(v0.x * v5.y - v0.y * v5.x);
+		area4 = abs(v2.x * v5.y - v2.y * v5.x);
 
 		VertexOut.normal = normalize ( cross ( ( v[5] - v[4] ).xyz , ( v[7] - v[4] ).xyz ) );
 
+		dist = vec4(area4/length(v4), area3/length(v3), 0, 0);
 		gl_Position = ProjectionMatrix * ViewMatrix * v[4];
 		VertexOut.vertice = ViewMatrix * v[4];
 		VertexOut.normal = normalMatrix * VertexOut.normal;
 		VertexOut.color = cell_properties[0].color;
 		EmitVertex ( );
+
+		dist = vec4(area2/length(v4), 0, 0, area1/length(v2));
 		gl_Position = ProjectionMatrix * ViewMatrix * v[5];
 		VertexOut.vertice = ViewMatrix * v[5];
 		VertexOut.normal = VertexOut.normal;
 		VertexOut.color = cell_properties[0].color;
 		EmitVertex ( );
+
+		dist = vec4(0, area2/length(v3), area1/length(v0), 0);
 		gl_Position = ProjectionMatrix * ViewMatrix * v[7];
 		VertexOut.vertice = ViewMatrix * v[7];
 		VertexOut.normal = VertexOut.normal;
 		VertexOut.color = cell_properties[0].color;
 		EmitVertex ( );
+
+		dist = vec4(0, 0, area3/length(v0), area4/length(v2));
 		gl_Position = ProjectionMatrix * ViewMatrix * v[6];
 		VertexOut.vertice = ViewMatrix * v[6];
 		VertexOut.normal = VertexOut.normal;
@@ -248,23 +320,48 @@ void main(void)
 
 		// Front
 
+		p0 = WIN_SCALE * (vp[4].xy / vp[4].w);
+		p1 = WIN_SCALE * (vp[0].xy / vp[0].w);
+		p2 = WIN_SCALE * (vp[5].xy / vp[5].w);
+		p3 = WIN_SCALE * (vp[1].xy / vp[1].w);
+
+		v0 = p1 - p0;
+		v1 = p1 - p2;
+		v2 = p2 - p0;
+		v3 = p1 - p3;
+		v4 = p3 - p2;
+		v5 = p3 - p0;
+		v6 = p2 - p0;
+
+		area1 = abs(v1.x * v6.y - v1.y * v6.x);
+		area2 = abs(v1.x * v4.y - v1.y * v4.x);
+		area3 = abs(v0.x * v5.y - v0.y * v5.x);
+		area4 = abs(v2.x * v5.y - v2.y * v5.x);
+
 		VertexOut.normal = normalize(cross( (v[1]-v[0]).xyz , (v[4]-v[0]).xyz));
 
+		dist = vec4(area4/length(v4), area3/length(v3), 0, 0);
 		gl_Position =  ProjectionMatrix * ViewMatrix  * v[4];
 		VertexOut.vertice = ViewMatrix * v[4];
 		VertexOut.normal = normalMatrix * VertexOut.normal;
 		VertexOut.color  = cell_properties[0].color;
 		EmitVertex();
+
+		dist = vec4(area2/length(v4), 0, 0, area1/length(v2));
 		gl_Position =  ProjectionMatrix * ViewMatrix  * v[0];
 		VertexOut.vertice = ViewMatrix * v[0];
 		VertexOut.normal = VertexOut.normal;
 		VertexOut.color  = cell_properties[0].color;
 		EmitVertex();
+
+		dist = vec4(0, area2/length(v3), area1/length(v0), 0);
 		gl_Position =  ProjectionMatrix * ViewMatrix  * v[5];
 		VertexOut.vertice = ViewMatrix * v[5];
 		VertexOut.normal = VertexOut.normal;
 		VertexOut.color  = cell_properties[0].color;
 		EmitVertex();
+
+		dist = vec4(0, 0, area3/length(v0), area4/length(v2));
 		gl_Position =  ProjectionMatrix * ViewMatrix  * v[1];
 		VertexOut.vertice = ViewMatrix * v[1];
 		VertexOut.normal = VertexOut.normal;
@@ -273,25 +370,50 @@ void main(void)
 
 		EndPrimitive();
 
-	//	// Back
+		// Back
+
+		p0 = WIN_SCALE * (vp[2].xy / vp[2].w);
+		p1 = WIN_SCALE * (vp[3].xy / vp[3].w);
+		p2 = WIN_SCALE * (vp[6].xy / vp[6].w);
+		p3 = WIN_SCALE * (vp[7].xy / vp[7].w);
+
+		v0 = p1 - p0;
+		v1 = p1 - p2;
+		v2 = p2 - p0;
+		v3 = p1 - p3;
+		v4 = p3 - p2;
+		v5 = p3 - p0;
+		v6 = p2 - p0;
+
+		area1 = abs(v1.x * v6.y - v1.y * v6.x);
+		area2 = abs(v1.x * v4.y - v1.y * v4.x);
+		area3 = abs(v0.x * v5.y - v0.y * v5.x);
+		area4 = abs(v2.x * v5.y - v2.y * v5.x);
 
 		VertexOut.normal = normalize(cross( (v[3]-v[2]).xyz , (v[6]-v[2]).xyz));
 
+		dist = vec4(area4/length(v4), area3/length(v3), 0, 0);
 		gl_Position =  ProjectionMatrix * ViewMatrix  * v[2];
 		VertexOut.vertice = ViewMatrix * v[2];
 		VertexOut.normal = normalMatrix * VertexOut.normal;
 		VertexOut.color  = cell_properties[0].color;
 		EmitVertex();
+
+		dist = vec4(area2/length(v4), 0, 0, area1/length(v2));
 		gl_Position =  ProjectionMatrix * ViewMatrix  * v[3];
 		VertexOut.vertice = ViewMatrix * v[3];
 		VertexOut.normal = VertexOut.normal;
 		VertexOut.color  = cell_properties[0].color;
 		EmitVertex();
+
+		dist = vec4(0, area2/length(v3), area1/length(v0), 0);
 		gl_Position =  ProjectionMatrix * ViewMatrix  * v[6];
 		VertexOut.vertice = ViewMatrix * v[6];
 		VertexOut.normal = VertexOut.normal;
 		VertexOut.color  = cell_properties[0].color;
 		EmitVertex();
+
+		dist = vec4(0, 0, area3/length(v0), area4/length(v2));
 		gl_Position =  ProjectionMatrix * ViewMatrix  * v[7];
 		VertexOut.vertice = ViewMatrix * v[7];
 		VertexOut.normal = VertexOut.normal;
@@ -300,25 +422,50 @@ void main(void)
 
 		EndPrimitive();
 
-	//	// Right
+		// Right
+
+		p0 = WIN_SCALE * (vp[1].xy / vp[1].w);
+		p1 = WIN_SCALE * (vp[2].xy / vp[2].w);
+		p2 = WIN_SCALE * (vp[5].xy / vp[5].w);
+		p3 = WIN_SCALE * (vp[6].xy / vp[6].w);
+
+		v0 = p1 - p0;
+		v1 = p1 - p2;
+		v2 = p2 - p0;
+		v3 = p1 - p3;
+		v4 = p3 - p2;
+		v5 = p3 - p0;
+		v6 = p2 - p0;
+
+		area1 = abs(v1.x * v6.y - v1.y * v6.x);
+		area2 = abs(v1.x * v4.y - v1.y * v4.x);
+		area3 = abs(v0.x * v5.y - v0.y * v5.x);
+		area4 = abs(v2.x * v5.y - v2.y * v5.x);
 
 		VertexOut.normal = normalize(cross( (v[2]-v[1]).xyz , (v[5]-v[1]).xyz));
 
+		dist = vec4(area4/length(v4), area3/length(v3), 0, 0);
 		gl_Position =  ProjectionMatrix * ViewMatrix  * v[1];
 		VertexOut.vertice = ViewMatrix * v[1];
 		VertexOut.normal = normalMatrix * VertexOut.normal;
 		VertexOut.color  = cell_properties[0].color;
 		EmitVertex();
+
+		dist = vec4(area2/length(v4), 0, 0, area1/length(v2));
 		gl_Position =  ProjectionMatrix * ViewMatrix  * v[2];
 		VertexOut.vertice = ViewMatrix * v[2];
 		VertexOut.normal =  VertexOut.normal;
 		VertexOut.color  = cell_properties[0].color;
 		EmitVertex();
+
+		dist = vec4(0, area2/length(v3), area1/length(v0), 0);
 		gl_Position =  ProjectionMatrix * ViewMatrix  * v[5];
 		VertexOut.vertice = ViewMatrix * v[5];
 		VertexOut.normal =  VertexOut.normal;
 		VertexOut.color  = cell_properties[0].color;
 		EmitVertex();
+
+		dist = vec4(0, 0, area3/length(v0), area4/length(v2));
 		gl_Position =  ProjectionMatrix * ViewMatrix  * v[6];
 		VertexOut.vertice = ViewMatrix * v[6];
 		VertexOut.normal =  VertexOut.normal;
@@ -329,23 +476,48 @@ void main(void)
 
 		// Left
 
+		p0 = WIN_SCALE * (vp[0].xy / vp[0].w);
+		p1 = WIN_SCALE * (vp[3].xy / vp[3].w);
+		p2 = WIN_SCALE * (vp[4].xy / vp[4].w);
+		p3 = WIN_SCALE * (vp[7].xy / vp[7].w);
+
+		v0 = p1 - p0;
+		v1 = p1 - p2;
+		v2 = p2 - p0;
+		v3 = p1 - p3;
+		v4 = p3 - p2;
+		v5 = p3 - p0;
+		v6 = p2 - p0;
+
+		area1 = abs(v1.x * v6.y - v1.y * v6.x);
+		area2 = abs(v1.x * v4.y - v1.y * v4.x);
+		area3 = abs(v0.x * v5.y - v0.y * v5.x);
+		area4 = abs(v2.x * v5.y - v2.y * v5.x);
+
 		VertexOut.normal = normalize(cross( (v[4]-v[0]).xyz , (v[3]-v[0]).xyz));
 
+		dist = vec4(area4/length(v4), area3/length(v3), 0, 0);
 		gl_Position =  ProjectionMatrix * ViewMatrix  * v[0];
 		VertexOut.vertice = ViewMatrix * v[0];
 		VertexOut.normal = normalMatrix * VertexOut.normal;
 		VertexOut.color  = cell_properties[0].color;
 		EmitVertex();
+
+		dist = vec4(area2/length(v4), 0, 0, area1/length(v2));
 		gl_Position =  ProjectionMatrix * ViewMatrix  * v[3];
 		VertexOut.vertice = ViewMatrix * v[3];
 		VertexOut.normal =  VertexOut.normal;
 		VertexOut.color  = cell_properties[0].color;
 		EmitVertex();
+
+		dist = vec4(0, area2/length(v3), area1/length(v0), 0);
 		gl_Position =  ProjectionMatrix * ViewMatrix  * v[4];
 		VertexOut.vertice = ViewMatrix * v[4];
 		VertexOut.normal =  VertexOut.normal;
 		VertexOut.color  = cell_properties[0].color;
 		EmitVertex();
+
+		dist = vec4(0, 0, area3/length(v0), area4/length(v2));
 		gl_Position =  ProjectionMatrix * ViewMatrix  * v[7];
 		VertexOut.vertice = ViewMatrix * v[7];
 		VertexOut.normal =  VertexOut.normal;
