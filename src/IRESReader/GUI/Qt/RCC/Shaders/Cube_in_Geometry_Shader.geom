@@ -115,8 +115,17 @@ void main(void)
 	cutVolume[6] = vec4(center_of_mass - ext_x - ext_y - ext_z, 1.0);
 	cutVolume[7] = vec4(center_of_mass + ext_x - ext_y - ext_z, 1.0);
 
-//	mat4 base = ModelMatrix;
+//	cutVolume[0] = vec4(center_of_mass + ext_x + ext_y + ext_z, 1.0);
+//	cutVolume[1] = vec4(center_of_mass + ext_x + ext_y - ext_z, 1.0);
+//	cutVolume[2] = vec4(center_of_mass - ext_x + ext_y - ext_z, 1.0);
+//	cutVolume[3] = vec4(center_of_mass - ext_x + ext_y + ext_z, 1.0);
 //
+//	cutVolume[4] = vec4(center_of_mass + ext_x - ext_y + ext_z, 1.0);
+//	cutVolume[5] = vec4(center_of_mass - ext_x - ext_y + ext_z, 1.0);
+//	cutVolume[6] = vec4(center_of_mass - ext_x - ext_y - ext_z, 1.0);
+//	cutVolume[7] = vec4(center_of_mass + ext_x - ext_y - ext_z, 1.0);
+
+//	mat4 base = ModelMatrix;
 
 //	cutVolume[0] = base * cutVolume[0];
 //	cutVolume[1] = base * cutVolume[1];
