@@ -41,10 +41,10 @@
 #include <QtCore/QFile>
 #include <QtCore/QSet>
 #include <QtCore/QMimeData>
+#include <QtCore/QTime>
 
 
 #include <IRES/CornerPointGrid.hpp>
-
 
 
 class GLWidget: public QGLWidget
@@ -259,6 +259,21 @@ private:
 	int min_J_;
 	int max_K_;
 	int min_K_;
+
+
+	// Camera physics
+
+	float max_velocity_;
+	float velocity_;
+	float acceleration_;
+
+	float delta_time_;
+
+	float last_time_;
+	float current_time_;
+
+	QTime clock_;
+
 
 };
 

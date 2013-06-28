@@ -129,6 +129,19 @@ void GLWidget::initializeGL ( )
 
 
 	cube_.createBuffers( Celer::Vector3<float>(0,0,0) );
+
+
+	// Camera Physics
+	max_velocity_ = 1.0f;
+	velocity_ = 0.1f;
+	acceleration_ = 0.001f;
+
+	delta_time_ = 0.0f;
+
+	last_time_ = 0.0f;
+	current_time_ = 0.0f;
+
+	clock_.start();
 }
 
 bool GLWidget::isIresWasOpenedSucessufully ( ) const
@@ -931,6 +944,24 @@ void GLWidget::paintGL ( )
 
 	camera_.computerViewMatrix( );
 
+
+	current_time_ = clock_.elapsed();
+
+	delta_time_ = current_time_ - last_time_;
+	delta_time_ /= 1000.0f;
+
+	if ( velocity_ < max_velocity_ )
+		velocity_ = velocity_ + acceleration_ * (delta_time_);
+
+	last_time_ = current_time_;
+
+
+	float z = camera_.position().z + velocity_ ;
+
+	std::cout << camera_.position() << delta_time_ << std::endl;
+
+	camera_.setPosition( Celer::Vector3<float>(camera_.position().x,camera_.position().y, z ) );
+
 	camera_.setPerspectiveProjectionMatrix ( zoom_angle_ , camera_.aspectRatio ( ) , 0.1 , 500 );
 
 	if 	( isBurnsApproach )
@@ -956,7 +987,10 @@ void GLWidget::paintGL ( )
 }
 
 //Timer
-void GLWidget::timerEvent(QTimerEvent *event) {
+void GLWidget::timerEvent( QTimerEvent *event )
+{
+
+	clock_.restart();
 
 	updateGL();
 }
