@@ -145,6 +145,9 @@
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QDockWidget" name="dockWidgetLayers">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
    <property name="minimumSize">
     <size>
      <width>400</width>
@@ -472,8 +475,11 @@
    </property>
   </action>
   <action name="action_Show_Layers_Widget">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
-    <string>Show Proeperties Viewer</string>
+    <string>Show Properties Viewer</string>
    </property>
   </action>
   <action name="actionShow_Cutaway_Viewer">
@@ -573,9 +579,9 @@
   </connection>
   <connection>
    <sender>action_Show_Layers_Widget</sender>
-   <signal>triggered()</signal>
+   <signal>toggled(bool)</signal>
    <receiver>dockWidgetLayers</receiver>
-   <slot>show()</slot>
+   <slot>setVisible(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>

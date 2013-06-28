@@ -33,7 +33,13 @@ void GLWidget::initializeGL ( )
 //	timer_.setSingleShot ( false );
 //	connect ( &timer_ , SIGNAL ( timeout ( ) ) , this , SLOT ( gameLooping ( ) ) );
 //	connect ( &timer_ , SIGNAL ( timeout ( ) ) , this , SLOT ( animate ( ) ) );
-//	timer_.start ( 0 );
+//	timer_.start ( 60 );
+
+	//Timer Animation
+	timerId = 0;
+	t = 0.0;
+
+	startTimer(30);
 
 
 	setMinimumSize ( 640 , 480 );
@@ -296,49 +302,7 @@ void GLWidget::changePropertyRange ( const double& minRange, const double& maxRa
 			blue 	= std::max(0.0f, std::min(blue, 1.0f));
 
 			color = Celer::Vector4<GLfloat> ( red , green , blue , 1.0f );
-
-//			switch ( (int) ( normalizedColor * 10.0f ) )
-//			{
-//				case 10:
-//					color = Celer::Vector4<GLfloat> ( 1.0f , 0.0f , 0.0f , 1.0f );
-//					break;
-//				case 9:
-//					color = Celer::Vector4<GLfloat> ( 0.5f , 0.25f , 0.0f , 1.0f );
-//					break;
-//				case 8:
-//					color = Celer::Vector4<GLfloat> ( 0.5f , 0.5f , 0.0f , 1.0f );
-//					break;
-//				case 7:
-//					color = Celer::Vector4<GLfloat> ( 0.25f , 0.5f , 0.0f , 1.0f );
-//					break;
-//				case 6:
-//					color = Celer::Vector4<GLfloat> ( 0.0f , 0.25f , 0.0f , 1.0f );
-//					break;
-//				case 5:
-//					color = Celer::Vector4<GLfloat> ( 0.0f , 0.5f , 0.2f , 1.0f );
-//					break;
-//				case 4:
-//					color = Celer::Vector4<GLfloat> ( 0.0f , 0.5f , 0.4f , 1.0f );
-//					break;
-//				case 3:
-//					color = Celer::Vector4<GLfloat> ( 0 , 0.4 , 0.5 , 1.0f );
-//					break;
-//				case 2:
-//					color = Celer::Vector4<GLfloat> ( 0 , 0.2 , 0.5 , 1.0f );
-//					break;
-//				case 1:
-//					color = Celer::Vector4<GLfloat> ( 0 , 0 , 0.5 , 1.0f );
-//					break;
-//				case 0:
-//					color = Celer::Vector4<GLfloat> ( 0 , 0 , 0.375 , 1.0f );
-//					break;
-//					//if value is equal to max
-//				default:
-//					color = Celer::Vector4<GLfloat> ( 0.5f , 0.5f , 0.5f , 1.0f );
-//					break;
 //
-//			}
-
 			colors = std::vector<Celer::Vector4<GLfloat> > ( 24 , color );
 
 			if ( ( regularValue >= minRange ) && ( regularValue <= maxRange ) )
@@ -412,6 +376,8 @@ void GLWidget::changeProperty ( int property_index )
 
 	std::size_t i = 0;
 
+	std::vector<Celer::Vector4<GLfloat> > colors;
+
 	for ( int i = 0; i < reservoir_model_.header_.number_of_Blocks; i++)
 	{
 		if ( reservoir_model_.blocks[i].valid )
@@ -421,6 +387,7 @@ void GLWidget::changeProperty ( int property_index )
 
 			Celer::Vector4<GLfloat> color(1.0,1.0,1.0,1.0);
 
+			// @see Implementing a Continuous "Jet" Colormap Function in GLSL - http://www.metastine.com/?p=7
 
 			float fourValue = 4 * normalized_color;
 			float red   = std::min(fourValue - 1.5, -fourValue + 4.5);
@@ -433,60 +400,11 @@ void GLWidget::changeProperty ( int property_index )
 
 			color = Celer::Vector4<GLfloat> ( red , green , blue , 1.0f );
 
-//			switch ( (int) ( normalized_color * 10.0f ) )
-//			{
-//				case 10:
-//					color = Celer::Vector4<GLfloat> ( 1.0f , 0.0f , 0.0f , 1.0f );
-//					break;
-//				case 9:
-//					color = Celer::Vector4<GLfloat> ( 0.5f , 0.25f , 0.0f , 1.0f );
-//					break;
-//				case 8:
-//					color = Celer::Vector4<GLfloat> ( 0.5f , 0.5f , 0.0f , 1.0f );
-//					break;
-//				case 7:
-//					color = Celer::Vector4<GLfloat> ( 0.25f , 0.5f , 0.0f , 1.0f );
-//					break;
-//				case 6:
-//					color = Celer::Vector4<GLfloat> ( 0.0f , 0.25f , 0.0f , 1.0f );
-//					break;
-//				case 5:
-//					color = Celer::Vector4<GLfloat> ( 0.0f , 0.5f , 0.2f , 1.0f );
-//					break;
-//				case 4:
-//					color = Celer::Vector4<GLfloat> ( 0.0f , 0.5f , 0.4f , 1.0f );
-//					break;
-//				case 3:
-//					color = Celer::Vector4<GLfloat> ( 0 , 0.4 , 0.5 , 1.0f );
-//					break;
-//				case 2:
-//					color = Celer::Vector4<GLfloat> ( 0 , 0.2 , 0.5 , 1.0f );
-//					break;
-//				case 1:
-//					color = Celer::Vector4<GLfloat> ( 0 , 0 , 0.5 , 1.0f );
-//					break;
-//				case 0:
-//					color = Celer::Vector4<GLfloat> ( 0 , 0 , 0.375 , 1.0f );
-//					break;
-//					//if value is equal to max
-//				default:
-//					color = Celer::Vector4<GLfloat> ( 0.5f , 0.0f , 0.0f , 1.0f );
-//					break;
-//			}
 
-			Celer::Vector4<GLfloat> colors[] =
-			{
-				color, color, color, color, color, color,
+			colors = std::vector<Celer::Vector4<GLfloat> > ( 24 , color );
 
-				color, color, color, color, color, color,
-
-				color, color, color, color, color, color,
-
-				color, color, color, color, color, color,
-			};
-
-			std::copy ( colors , colors + 24 , std::back_inserter ( reservoir_list_of_colors ) );
-			std::copy ( colors , colors + 6 , std::back_inserter ( reservoir_list_of_triangles_adjacency_colors ) );
+			std::copy (colors.begin( ) 	, colors.end( ) , 	std::back_inserter ( reservoir_list_of_colors ) );
+			std::copy (colors.begin( ) 	, colors.begin( ) + 6 , std::back_inserter ( reservoir_list_of_triangles_adjacency_colors ) );
 
 		}
 		else
@@ -588,6 +506,8 @@ bool GLWidget::getVertices( unsigned int blockIndex, float * vertices )
 
 	if ( (blockIndex >= 0) && ( blockIndex < reservoir_model_.blocks.size())  )
 	{
+		// TODO View CubeRendering_and_Orientation.svg
+		//      Tying to translate from Charles Ires 2 Version to CelerSystem
 
 		if ( reservoir_model_.blocks[blockIndex].valid  )
 		{
@@ -961,143 +881,6 @@ void GLWidget::openIRESCharles( const std::string& filename )
 		ires_has_been_open_sucessefully = 0;
 	}
 
-
-//	ires::Ires file(true);
-//
-//	reservoir_list_of_charles.clear();
-//
-//	//reservoir_model_eclipse.readFile( filename );
-//	bool result = file.readFile( filename );
-//
-//	if ( result)
-//		std::cout <<  " ok " << std::endl;
-//	else
-//		std::cout <<  " WHAT " << std::endl;
-//
-//	unsigned int i,j,k;
-//
-//	file.getNumIJK(i,j,k);
-//
-//	std::cout <<  " I J K  " << i*j*k << std::endl;
-//
-//	//file.generateTriangleList( 0,0,0,i,j,k,reservoir_list_of_charles,false,false,false);
-//
-//
-//	float v[24];
-//
-//	Celer::Vector4<GLfloat> vecs[8];
-//
-//
-//	for ( int index = 0 ; index < i*j*k ; index++)
-//	{
-//		file.getBlockVertices(index,v);
-//
-//		vecs[0].x = v[0];
-//		vecs[0].y = v[1];
-//		vecs[0].z = v[2];
-//		vecs[0].w = 1.0f;
-//
-//		vecs[1].x = v[3];
-//		vecs[1].y = v[4];
-//		vecs[1].z = v[5];
-//		vecs[1].w = 1.0f;
-//
-//		vecs[2].x = v[6];
-//		vecs[2].y = v[7];
-//		vecs[2].z = v[8];
-//		vecs[2].w = 1.0f;
-//
-//		vecs[3].x = v[9];
-//		vecs[3].y = v[10];
-//		vecs[3].z = v[11];
-//		vecs[3].w = 1.0f;
-//
-//		vecs[4].x = v[12];
-//		vecs[4].y = v[13];
-//		vecs[4].z = v[14];
-//		vecs[4].w = 1.0f;
-//
-//		vecs[5].x = v[15];
-//		vecs[5].y = v[16];
-//		vecs[5].z = v[17];
-//		vecs[5].w = 1.0f;
-//
-//		vecs[6].x = v[18];
-//		vecs[6].y = v[19];
-//		vecs[6].z = v[20];
-//		vecs[6].w = 1.0f;
-//
-//		vecs[7].x = v[21];
-//		vecs[7].y = v[22];
-//		vecs[7].z = v[23];
-//		vecs[7].w = 1.0f;
-//
-//		Celer::Vector4<GLfloat> vertices [24] =
-//		{
-//			vecs[4],vecs[5],vecs[7],vecs[6],
-//
-//			vecs[0],vecs[3],vecs[1],vecs[2],
-//
-//			vecs[4],vecs[0],vecs[5],vecs[1],
-//
-//			vecs[2],vecs[3],vecs[6],vecs[7],
-//
-//			vecs[1],vecs[2],vecs[5],vecs[6],
-//
-//			vecs[0],vecs[3],vecs[4],vecs[7]
-//		};
-//
-//		std::copy ( vertices 	, vertices + 24 , std::back_inserter ( reservoir_list_of_charles  ) );
-//
-//	}
-//
-//
-//
-//
-//	std::cout << " reservoir_list_of_charles.size() " << reservoir_list_of_charles.size() << std::endl;
-//
-//	float minx, miny, minz, maxx, maxy, maxz;
-//	file.getMinMax(minx,miny,minz,maxx,maxy,maxz);
-//
-//
-//	Celer::Vector3<GLfloat> vmin(minx,miny,minz);
-//	Celer::Vector3<GLfloat> vmax(maxx,maxy,maxz);
-//
-//	Celer::Vector3<GLfloat> center;
-//
-//	center.x = (float)((maxx + minx)/2.0);
-//	center.y = (float)((maxy + miny)/2.0);
-//	center.z = (float)((maxz + minz)/2.0);
-//
-//	float diagonal = vmin.length ( vmax );
-//
-//
-//	camera_.setPosition ( center  );
-//	camera_.setTarget ( center  );
-//	std::cout << diagonal;
-//	camera_.setOffset ( 3.0 * diagonal );
-//
-//
-//	std::cout << camera_.position ( );
-//
-//	camera_.setBehavior ( Celer::Camera<float>::REVOLVE_AROUND_MODE );
-//
-//	cameraStep_ = 0.1f;
-//
-//
-//	glBindVertexArray(vertexArray_Charles);
-//
-//
-//	glBindBuffer ( GL_ARRAY_BUFFER , reservoir_vertices_charles_buffer );
-//	glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_charles.size ( ) * sizeof ( reservoir_list_of_charles[0] ) , &reservoir_list_of_charles[0] , GL_STATIC_DRAW );
-//	// Vertex Array : Set up generic attributes pointers
-//	glEnableVertexAttribArray ( 0 );
-//	glVertexAttribPointer ( 0 , 4 , GL_FLOAT , GL_FALSE , 0 , 0 );
-//
-//	glBindVertexArray(0);
-
-
-
 }
 
 void GLWidget::resizeGL ( int width , int height )
@@ -1172,9 +955,16 @@ void GLWidget::paintGL ( )
 
 }
 
+//Timer
+void GLWidget::timerEvent(QTimerEvent *event) {
+
+	updateGL();
+}
+
 void GLWidget::BoundingVolumeCutawaySetup( int cluster )
 {
 
+	/// FIXME Conditions  - Primary and Secondary well defined.
 
 	Celer::Vector3<float> new_z =  camera_.position() - cutVolumes[cluster].center ( );
 
@@ -1367,23 +1157,7 @@ void GLWidget::NoCutawaySetUp ( )
 {
 	glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-
-//	if ( reservoir_list_of_charles.size() > 0 )
-//	{
-//
-//
-//		charles_Shader.active ( );
-//
-//		glUniformMatrix4fv ( charles_Shader.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-//		glUniformMatrix4fv ( charles_Shader.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
-//		glUniform2f ( charles_Shader.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
-//		glBindVertexArray ( vertexArray_Charles );
-//		glDrawArrays ( GL_LINES_ADJACENCY , 0 , reservoir_list_of_charles.size ( ) );
-//		glBindVertexArray ( 0 );
-//
-//		charles_Shader.deactive ( );
-//
-//	}
+	/// FIXME Conditions  - Just the model opened.
 
  	if ( ires_has_been_open_sucessefully )
 	{
@@ -1450,28 +1224,27 @@ void GLWidget::NoCutawaySetUp ( )
 //
 //				BoundingBoxDebug.deactive ( );
 
+			}else
+			{
+
+				secondary.active ( );
+
+				glUniform3fv ( secondary.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
+
+				glUniform3i ( secondary.uniforms_["min_IJK"].location , min_I_, min_J_, min_K_ );
+				glUniform3i ( secondary.uniforms_["max_IJK"].location , max_I_, max_J_, max_K_ );
+
+				glUniform2f ( secondary.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
+
+				glUniformMatrix4fv ( secondary.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+				glUniformMatrix4fv ( secondary.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+
+				glBindVertexArray(vertexArray);
+				glDrawArrays ( GL_LINES_ADJACENCY , 0 , reservoir_list_of_vertices.size());
+				glBindVertexArray(0);
+
+				secondary.deactive ( );
 			}
-
-
-// 			secondary.active ( );
-//
-// 			glUniform3fv ( secondary.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
-//
-// 			glUniform3i ( secondary.uniforms_["min_IJK"].location , min_I_, min_J_, min_K_ );
-// 			glUniform3i ( secondary.uniforms_["max_IJK"].location , max_I_, max_J_, max_K_ );
-//
-//			glUniform2f ( secondary.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
-//
-//			glUniformMatrix4fv ( secondary.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-//			glUniformMatrix4fv ( secondary.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
-//
-//			glBindVertexArray(vertexArray);
-//			glDrawArrays ( GL_LINES_ADJACENCY , 0 , reservoir_list_of_vertices.size());
-//			glBindVertexArray(0);
-//
-//			secondary.deactive ( );
-
-
 
 //			debugNormal.active( );
 //
@@ -1532,6 +1305,8 @@ void GLWidget::NoCutawaySetUp ( )
 
 void GLWidget::BurnsCutawaySetup ( )
 {
+
+	/// FIXME Conditions  - Primary and Secondary well defined.
 
 	int i = 1;
 

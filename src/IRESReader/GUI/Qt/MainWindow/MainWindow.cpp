@@ -24,18 +24,18 @@ MainWindow::MainWindow ( QMainWindow *parent ) :
 	glWidget = new GLWidget ( ui->viewer_ );
 	ui->viewer_verticalLayout_->addWidget(glWidget);
 	ui->tabWidget_->setCurrentIndex(0);
-	//ui->setCentralWidget ( glWidget );
 
 	ui->properties_tableWidget_->horizontalHeader()->setResizeMode(QHeaderView::Stretch);
-	//properties_tableWidget_->verticalHeader()->setResizeMode(QHeaderView::Stretch);
-//	properties_tableWidget_->setSpan(0, 0, 2, 1);
-//	properties_tableWidget_->setSpan(2, 0, 2, 1);
 
 	QIcon icon;
 	icon.addFile ( ":/Icons/caju.png" , QSize ( ) , QIcon::Normal , QIcon::Off );
 	setWindowIcon ( icon );
+
 	showfullScreen_ = 0;
 
+	// Dock Widget Layer Initialization
+
+	ui->dockWidgetLayers->setHidden( true );
 	connect(ui->comboBox_choose_an_property_, SIGNAL(activated(int)), this, SLOT(updateDoubleSpinMin(int)));
 	connect(ui->comboBox_choose_an_property_, SIGNAL(activated(int)), this, SLOT(updateDoubleSpinMax(int)));
 	// Just the name of the function: so changeProperty , not glWidget->changeProperty
@@ -72,8 +72,16 @@ void MainWindow::open( QString pFilename,bool who ) {
 
 	glWidget->openIRESCharles( pFilename.toLocal8Bit().constData() );
 
+
+	// Filling Dock Widget Layers
+
 	if ( glWidget->isIresWasOpenedSucessufully( ))
 	{
+		QString title ( reinterpret_cast<char*>(glWidget->reservoir_model_.header_v2_.title) );
+
+
+
+		ui->simulator_name_->setText (  title );
 
 		updateDoubleSpinMax( 0 );
 		updateDoubleSpinMin( 0 );

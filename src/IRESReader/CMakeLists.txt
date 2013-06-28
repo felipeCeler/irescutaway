@@ -44,7 +44,6 @@ set( ${PROJECT_NAME}_SOURCES App/main.cpp
     						 GUI/Qt/AboutWidget/AboutWidgetIRESReader.cpp
     						 GUI/Qt/GLWidget/GLWidget.cpp
     						 GUI/Qt/GLWidget/Cube.cpp
-    						 IRES/CornerPointGrid_test.cpp
     						 IRES/CornerPointGrid.cpp
     						 IRES/Block.cpp
     						 )

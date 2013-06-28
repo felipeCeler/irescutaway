@@ -64,6 +64,7 @@ class GLWidget: public QGLWidget
 		void resizeGL ( int width , int height );
 
 		void paintGL ( );
+		void timerEvent(QTimerEvent*);
 		void processMultiKeys ( );
 		void mousePressEvent ( QMouseEvent *event );
 		void mouseMoveEvent ( QMouseEvent *event );
@@ -239,6 +240,9 @@ private:
 	float  angle;
 	float  zoom_angle_;
 	int cluster;
+	//Timer
+	GLint timerId;
+	GLfloat t;
 
 	bool  isBurnsApproach;
 	bool  isBoudingBoxApproach;
