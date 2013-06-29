@@ -39,7 +39,7 @@ void GLWidget::initializeGL ( )
 	timerId = 0;
 	t = 0.0;
 
-	startTimer(30);
+	startTimer(1000);
 
 
 	setMinimumSize ( 640 , 480 );
@@ -130,18 +130,6 @@ void GLWidget::initializeGL ( )
 
 	cube_.createBuffers( Celer::Vector3<float>(0,0,0) );
 
-
-	// Camera Physics
-	max_velocity_ = 1.0f;
-	velocity_ = 0.1f;
-	acceleration_ = 0.001f;
-
-	delta_time_ = 0.0f;
-
-	last_time_ = 0.0f;
-	current_time_ = 0.0f;
-
-	clock_.start();
 }
 
 bool GLWidget::isIresWasOpenedSucessufully ( ) const
@@ -944,24 +932,6 @@ void GLWidget::paintGL ( )
 
 	camera_.computerViewMatrix( );
 
-
-	current_time_ = clock_.elapsed();
-
-	delta_time_ = current_time_ - last_time_;
-	delta_time_ /= 1000.0f;
-
-	if ( velocity_ < max_velocity_ )
-		velocity_ = velocity_ + acceleration_ * (delta_time_);
-
-	last_time_ = current_time_;
-
-
-	float z = camera_.position().z + velocity_ ;
-
-	std::cout << camera_.position() << delta_time_ << std::endl;
-
-	camera_.setPosition( Celer::Vector3<float>(camera_.position().x,camera_.position().y, z ) );
-
 	camera_.setPerspectiveProjectionMatrix ( zoom_angle_ , camera_.aspectRatio ( ) , 0.1 , 500 );
 
 	if 	( isBurnsApproach )
@@ -972,17 +942,18 @@ void GLWidget::paintGL ( )
 	else if ( isBoudingBoxApproach )
 	{
 		if ( cutVolumes.size() > 0)
-			camera_.setTarget( cutVolumes[cluster].center() );
+			camera_.setTarget( cutVolumes[cluster].center( ) );
 		camera_.setTarget( reservoir_model_.box_v2.center( ) );
 		BoundingVolumeCutawaySetup ( cluster );
 	}
 	else
 	{
 		if ( cutVolumes.size() > 0)
-			camera_.setTarget( cutVolumes[cluster].center() );
+			camera_.setTarget( cutVolumes[cluster].center( ) );
 		camera_.setTarget( reservoir_model_.box_v2.center( ) );
 		NoCutawaySetUp ( );
 	}
+
 
 }
 
@@ -990,9 +961,6 @@ void GLWidget::paintGL ( )
 void GLWidget::timerEvent( QTimerEvent *event )
 {
 
-	clock_.restart();
-
-	updateGL();
 }
 
 void GLWidget::BoundingVolumeCutawaySetup( int cluster )
@@ -1192,6 +1160,7 @@ void GLWidget::NoCutawaySetUp ( )
 	glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
 	/// FIXME Conditions  - Just the model opened.
+
 
  	if ( ires_has_been_open_sucessefully )
 	{
@@ -1507,6 +1476,14 @@ void GLWidget::LoadShaders ( )
 	shadersDir.cdUp ();
 	qDebug () << "Directory " << shadersDir.path ();
 
+
+
+	/// Cube in Geometry Shader
+	cube_in_GeometryShader.create ( "Cube_in_Geometry_Shader", (shaderDirectory + "Cube_in_Geometry_Shader.vert").toStdString(),
+								   (shaderDirectory + "Cube_in_Geometry_Shader.geom").toStdString(),
+								   (shaderDirectory + "Cube_in_Geometry_Shader.frag").toStdString());
+
+
 	charles_Shader.create( "Charles Shader" ,(shaderDirectory + "Charles.vert").toStdString(),
 						 (shaderDirectory + "Charles.geom").toStdString(),
 						 (shaderDirectory + "Charles.frag").toStdString() );
@@ -1566,11 +1543,6 @@ void GLWidget::LoadShaders ( )
 				   (shaderDirectory + "OrientedBoxApproach.geom").toStdString(),
 				   (shaderDirectory + "OrientedBoxApproach.frag").toStdString());
 
-
-	/// Cube in Geometry Shader
-	cube_in_GeometryShader.create ( "Cube_in_Geometry_Shader", (shaderDirectory + "Cube_in_Geometry_Shader.vert").toStdString(),
-								   (shaderDirectory + "Cube_in_Geometry_Shader.geom").toStdString(),
-								   (shaderDirectory + "Cube_in_Geometry_Shader.frag").toStdString());
 
 
 //	textureViewer.create("textureViewer",(shadersDir.path ()+"/share/Shaders/fboTest.vert").toStdString(),

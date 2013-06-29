@@ -19,9 +19,13 @@ out VertexData
     vec4 color;
     vec4 focus;
 flat    ivec4 IJK;
-
 } cell_properties;
 
+
+layout (std140) uniform ColorBlock {
+    vec4 diffuse;
+    vec4 ambient;
+};
 
 void main(void)
 {
@@ -32,5 +36,5 @@ void main(void)
 	cell_properties.focus    = focus;
 	cell_properties.IJK 	 = IJK;
 
-	gl_Position =  vertices;
+	gl_Position =  vertices + diffuse;
 }
