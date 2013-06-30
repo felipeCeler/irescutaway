@@ -6,7 +6,6 @@ layout (location = 3 ) in vec4 colors;
 layout (location = 4 ) in vec4 focus;
 layout (location = 5 ) in ivec4 IJK;
 
-
 // For while, all transformations come from the Celer::Camera.
 uniform mat4 ModelMatrix;
 uniform mat4 ViewMatrix;
@@ -22,11 +21,6 @@ flat    ivec4 IJK;
 } cell_properties;
 
 
-layout (std140) uniform ColorBlock {
-    vec4 diffuse;
-    vec4 ambient;
-};
-
 void main(void)
 {
 
@@ -36,5 +30,6 @@ void main(void)
 	cell_properties.focus    = focus;
 	cell_properties.IJK 	 = IJK;
 
-	gl_Position =  vertices + diffuse;
+	gl_Position =  vertices;
+
 }
