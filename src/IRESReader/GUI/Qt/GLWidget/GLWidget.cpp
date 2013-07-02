@@ -753,7 +753,7 @@ void GLWidget::openIRESCharles( const std::string& filename )
 
 		std::cout << camera_.position ( );
 
-		camera_.setBehavior ( Celer::Camera<float>::FIRST_PERSON );
+		camera_.setBehavior ( Celer::Camera<float>::REVOLVE_AROUND_MODE );
 
 		cameraStep_ = 0.1f;
 
@@ -1000,8 +1000,6 @@ void GLWidget::BoundingVolumeCutawaySetup( int cluster )
 
  			for ( std::size_t cluster_index = 0 ; cluster_index < cutVolumes.size() ; cluster_index++)
  			{
-
-
 
  				glUniform4fv ( BoundingBoxInitialization.uniforms_["min_point"].location , 1 , Celer::Vector4<float> ( cutVolumes[cluster_index].min ( ) , 1.0f ) );
  				glUniform4fv ( BoundingBoxInitialization.uniforms_["max_point"].location , 1 , Celer::Vector4<float> ( cutVolumes[cluster_index].max ( ) , 1.0f ) );
