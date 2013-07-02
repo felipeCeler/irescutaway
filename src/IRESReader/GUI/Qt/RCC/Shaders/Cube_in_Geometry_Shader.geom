@@ -103,7 +103,7 @@ void main(void)
 //	vec3 ext_z = vec3(0,0,1);
 
 	vec3 center_of_mass =  center_point;
-	float t = 0.01;
+	float t = 0.00f;
 
 	cutVolume[0] = vec4(center_of_mass + ext_x + ext_y + ext_z + ext_x*t, 1.0);
 	cutVolume[1] = vec4(center_of_mass + ext_x + ext_y - ext_z, 1.0);
