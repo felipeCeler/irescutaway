@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 2.6)
 
-project (IRESReader)
+project (IRESCutaway)
 
 MESSAGE(STATUS "Platform : "${CMAKE_SYSTEM})
 
