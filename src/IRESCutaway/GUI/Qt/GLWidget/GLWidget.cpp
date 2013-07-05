@@ -1483,11 +1483,6 @@ void GLWidget::LoadShaders ( )
 
 
 
-	/// Cube in Geometry Shader
-	cube_in_GeometryShader.create ( "Cube_in_Geometry_Shader", (shaderDirectory + "Cube_in_Geometry_Shader.vert").toStdString(),
-								   (shaderDirectory + "Cube_in_Geometry_Shader.geom").toStdString(),
-								   (shaderDirectory + "Cube_in_Geometry_Shader.frag").toStdString());
-
 
 	charles_Shader.create( "Charles Shader" ,(shaderDirectory + "Charles.vert").toStdString(),
 						 (shaderDirectory + "Charles.geom").toStdString(),
@@ -1548,6 +1543,12 @@ void GLWidget::LoadShaders ( )
 				   (shaderDirectory + "OrientedBoxApproach.geom").toStdString(),
 				   (shaderDirectory + "OrientedBoxApproach.frag").toStdString());
 
+
+
+	/// Cube in Geometry Shader
+	cube_in_GeometryShader.create ( "Cube_in_Geometry_Shader", (shaderDirectory + "Cube_in_Geometry_Shader.vert").toStdString(),
+								   (shaderDirectory + "Cube_in_Geometry_Shader.geom").toStdString(),
+								   (shaderDirectory + "Cube_in_Geometry_Shader.frag").toStdString());
 
 
 //	textureViewer.create("textureViewer",(shadersDir.path ()+"/share/Shaders/fboTest.vert").toStdString(),
