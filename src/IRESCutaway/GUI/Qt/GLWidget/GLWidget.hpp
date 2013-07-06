@@ -77,8 +77,8 @@ class GLWidget: public QGLWidget
 
 		void gameLooping ( );
 		void animate ( );
-		void LoadShaders ( );
-		void CutVolumeGenerator ( );
+		void loadShaders ( );
+		void cutVolumeGenerator ( );
 		void openIRESCharles  ( const std::string& filename );
 		bool isIresWasOpenedSucessufully () const;
 		void changeProperty ( int property_index );
@@ -259,6 +259,12 @@ private:
 	int min_J_;
 	int max_K_;
 	int min_K_;
+
+	std::vector<Celer::Vector4<float> > center_points;
+	std::vector<Celer::Vector4<float> > max_points;
+	std::vector<Celer::Vector4<float> > min_points;
+
+	int cut_volume_size;
 
 
 };

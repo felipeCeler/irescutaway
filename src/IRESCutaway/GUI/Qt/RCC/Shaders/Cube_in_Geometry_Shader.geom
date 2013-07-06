@@ -31,19 +31,24 @@ struct Face
 
 struct CutPlane
 {
-   vec4 point[6];
-   vec4 normal[6];
+   vec4 point;
+   vec4 normal;
 };
 
+uniform vec4 center_points[256];
+uniform vec4 max_points[256];
+uniform vec4 min_points[256];
+
+uniform int cut_volume_size;
 
 uniform vec2 WIN_SCALE;
 
 noperspective out vec4 dist;
 
+uniform vec3 center_point;
 uniform vec4 max_point;
 uniform vec4 min_point;
 
-uniform vec3 center_point;
 uniform vec3 new_x;
 uniform vec3 new_y;
 uniform vec3 new_z;
@@ -83,9 +88,9 @@ void main(void)
 
 	vec4 ve[8];
 
-	vec3 ext_x = new_x*0.5;
-	vec3 ext_y = new_y*0.5;
-	vec3 ext_z = new_z*0.5;
+	vec3 ext_x = new_x*0.1;
+	vec3 ext_y = new_y*0.3;
+	vec3 ext_z = new_z*0.1;
 
 	vec3 centerp = center_point;
 
@@ -94,17 +99,6 @@ void main(void)
 //	vec3 ext_z = vec3(0,0,1);
 //
 //	vec3 centerp = vec3(0,0,0);
-
-	ve[0] = vec4(centerp + ext_x + ext_y + ext_z + 100*ext_z+ ext_x,1.0);
-	ve[1] = vec4(centerp + ext_x + ext_y - ext_z,1.0);
-	ve[2] = vec4(centerp - ext_x + ext_y - ext_z,1.0);
-	ve[3] = vec4(centerp - ext_x + ext_y + ext_z + 100*ext_z- ext_x,1.0);
-
-	ve[4] = vec4(centerp + ext_x - ext_y + ext_z + 100*ext_z+ ext_x,1.0);
-	ve[5] = vec4(centerp - ext_x - ext_y + ext_z + 100*ext_z- ext_x,1.0);
-	ve[6] = vec4(centerp - ext_x - ext_y - ext_z,1.0);
-	ve[7] = vec4(centerp + ext_x - ext_y - ext_z,1.0);
-
 
 	// top
 	faces[0].vertices[0] = 0;
@@ -137,26 +131,47 @@ void main(void)
 	faces[5].vertices[2] = 5;
 	faces[5].vertices[3] = 3;
 
-
-	for ( int i = 0; i < 6; i++)
-	{
-		vec3 normal = normalize (cross ( (ve[faces[i].vertices[3]].xyz - ve[faces[i].vertices[0]].xyz),
-						 (ve[faces[i].vertices[1]].xyz - ve[faces[i].vertices[0]].xyz) ) );
-
-		cutPlaneIn.point[i]  = ve[faces[i].vertices[3]];
-		cutPlaneIn.normal[i] = vec4(-normal,1.0);
-	}
-
-
 	vec4 center_v = (v[0] + v[1] + v[2] + v[3] + v[4] + v[5] + v[6] + v[7])/8;
 
-	if ( (dot(cutPlaneIn.normal[0],(cutPlaneIn.point[0] - center_v) )  > 0.01 ) &&
-	     (dot(cutPlaneIn.normal[1],(cutPlaneIn.point[1] - center_v) )  > 0.01 ) &&
-	     (dot(cutPlaneIn.normal[2],(cutPlaneIn.point[2] - center_v) )  > 0.01 ) &&
-	     (dot(cutPlaneIn.normal[3],(cutPlaneIn.point[3] - center_v) )  > 0.01 ) &&
-	     (dot(cutPlaneIn.normal[4],(cutPlaneIn.point[4] - center_v) )  > 0.01 ) &&
-	     (dot(cutPlaneIn.normal[5],(cutPlaneIn.point[5] - center_v) )  > 0.01 )
-	   )
+	bool isclipped_globally = false;
+
+	for (int j = 0 ; j < cut_volume_size ; j++)
+	{
+		ve[0] = vec4(center_points[j].xyz + ext_x + ext_y + ext_z + 100*ext_z+ 50*ext_x,1.0);
+		ve[1] = vec4(center_points[j].xyz + ext_x + ext_y - ext_z,1.0);
+		ve[2] = vec4(center_points[j].xyz - ext_x + ext_y - ext_z,1.0);
+		ve[3] = vec4(center_points[j].xyz - ext_x + ext_y + ext_z + 100*ext_z- 50*ext_x,1.0);
+
+		ve[4] = vec4(center_points[j].xyz + ext_x - ext_y + ext_z + 100*ext_z+ 50*ext_x,1.0);
+		ve[5] = vec4(center_points[j].xyz - ext_x - ext_y + ext_z + 100*ext_z- 50*ext_x,1.0);
+		ve[6] = vec4(center_points[j].xyz - ext_x - ext_y - ext_z,1.0);
+		ve[7] = vec4(center_points[j].xyz + ext_x - ext_y - ext_z,1.0);
+
+		bool isclipped_locally = true;
+
+		for ( int i = 0; i < 6; i++)
+		{
+			vec3 normal = normalize (cross ( (ve[faces[i].vertices[3]].xyz - ve[faces[i].vertices[0]].xyz),
+							 (ve[faces[i].vertices[1]].xyz - ve[faces[i].vertices[0]].xyz) ) );
+
+			cutPlaneIn.point  = ve[faces[i].vertices[3]];
+			cutPlaneIn.normal = vec4(-normal,1.0);
+
+			 if (dot(cutPlaneIn.normal,(cutPlaneIn.point - center_v) )  > 0.01)
+			 {}
+			 else
+			 {
+				 isclipped_locally = false;
+			 }
+
+
+		}
+
+
+		isclipped_globally = isclipped_globally || isclipped_locally;
+	}
+
+	if ( isclipped_globally )
 	{
 
 	}else
@@ -195,8 +210,6 @@ void main(void)
 	faces[5].vertices[2] = 7;
 	faces[5].vertices[3] = 3;
 
-
-	mat3 normalMatrix = inverse(transpose(mat3(ViewMatrix)));
 
 	vec4 vp[4];
 

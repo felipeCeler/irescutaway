@@ -54,7 +54,7 @@ void GLWidget::initializeGL ( )
 	setAcceptDrops(true);
 
 
-	LoadShaders ( );
+	loadShaders ( );
 
 	ires_has_been_open_sucessefully = 0;
 
@@ -130,6 +130,11 @@ void GLWidget::initializeGL ( )
 
 	cube_.createBuffers( Celer::Vector3<float>(0,0,0) );
 
+
+	center_points.resize(256);
+	max_points.resize(256);
+	min_points.resize(256);
+	cut_volume_size = 0;
 }
 
 bool GLWidget::isIresWasOpenedSucessufully ( ) const
@@ -137,12 +142,15 @@ bool GLWidget::isIresWasOpenedSucessufully ( ) const
 	return ires_has_been_open_sucessefully;
 }
 
-void GLWidget::CutVolumeGenerator( )
+void GLWidget::cutVolumeGenerator( )
 {
 
 	Celer::BoundingBox3<GLfloat> box;
 
 	cutVolumes.clear();
+	box_vertices.clear();
+
+
 
 	while ( boxes.size ( ) != 0 )
 	{
@@ -174,9 +182,18 @@ void GLWidget::CutVolumeGenerator( )
 
 	}
 
+	cut_volume_size = 0;
 
 	for ( std::vector<Celer::BoundingBox3<GLfloat> >::iterator it = cutVolumes.begin(); it != cutVolumes.end();++it)
 	{
+		if (cut_volume_size < 256)
+		{
+			center_points[cut_volume_size] = Celer::Vector4<float>(it->center(),1.0f);
+			max_points[cut_volume_size] = Celer::Vector4<float>(it->box_max(),1.0f);
+			min_points[cut_volume_size] = Celer::Vector4<float>(it->box_min(),1.0f);
+			cut_volume_size++;
+		}
+
 
 		Celer::Vector3<GLfloat> v0 ( it->box_max ( ).x , it->box_max ( ).y , it->box_max ( ).z );
 		Celer::Vector3<GLfloat> v1 ( it->box_max ( ).x , it->box_max ( ).y , it->box_min ( ).z );
@@ -270,7 +287,6 @@ void GLWidget::changePropertyRange ( const double& minRange, const double& maxRa
 	reservoir_list_of_triangles_adjacency_focus.clear();
 
 	boxes.clear ( );
-	cutVolumes.clear();
 
 	std::cout << "Changing the property to : " << reservoir_model_.static_porperties[property_index].name << std::endl;
 
@@ -334,7 +350,7 @@ void GLWidget::changePropertyRange ( const double& minRange, const double& maxRa
 	}
 
 	// Loop over the boxes
-	CutVolumeGenerator();
+	cutVolumeGenerator();
 
 	std::cout << " number of boxes " << cutVolumes.size( ) << std::endl;
 
@@ -1194,6 +1210,11 @@ void GLWidget::NoCutawaySetUp ( )
 
 				cube_in_GeometryShader.active ( );
 
+				glUniform4fv ( cube_in_GeometryShader.uniforms_["center_points[0]"].location , cut_volume_size , center_points[0] );
+				glUniform4fv ( cube_in_GeometryShader.uniforms_["max_points[0]"].location , cut_volume_size , max_points[0]);
+				glUniform4fv ( cube_in_GeometryShader.uniforms_["min_points[0]"].location , cut_volume_size , min_points[0] );
+				glUniform1i  ( cube_in_GeometryShader.uniforms_["cut_volume_size"].location , cut_volume_size );
+
 				glUniform4fv ( cube_in_GeometryShader.uniforms_["min_point"].location , 1 , Celer::Vector4<float> ( cutVolumes[cluster].box_min ( ) , 1.0f ) );
 				glUniform4fv ( cube_in_GeometryShader.uniforms_["max_point"].location , 1 , Celer::Vector4<float> ( cutVolumes[cluster].box_max ( ) , 1.0f ) );
 
@@ -1470,7 +1491,7 @@ void GLWidget::animate ( )
 
 }
 
-void GLWidget::LoadShaders ( )
+void GLWidget::loadShaders ( )
 {
 	qDebug ( ) << "ATIM !!";
 	QDir shadersDir = QDir ( qApp->applicationDirPath ( ) );
@@ -1682,7 +1703,7 @@ void GLWidget::keyPressEvent ( QKeyEvent * event )
 
 	if ( event->key() == Qt::Key_F5 )
 	{
-		LoadShaders();
+		loadShaders();
 		qDebug() << " Hello ";
 	}
 

@@ -236,7 +236,7 @@ void MainWindow::on_pushButton_changeIJK_clicked()
 
 void MainWindow::on_action_Load_Shaders_triggered()
 {
-	glWidget->LoadShaders();
+	glWidget->loadShaders();
 }
 
 void MainWindow::on_action_Bounding_Box_Approach_triggered ( )
