@@ -64,7 +64,7 @@ class GLWidget: public QGLWidget
 		void resizeGL ( int width , int height );
 
 		void paintGL ( );
-		void timerEvent(QTimerEvent*);
+		//void timerEvent(QTimerEvent*);
 		void processMultiKeys ( );
 		void mousePressEvent ( QMouseEvent *event );
 		void mouseMoveEvent ( QMouseEvent *event );
@@ -76,7 +76,7 @@ class GLWidget: public QGLWidget
 	public slots:
 
 		void gameLooping ( );
-		void animate ( );
+		void fpsCounter ( );
 		void loadShaders ( );
 		void cutVolumeGenerator ( );
 		void openIRESCharles  ( const std::string& filename );
@@ -140,8 +140,6 @@ private:
 	/// Avoid camera_ movement issues
 	QSet<int> keysPresseds_;
 	bool buttonRelease_;
-	/// Celer Gaming Looping 0.1
-	QTimer timer_;
 
 	/// Celer OpenGL Frameworks
 	Celer::OpenGL::ShaderManager	textureViewer;
@@ -197,6 +195,26 @@ private:
 
 	Celer::OpenGL::ShaderManager cube_in_GeometryShader;
 
+	// Cube in Interleaved VertexBuffer
+	// Use same layout location as vertexArray
+
+	// 1 Vertex Array
+	GLuint vertexArray_cube_interleaved;
+	// 1 Vertex Buffer
+	GLuint vertexBuffer_cube_interleaved;
+
+	struct CubeData
+	{
+		Celer::Vector4<float> vertices[8];
+		Celer::Vector4<float> color;
+		Celer::Vector4<float> IJK;
+		Celer::Vector4<float> focus;
+		Celer::Vector4<float> centroid;
+	};
+
+	std::vector<CubeData> cube_interleaved;
+	Celer::OpenGL::ShaderManager cube_interleaved_shader;
+
 	// Charles IRES v2
 	GLuint vertexArray_Charles;
 	GLuint reservoir_vertices_charles_buffer;
@@ -240,9 +258,7 @@ private:
 	float  angle;
 	float  zoom_angle_;
 	int cluster;
-	//Timer
-	GLint timerId;
-	GLfloat t;
+
 
 	bool  isBurnsApproach;
 	bool  isBoudingBoxApproach;
@@ -265,6 +281,11 @@ private:
 	std::vector<Celer::Vector4<float> > min_points;
 
 	int cut_volume_size;
+
+	/// Celer Gaming Looping 0.1
+	QTimer fpsTimer_;
+	QTimer updateTimer_;
+	int fps;
 
 
 };

@@ -10,18 +10,18 @@ MainWindow::MainWindow ( QMainWindow *parent ) :
 {
 
 	QGLFormat glFormat;
-	glFormat.setSwapInterval ( 1 ); // vsync
+	glFormat.setSwapInterval ( 0 ); // vsync
 	//glFormat.setVersion(3,3);
 	//glFormat.setProfile(QGLFormat::CompatibilityProfile);
-	glFormat.setSampleBuffers(true);
-	glFormat.setSamples(4);
+//	glFormat.setSampleBuffers(true);
+//	glFormat.setSamples(4);
 
 	ui = new Ui::MainWindow;
 	ui->setupUi( this );
 
 	aboutIRESReader = new AboutWidgetIRESReader( this );
 
-	glWidget = new GLWidget ( ui->viewer_ );
+	glWidget = new GLWidget ( glFormat, ui->viewer_ );
 	ui->viewer_verticalLayout_->addWidget(glWidget);
 	ui->tabWidget_->setCurrentIndex(0);
 

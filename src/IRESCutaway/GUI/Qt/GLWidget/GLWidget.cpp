@@ -30,18 +30,6 @@ void GLWidget::initializeGL ( )
 	glDisable(GL_BLEND);
 
 
-//	timer_.setSingleShot ( false );
-//	connect ( &timer_ , SIGNAL ( timeout ( ) ) , this , SLOT ( gameLooping ( ) ) );
-//	connect ( &timer_ , SIGNAL ( timeout ( ) ) , this , SLOT ( animate ( ) ) );
-//	timer_.start ( 60 );
-
-	//Timer Animation
-	timerId = 0;
-	t = 0.0;
-
-	startTimer(1000);
-
-
 	setMinimumSize ( 640 , 480 );
 	setSizePolicy ( QSizePolicy::MinimumExpanding , QSizePolicy::MinimumExpanding );
 	/// Key event to GLWidget not o MainWindow ! | @QtDocumentation
@@ -100,6 +88,10 @@ void GLWidget::initializeGL ( )
 	glGenVertexArrays ( 1, &vertexArray_Charles);
 		glGenBuffers ( 1, &reservoir_vertices_charles_buffer );
 
+	// Cube in Interleaved
+	glGenVertexArrays ( 1, &vertexArray_cube_interleaved );
+		glGenBuffers ( 1, &vertexBuffer_cube_interleaved );
+
 
 	reservoir_vertices_location 	= 1;
 	reservoir_normal_location 	= 2;
@@ -135,6 +127,19 @@ void GLWidget::initializeGL ( )
 	max_points.resize(256);
 	min_points.resize(256);
 	cut_volume_size = 0;
+
+	//Timer Animation
+
+	fps = 0;
+
+	updateTimer_.setSingleShot ( false );
+	connect ( &updateTimer_ , SIGNAL ( timeout ( ) ) , this , SLOT ( gameLooping ( ) ) );
+	updateTimer_.start( 0 );
+
+	fpsTimer_.setSingleShot ( false );
+	connect ( &fpsTimer_ , SIGNAL ( timeout ( ) ) , this , SLOT ( fpsCounter( ) ) );
+	fpsTimer_.start ( 1000 );
+
 }
 
 bool GLWidget::isIresWasOpenedSucessufully ( ) const
@@ -298,6 +303,7 @@ void GLWidget::changePropertyRange ( const double& minRange, const double& maxRa
 
 	Celer::Vector4<GLfloat> color;
 
+	int index = 0;
 	for ( int i = 0; i < reservoir_model_.header_.number_of_Blocks; i++)
 	{
 		if ( reservoir_model_.blocks[i].valid )
@@ -307,7 +313,8 @@ void GLWidget::changePropertyRange ( const double& minRange, const double& maxRa
 
 			float regularValue = ( reservoir_model_.blocks[i].static_porperties[property_index].value_ );
 
-			Celer::Vector4<GLfloat> color(1.0,1.0,1.0,1.0);
+			Celer::Vector4<GLfloat> color (1.0,1.0,1.0,1.0);
+			Celer::Vector4<GLfloat> focus (1.0,1.0,0.0,0.0);
 
 			float fourValue = 4 * normalized_color;
 			float red   = (std::min)(fourValue - 1.5, -fourValue + 4.5);
@@ -324,16 +331,16 @@ void GLWidget::changePropertyRange ( const double& minRange, const double& maxRa
 
 			if ( ( regularValue >= minRange ) && ( regularValue <= maxRange ) )
 			{
+				focus = Celer::Vector4<GLfloat> ( 0.0f , 1.0f , 0.0f , 1.0f );
 				renderFlags = std::vector<Celer::Vector4<GLfloat> > ( 24 , Celer::Vector4<GLfloat> ( 0.0f , 1.0f , 0.0f , 1.0f ) );
 
 				box.fromPointCloud ( reservoir_model_.blocks[i].vertices.begin ( ) , reservoir_model_.blocks[i].vertices.end ( ) );
-
 				boxes.push_back( box );
-
 
 			}
 			else
 			{
+				focus = Celer::Vector4<GLfloat> ( 1.0f , 1.0f , 0.0f , 1.0f );
 				renderFlags = std::vector<Celer::Vector4<GLfloat> > ( 24 , Celer::Vector4<GLfloat> ( 1.0f , 1.0f , 0.0f , 1.0f ) );
 			}
 
@@ -342,6 +349,10 @@ void GLWidget::changePropertyRange ( const double& minRange, const double& maxRa
 
 			std::copy ( renderFlags.begin( ), renderFlags.begin( ) + 6, std::back_inserter ( reservoir_list_of_triangles_adjacency_focus ) );
 			std::copy ( colors.begin( ) , colors.begin( ) + 6 , std::back_inserter ( reservoir_list_of_triangles_adjacency_colors ) );
+
+			cube_interleaved[index].color = color;
+			cube_interleaved[index].focus = focus;
+			index++;
 		}
 		else
 		{
@@ -354,25 +365,35 @@ void GLWidget::changePropertyRange ( const double& minRange, const double& maxRa
 
 	std::cout << " number of boxes " << cutVolumes.size( ) << std::endl;
 
-	glBindVertexArray(vertexArray);
-
 	glBindBuffer ( GL_ARRAY_BUFFER , reservoir_color_buffer );
 	glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_colors.size ( ) * sizeof ( reservoir_list_of_colors[0] ) , &reservoir_list_of_colors[0] , GL_STREAM_DRAW );
 
 	glBindBuffer ( GL_ARRAY_BUFFER , reservoir_renderFlag_buffer );
 	glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_renderFlag.size ( ) * sizeof ( reservoir_list_of_renderFlag[0] ) , &reservoir_list_of_renderFlag[0] , GL_STREAM_DRAW );
 
-	glBindVertexArray(0);
-
-	glBindVertexArray(vertexArray_Cube);
-
 	glBindBuffer ( GL_ARRAY_BUFFER , reservoir_color_triangles_adjacency_buffer );
 	glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_triangles_adjacency_colors.size ( ) * sizeof ( reservoir_list_of_triangles_adjacency_colors[0] ) , &reservoir_list_of_triangles_adjacency_colors[0] , GL_STREAM_DRAW );
 
+	// Cube Triangle Adjacency
 	glBindBuffer ( GL_ARRAY_BUFFER , reservoir_focus_triangles_adjacency_buffer );
 	glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_triangles_adjacency_focus.size( ) * sizeof ( reservoir_list_of_triangles_adjacency_focus[0] ) , &reservoir_list_of_triangles_adjacency_focus[0] , GL_STREAM_DRAW );
 
-	glBindVertexArray(0);
+	// Cube Interleaved
+	glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer_cube_interleaved);
+	glBufferData ( GL_ARRAY_BUFFER , cube_interleaved.size( ) * sizeof(cube_interleaved[0]) , &cube_interleaved[0] , GL_STATIC_DRAW );
+
+	int size_of_vertice = sizeof(Celer::Vector4<float>);
+	int size_of_struct  =  sizeof(CubeData);
+
+
+	http://www.opengl.org/wiki/Vertex_Specification
+	for ( int location = 0 ; location < 12 ; location++)
+	{
+		glEnableVertexAttribArray(location);
+		glVertexAttribPointer(location, 4, GL_FLOAT, GL_FALSE, size_of_struct , reinterpret_cast<void*>(size_of_vertice * location));
+	}
+
+	glBindBuffer( GL_ARRAY_BUFFER, 0);
 
 }
 
@@ -394,6 +415,8 @@ void GLWidget::changeProperty ( int property_index )
 	std::size_t i = 0;
 
 	std::vector<Celer::Vector4<GLfloat> > colors;
+
+	int index = 0;
 
 	for ( int i = 0; i < reservoir_model_.header_.number_of_Blocks; i++)
 	{
@@ -420,6 +443,9 @@ void GLWidget::changeProperty ( int property_index )
 
 			colors = std::vector<Celer::Vector4<GLfloat> > ( 24 , color );
 
+			cube_interleaved[index].color = color;
+			index++;
+
 			std::copy (colors.begin( ) 	, colors.end( ) , 	std::back_inserter ( reservoir_list_of_colors ) );
 			std::copy (colors.begin( ) 	, colors.begin( ) + 6 , std::back_inserter ( reservoir_list_of_triangles_adjacency_colors ) );
 
@@ -430,20 +456,32 @@ void GLWidget::changeProperty ( int property_index )
 		}
 	}
 
-	glBindVertexArray(vertexArray);
+
 
 	glBindBuffer ( GL_ARRAY_BUFFER , reservoir_color_buffer );
 	glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_colors.size ( ) * sizeof ( reservoir_list_of_colors[0] ) , &reservoir_list_of_colors[0] , GL_STREAM_DRAW );
 
-	glBindVertexArray(0);
-
-
-	glBindVertexArray(vertexArray_Cube);
 
 	glBindBuffer ( GL_ARRAY_BUFFER , reservoir_color_triangles_adjacency_buffer );
 	glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_triangles_adjacency_colors.size ( ) * sizeof ( reservoir_list_of_triangles_adjacency_colors[0] ) , &reservoir_list_of_triangles_adjacency_colors[0] , GL_STREAM_DRAW );
 
-	glBindVertexArray(0);
+	glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer_cube_interleaved);
+	glBufferData ( GL_ARRAY_BUFFER , cube_interleaved.size( ) * sizeof(cube_interleaved[0]) , &cube_interleaved[0] , GL_STATIC_DRAW );
+
+	int size_of_vertice = sizeof(Celer::Vector4<float>);
+	int size_of_struct  =  sizeof(CubeData);
+
+
+	http://www.opengl.org/wiki/Vertex_Specification
+	for ( int location = 0 ; location < 12 ; location++)
+	{
+		glEnableVertexAttribArray(location);
+		glVertexAttribPointer(location, 4, GL_FLOAT, GL_FALSE, size_of_struct , reinterpret_cast<void*>(size_of_vertice * location));
+	}
+
+	glBindBuffer( GL_ARRAY_BUFFER, 0);
+
+
 
 
 
@@ -679,6 +717,15 @@ void GLWidget::openIRESCharles( const std::string& filename )
 		reservoir_list_of_triangles_adjacency_IJKs.clear();
 		reservoir_list_of_triangles_adjacency_focus.clear();
 
+		cube_interleaved.clear();
+
+
+		CubeData cube_temp;
+
+		cube_interleaved.resize(reservoir_model_.blocks.size( ));
+
+		int index = 0;
+
 		for ( std::size_t i = 0; i < reservoir_model_.blocks.size( ) ; i++)
 		{
 
@@ -694,6 +741,31 @@ void GLWidget::openIRESCharles( const std::string& filename )
 				std::copy(reservoir_model_.blocks[i].IJK.begin(), reservoir_model_.blocks[i].IJK.end(),
 						 std::back_inserter(reservoir_list_of_IJKs));
 
+				cube_temp.vertices[4] = reservoir_model_.blocks[i].vertices[0];
+				cube_temp.vertices[5] = reservoir_model_.blocks[i].vertices[1];
+				cube_temp.vertices[7] = reservoir_model_.blocks[i].vertices[2];
+				cube_temp.vertices[6] = reservoir_model_.blocks[i].vertices[3];
+
+				cube_temp.vertices[0] = reservoir_model_.blocks[i].vertices[4];
+				cube_temp.vertices[3] = reservoir_model_.blocks[i].vertices[5];
+				cube_temp.vertices[1] = reservoir_model_.blocks[i].vertices[6];
+				cube_temp.vertices[2] = reservoir_model_.blocks[i].vertices[7];
+
+
+				cube_temp.color  = Celer::Vector4<float> (1.0,0.0,0.0,1.0);
+				cube_temp.IJK    = Celer::Vector4<float> ( reservoir_model_.blocks[i].IJK[0].x , reservoir_model_.blocks[i].IJK[0].y , reservoir_model_.blocks[i].IJK[0].z , 1.0f );
+				cube_temp.focus  = Celer::Vector4<float> ( 1.0f, 1.0f ,0.0f ,1.0f );
+				cube_temp.centroid = ( cube_temp.vertices[0] + cube_temp.vertices[1] +
+						       cube_temp.vertices[2] + cube_temp.vertices[3] +
+						       cube_temp.vertices[4] + cube_temp.vertices[5] +
+						       cube_temp.vertices[6] + cube_temp.vertices[7]
+						       ) ;
+
+				cube_temp.centroid *=  0.125 ;
+
+				cube_interleaved[index] = cube_temp;
+
+				index++;
 
 				Celer::Vector4<float> vertices [] =
 				{
@@ -751,6 +823,8 @@ void GLWidget::openIRESCharles( const std::string& filename )
 
 			}
 		}
+
+		cube_interleaved.resize(  index  );
 
 		changeProperty(0);
 
@@ -849,6 +923,23 @@ void GLWidget::openIRESCharles( const std::string& filename )
 		// Vertex Array : Set up generic attributes pointers
 		glEnableVertexAttribArray ( reservoir_IJK_triangles_adjacency_location );
 		glVertexAttribIPointer ( reservoir_IJK_triangles_adjacency_location , 4 , GL_INT, 0 , 0 );
+
+		glBindVertexArray(0);
+
+		glBindVertexArray ( vertexArray_cube_interleaved );
+		glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer_cube_interleaved);
+		glBufferData ( GL_ARRAY_BUFFER , cube_interleaved.size( ) * sizeof(cube_interleaved[0]) , &cube_interleaved[0] , GL_STATIC_DRAW );
+
+		int size_of_vertice = sizeof(Celer::Vector4<float>);
+		int size_of_struct  =  sizeof(CubeData);
+
+
+		http://www.opengl.org/wiki/Vertex_Specification
+		for ( int location = 0 ; location < 12 ; location++)
+		{
+			glEnableVertexAttribArray(location);
+			glVertexAttribPointer(location, 4, GL_FLOAT, GL_FALSE, size_of_struct , reinterpret_cast<void*>(size_of_vertice * location));
+		}
 
 		glBindVertexArray(0);
 
@@ -970,14 +1061,18 @@ void GLWidget::paintGL ( )
 		NoCutawaySetUp ( );
 	}
 
+	fps++;
+
 
 }
 
-//Timer
-void GLWidget::timerEvent( QTimerEvent *event )
-{
-
-}
+////Timer
+//void GLWidget::timerEvent( QTimerEvent *event )
+//{
+//
+//
+//
+//}
 
 void GLWidget::BoundingVolumeCutawaySetup( int cluster )
 {
@@ -1256,23 +1351,32 @@ void GLWidget::NoCutawaySetUp ( )
 			}else
 			{
 
-				secondary.active ( );
 
-				glUniform3fv ( secondary.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
+		 		cube_interleaved_shader.active();
+		 		glUniformMatrix4fv(cube_interleaved_shader.uniforms_["ViewMatrix"].location,1,GL_TRUE, camera_.viewMatrix());
+		 		glUniformMatrix4fv(cube_interleaved_shader.uniforms_["ProjectionMatrix"].location,1,GL_TRUE, camera_.perspectiveProjectionMatrix() );
+		 		glBindVertexArray ( vertexArray_cube_interleaved );
+		 		glDrawArrays ( GL_POINTS , 0 , cube_interleaved.size() );
+		 		glBindVertexArray ( 0 );
+		 		cube_interleaved_shader.deactive();
 
-				glUniform3i ( secondary.uniforms_["min_IJK"].location , min_I_, min_J_, min_K_ );
-				glUniform3i ( secondary.uniforms_["max_IJK"].location , max_I_, max_J_, max_K_ );
-
-				glUniform2f ( secondary.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
-
-				glUniformMatrix4fv ( secondary.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-				glUniformMatrix4fv ( secondary.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
-
-				glBindVertexArray(vertexArray);
-				glDrawArrays ( GL_LINES_ADJACENCY , 0 , reservoir_list_of_vertices.size());
-				glBindVertexArray(0);
-
-				secondary.deactive ( );
+//				secondary.active ( );
+//
+//				glUniform3fv ( secondary.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
+//
+//				glUniform3i ( secondary.uniforms_["min_IJK"].location , min_I_, min_J_, min_K_ );
+//				glUniform3i ( secondary.uniforms_["max_IJK"].location , max_I_, max_J_, max_K_ );
+//
+//				glUniform2f ( secondary.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
+//
+//				glUniformMatrix4fv ( secondary.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+//				glUniformMatrix4fv ( secondary.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+//
+//				glBindVertexArray(vertexArray);
+//				glDrawArrays ( GL_LINES_ADJACENCY , 0 , reservoir_list_of_vertices.size());
+//				glBindVertexArray(0);
+//
+//				secondary.deactive ( );
 			}
 
 //			debugNormal.active( );
@@ -1483,11 +1587,15 @@ void GLWidget::BurnsCutawaySetup ( )
 
 void GLWidget::gameLooping ( )
 {
-	updateGL ( );
+	updateGL();
+	fps++;
 }
 
-void GLWidget::animate ( )
+void GLWidget::fpsCounter ( )
 {
+
+	std::cout << "fps :" << fps  << std::endl;
+	fps = 0;
 
 }
 
@@ -1571,6 +1679,9 @@ void GLWidget::loadShaders ( )
 								   (shaderDirectory + "Cube_in_Geometry_Shader.geom").toStdString(),
 								   (shaderDirectory + "Cube_in_Geometry_Shader.frag").toStdString());
 
+	cube_interleaved_shader.create ("cube_interleaved", (shaderDirectory + "Cube_Interleaved.vert").toStdString(),
+			   (shaderDirectory   + "Cube_Interleaved.geom").toStdString(),
+			   (shaderDirectory   + "Cube_Interleaved.frag").toStdString());
 
 //	textureViewer.create("textureViewer",(shadersDir.path ()+"/share/Shaders/fboTest.vert").toStdString(),
 //			                             (shadersDir.path ()+"/share/Shaders/fboTest.frag").toStdString());
@@ -1707,7 +1818,7 @@ void GLWidget::keyPressEvent ( QKeyEvent * event )
 		qDebug() << " Hello ";
 	}
 
-	updateGL();
+
 }
 
 void GLWidget::keyReleaseEvent ( QKeyEvent * event )
@@ -1731,7 +1842,7 @@ void GLWidget::mousePressEvent ( QMouseEvent *event )
 		{
 			lastPos = event->pos ( );
 		}
-		updateGL();
+
 
 }
 
@@ -1775,7 +1886,7 @@ void GLWidget::mouseMoveEvent ( QMouseEvent *event )
 		 */
 		QCursor::setPos ( mapToGlobal ( QPoint ( static_cast<int> ( centerX_ ) , static_cast<int> ( centerY_ ) ) ) );
 	}
-	updateGL();
+
 
 }
 
@@ -1794,7 +1905,7 @@ void GLWidget::wheelEvent ( QWheelEvent *event )
 		qDebug ( ) << scrollStep_;
 	}
 
-	updateGL();
+
 }
 
 void GLWidget::dragEnterEvent(QDragEnterEvent *event)
