@@ -385,7 +385,6 @@ void GLWidget::changePropertyRange ( const double& minRange, const double& maxRa
 	int size_of_vertice = sizeof(Celer::Vector4<float>);
 	int size_of_struct  =  sizeof(CubeData);
 
-
 	http://www.opengl.org/wiki/Vertex_Specification
 	for ( int location = 0 ; location < 12 ; location++)
 	{
@@ -1302,31 +1301,49 @@ void GLWidget::NoCutawaySetUp ( )
 
 				Celer::Matrix4x4<float> lookatCamera ( new_x, new_y , new_z );
 
+		 		cube_interleaved_shader.active();
+				glUniform4fv ( cube_interleaved_shader.uniforms_["center_points[0]"].location , cut_volume_size , center_points[0] );
+				glUniform4fv ( cube_interleaved_shader.uniforms_["max_points[0]"].location , cut_volume_size , max_points[0]);
+				glUniform4fv ( cube_interleaved_shader.uniforms_["min_points[0]"].location , cut_volume_size , min_points[0] );
+				glUniform1i  ( cube_interleaved_shader.uniforms_["cut_volume_size"].location , cut_volume_size );
 
-				cube_in_GeometryShader.active ( );
+				glUniform3fv ( cube_interleaved_shader.uniforms_["new_x"].location , 1 ,  new_x );
+				glUniform3fv ( cube_interleaved_shader.uniforms_["new_y"].location , 1 ,  new_y );
+				glUniform3fv ( cube_interleaved_shader.uniforms_["new_z"].location , 1 ,  new_z );
 
-				glUniform4fv ( cube_in_GeometryShader.uniforms_["center_points[0]"].location , cut_volume_size , center_points[0] );
-				glUniform4fv ( cube_in_GeometryShader.uniforms_["max_points[0]"].location , cut_volume_size , max_points[0]);
-				glUniform4fv ( cube_in_GeometryShader.uniforms_["min_points[0]"].location , cut_volume_size , min_points[0] );
-				glUniform1i  ( cube_in_GeometryShader.uniforms_["cut_volume_size"].location , cut_volume_size );
+				glUniform2f ( cube_interleaved_shader.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
+				glUniformMatrix4fv ( cube_interleaved_shader.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+				glUniformMatrix4fv ( cube_interleaved_shader.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+		 		glBindVertexArray ( vertexArray_cube_interleaved );
+		 		glDrawArrays ( GL_POINTS , 0 , cube_interleaved.size() );
+		 		glBindVertexArray ( 0 );
+		 		cube_interleaved_shader.deactive();
 
-				glUniform4fv ( cube_in_GeometryShader.uniforms_["min_point"].location , 1 , Celer::Vector4<float> ( cutVolumes[cluster].box_min ( ) , 1.0f ) );
-				glUniform4fv ( cube_in_GeometryShader.uniforms_["max_point"].location , 1 , Celer::Vector4<float> ( cutVolumes[cluster].box_max ( ) , 1.0f ) );
 
-				glUniform3fv ( cube_in_GeometryShader.uniforms_["center_point"].location , 1 , cutVolumes[cluster].center ( ));
-				glUniform3fv ( cube_in_GeometryShader.uniforms_["new_x"].location , 1 ,  new_x );
-				glUniform3fv ( cube_in_GeometryShader.uniforms_["new_y"].location , 1 ,  new_y );
-				glUniform3fv ( cube_in_GeometryShader.uniforms_["new_z"].location , 1 ,  new_z );
-
-				glUniform2f ( cube_in_GeometryShader.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
-				glUniformMatrix4fv ( cube_in_GeometryShader.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-				glUniformMatrix4fv ( cube_in_GeometryShader.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
-
-				glBindVertexArray ( vertexArray_Cube );
-				glDrawArrays ( GL_TRIANGLES_ADJACENCY , 0 , reservoir_list_of_triangles_adjacency_vertices.size ( ) );
-				glBindVertexArray ( 0 );
-
-				cube_in_GeometryShader.deactive ( );
+//				cube_in_GeometryShader.active ( );
+//
+//				glUniform4fv ( cube_in_GeometryShader.uniforms_["center_points[0]"].location , cut_volume_size , center_points[0] );
+//				glUniform4fv ( cube_in_GeometryShader.uniforms_["max_points[0]"].location , cut_volume_size , max_points[0]);
+//				glUniform4fv ( cube_in_GeometryShader.uniforms_["min_points[0]"].location , cut_volume_size , min_points[0] );
+//				glUniform1i  ( cube_in_GeometryShader.uniforms_["cut_volume_size"].location , cut_volume_size );
+//
+//				glUniform4fv ( cube_in_GeometryShader.uniforms_["min_point"].location , 1 , Celer::Vector4<float> ( cutVolumes[cluster].box_min ( ) , 1.0f ) );
+//				glUniform4fv ( cube_in_GeometryShader.uniforms_["max_point"].location , 1 , Celer::Vector4<float> ( cutVolumes[cluster].box_max ( ) , 1.0f ) );
+//
+//				glUniform3fv ( cube_in_GeometryShader.uniforms_["center_point"].location , 1 , cutVolumes[cluster].center ( ));
+//				glUniform3fv ( cube_in_GeometryShader.uniforms_["new_x"].location , 1 ,  new_x );
+//				glUniform3fv ( cube_in_GeometryShader.uniforms_["new_y"].location , 1 ,  new_y );
+//				glUniform3fv ( cube_in_GeometryShader.uniforms_["new_z"].location , 1 ,  new_z );
+//
+//				glUniform2f ( cube_in_GeometryShader.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
+//				glUniformMatrix4fv ( cube_in_GeometryShader.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+//				glUniformMatrix4fv ( cube_in_GeometryShader.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+//
+//				glBindVertexArray ( vertexArray_Cube );
+//				glDrawArrays ( GL_TRIANGLES_ADJACENCY , 0 , reservoir_list_of_triangles_adjacency_vertices.size ( ) );
+//				glBindVertexArray ( 0 );
+//
+//				cube_in_GeometryShader.deactive ( );
 
 
 //				BoundingBoxDebug.active ( );
@@ -1352,31 +1369,24 @@ void GLWidget::NoCutawaySetUp ( )
 			{
 
 
-		 		cube_interleaved_shader.active();
-		 		glUniformMatrix4fv(cube_interleaved_shader.uniforms_["ViewMatrix"].location,1,GL_TRUE, camera_.viewMatrix());
-		 		glUniformMatrix4fv(cube_interleaved_shader.uniforms_["ProjectionMatrix"].location,1,GL_TRUE, camera_.perspectiveProjectionMatrix() );
-		 		glBindVertexArray ( vertexArray_cube_interleaved );
-		 		glDrawArrays ( GL_POINTS , 0 , cube_interleaved.size() );
-		 		glBindVertexArray ( 0 );
-		 		cube_interleaved_shader.deactive();
 
-//				secondary.active ( );
-//
-//				glUniform3fv ( secondary.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
-//
-//				glUniform3i ( secondary.uniforms_["min_IJK"].location , min_I_, min_J_, min_K_ );
-//				glUniform3i ( secondary.uniforms_["max_IJK"].location , max_I_, max_J_, max_K_ );
-//
-//				glUniform2f ( secondary.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
-//
-//				glUniformMatrix4fv ( secondary.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-//				glUniformMatrix4fv ( secondary.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
-//
-//				glBindVertexArray(vertexArray);
-//				glDrawArrays ( GL_LINES_ADJACENCY , 0 , reservoir_list_of_vertices.size());
-//				glBindVertexArray(0);
-//
-//				secondary.deactive ( );
+				secondary.active ( );
+
+				glUniform3fv ( secondary.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
+
+				glUniform3i ( secondary.uniforms_["min_IJK"].location , min_I_, min_J_, min_K_ );
+				glUniform3i ( secondary.uniforms_["max_IJK"].location , max_I_, max_J_, max_K_ );
+
+				glUniform2f ( secondary.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
+
+				glUniformMatrix4fv ( secondary.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+				glUniformMatrix4fv ( secondary.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+
+				glBindVertexArray(vertexArray);
+				glDrawArrays ( GL_LINES_ADJACENCY , 0 , reservoir_list_of_vertices.size());
+				glBindVertexArray(0);
+
+				secondary.deactive ( );
 			}
 
 //			debugNormal.active( );

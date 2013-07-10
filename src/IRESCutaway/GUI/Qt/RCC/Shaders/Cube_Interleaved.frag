@@ -9,6 +9,8 @@ in VertexData
 	vec4 color;
 } VertexIn;
 
+noperspective in vec4 dist;
+
 void main(void)
 {
 
@@ -27,7 +29,12 @@ void main(void)
 	vec4 ld = color_t * 0.9 * max ( 0.0 , dot ( newNormal , light_dir ) );
 	vec4 ls = color_t * 0.4 * pow ( max ( 0.0 , dot ( eye_dir , ref ) ) , 5.0 );
 
-	outputColor = vec4 ( la.rgb + ld.xyz + ls.rgb , 1.0 );
+
+	float d = min(dist[0], min(dist[1], min(dist[2], dist[3])));
+	float I = exp2(-2 * d * d);
+
+	outputColor = I * vec4 ( 0.0 , 0.0 , 0.0 , 1.0 ) + ( 1.0 - I ) * vec4 ( la.rgb + ld.xyz + ls.rgb , 1.0 );
+	//outputColor = vec4 ( la.rgb + ld.xyz + ls.rgb , 1.0 );
 	//outputColor = VertexIn.color;
 
 
