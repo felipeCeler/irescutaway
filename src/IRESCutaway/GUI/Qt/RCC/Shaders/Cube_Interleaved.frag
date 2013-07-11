@@ -9,13 +9,45 @@ in VertexData
 	vec4 color;
 } VertexIn;
 
+struct CutPlane
+{
+   vec4 point;
+   vec4 normal;
+};
+
 noperspective in vec4 dist;
+
+uniform mat4 ViewMatrix;
 
 void main(void)
 {
 
+//	CutPlane cutPlaneIn;
+//
+//
+//	cutPlaneIn.point  = ViewMatrix * vec4(0.0,0.0,0.0,1.0);
+//
+//	mat3 normalMatrix = inverse(transpose(mat3(ViewMatrix)));
+//
+//	cutPlaneIn.normal = vec4(0.0,0.0,1.0,1.0);
+//
+//	cutPlaneIn.normal = vec4(normalMatrix * cutPlaneIn.normal.xyz,1.0);
+
 	vec3 newNormal = VertexIn.normal.xyz;
 	vec3 newVert = VertexIn.vertice.xyz;
+
+//	if ( dot ( cutPlaneIn.normal , ( cutPlaneIn.point - VertexIn.vertice ) ) > 0.01 )
+//	{
+//		discard;
+//	}
+//
+//	if ( !gl_FrontFacing )
+//	{
+//
+//	}else
+//	{
+//
+//	}
 
 	newNormal = normalize ( newNormal );
 
@@ -33,7 +65,11 @@ void main(void)
 	float d = min(dist[0], min(dist[1], min(dist[2], dist[3])));
 	float I = exp2(-2 * d * d);
 
+
 	outputColor = I * vec4 ( 0.0 , 0.0 , 0.0 , 1.0 ) + ( 1.0 - I ) * vec4 ( la.rgb + ld.xyz + ls.rgb , 1.0 );
+
+
+
 	//outputColor = vec4 ( la.rgb + ld.xyz + ls.rgb , 1.0 );
 	//outputColor = VertexIn.color;
 
