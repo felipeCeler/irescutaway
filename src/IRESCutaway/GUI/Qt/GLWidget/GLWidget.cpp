@@ -385,7 +385,7 @@ void GLWidget::changePropertyRange ( const double& minRange, const double& maxRa
 	int size_of_vertice = sizeof(Celer::Vector4<float>);
 	int size_of_struct  =  sizeof(CubeData);
 
-	http://www.opengl.org/wiki/Vertex_Specification
+	///http://www.opengl.org/wiki/Vertex_Specification
 	for ( int location = 0 ; location < 12 ; location++)
 	{
 		glEnableVertexAttribArray(location);
@@ -471,7 +471,7 @@ void GLWidget::changeProperty ( int property_index )
 	int size_of_struct  =  sizeof(CubeData);
 
 
-	http://www.opengl.org/wiki/Vertex_Specification
+	//http://www.opengl.org/wiki/Vertex_Specification
 	for ( int location = 0 ; location < 12 ; location++)
 	{
 		glEnableVertexAttribArray(location);
@@ -933,7 +933,7 @@ void GLWidget::openIRESCharles( const std::string& filename )
 		int size_of_struct  =  sizeof(CubeData);
 
 
-		http://www.opengl.org/wiki/Vertex_Specification
+		//http://www.opengl.org/wiki/Vertex_Specification
 		for ( int location = 0 ; location < 12 ; location++)
 		{
 			glEnableVertexAttribArray(location);

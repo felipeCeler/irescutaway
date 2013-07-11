@@ -73,10 +73,17 @@ void main(void)
 	faces[5].vertices[2] = 4;
 	faces[5].vertices[3] = 7;
 
-
 	vec4 vp[4];
 
-	if ( !cube[0].culled[0] )
+	if ( (!cube[0].culled[0])
+//             (!cube[0].culled[1]) &&
+//             (!cube[0].culled[2]) &&
+//             (!cube[0].culled[3]) &&
+//             (!cube[0].culled[4]) &&
+//             (!cube[0].culled[5]) &&
+//             (!cube[0].culled[6]) &&
+//             (!cube[0].culled[7])
+             )
 	{
 
 		for ( int i = 0; i < 6; i++)
@@ -129,6 +136,7 @@ void main(void)
 
 			EndPrimitive();
 		}
+
 	}
 
 //	if ( !cube[0].culled[0] )
