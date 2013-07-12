@@ -1604,7 +1604,7 @@ void GLWidget::gameLooping ( )
 void GLWidget::fpsCounter ( )
 {
 
-	std::cout << "fps :" << fps  << std::endl;
+	//std::cout << "fps :" << fps  << std::endl;
 	fps = 0;
 
 }

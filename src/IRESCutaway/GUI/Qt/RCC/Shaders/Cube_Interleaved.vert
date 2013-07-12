@@ -118,16 +118,8 @@ void main(void)
 
 	vec4 center_v = (v0 + v1 + v2 + v3 + v4 + v5 + v6 + v7) / 8;
 
-	bool isclipped_globally[8];
-	isclipped_globally[0] = false;
-	isclipped_globally[1] = false;
-	isclipped_globally[2] = false;
-	isclipped_globally[3] = false;
-	isclipped_globally[4] = false;
-	isclipped_globally[5] = false;
-	isclipped_globally[6] = false;
-	isclipped_globally[7] = false;
-	bool isclipped_locally  = true;
+	bool isclipped_globally = true;
+	bool isclipped_locally  = false;
 
 	for (int j = 0 ; j < 1 ; j++)
 	{
@@ -141,10 +133,11 @@ void main(void)
 		ve[6] = vec4(center_points[j].xyz - ext_x - ext_y - ext_z,1.0);
 		ve[7] = vec4(center_points[j].xyz + ext_x - ext_y - ext_z,1.0);
 
-		isclipped_locally = true;
 
 		for ( int vertex_index = 0; vertex_index < 8; vertex_index++)
 		{
+
+			cube.culled[vertex_index] = true;
 
 			for ( int i = 0; i < 6; i++)
 			{
@@ -154,26 +147,25 @@ void main(void)
 				cutPlaneIn.point  = ve[faces[i].vertices[3]];
 				cutPlaneIn.normal = vec4(-normal,1.0);
 
-				if ( dot ( cutPlaneIn.normal , ( cutPlaneIn.point - cube.v[vertex_index] ) ) < 0.01 )
+				// Vertex lies in the same side
+				if ( dot ( cutPlaneIn.normal , ( cutPlaneIn.point - cube.v[vertex_index] ) ) > 0.01 )
+				{
+					isclipped_locally = true;
+				}else
 				{
 					isclipped_locally = false;
 				}
+
+				isclipped_globally = isclipped_globally && isclipped_locally;
 			}
 
-
-			isclipped_globally[vertex_index] = isclipped_globally[vertex_index] || isclipped_locally;
+			cube.culled[vertex_index] = isclipped_globally;
 		}
+
 	}
 
 
-	cube.culled[0] = isclipped_globally[0];
-	cube.culled[1] = isclipped_globally[1];
-	cube.culled[2] = isclipped_globally[2];
-	cube.culled[3] = isclipped_globally[3];
-	cube.culled[4] = isclipped_globally[4];
-	cube.culled[5] = isclipped_globally[5];
-	cube.culled[6] = isclipped_globally[6];
-	cube.culled[7] = isclipped_globally[7];
+
 
 
 	mat3 normalMatrix = inverse(transpose(mat3(ViewMatrix)));
