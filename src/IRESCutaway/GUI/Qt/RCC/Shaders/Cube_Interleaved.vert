@@ -18,7 +18,6 @@ layout(location = 11) in vec4 center;
 /// FIXME - Do research and understand the best away to alignment data on Shader.
 out CubeData
 {
-
 	vec4 v[8];
 	vec4 n[6];
 	vec4 color;
@@ -29,10 +28,17 @@ flat	bool culled[8];
 
 } cube;
 
+
+struct Edge
+{
+	int source;
+	int target;
+};
+
 struct Face
 {
 	int 	vertices[4];
-	int 	edges[4];
+	Edge 	edges[4];
 	vec3 	normal;
 };
 
@@ -75,50 +81,85 @@ void main(void)
 	cube.focus    = focus;
 	cube.center = center;
 
+
+	Face cell[6];
+	// Cube Orientation as IRESv2
+	// top
+	cell[0].vertices[0] = 4;
+	cell[0].vertices[1] = 5;
+	cell[0].vertices[2] = 7;
+	cell[0].vertices[3] = 6;
+	// bottom
+	cell[1].vertices[0] = 0;
+	cell[1].vertices[1] = 3;
+	cell[1].vertices[2] = 1;
+	cell[1].vertices[3] = 2;
+	// front
+	cell[2].vertices[0] = 4;
+	cell[2].vertices[1] = 0;
+	cell[2].vertices[2] = 5;
+	cell[2].vertices[3] = 1;
+	// back
+	cell[3].vertices[0] = 2;
+	cell[3].vertices[1] = 3;
+	cell[3].vertices[2] = 6;
+	cell[3].vertices[3] = 7;
+	// right
+	cell[4].vertices[0] = 1;
+	cell[4].vertices[1] = 2;
+	cell[4].vertices[2] = 5;
+	cell[4].vertices[3] = 6;
+	// left
+	cell[5].vertices[0] = 0;
+	cell[5].vertices[1] = 3;
+	cell[5].vertices[2] = 4;
+	cell[5].vertices[3] = 7;
+
+
+
 	/// Culling Procedure
 	vec4 ve[8];
 
 	CutPlane cutPlaneIn;
-	Face faces[6];
+	Face cutVolume[6];
 
 	vec3 ext_x = new_x*0.2;
 	vec3 ext_y = new_y*0.3;
 	vec3 ext_z = new_z*0.1;
 
 	// top
-	faces[0].vertices[0] = 0;
-	faces[0].vertices[1] = 1;
-	faces[0].vertices[2] = 2;
-	faces[0].vertices[3] = 3;
+	cutVolume[0].vertices[0] = 0;
+	cutVolume[0].vertices[1] = 1;
+	cutVolume[0].vertices[2] = 2;
+	cutVolume[0].vertices[3] = 3;
 	// bottom
-	faces[1].vertices[0] = 4;
-	faces[1].vertices[1] = 5;
-	faces[1].vertices[2] = 6;
-	faces[1].vertices[3] = 7;
+	cutVolume[1].vertices[0] = 4;
+	cutVolume[1].vertices[1] = 5;
+	cutVolume[1].vertices[2] = 6;
+	cutVolume[1].vertices[3] = 7;
 	// front
-	faces[2].vertices[0] = 0;
-	faces[2].vertices[1] = 3;
-	faces[2].vertices[2] = 5;
-	faces[2].vertices[3] = 4;
+	cutVolume[2].vertices[0] = 0;
+	cutVolume[2].vertices[1] = 3;
+	cutVolume[2].vertices[2] = 5;
+	cutVolume[2].vertices[3] = 4;
 	// back
-	faces[3].vertices[0] = 1;
-	faces[3].vertices[1] = 7;
-	faces[3].vertices[2] = 6;
-	faces[3].vertices[3] = 2;
+	cutVolume[3].vertices[0] = 1;
+	cutVolume[3].vertices[1] = 7;
+	cutVolume[3].vertices[2] = 6;
+	cutVolume[3].vertices[3] = 2;
 	// right
-	faces[4].vertices[0] = 0;
-	faces[4].vertices[1] = 4;
-	faces[4].vertices[2] = 7;
-	faces[4].vertices[3] = 1;
+	cutVolume[4].vertices[0] = 0;
+	cutVolume[4].vertices[1] = 4;
+	cutVolume[4].vertices[2] = 7;
+	cutVolume[4].vertices[3] = 1;
 	// left
-	faces[5].vertices[0] = 2;
-	faces[5].vertices[1] = 6;
-	faces[5].vertices[2] = 5;
-	faces[5].vertices[3] = 3;
+	cutVolume[5].vertices[0] = 2;
+	cutVolume[5].vertices[1] = 6;
+	cutVolume[5].vertices[2] = 5;
+	cutVolume[5].vertices[3] = 3;
 
 	vec4 center_v = (v0 + v1 + v2 + v3 + v4 + v5 + v6 + v7) / 8;
 
-	bool isclipped_globally = true;
 	bool isclipped_locally  = false;
 
 	for (int j = 0 ; j < 1 ; j++)
@@ -141,10 +182,10 @@ void main(void)
 
 			for ( int i = 0; i < 6; i++)
 			{
-				vec3 normal = normalize (cross ( (ve[faces[i].vertices[3]].xyz - ve[faces[i].vertices[0]].xyz),
-							 (ve[faces[i].vertices[1]].xyz - ve[faces[i].vertices[0]].xyz) ) );
+				vec3 normal = normalize (cross ( (ve[cutVolume[i].vertices[3]].xyz - ve[cutVolume[i].vertices[0]].xyz),
+							 (ve[cutVolume[i].vertices[1]].xyz - ve[cutVolume[i].vertices[0]].xyz) ) );
 
-				cutPlaneIn.point  = ve[faces[i].vertices[3]];
+				cutPlaneIn.point  = ve[cutVolume[i].vertices[3]];
 				cutPlaneIn.normal = vec4(-normal,1.0);
 
 				// Vertex lies in the same side
@@ -156,10 +197,10 @@ void main(void)
 					isclipped_locally = false;
 				}
 
-				isclipped_globally = isclipped_globally && isclipped_locally;
+				cube.culled[vertex_index] = cube.culled[vertex_index] && isclipped_locally;
 			}
 
-			cube.culled[vertex_index] = isclipped_globally;
+
 		}
 
 	}

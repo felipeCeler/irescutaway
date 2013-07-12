@@ -25,10 +25,23 @@ flat	bool culled[8];
 
 } cube[1];
 
+struct Edge
+{
+	int source;
+	int target;
+};
+
 struct Face
 {
 	int 	vertices[4];
+	int 	source;
 	vec3 	normal;
+};
+
+struct CutPlane
+{
+   vec4 point;
+   vec4 normal;
 };
 
 // For while, all transformations come from the Celer::Camera.
