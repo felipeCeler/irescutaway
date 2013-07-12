@@ -32,6 +32,7 @@ flat	bool culled[8];
 struct Face
 {
 	int 	vertices[4];
+	int 	edges[4];
 	vec3 	normal;
 };
 
@@ -128,48 +129,42 @@ void main(void)
 	isclipped_globally[7] = false;
 	bool isclipped_locally  = true;
 
-//	for (int j = 0 ; j < 1 ; j++)
-//	{
-//		ve[0] = vec4(center_points[j].xyz + ext_x + ext_y + ext_z + 100*ext_z+ 5*ext_x,1.0);
-//		ve[1] = vec4(center_points[j].xyz + ext_x + ext_y - ext_z,1.0);
-//		ve[2] = vec4(center_points[j].xyz - ext_x + ext_y - ext_z,1.0);
-//		ve[3] = vec4(center_points[j].xyz - ext_x + ext_y + ext_z + 100*ext_z- 5*ext_x,1.0);
-//
-//		ve[4] = vec4(center_points[j].xyz + ext_x - ext_y + ext_z + 100*ext_z+ 5*ext_x,1.0);
-//		ve[5] = vec4(center_points[j].xyz - ext_x - ext_y + ext_z + 100*ext_z- 5*ext_x,1.0);
-//		ve[6] = vec4(center_points[j].xyz - ext_x - ext_y - ext_z,1.0);
-//		ve[7] = vec4(center_points[j].xyz + ext_x - ext_y - ext_z,1.0);
-//
-//		isclipped_locally = true;
-//
-//		for ( int vertex_index = 0; vertex_index < 8; vertex_index++)
-//		{
-//
-//			for ( int i = 0; i < 6; i++)
-//			{
-//				vec3 normal = normalize (cross ( (ve[faces[i].vertices[3]].xyz - ve[faces[i].vertices[0]].xyz),
-//							 (ve[faces[i].vertices[1]].xyz - ve[faces[i].vertices[0]].xyz) ) );
-//
-//				cutPlaneIn.point  = ve[faces[i].vertices[3]];
-//				cutPlaneIn.normal = vec4(-normal,1.0);
-//
-//				if ( dot ( cutPlaneIn.normal , ( cutPlaneIn.point - cube.v[vertex_index] ) ) < 0.01 )
-//				{
-//					isclipped_locally = false;
-//				}
-//			}
-//
-//
-//			isclipped_globally[vertex_index] = isclipped_globally[vertex_index] || isclipped_locally;
-//		}
-//	}
+	for (int j = 0 ; j < 1 ; j++)
+	{
+		ve[0] = vec4(center_points[j].xyz + ext_x + ext_y + ext_z + 100*ext_z+ 5*ext_x,1.0);
+		ve[1] = vec4(center_points[j].xyz + ext_x + ext_y - ext_z,1.0);
+		ve[2] = vec4(center_points[j].xyz - ext_x + ext_y - ext_z,1.0);
+		ve[3] = vec4(center_points[j].xyz - ext_x + ext_y + ext_z + 100*ext_z- 5*ext_x,1.0);
+
+		ve[4] = vec4(center_points[j].xyz + ext_x - ext_y + ext_z + 100*ext_z+ 5*ext_x,1.0);
+		ve[5] = vec4(center_points[j].xyz - ext_x - ext_y + ext_z + 100*ext_z- 5*ext_x,1.0);
+		ve[6] = vec4(center_points[j].xyz - ext_x - ext_y - ext_z,1.0);
+		ve[7] = vec4(center_points[j].xyz + ext_x - ext_y - ext_z,1.0);
+
+		isclipped_locally = true;
+
+		for ( int vertex_index = 0; vertex_index < 8; vertex_index++)
+		{
+
+			for ( int i = 0; i < 6; i++)
+			{
+				vec3 normal = normalize (cross ( (ve[faces[i].vertices[3]].xyz - ve[faces[i].vertices[0]].xyz),
+							 (ve[faces[i].vertices[1]].xyz - ve[faces[i].vertices[0]].xyz) ) );
+
+				cutPlaneIn.point  = ve[faces[i].vertices[3]];
+				cutPlaneIn.normal = vec4(-normal,1.0);
+
+				if ( dot ( cutPlaneIn.normal , ( cutPlaneIn.point - cube.v[vertex_index] ) ) < 0.01 )
+				{
+					isclipped_locally = false;
+				}
+			}
 
 
-		cutPlaneIn.point  = vec4(0.0,0.0,0.0,0.0);
-		cutPlaneIn.normal = vec4(0.0,0.0,1.0,0.0);
+			isclipped_globally[vertex_index] = isclipped_globally[vertex_index] || isclipped_locally;
+		}
+	}
 
-		if ( dot ( cutPlaneIn.normal , ( cutPlaneIn.point - center_v ) ) > 0.01 )
-			isclipped_globally[0] = false;
 
 	cube.culled[0] = isclipped_globally[0];
 	cube.culled[1] = isclipped_globally[1];
