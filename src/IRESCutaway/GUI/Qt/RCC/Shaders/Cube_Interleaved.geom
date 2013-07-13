@@ -12,19 +12,6 @@ out VertexData
 
 noperspective out vec4 dist;
 
-in CubeData
-{
-
-	vec4 v[8];
-	vec4 n[6];
-	vec4 color;
-flat	vec4 IJK;
-flat	vec4 focus;
-	vec4 center;
-flat	bool culled[8];
-
-} cube[1];
-
 struct Edge
 {
 	int source;
@@ -43,6 +30,15 @@ struct CutPlane
    vec4 point;
    vec4 normal;
 };
+
+in CubeData
+{
+		vec4 v[8];
+		vec4 n[6];
+		vec4 color;
+flat	bool culled[8];
+
+} cube[1];
 
 // For while, all transformations come from the Celer::Camera.
 uniform mat4 ModelMatrix;
@@ -89,19 +85,19 @@ void renderCube( in vec4 color )
 
 		//Top face
 		dist = vec4(area4/length(v4), area3/length(v3), 0, 0);
-		VertexOut.vertice  = ViewMatrix * cube[0].v[faces[i].vertices[0]];
+		VertexOut.vertice  = ViewMatrix * cube[0].v[cube[0].faces[i].vertices[0]];
 		gl_Position = vp[0];
 		EmitVertex();
 		dist = vec4(area2/length(v4), 0, 0, area1/length(v2));
-		VertexOut.vertice  = ViewMatrix * cube[0].v[faces[i].vertices[1]];
+		VertexOut.vertice  = ViewMatrix * cube[0].v[cube[0].faces[i].vertices[1]];
 		gl_Position = vp[1];
 		EmitVertex();
 		dist = vec4(0, area2/length(v3), area1/length(v0), 0);
-		VertexOut.vertice  = ViewMatrix * cube[0].v[faces[i].vertices[2]];
+		VertexOut.vertice  = ViewMatrix * cube[0].v[cube[0].faces[i].vertices[2]];
 		gl_Position = vp[2];
 		EmitVertex();
 		dist = vec4(0, 0, area3/length(v0), area4/length(v2));
-		VertexOut.vertice  = ViewMatrix * cube[0].v[faces[i].vertices[3]];
+		VertexOut.vertice  = ViewMatrix * cube[0].v[cube[0].faces[i].vertices[3]];
 		gl_Position = vp[3];
 		EmitVertex();
 
