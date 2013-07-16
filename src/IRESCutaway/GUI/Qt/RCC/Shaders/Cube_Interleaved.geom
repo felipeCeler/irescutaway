@@ -12,6 +12,15 @@ out VertexData
 
 noperspective out vec4 dist;
 
+in CubeData
+{
+	vec4 v[8];
+	vec4 n[6];
+	vec4 color;
+flat	bool culled[8];
+
+} cube[1];
+
 struct Edge
 {
 	int source;
@@ -21,8 +30,6 @@ struct Edge
 struct Face
 {
 	int 	vertices[4];
-	int 	source;
-	vec3 	normal;
 };
 
 struct CutPlane
@@ -30,15 +37,6 @@ struct CutPlane
    vec4 point;
    vec4 normal;
 };
-
-in CubeData
-{
-		vec4 v[8];
-		vec4 n[6];
-		vec4 color;
-flat	bool culled[8];
-
-} cube[1];
 
 // For while, all transformations come from the Celer::Camera.
 uniform mat4 ModelMatrix;
@@ -48,8 +46,67 @@ uniform mat4 ProjectionMatrix;
 uniform vec2 WIN_SCALE;
 
 Face faces[6];
+Edge edges[12];
 
+/// Culling Procedure
+vec4 ve[8];
+
+CutPlane cutPlaneIn;
+Face cutVolume[6];
+
+vec3 ext_x;
+vec3 ext_y;
+vec3 ext_z;
+
+// Rendering the line
 vec4 vp[4];
+
+void renderProxy ( );
+{
+
+
+	// For each cut volume
+	for (int j = 0 ; j < 1 ; j++)
+	{
+		ve[0] = vec4(center_points[j].xyz + ext_x + ext_y + ext_z + 100*ext_z+ 5*ext_x,1.0);
+		ve[1] = vec4(center_points[j].xyz + ext_x + ext_y - ext_z,1.0);
+		ve[2] = vec4(center_points[j].xyz - ext_x + ext_y - ext_z,1.0);
+		ve[3] = vec4(center_points[j].xyz - ext_x + ext_y + ext_z + 100*ext_z- 5*ext_x,1.0);
+
+		ve[4] = vec4(center_points[j].xyz + ext_x - ext_y + ext_z + 100*ext_z+ 5*ext_x,1.0);
+		ve[5] = vec4(center_points[j].xyz - ext_x - ext_y + ext_z + 100*ext_z- 5*ext_x,1.0);
+		ve[6] = vec4(center_points[j].xyz - ext_x - ext_y - ext_z,1.0);
+		ve[7] = vec4(center_points[j].xyz + ext_x - ext_y - ext_z,1.0);
+
+		// For each Edge in the cube
+		for ( int edge_index = 0; edge_index < 8; edge_index++)
+		{
+
+			for ( int i = 0; i < 6; i++)
+			{
+				vec3 normal = normalize (cross ( (ve[cutVolume[i].vertices[3]].xyz - ve[cutVolume[i].vertices[0]].xyz),
+							 (ve[cutVolume[i].vertices[1]].xyz - ve[cutVolume[i].vertices[0]].xyz) ) );
+
+				cutPlaneIn.point  = ve[cutVolume[i].vertices[3]];
+				cutPlaneIn.normal = vec4(-normal,1.0);
+
+				// Vertex lies in the same side
+				if ( dot ( cutPlaneIn.normal , ( cutPlaneIn.point - cube.v[vertex_index] ) ) > 0.01 )
+				{
+					isclipped_locally = true;
+				}else
+				{
+					isclipped_locally = false;
+				}
+
+				cube.culled[vertex_index] = cube.culled[vertex_index] && isclipped_locally;
+			}
+
+
+		}
+
+	}
+}
 
 void renderCube( in vec4 color )
 {
@@ -85,19 +142,19 @@ void renderCube( in vec4 color )
 
 		//Top face
 		dist = vec4(area4/length(v4), area3/length(v3), 0, 0);
-		VertexOut.vertice  = ViewMatrix * cube[0].v[cube[0].faces[i].vertices[0]];
+		VertexOut.vertice  = ViewMatrix * cube[0].v[faces[i].vertices[0]];
 		gl_Position = vp[0];
 		EmitVertex();
 		dist = vec4(area2/length(v4), 0, 0, area1/length(v2));
-		VertexOut.vertice  = ViewMatrix * cube[0].v[cube[0].faces[i].vertices[1]];
+		VertexOut.vertice  = ViewMatrix * cube[0].v[faces[i].vertices[1]];
 		gl_Position = vp[1];
 		EmitVertex();
 		dist = vec4(0, area2/length(v3), area1/length(v0), 0);
-		VertexOut.vertice  = ViewMatrix * cube[0].v[cube[0].faces[i].vertices[2]];
+		VertexOut.vertice  = ViewMatrix * cube[0].v[faces[i].vertices[2]];
 		gl_Position = vp[2];
 		EmitVertex();
 		dist = vec4(0, 0, area3/length(v0), area4/length(v2));
-		VertexOut.vertice  = ViewMatrix * cube[0].v[cube[0].faces[i].vertices[3]];
+		VertexOut.vertice  = ViewMatrix * cube[0].v[faces[i].vertices[3]];
 		gl_Position = vp[3];
 		EmitVertex();
 
@@ -141,6 +198,24 @@ void main(void)
 	faces[5].vertices[2] = 4;
 	faces[5].vertices[3] = 7;
 
+	// Cube Orientation as IRESv2
+	// top
+	edges[0].source  = 0; edges[0].source  = 1;
+	edges[1].source  = 1; edges[1].source  = 2;
+	edges[2].source  = 2; edges[2].source  = 3;
+	edges[3].source  = 3; edges[3].source  = 0;
+
+	edges[4].source  = 4; edges[4].source  = 5;
+	edges[5].source  = 5; edges[5].source  = 6;
+	edges[6].source  = 6; edges[6].source  = 7;
+	edges[7].source  = 7; edges[7].source  = 0;
+
+	edges[8].source  = 4; edges[8].source  = 0;
+	edges[9].source  = 5; edges[9].source  = 1;
+	edges[10].source = 6; edges[10].source = 2;
+	edges[11].source = 7; edges[11].source = 3;
+
+	// Not culled
 	if ( (!cube[0].culled[0]) &&
 		 (!cube[0].culled[1]) &&
 		 (!cube[0].culled[2]) &&
@@ -153,17 +228,24 @@ void main(void)
 
 		renderCube(cube[0].color);
 
+	// To be partial culled
 	}else if ((!cube[0].culled[0])||
-			 (!cube[0].culled[1]) ||
-			 (!cube[0].culled[2]) ||
-			 (!cube[0].culled[3]) ||
-			 (!cube[0].culled[4]) ||
-			 (!cube[0].culled[5]) ||
-			 (!cube[0].culled[6]) ||
-			 (!cube[0].culled[7]) )
+			  (!cube[0].culled[1]) ||
+			  (!cube[0].culled[2]) ||
+			  (!cube[0].culled[3]) ||
+			  (!cube[0].culled[4]) ||
+			  (!cube[0].culled[5]) ||
+			  (!cube[0].culled[6]) ||
+			  (!cube[0].culled[7]) )
 	{
+
 		renderCube(vec4(1.0,0.0,0.0,1.0));
+	// Full culled
+	}else
+	{
+		renderCube(cube[0].color);
 	}
+
 
 
 }
