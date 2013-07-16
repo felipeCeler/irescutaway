@@ -1,4 +1,4 @@
-#version 430 core
+#version 430
 
 layout(location = 0) in vec4 v0;
 layout(location = 1) in vec4 v1;
@@ -138,27 +138,28 @@ void main(void)
 		for ( int vertex_index = 0; vertex_index < 8; vertex_index++)
 		{
 
-			cube.culled[vertex_index] = true;
+			cube.culled[vertex_index] = false;
 
 			// For each side of the cube volume
 			for ( int i = 0; i < 6; i++)
 			{
 				vec3 normal = normalize (cross ( (ve[cutVolume[i].vertices[3]].xyz - ve[cutVolume[i].vertices[0]].xyz),
-							 (ve[cutVolume[i].vertices[1]].xyz - ve[cutVolume[i].vertices[0]].xyz) ) );
+							 				   (ve[cutVolume[i].vertices[1]].xyz - ve[cutVolume[i].vertices[0]].xyz) ) );
 
 				cutPlaneIn.point  = ve[cutVolume[i].vertices[3]];
-				cutPlaneIn.normal = vec4(-normal,1.0);
+				cutPlaneIn.normal = vec4(-normal,0.0);
 
 				// Vertex lies in the same side
-				if ( dot ( cutPlaneIn.normal , ( cutPlaneIn.point - cube.v[vertex_index] ) ) > 0.01 )
+				if ( dot ( cutPlaneIn.normal , ( cube.v[vertex_index] - cutPlaneIn.point ) ) > 0.01 )
 				{
 					isclipped_locally = true;
-				}else
+				}
+				else
 				{
 					isclipped_locally = false;
 				}
 
-				cube.culled[vertex_index] = cube.culled[vertex_index] && isclipped_locally;
+				cube.culled[vertex_index] = cube.culled[vertex_index] || isclipped_locally;
 			}
 
 

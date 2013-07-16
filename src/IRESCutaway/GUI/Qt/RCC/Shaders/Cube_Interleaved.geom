@@ -3,6 +3,11 @@
 layout ( points ) in;
 layout ( triangle_strip, max_vertices=24 ) out;
 
+uniform vec4 center_points[256];
+uniform vec4 max_points[256];
+uniform vec4 min_points[256];
+uniform int cut_volume_size;
+
 out VertexData
 {
 	vec4 vertice;
@@ -48,6 +53,15 @@ uniform vec2 WIN_SCALE;
 Face faces[6];
 Edge edges[12];
 
+float w;
+float u;
+
+float source;
+float target;
+
+
+vec4 proxyFace[6];
+
 /// Culling Procedure
 vec4 ve[8];
 
@@ -58,10 +72,10 @@ vec3 ext_x;
 vec3 ext_y;
 vec3 ext_z;
 
-// Rendering the line
+// Rendering lines
 vec4 vp[4];
 
-void renderProxy ( );
+void renderProxy ( )
 {
 
 
@@ -79,7 +93,8 @@ void renderProxy ( );
 		ve[7] = vec4(center_points[j].xyz + ext_x - ext_y - ext_z,1.0);
 
 		// For each Edge in the cube
-		for ( int edge_index = 0; edge_index < 8; edge_index++)
+		int proxy_index = 0;
+		for ( int edge_index = 0; edge_index < 12; edge_index++)
 		{
 
 			for ( int i = 0; i < 6; i++)
@@ -89,17 +104,30 @@ void renderProxy ( );
 
 				cutPlaneIn.point  = ve[cutVolume[i].vertices[3]];
 				cutPlaneIn.normal = vec4(-normal,1.0);
+				
+				source = cutPlaneIn.point - cube[0].v[edges[edge_index].source];
+				target = cutPlaneIn.point - cube[0].v[edges[edge_index].target];
+				
+				source = dot ( cutPlaneIn.normal , ( cutPlaneIn.point - cube[0].v[edges[edge_index].source] ) );
+				target = dot ( cutPlaneIn.normal , ( cutPlaneIn.point - cube[0].v[edges[edge_index].target] ) );  
 
-				// Vertex lies in the same side
-				if ( dot ( cutPlaneIn.normal , ( cutPlaneIn.point - cube.v[vertex_index] ) ) > 0.01 )
+				// Project target into the plane in the direction of the edge
+				if (  true )
+					 
 				{
-					isclipped_locally = true;
-				}else
-				{
-					isclipped_locally = false;
+					
 				}
-
-				cube.culled[vertex_index] = cube.culled[vertex_index] && isclipped_locally;
+				// Project source into the plane in the direction of the edge
+				else if ( true )
+				{
+				
+				}
+				// Can be parallel or do not intersect the plane.				
+				else
+				{
+					
+				}
+				
 			}
 
 
