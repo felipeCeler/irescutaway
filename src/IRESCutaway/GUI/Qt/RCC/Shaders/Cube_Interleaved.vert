@@ -148,7 +148,7 @@ void main(void)
 
 				cutPlaneIn.point  = ve[cutVolume[i].vertices[3]];
 				cutPlaneIn.normal = vec4(-normal,0.0);
-
+ 
 				// Vertex lies in the same side
 				if ( dot ( cutPlaneIn.normal , ( cube.v[vertex_index] - cutPlaneIn.point ) ) > 0.01 )
 				{
@@ -181,7 +181,7 @@ void main(void)
 	gl_Position =  center;
 }
 
-// Canonical Plane
+//  Canonical Plane
 //	cutPlaneIn.point  = vec4(0.0,0.0,0.0,1.0);
 //	cutPlaneIn.normal = vec4(0.0,0.0,1.0,1.0);
 //

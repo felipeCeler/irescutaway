@@ -4,9 +4,10 @@ out vec4 outputColor;
 
 in VertexData
 {
-	vec4 vertice;
-	vec4 normal;
-	vec4 color;
+		vec4 vertice;
+		vec4 normal;
+		vec4 color;
+flat 	bool proxy;
 } VertexIn;
 
 struct CutPlane
@@ -138,14 +139,16 @@ void main(void)
 
 		}
 
-		if ( ( dot ( cutPlaneIn[0].normal , ( cutPlaneIn[4].point - VertexIn.vertice ) ) > 0.01 ) &&
-			 ( dot ( cutPlaneIn[1].normal , ( cutPlaneIn[4].point - VertexIn.vertice ) ) > 0.01 ) &&
-			 ( dot ( cutPlaneIn[2].normal , ( cutPlaneIn[4].point - VertexIn.vertice ) ) > 0.01 ) &&
-			 ( dot ( cutPlaneIn[3].normal , ( cutPlaneIn[4].point - VertexIn.vertice ) ) > 0.01 ) &&
-			 ( dot ( cutPlaneIn[4].normal , ( cutPlaneIn[4].point - VertexIn.vertice ) ) > 0.01 ) &&
-			 ( dot ( cutPlaneIn[5].normal , ( cutPlaneIn[4].point - VertexIn.vertice ) ) > 0.01 ) )
+		if ( ( dot ( cutPlaneIn[0].normal , ( VertexIn.vertice - cutPlaneIn[0].point ) ) < 0.01 ) &&
+			 ( dot ( cutPlaneIn[1].normal , ( VertexIn.vertice - cutPlaneIn[1].point ) ) < 0.01 ) &&
+			 ( dot ( cutPlaneIn[2].normal , ( VertexIn.vertice - cutPlaneIn[2].point ) ) < 0.01 ) &&
+			 ( dot ( cutPlaneIn[3].normal , ( VertexIn.vertice - cutPlaneIn[3].point ) ) < 0.01 ) &&
+			 ( dot ( cutPlaneIn[4].normal , ( VertexIn.vertice - cutPlaneIn[4].point ) ) < 0.01 ) &&
+			 ( dot ( cutPlaneIn[5].normal , ( VertexIn.vertice - cutPlaneIn[5].point ) ) < 0.01 ) )
+			 
 		{
-			discard;
+			if (!VertexIn.proxy )
+				discard;
 		}
 
 
