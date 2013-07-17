@@ -101,7 +101,7 @@ void renderProxy ( in vec4 color )
 		// For each Edge in the cube
 		for ( int edge_index = 0; edge_index < 12; edge_index++)
 		{
-
+		// CLIPE O  PLANE DE CORTE COM AS FACES DA CELULA !! SO EASY
 			for ( int i = 0; i < 6; i++)
 			{
 				vec3 normal = normalize (cross ( (ve[cutVolume[i].vertices[3]].xyz - ve[cutVolume[i].vertices[0]].xyz),
