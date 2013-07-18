@@ -215,6 +215,10 @@ private:
 	std::vector<CubeData> cube_interleaved;
 	Celer::OpenGL::ShaderManager cube_interleaved_shader;
 
+
+	// Hong Kong Cutaway
+	Celer::OpenGL::ShaderManager hongKong_cutaway_shader;
+
 	// Charles IRES v2
 	GLuint vertexArray_Charles;
 	GLuint reservoir_vertices_charles_buffer;
@@ -244,7 +248,7 @@ private:
 	Celer::OpenGL::ShaderManager	BurnsCutaway430;
 	Celer::OpenGL::ShaderManager	BurnsCutaway430Wireframe;
 
-	// BoudingBox Visualization
+	// BoundingBox Visualization
 	Celer::OpenGL::ShaderManager	cutVolume;
 	Celer::OpenGL::ShaderManager    BoundingBoxInitialization;
 	Celer::OpenGL::ShaderManager    BoundingBoxDebug;

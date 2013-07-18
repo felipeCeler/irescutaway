@@ -1301,23 +1301,44 @@ void GLWidget::NoCutawaySetUp ( )
 
 				Celer::Matrix4x4<float> lookatCamera ( new_x, new_y , new_z );
 
-		 		cube_interleaved_shader.active();
-				glUniform4fv ( cube_interleaved_shader.uniforms_["center_points[0]"].location , cut_volume_size , center_points[0] );
-				glUniform4fv ( cube_interleaved_shader.uniforms_["max_points[0]"].location , cut_volume_size , max_points[0]);
-				glUniform4fv ( cube_interleaved_shader.uniforms_["min_points[0]"].location , cut_volume_size , min_points[0] );
-				glUniform1i  ( cube_interleaved_shader.uniforms_["cut_volume_size"].location , cut_volume_size );
 
-				glUniform3fv ( cube_interleaved_shader.uniforms_["new_x"].location , 1 ,  new_x );
-				glUniform3fv ( cube_interleaved_shader.uniforms_["new_y"].location , 1 ,  new_y );
-				glUniform3fv ( cube_interleaved_shader.uniforms_["new_z"].location , 1 ,  new_z );
+				hongKong_cutaway_shader.active();
+				glUniform4fv ( hongKong_cutaway_shader.uniforms_["center_points[0]"].location , cut_volume_size , center_points[0] );
+				glUniform4fv ( hongKong_cutaway_shader.uniforms_["max_points[0]"].location , cut_volume_size , max_points[0]);
+				glUniform4fv ( hongKong_cutaway_shader.uniforms_["min_points[0]"].location , cut_volume_size , min_points[0] );
+				glUniform1i  ( hongKong_cutaway_shader.uniforms_["cut_volume_size"].location , cut_volume_size );
 
-				glUniform2f ( cube_interleaved_shader.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
-				glUniformMatrix4fv ( cube_interleaved_shader.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-				glUniformMatrix4fv ( cube_interleaved_shader.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
-		 		glBindVertexArray ( vertexArray_cube_interleaved );
-		 		glDrawArrays ( GL_POINTS , 0 , cube_interleaved.size() );
-		 		glBindVertexArray ( 0 );
-		 		cube_interleaved_shader.deactive();
+				glUniform3fv ( hongKong_cutaway_shader.uniforms_["new_x"].location , 1 ,  new_x );
+				glUniform3fv ( hongKong_cutaway_shader.uniforms_["new_y"].location , 1 ,  new_y );
+				glUniform3fv ( hongKong_cutaway_shader.uniforms_["new_z"].location , 1 ,  new_z );
+
+				glUniform2f ( hongKong_cutaway_shader.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
+				glUniformMatrix4fv ( hongKong_cutaway_shader.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+				glUniformMatrix4fv ( hongKong_cutaway_shader.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+
+					glBindVertexArray ( vertexArray_cube_interleaved );
+					glDrawArrays ( GL_POINTS , 0 , cube_interleaved.size() );
+					glBindVertexArray ( 0 );
+
+				hongKong_cutaway_shader.deactive();
+
+//		 		cube_interleaved_shader.active();
+//				glUniform4fv ( cube_interleaved_shader.uniforms_["center_points[0]"].location , cut_volume_size , center_points[0] );
+//				glUniform4fv ( cube_interleaved_shader.uniforms_["max_points[0]"].location , cut_volume_size , max_points[0]);
+//				glUniform4fv ( cube_interleaved_shader.uniforms_["min_points[0]"].location , cut_volume_size , min_points[0] );
+//				glUniform1i  ( cube_interleaved_shader.uniforms_["cut_volume_size"].location , cut_volume_size );
+//
+//				glUniform3fv ( cube_interleaved_shader.uniforms_["new_x"].location , 1 ,  new_x );
+//				glUniform3fv ( cube_interleaved_shader.uniforms_["new_y"].location , 1 ,  new_y );
+//				glUniform3fv ( cube_interleaved_shader.uniforms_["new_z"].location , 1 ,  new_z );
+//
+//				glUniform2f ( cube_interleaved_shader.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
+//				glUniformMatrix4fv ( cube_interleaved_shader.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+//				glUniformMatrix4fv ( cube_interleaved_shader.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+//		 		glBindVertexArray ( vertexArray_cube_interleaved );
+//		 		glDrawArrays ( GL_POINTS , 0 , cube_interleaved.size() );
+//		 		glBindVertexArray ( 0 );
+//		 		cube_interleaved_shader.deactive();
 
 
 //				cube_in_GeometryShader.active ( );
@@ -1604,7 +1625,7 @@ void GLWidget::gameLooping ( )
 void GLWidget::fpsCounter ( )
 {
 
-	std::cout << "fps :" << fps  << std::endl;
+	//std::cout << "fps :" << fps  << std::endl;
 	fps = 0;
 
 }
@@ -1692,6 +1713,11 @@ void GLWidget::loadShaders ( )
 	cube_interleaved_shader.create ("cube_interleaved", (shaderDirectory + "Cube_Interleaved.vert").toStdString(),
 			   (shaderDirectory   + "Cube_Interleaved.geom").toStdString(),
 			   (shaderDirectory   + "Cube_Interleaved.frag").toStdString());
+
+
+	hongKong_cutaway_shader.create("hongKong_cutaway", (shaderDirectory + "HongKongCutaway.vert").toStdString(),
+			   (shaderDirectory   + "HongKongCutaway.geom").toStdString(),
+			   (shaderDirectory   + "HongKongCutaway.frag").toStdString());
 
 //	textureViewer.create("textureViewer",(shadersDir.path ()+"/share/Shaders/fboTest.vert").toStdString(),
 //			                             (shadersDir.path ()+"/share/Shaders/fboTest.frag").toStdString());
