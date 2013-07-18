@@ -147,8 +147,8 @@ void main(void)
 			 ( dot ( cutPlaneIn[5].normal , ( VertexIn.vertice - cutPlaneIn[5].point ) ) < 0.01 ) )
 			 
 		{
-			if (!VertexIn.proxy )
-				discard;
+//			if (!VertexIn.proxy )
+//				discard;
 		}
 
 

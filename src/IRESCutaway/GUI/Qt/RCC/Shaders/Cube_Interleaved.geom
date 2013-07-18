@@ -328,13 +328,14 @@ void main(void)
 			  (!cube[0].culled[7]) )
 	{
 
-		renderProxy( vec4(1.0,0.0,0.0,1.0) );
-		renderCube(vec4(1.0,0.0,0.0,1.0));
+		//renderProxy( vec4(1.0,0.0,0.0,1.0) );
+		//renderCube(vec4(1.0,0.0,0.0,1.0));
 		
 	// Full culled
 	}else
 	{
-	
+		renderCube(cube[0].color);
+
 	}
 
 

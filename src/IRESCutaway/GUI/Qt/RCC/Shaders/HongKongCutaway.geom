@@ -1,7 +1,7 @@
 #version 430
 
 layout ( points ) in;
-layout ( triangle_strip, max_vertices=64 ) out;
+layout ( triangle_strip, max_vertices=48 ) out;
 
 uniform vec4 center_points[256];
 uniform vec4 max_points[256];
@@ -15,10 +15,8 @@ uniform vec3 new_z;
 out VertexData
 {
 		vec4 vertices[2];
-		vec4 vertice;
-		vec4 normal;
-		vec4 color;
-flat	bool proxy;
+		vec4 normals[6];
+flat		bool proxy;
 } VertexOut;
 
 noperspective out vec4 dist;
@@ -80,42 +78,42 @@ void renderProxy ( in vec4 color )
 		v[6] = vec4(center_points[cut_surface_index].xyz - ext_x - ext_y - ext_z,1.0);
 		v[7] = vec4(center_points[cut_surface_index].xyz + ext_x - ext_y - ext_z,1.0);
 	
-		
 		for ( int i = 0; i < 6; i++ )
 		{
-			//VertexOut.normals[i].xyz = normalize ( cross ( ( v[cutSurface[i].vertices[3]].xyz - v[cutSurface[i].vertices[0]].xyz ) , 
-			//											  ( v[cutSurface[i].vertices[1]].xyz - v[cutSurface[i].vertices[0]].xyz ) ) );
+
+			if ( i == 2)
+				continue;
+
+			 vec3 normal = normalize ( cross ( ( v[cutSurface[i].vertices[3]].xyz - v[cutSurface[i].vertices[0]].xyz ) ,
+			  				   ( v[cutSurface[i].vertices[1]].xyz - v[cutSurface[i].vertices[0]].xyz ) ) );
+
 														  
-		    //VertexOut.normals[i].xyz = (normalMatrix * VertexOut.normals[i].xyz);
-			//VertexOut.normals[i].w = 0.0;
+		        VertexOut.normals[i].xyz = (normalMatrix * normal);
+			VertexOut.normals[i].w = 0.0;
 		
-			vec3 normal = normalize ( cross ( ( v[cutSurface[i].vertices[3]].xyz - v[cutSurface[i].vertices[0]].xyz ) , 
-											  ( v[cutSurface[i].vertices[1]].xyz - v[cutSurface[i].vertices[0]].xyz ) ) );
-			
-			normal = normalize( normalMatrix * normal);
 				
 			VertexOut.proxy = true;
 			VertexOut.vertices[0] = ViewMatrix * v[0];
 			VertexOut.vertices[1] = ViewMatrix * v[6];
 			
-			VertexOut.color 	  = cube[0].color;
-			VertexOut.normal   	  = vec4(normal,0.0);//VertexOut.normals[i];
+			//VertexOut.color 	  = cube[0].color;
+			//VertexOut.normal   	  = VertexOut.normals[i];
 			//Top face
 			dist = vec4(0, 0, 0, 0);
 			
-			VertexOut.vertice  = ViewMatrix * v[cutSurface[i].vertices[0]];
+			//VertexOut.vertice  = ViewMatrix * v[cutSurface[i].vertices[0]];
 			gl_Position = ProjectionMatrix * ViewMatrix * v[cutSurface[i].vertices[0]];
 			EmitVertex();
 			
-			VertexOut.vertice  = ViewMatrix * v[cutSurface[i].vertices[1]];
+			//VertexOut.vertice  = ViewMatrix * v[cutSurface[i].vertices[1]];
 			gl_Position = ProjectionMatrix * ViewMatrix * v[cutSurface[i].vertices[1]];
 			EmitVertex();
 			
-			VertexOut.vertice  = ViewMatrix * v[cutSurface[i].vertices[3]];
+			//VertexOut.vertice  = ViewMatrix * v[cutSurface[i].vertices[3]];
 			gl_Position = ProjectionMatrix * ViewMatrix * v[cutSurface[i].vertices[3]];
 			EmitVertex();
 			
-			VertexOut.vertice  = ViewMatrix * v[cutSurface[i].vertices[2]];
+			//VertexOut.vertice  = ViewMatrix * v[cutSurface[i].vertices[2]];
 			gl_Position = ProjectionMatrix * ViewMatrix * v[cutSurface[i].vertices[2]];
 			EmitVertex();
 	
@@ -157,33 +155,33 @@ void renderCube( in vec4 color )
 		VertexOut.vertices[0] = ViewMatrix * cube[0].v[faces[0].vertices[1]];
 		VertexOut.vertices[1] = ViewMatrix * cube[0].v[faces[1].vertices[1]];
 		
-		//VertexOut.normals[0] = cube[0].n[0];
-		//VertexOut.normals[1] = cube[0].n[1];
-		//VertexOut.normals[2] = cube[0].n[2];
-		//VertexOut.normals[3] = cube[0].n[3];
-		//VertexOut.normals[4] = cube[0].n[4];
-		//VertexOut.normals[5] = cube[0].n[5];
-		VertexOut.normal   	 = cube[0].n[i];
-		VertexOut.color 	 = cube[0].color;
+		VertexOut.normals[0] = cube[0].n[0];
+		VertexOut.normals[1] = cube[0].n[1];
+		VertexOut.normals[2] = cube[0].n[2];
+		VertexOut.normals[3] = cube[0].n[3];
+		VertexOut.normals[4] = cube[0].n[4];
+		VertexOut.normals[5] = cube[0].n[5];
+		//VertexOut.normal   	 = cube[0].n[i];
+		//VertexOut.color 	 = cube[0].color;
 
 		//Top face
 		dist = vec4(area4/length(v4), area3/length(v3), 0, 0);
-		VertexOut.vertice  = ViewMatrix * cube[0].v[faces[i].vertices[0]];
+		//VertexOut.vertice  = ViewMatrix * cube[0].v[faces[i].vertices[0]];
 		gl_Position = vp[0];
 		EmitVertex();
 		
 		dist = vec4(area2/length(v4), 0, 0, area1/length(v2));
-		VertexOut.vertice  = ViewMatrix * cube[0].v[faces[i].vertices[1]];
+		//VertexOut.vertice  = ViewMatrix * cube[0].v[faces[i].vertices[1]];
 		gl_Position = vp[1];
 		EmitVertex();
 		
 		dist = vec4(0, area2/length(v3), area1/length(v0), 0);
-		VertexOut.vertice  = ViewMatrix * cube[0].v[faces[i].vertices[2]];
+		//VertexOut.vertice  = ViewMatrix * cube[0].v[faces[i].vertices[2]];
 		gl_Position = vp[2];
 		EmitVertex();
 		
 		dist = vec4(0, 0, area3/length(v0), area4/length(v2));
-		VertexOut.vertice  = ViewMatrix * cube[0].v[faces[i].vertices[3]];
+		//VertexOut.vertice  = ViewMatrix * cube[0].v[faces[i].vertices[3]];
 		gl_Position = vp[3];
 		EmitVertex();
 
