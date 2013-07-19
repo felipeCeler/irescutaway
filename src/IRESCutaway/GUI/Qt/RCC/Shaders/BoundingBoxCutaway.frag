@@ -1,7 +1,8 @@
 #version 430 core
 #extension GL_ARB_texture_rectangle : enable
 
-uniform sampler2DRect primary;
+uniform sampler2DRect normals;
+uniform sampler2DRect vertices;
 
 in VertexData
 {
@@ -18,7 +19,8 @@ out vec4 outputColor;
 void main(void)
 {
 
-	vec4 cutaway = texture2DRect( primary , gl_FragCoord.xy).rgba;
+	vec4 cutaway = texture2DRect( normals , gl_FragCoord.xy).rgba;
+	vec4 vertice = texture2DRect( vertices , gl_FragCoord.xy).rgba;
 
 	float d = min(dist[0], min(dist[1], min(dist[2], dist[3])));
 	float I = exp2(-2.0 * d * d);
@@ -26,19 +28,23 @@ void main(void)
 
 	vec3 newNormal = VertexIn.normal.xyz;
 	vec3 newVert = VertexIn.vert.xyz;
+	vec4 color_t = VertexIn.color;
 
 	vec2 vector = gl_FragCoord.xy - ( cutaway.xy );
 
 	if ( gl_FragCoord.z < ( cutaway.w ) )
 	{
 		discard;
+		newNormal = cutaway.xyz;
+		newVert   = vertice.xyz;
+		color_t = vec4(cutaway.xyz,1.0);
 	}
 
-	if ( !gl_FrontFacing )
-	{
-		newNormal = cutaway.xyz;
-		newVert.z = cutaway.w;
-	}
+//	if ( !gl_FrontFacing )
+//	{
+//		newNormal = cutaway.xyz;
+//		newVert.z = cutaway.w;
+//	}
 
 	newNormal = normalize ( newNormal );
 
@@ -47,7 +53,7 @@ void main(void)
 	vec3 light_dir = vec3 ( 0.0 , 0.0 , 1.0 );
 	vec3 eye_dir = normalize ( -newVert.xyz );
 
-	vec4 color_t = VertexIn.color;//vec4 ( 0.75 , 0.75 , 1.0 , 1.0 );//geometryShader_VertexData.propertyColor;
+	//vec4 ( 0.75 , 0.75 , 1.0 , 1.0 );//geometryShader_VertexData.propertyColor;
 
 	vec3 ref = normalize ( -reflect ( light_dir , newNormal ) );
 	vec4 la = vec4 ( 0.2 );

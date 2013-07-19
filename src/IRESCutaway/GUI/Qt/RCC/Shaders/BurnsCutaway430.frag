@@ -25,22 +25,26 @@ void main(void)
 
    float cutaway =  color.w;
 
+   vec3 newNormal = normal;
+   vec3 newVert   = vert;
+
    if ( gl_FragCoord.z  < (cutaway) )
    {
-	   discard;
+	   //discard;
+	   newNormal = vec3(-vector,length(vector)*m);
+	   newVert.z = cutaway;
    }
-   else
+   //else
    {
 
-	   vec3 newNormal = normal;
-	   vec3 newVert   = vert;
 
-	   if (!gl_FrontFacing)
-	   {
-		   newNormal = vec3(-vector,length(vector)*m);
-		   newVert.z = cutaway;
 
-	   }
+//	   if (!gl_FrontFacing)
+//	   {
+//		   newNormal = vec3(-vector,length(vector)*m);
+//		   newVert.z = cutaway;
+//
+//	   }
 
 	   newNormal = normalize(newNormal);
 

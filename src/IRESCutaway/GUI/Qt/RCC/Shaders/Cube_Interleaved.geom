@@ -305,17 +305,17 @@ void main(void)
 	cutVolume[5].vertices[3] = 3;
 
 	// Not culled
-	if ( (cube[0].culled[0]) &&
-		 (cube[0].culled[1]) &&
-		 (cube[0].culled[2]) &&
-		 (cube[0].culled[3]) &&
-		 (cube[0].culled[4]) &&
-		 (cube[0].culled[5]) &&
-		 (cube[0].culled[6]) &&
-		 (cube[0].culled[7]) )
+	if ( (!cube[0].culled[0]) &&
+		 (!cube[0].culled[1]) &&
+		 (!cube[0].culled[2]) &&
+		 (!cube[0].culled[3]) &&
+		 (!cube[0].culled[4]) &&
+		 (!cube[0].culled[5]) &&
+		 (!cube[0].culled[6]) &&
+		 (!cube[0].culled[7]) )
 	{
 
-		renderCube(cube[0].color);
+		//renderCube(cube[0].color);
 
 	// To be partial culled
 	}else if ((!cube[0].culled[0])||
@@ -328,14 +328,11 @@ void main(void)
 			  (!cube[0].culled[7]) )
 	{
 
-		//renderProxy( vec4(1.0,0.0,0.0,1.0) );
-		//renderCube(vec4(1.0,0.0,0.0,1.0));
-		
+		renderCube(vec4(1.0,0.0,0.0,1.0));
 	// Full culled
 	}else
 	{
 		renderCube(cube[0].color);
-
 	}
 
 
