@@ -31,8 +31,8 @@ void byCentroid ( )
 
 	float side_of_cube = (diagonal * sqrt(3.0) ) / 3.0;
 
-	vec3 ext_x = new_x * 0.5;
-	vec3 ext_y = new_y * 0.5;
+	vec3 ext_x = new_x * 0.2;
+	vec3 ext_y = new_y * 0.3;
 	vec3 ext_z = new_z * 0.1;
 
 //	vec3 center_of_mass =  vec3(0,0,0);

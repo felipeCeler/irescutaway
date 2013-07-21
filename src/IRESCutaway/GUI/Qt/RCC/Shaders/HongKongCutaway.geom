@@ -237,8 +237,8 @@ void main(void)
 
 	/// Culling Procedure
 
-	ext_x = new_x*0.5;
-	ext_y = new_y*0.5;
+	ext_x = new_x*0.2;
+	ext_y = new_y*0.3;
 	ext_z = new_z*0.1;
 
 	// top

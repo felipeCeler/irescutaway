@@ -9,11 +9,11 @@ noperspective in vec4 dist;
 
 in VertexData
 {
-	vec4 vert;
-	vec4 normal;
-	vec4 propertyColor;
+	vec4 vertice;
+    vec4 color;
+    vec4 normal;
 
-} geometryShader_VertexData;
+} VertexIn;
 
 
 uniform vec3 lightDirection;
@@ -40,8 +40,8 @@ void main ( void )
 	else
 	{
 
-		vec3 newNormal = geometryShader_VertexData.normal.xyz;
-		vec3 newVert = geometryShader_VertexData.vert.xyz;
+		vec3 newNormal = VertexIn.normal.xyz;
+		vec3 newVert = VertexIn.vertice.xyz;
 
 		if ( !gl_FrontFacing )
 		{
@@ -57,7 +57,7 @@ void main ( void )
 		vec3 light_dir = vec3 ( 0.0 , 0.0 , 1.0 );
 		vec3 eye_dir = normalize ( -newVert.xyz );
 
-		vec4 color_t = vec4 ( 0.75 , 0.75 , 1.0 , 1.0 );//geometryShader_VertexData.propertyColor;
+		vec4 color_t = vec4 ( 0.75 , 0.75 , 1.0 , 1.0 );
 
 		vec3 ref = normalize ( -reflect ( light_dir , newNormal ) );
 		vec4 la = vec4 ( 0.2 );
@@ -71,25 +71,9 @@ void main ( void )
 
 		fragmentColor = I * vec4 ( 0.0 , 0.0 , 0.0 , 1.0 ) + ( 1.0 - I ) * (  vec4 ( la.rgb + ld.xyz + ls.rgb , 1.0 ) );
 
-		//fragmentColor = propertyColor;
 
 	}
-//	if ( cutaway == 1 )
-//	{
-//		vec4 color = texture2DRect ( primary , gl_FragCoord.st ).rgba;
-//
-//		float cutaway = color.w;
-//
-//		if ( gl_FragCoord.z < ( cutaway ) )
-//		{
-//			discard;
-//		}
-//	}
 
-//	float d = min(dist[0], min(dist[1], min(dist[2], dist[3])));
-//	float I = exp2(-2 * d * d);
-//
-//	fragmentColor = I * vec4 ( 0.0 , 0.0 , 0.0 , 1.0 ) + ( 1.0 - I ) * (geometryShader_VertexData.propertyColor);
 
 }
 

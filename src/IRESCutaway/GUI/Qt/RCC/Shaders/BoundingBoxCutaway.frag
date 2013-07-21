@@ -6,10 +6,9 @@ uniform sampler2DRect vertices;
 
 in VertexData
 {
-	vec4 vert;
-	vec4 color;
-	vec4 normal;
-   flat vec4 IJK;
+		vec4 vertice;
+		vec4 normal;
+		vec4 color;
 } VertexIn;
 
 noperspective in vec4 dist;
@@ -27,10 +26,12 @@ void main(void)
 
 
 	vec3 newNormal = VertexIn.normal.xyz;
-	vec3 newVert = VertexIn.vert.xyz;
+	vec3 newVert = VertexIn.vertice.xyz;
 	vec4 color_t = VertexIn.color;
 
 	vec2 vector = gl_FragCoord.xy - ( cutaway.xy );
+
+	//I = 0;
 
 	if ( gl_FragCoord.z < ( cutaway.w ) )
 	{

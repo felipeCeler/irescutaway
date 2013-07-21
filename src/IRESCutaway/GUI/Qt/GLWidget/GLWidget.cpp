@@ -63,49 +63,17 @@ void GLWidget::initializeGL ( )
 	fboStep[0] 	  = new  QGLFramebufferObject ( width() , height() , format );
 	fboStep[1] 	  = new  QGLFramebufferObject ( width() , height() , format );
 
-	glGenVertexArrays ( 1 , &vertexArray);
-		glGenBuffers ( 1, &reservoir_vertices_buffer );
-		glGenBuffers ( 1, &reservoir_normal_buffer );
-		glGenBuffers ( 1, &reservoir_color_buffer );
-		glGenBuffers ( 1, &reservoir_renderFlag_buffer );
-		glGenBuffers ( 1, &reservoir_IJK_buffer );
-		glGenBuffers ( 1, &reservoir_indices_buffer );
-		// Viewport
-		glGenBuffers ( 1, &screen_buffer);
-		glGenBuffers ( 1, &texture_buffer);
-
-	/// Cube Triangle Adjacency
-	glGenVertexArrays ( 1 , &vertexArray_Cube);
-		glGenBuffers ( 1, &reservoir_vertices_triangles_adjacency_buffer );
-		glGenBuffers ( 1, &reservoir_normal_triangles_adjacency_buffer );
-		glGenBuffers ( 1, &reservoir_color_triangles_adjacency_buffer );
-		glGenBuffers ( 1, &reservoir_focus_triangles_adjacency_buffer );
-		glGenBuffers ( 1, &reservoir_IJK_triangles_adjacency_buffer );
+	// Viewport
+	glGenBuffers ( 1, &screen_buffer);
+	glGenBuffers ( 1, &texture_buffer);
 
 	glGenVertexArrays ( 1 , &vertexArrayScreen );
 
-	// Charles Ires v 2
-	glGenVertexArrays ( 1, &vertexArray_Charles);
-		glGenBuffers ( 1, &reservoir_vertices_charles_buffer );
-
 	// Cube in Interleaved
 	glGenVertexArrays ( 1, &vertexArray_cube_interleaved );
-		glGenBuffers ( 1, &vertexBuffer_cube_interleaved );
+	glGenBuffers ( 1, &vertexBuffer_cube_interleaved );
 
 
-	reservoir_vertices_location 	= 1;
-	reservoir_normal_location 	= 2;
-	reservoir_color_location 	= 3;
-	reservoir_renderFlag_location 	= 4;
-	reservoir_IJK_location 		= 5;
-
-	// Cube in Geomtry Shader
-
-	reservoir_vertices_triangles_adjacency_location = 1;
-	reservoir_normal_triangles_adjacency_location 	= 2;
-	reservoir_color_triangles_adjacency_location 	= 3;
-	reservoir_focus_triangles_adjacency_location 	= 4;
-	reservoir_IJK_triangles_adjacency_location 	= 5;
 
 	/// ---
 
@@ -286,13 +254,6 @@ void GLWidget::cutVolumeGenerator( )
 void GLWidget::changePropertyRange ( const double& minRange, const double& maxRange, int property_index )
 {
 
-
-	reservoir_list_of_colors.clear ( );
-	reservoir_list_of_renderFlag.clear ( );
-
-	reservoir_list_of_triangles_adjacency_colors.clear();
-	reservoir_list_of_triangles_adjacency_focus.clear();
-
 	boxes.clear ( );
 
 	std::cout << "Changing the property to : " << reservoir_model_.static_porperties[property_index].name << std::endl;
@@ -346,12 +307,6 @@ void GLWidget::changePropertyRange ( const double& minRange, const double& maxRa
 				renderFlags = std::vector<Celer::Vector4<GLfloat> > ( 24 , Celer::Vector4<GLfloat> ( 1.0f , 1.0f , 0.0f , 1.0f ) );
 			}
 
-			std::copy ( colors.begin( ) 	, colors.end( )      , std::back_inserter ( reservoir_list_of_colors     ) );
-			std::copy ( renderFlags.begin( ), renderFlags.end( ) , std::back_inserter ( reservoir_list_of_renderFlag ) );
-
-			std::copy ( renderFlags.begin( ), renderFlags.begin( ) + 6, std::back_inserter ( reservoir_list_of_triangles_adjacency_focus ) );
-			std::copy ( colors.begin( ) , colors.begin( ) + 6 , std::back_inserter ( reservoir_list_of_triangles_adjacency_colors ) );
-
 			cube_interleaved[index].color = color;
 			cube_interleaved[index].focus = focus;
 			index++;
@@ -366,19 +321,6 @@ void GLWidget::changePropertyRange ( const double& minRange, const double& maxRa
 	cutVolumeGenerator();
 
 	std::cout << " number of boxes " << cutVolumes.size( ) << std::endl;
-
-	glBindBuffer ( GL_ARRAY_BUFFER , reservoir_color_buffer );
-	glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_colors.size ( ) * sizeof ( reservoir_list_of_colors[0] ) , &reservoir_list_of_colors[0] , GL_STREAM_DRAW );
-
-	glBindBuffer ( GL_ARRAY_BUFFER , reservoir_renderFlag_buffer );
-	glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_renderFlag.size ( ) * sizeof ( reservoir_list_of_renderFlag[0] ) , &reservoir_list_of_renderFlag[0] , GL_STREAM_DRAW );
-
-	glBindBuffer ( GL_ARRAY_BUFFER , reservoir_color_triangles_adjacency_buffer );
-	glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_triangles_adjacency_colors.size ( ) * sizeof ( reservoir_list_of_triangles_adjacency_colors[0] ) , &reservoir_list_of_triangles_adjacency_colors[0] , GL_STREAM_DRAW );
-
-	// Cube Triangle Adjacency
-	glBindBuffer ( GL_ARRAY_BUFFER , reservoir_focus_triangles_adjacency_buffer );
-	glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_triangles_adjacency_focus.size( ) * sizeof ( reservoir_list_of_triangles_adjacency_focus[0] ) , &reservoir_list_of_triangles_adjacency_focus[0] , GL_STREAM_DRAW );
 
 	// Cube Interleaved
 	glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer_cube_interleaved);
@@ -401,9 +343,6 @@ void GLWidget::changePropertyRange ( const double& minRange, const double& maxRa
 void GLWidget::changeProperty ( int property_index )
 {
 
-	reservoir_list_of_colors.clear ( );
-
-	reservoir_list_of_triangles_adjacency_colors.clear();
 
 	std::cout << "Changing the property to : " << reservoir_model_.static_porperties[property_index].name << std::endl;
 
@@ -447,9 +386,6 @@ void GLWidget::changeProperty ( int property_index )
 			cube_interleaved[index].color = color;
 			index++;
 
-			std::copy (colors.begin( ) 	, colors.end( ) , 	std::back_inserter ( reservoir_list_of_colors ) );
-			std::copy (colors.begin( ) 	, colors.begin( ) + 6 , std::back_inserter ( reservoir_list_of_triangles_adjacency_colors ) );
-
 		}
 		else
 		{
@@ -457,14 +393,6 @@ void GLWidget::changeProperty ( int property_index )
 		}
 	}
 
-
-
-	glBindBuffer ( GL_ARRAY_BUFFER , reservoir_color_buffer );
-	glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_colors.size ( ) * sizeof ( reservoir_list_of_colors[0] ) , &reservoir_list_of_colors[0] , GL_STREAM_DRAW );
-
-
-	glBindBuffer ( GL_ARRAY_BUFFER , reservoir_color_triangles_adjacency_buffer );
-	glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_triangles_adjacency_colors.size ( ) * sizeof ( reservoir_list_of_triangles_adjacency_colors[0] ) , &reservoir_list_of_triangles_adjacency_colors[0] , GL_STREAM_DRAW );
 
 	glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer_cube_interleaved);
 	glBufferData ( GL_ARRAY_BUFFER , cube_interleaved.size( ) * sizeof(cube_interleaved[0]) , &cube_interleaved[0] , GL_STATIC_DRAW );
@@ -704,19 +632,6 @@ void GLWidget::openIRESCharles( const std::string& filename )
 
 	if ( reservoir_model_.blocks.size( ) > 0 )
 	{
-		reservoir_list_of_vertices.clear ( );
-		reservoir_list_of_normals.clear ( );
-		reservoir_list_of_colors.clear ( );
-		reservoir_list_of_IJKs.clear ( );
-		reservoir_list_of_renderFlag.clear( );
-		reservoir_list_of_indices.clear ( );
-
-		/// Triangle Adjacency
-		reservoir_list_of_triangles_adjacency_vertices.clear();
-		reservoir_list_of_triangles_adjacency_normals.clear();
-		reservoir_list_of_triangles_adjacency_colors.clear();
-		reservoir_list_of_triangles_adjacency_IJKs.clear();
-		reservoir_list_of_triangles_adjacency_focus.clear();
 
 		cube_interleaved.clear();
 
@@ -733,14 +648,6 @@ void GLWidget::openIRESCharles( const std::string& filename )
 			if ( reservoir_model_.blocks[i].valid )
 			{
 
-				std::copy(reservoir_model_.blocks[i].vertices.begin(), reservoir_model_.blocks[i].vertices.end(),
-						std::back_inserter(reservoir_list_of_vertices));
-				std::copy(reservoir_model_.blocks[i].normals.begin(), reservoir_model_.blocks[i].normals.end(),
-						std::back_inserter(reservoir_list_of_normals));
-				std::copy(reservoir_model_.blocks[i].focus.begin(), reservoir_model_.blocks[i].focus.end(),
-						 std::back_inserter(reservoir_list_of_renderFlag));
-				std::copy(reservoir_model_.blocks[i].IJK.begin(), reservoir_model_.blocks[i].IJK.end(),
-						 std::back_inserter(reservoir_list_of_IJKs));
 
 				cube_temp.vertices[4] = reservoir_model_.blocks[i].vertices[0];
 				cube_temp.vertices[5] = reservoir_model_.blocks[i].vertices[1];
@@ -767,55 +674,6 @@ void GLWidget::openIRESCharles( const std::string& filename )
 				cube_interleaved[index] = cube_temp;
 
 				index++;
-
-				Celer::Vector4<float> vertices [] =
-				{
-				    Celer::Vector4<float>( reservoir_model_.blocks[i].vertices[0].x,reservoir_model_.blocks[i].vertices[0].y,reservoir_model_.blocks[i].vertices[0].z,reservoir_model_.blocks[i].vertices[6].x),
-				    Celer::Vector4<float>( reservoir_model_.blocks[i].vertices[1].x,reservoir_model_.blocks[i].vertices[1].y,reservoir_model_.blocks[i].vertices[1].z,reservoir_model_.blocks[i].vertices[6].y),
-				    Celer::Vector4<float>( reservoir_model_.blocks[i].vertices[2].x,reservoir_model_.blocks[i].vertices[2].y,reservoir_model_.blocks[i].vertices[2].z,reservoir_model_.blocks[i].vertices[6].z),
-				    Celer::Vector4<float>( reservoir_model_.blocks[i].vertices[3].x,reservoir_model_.blocks[i].vertices[3].y,reservoir_model_.blocks[i].vertices[3].z,reservoir_model_.blocks[i].vertices[7].x),
-
-				    Celer::Vector4<float>( reservoir_model_.blocks[i].vertices[4].x,reservoir_model_.blocks[i].vertices[4].y,reservoir_model_.blocks[i].vertices[4].z,reservoir_model_.blocks[i].vertices[7].y),
-				    Celer::Vector4<float>( reservoir_model_.blocks[i].vertices[5].x,reservoir_model_.blocks[i].vertices[5].y,reservoir_model_.blocks[i].vertices[5].z,reservoir_model_.blocks[i].vertices[7].z)
-				};
-
-				Celer::Vector4<float> normals [] =
-				{
-				    Celer::Vector4<float>( reservoir_model_.blocks[i].normals[0].x,reservoir_model_.blocks[i].normals[0].y,reservoir_model_.blocks[i].normals[0].z,reservoir_model_.blocks[i].normals[6].x),
-				    Celer::Vector4<float>( reservoir_model_.blocks[i].normals[1].x,reservoir_model_.blocks[i].normals[1].y,reservoir_model_.blocks[i].normals[1].z,reservoir_model_.blocks[i].normals[6].y),
-				    Celer::Vector4<float>( reservoir_model_.blocks[i].normals[2].x,reservoir_model_.blocks[i].normals[2].y,reservoir_model_.blocks[i].normals[2].z,reservoir_model_.blocks[i].normals[6].z),
-				    Celer::Vector4<float>( reservoir_model_.blocks[i].normals[3].x,reservoir_model_.blocks[i].normals[3].y,reservoir_model_.blocks[i].normals[3].z,reservoir_model_.blocks[i].normals[7].x),
-
-				    Celer::Vector4<float>( reservoir_model_.blocks[i].normals[4].x,reservoir_model_.blocks[i].normals[4].y,reservoir_model_.blocks[i].normals[4].z,reservoir_model_.blocks[i].normals[7].y),
-				    Celer::Vector4<float>( reservoir_model_.blocks[i].normals[5].x,reservoir_model_.blocks[i].normals[5].y,reservoir_model_.blocks[i].normals[5].z,reservoir_model_.blocks[i].normals[7].z)
-				};
-
-				Celer::Vector4<float> focus [] =
-				{
-				    Celer::Vector4<float>( reservoir_model_.blocks[i].focus[0].x,reservoir_model_.blocks[i].focus[0].y,reservoir_model_.blocks[i].focus[0].z,reservoir_model_.blocks[i].focus[6].x),
-				    Celer::Vector4<float>( reservoir_model_.blocks[i].focus[1].x,reservoir_model_.blocks[i].focus[1].y,reservoir_model_.blocks[i].focus[1].z,reservoir_model_.blocks[i].focus[6].y),
-				    Celer::Vector4<float>( reservoir_model_.blocks[i].focus[2].x,reservoir_model_.blocks[i].focus[2].y,reservoir_model_.blocks[i].focus[2].z,reservoir_model_.blocks[i].focus[6].z),
-				    Celer::Vector4<float>( reservoir_model_.blocks[i].focus[3].x,reservoir_model_.blocks[i].focus[3].y,reservoir_model_.blocks[i].focus[3].z,reservoir_model_.blocks[i].focus[7].x),
-
-				    Celer::Vector4<float>( reservoir_model_.blocks[i].focus[4].x,reservoir_model_.blocks[i].focus[4].y,reservoir_model_.blocks[i].focus[4].z,reservoir_model_.blocks[i].focus[7].y),
-				    Celer::Vector4<float>( reservoir_model_.blocks[i].focus[5].x,reservoir_model_.blocks[i].focus[5].y,reservoir_model_.blocks[i].focus[5].z,reservoir_model_.blocks[i].focus[7].z)
-				};
-
-				Celer::Vector4<int> IJK [] =
-				{
-				    Celer::Vector4<int>( reservoir_model_.blocks[i].IJK[0].x,reservoir_model_.blocks[i].IJK[0].y,reservoir_model_.blocks[i].IJK[0].z,reservoir_model_.blocks[i].IJK[6].x),
-				    Celer::Vector4<int>( reservoir_model_.blocks[i].IJK[1].x,reservoir_model_.blocks[i].IJK[1].y,reservoir_model_.blocks[i].IJK[1].z,reservoir_model_.blocks[i].IJK[6].y),
-				    Celer::Vector4<int>( reservoir_model_.blocks[i].IJK[2].x,reservoir_model_.blocks[i].IJK[2].y,reservoir_model_.blocks[i].IJK[2].z,reservoir_model_.blocks[i].IJK[6].z),
-				    Celer::Vector4<int>( reservoir_model_.blocks[i].IJK[3].x,reservoir_model_.blocks[i].IJK[3].y,reservoir_model_.blocks[i].IJK[3].z,reservoir_model_.blocks[i].IJK[7].x),
-
-				    Celer::Vector4<int>( reservoir_model_.blocks[i].IJK[4].x,reservoir_model_.blocks[i].IJK[4].y,reservoir_model_.blocks[i].IJK[4].z,reservoir_model_.blocks[i].IJK[7].y),
-				    Celer::Vector4<int>( reservoir_model_.blocks[i].IJK[5].x,reservoir_model_.blocks[i].IJK[5].y,reservoir_model_.blocks[i].IJK[5].z,reservoir_model_.blocks[i].IJK[7].z)
-				};
-
-				std::copy ( vertices , vertices + 6 , std::back_inserter( reservoir_list_of_triangles_adjacency_vertices ));
-				std::copy ( normals  , normals + 6 , std::back_inserter( reservoir_list_of_triangles_adjacency_normals ));
-				std::copy ( focus    , focus + 6 , std::back_inserter( reservoir_list_of_triangles_adjacency_focus ));
-				std::copy ( IJK      , IJK + 6 , std::back_inserter( reservoir_list_of_triangles_adjacency_IJKs ));
 
 
 			}
@@ -848,84 +706,6 @@ void GLWidget::openIRESCharles( const std::string& filename )
 
 		cameraStep_ = 0.001f;
 
-
-		glBindVertexArray(vertexArray);
-
-
-		glBindBuffer ( GL_ARRAY_BUFFER , reservoir_vertices_buffer );
-		glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_vertices.size ( ) * sizeof ( reservoir_list_of_vertices[0] ) , &reservoir_list_of_vertices[0] , GL_STATIC_DRAW );
-		// Vertex Array : Set up generic attributes pointers
-		glEnableVertexAttribArray ( reservoir_vertices_location );
-		glVertexAttribPointer ( reservoir_vertices_location , 4 , GL_FLOAT , GL_FALSE , 0 , 0 );
-
-		glBindBuffer ( GL_ARRAY_BUFFER , reservoir_normal_buffer );
-		glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_normals.size ( ) * sizeof ( reservoir_list_of_normals[0] ) , &reservoir_list_of_normals[0] , GL_STREAM_DRAW );
-		// Vertex Array : Set up generic attributes pointers
-		glEnableVertexAttribArray ( reservoir_normal_location );
-		glVertexAttribPointer ( reservoir_normal_location , 4 , GL_FLOAT , GL_FALSE , 0 , 0 );
-
-
-		glBindBuffer ( GL_ARRAY_BUFFER , reservoir_color_buffer );
-		glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_colors.size ( ) * sizeof ( reservoir_list_of_colors[0] ) , &reservoir_list_of_colors[0] , GL_STREAM_DRAW );
-		// Vertex Array : Set up generic attributes pointers
-		glEnableVertexAttribArray ( reservoir_color_location );
-		glVertexAttribPointer ( reservoir_color_location , 4 , GL_FLOAT , GL_FALSE , 0 , 0 );
-
-		glBindBuffer ( GL_ARRAY_BUFFER , reservoir_renderFlag_buffer );
-		glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_renderFlag.size ( ) * sizeof ( reservoir_list_of_renderFlag[0] ) , &reservoir_list_of_renderFlag[0] , GL_STREAM_DRAW );
-		// Vertex Array : Set up generic attributes pointers
-		glEnableVertexAttribArray ( reservoir_renderFlag_buffer );
-		glVertexAttribPointer ( reservoir_renderFlag_location , 4 , GL_FLOAT , GL_FALSE , 0 , 0 );
-
-		// FIXME glVertexAttribIPointer FOR INTEGERS!
-		glBindBuffer ( GL_ARRAY_BUFFER , reservoir_IJK_buffer );
-		glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_IJKs.size ( ) * sizeof ( reservoir_list_of_IJKs[0] ) , &reservoir_list_of_IJKs[0] , GL_STREAM_DRAW );
-		// Vertex Array : Set up generic attributes pointers
-		glEnableVertexAttribArray ( reservoir_IJK_buffer );
-		glVertexAttribIPointer ( reservoir_IJK_location , 4 , GL_INT, 0 , 0 );
-
-		glBindBuffer ( GL_ELEMENT_ARRAY_BUFFER , reservoir_indices_buffer );
-		glBufferData ( GL_ELEMENT_ARRAY_BUFFER , reservoir_list_of_indices.size ( ) * sizeof ( reservoir_list_of_indices[0] ) , &reservoir_list_of_indices[0] , GL_STATIC_DRAW );
-
-		glBindVertexArray(0);
-
-
-
-		glBindVertexArray(vertexArray_Cube);
-
-		glBindBuffer ( GL_ARRAY_BUFFER , reservoir_vertices_triangles_adjacency_buffer );
-		glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_triangles_adjacency_vertices.size ( ) * sizeof ( reservoir_list_of_triangles_adjacency_vertices[0] ) , &reservoir_list_of_triangles_adjacency_vertices[0] , GL_STATIC_DRAW );
-		// Vertex Array : Set up generic attributes pointers
-		glEnableVertexAttribArray ( reservoir_vertices_triangles_adjacency_location );
-		glVertexAttribPointer ( reservoir_vertices_triangles_adjacency_location , 4 , GL_FLOAT , GL_FALSE , 0 , 0 );
-
-		glBindBuffer ( GL_ARRAY_BUFFER , reservoir_normal_triangles_adjacency_buffer );
-		glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_triangles_adjacency_normals.size ( ) * sizeof ( reservoir_list_of_triangles_adjacency_normals[0] ) , &reservoir_list_of_triangles_adjacency_normals[0] , GL_STREAM_DRAW );
-		// Vertex Array : Set up generic attributes pointers
-		glEnableVertexAttribArray ( reservoir_normal_triangles_adjacency_location );
-		glVertexAttribPointer ( reservoir_normal_triangles_adjacency_location , 4 , GL_FLOAT , GL_FALSE , 0 , 0 );
-
-
-		glBindBuffer ( GL_ARRAY_BUFFER , reservoir_color_triangles_adjacency_buffer );
-		glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_triangles_adjacency_colors.size ( ) * sizeof ( reservoir_list_of_triangles_adjacency_colors[0] ) , &reservoir_list_of_triangles_adjacency_colors[0] , GL_STREAM_DRAW );
-		// Vertex Array : Set up generic attributes pointers
-		glEnableVertexAttribArray ( reservoir_color_triangles_adjacency_location );
-		glVertexAttribPointer ( reservoir_color_triangles_adjacency_location , 4 , GL_FLOAT , GL_FALSE , 0 , 0 );
-
-		glBindBuffer ( GL_ARRAY_BUFFER , reservoir_focus_triangles_adjacency_buffer );
-		glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_triangles_adjacency_focus.size ( ) * sizeof ( reservoir_list_of_triangles_adjacency_focus[0] ) , &reservoir_list_of_triangles_adjacency_focus[0] , GL_STREAM_DRAW );
-		// Vertex Array : Set up generic attributes pointers
-		glEnableVertexAttribArray ( reservoir_focus_triangles_adjacency_location );
-		glVertexAttribPointer ( reservoir_focus_triangles_adjacency_location , 4 , GL_FLOAT , GL_FALSE , 0 , 0 );
-
-		// FIXME glVertexAttribIPointer FOR INTEGERS!
-		glBindBuffer ( GL_ARRAY_BUFFER , reservoir_IJK_triangles_adjacency_buffer );
-		glBufferData ( GL_ARRAY_BUFFER , reservoir_list_of_IJKs.size ( ) * sizeof ( reservoir_list_of_IJKs[0] ) , &reservoir_list_of_IJKs[0] , GL_STREAM_DRAW );
-		// Vertex Array : Set up generic attributes pointers
-		glEnableVertexAttribArray ( reservoir_IJK_triangles_adjacency_location );
-		glVertexAttribIPointer ( reservoir_IJK_triangles_adjacency_location , 4 , GL_INT, 0 , 0 );
-
-		glBindVertexArray(0);
 
 		glBindVertexArray ( vertexArray_cube_interleaved );
 		glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer_cube_interleaved);
@@ -1130,7 +910,7 @@ void GLWidget::BoundingVolumeCutawaySetup( int cluster )
  				glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
  				glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
  				//VAO
- 				glBindVertexArray ( vertexArray );
+ 				glBindVertexArray ( vertexArray_cube_interleaved );
  				glDrawArrays ( GL_POINTS , 0 , 1 );
  				glBindVertexArray ( 0 );
 
@@ -1161,7 +941,7 @@ void GLWidget::BoundingVolumeCutawaySetup( int cluster )
  				glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
  				glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
  				//VAO
- 				glBindVertexArray ( vertexArray );
+ 				glBindVertexArray ( vertexArray_cube_interleaved );
  				glDrawArrays ( GL_POINTS , 0 , 1 );
  				glBindVertexArray ( 0 );
 
@@ -1200,9 +980,9 @@ void GLWidget::BoundingVolumeCutawaySetup( int cluster )
 			glUniformMatrix4fv ( BoundingBoxCutaway.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
 			glUniformMatrix4fv ( BoundingBoxCutaway.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
 
-			glBindVertexArray(vertexArray);
-			glDrawArrays ( GL_LINES_ADJACENCY , 0 , reservoir_list_of_vertices.size());
-			glBindVertexArray(0);
+			glBindVertexArray ( vertexArray_cube_interleaved );
+			glDrawArrays ( GL_POINTS , 0 , cube_interleaved.size() );
+			glBindVertexArray ( 0 );
 
 			BoundingBoxCutaway.deactive ( );
 
@@ -1251,7 +1031,7 @@ void GLWidget::BoundingVolumeCutawaySetup( int cluster )
 				glUniformMatrix4fv ( BoundingBoxDebug.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
 				glUniformMatrix4fv ( BoundingBoxDebug.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
 				//VAO
-				glBindVertexArray ( vertexArray );
+				glBindVertexArray ( vertexArray_cube_interleaved );
 				glDrawArrays ( GL_POINTS , 0 , 1 );
 				glBindVertexArray ( 0 );
 
@@ -1267,9 +1047,9 @@ void GLWidget::BoundingVolumeCutawaySetup( int cluster )
 			glUniformMatrix4fv ( primary.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
 			glUniformMatrix4fv ( primary.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
 
-			glBindVertexArray(vertexArray);
-			glDrawArrays ( GL_LINES_ADJACENCY , 0 , reservoir_list_of_vertices.size());
-			glBindVertexArray(0);
+			glBindVertexArray ( vertexArray_cube_interleaved );
+			glDrawArrays ( GL_POINTS , 0 , cube_interleaved.size() );
+			glBindVertexArray ( 0 );
 
 			primary.deactive ( );
 
@@ -1354,7 +1134,7 @@ void GLWidget::NoCutawaySetUp ( )
 	 				glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
 	 				glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
 	 				//VAO
-	 				glBindVertexArray ( vertexArray );
+	 				glBindVertexArray ( vertexArray_cube_interleaved );
 	 				glDrawArrays ( GL_POINTS , 0 , 1 );
 	 				glBindVertexArray ( 0 );
 
@@ -1383,7 +1163,7 @@ void GLWidget::NoCutawaySetUp ( )
 	 				glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
 	 				glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
 	 				//VAO
-	 				glBindVertexArray ( vertexArray );
+	 				glBindVertexArray ( vertexArray_cube_interleaved );
 	 				glDrawArrays ( GL_POINTS , 0 , 1 );
 	 				glBindVertexArray ( 0 );
 
@@ -1445,31 +1225,6 @@ void GLWidget::NoCutawaySetUp ( )
 //		 		cube_interleaved_shader.deactive();
 
 
-//				cube_in_GeometryShader.active ( );
-//
-//				glUniform4fv ( cube_in_GeometryShader.uniforms_["center_points[0]"].location , cut_volume_size , center_points[0] );
-//				glUniform4fv ( cube_in_GeometryShader.uniforms_["max_points[0]"].location , cut_volume_size , max_points[0]);
-//				glUniform4fv ( cube_in_GeometryShader.uniforms_["min_points[0]"].location , cut_volume_size , min_points[0] );
-//				glUniform1i  ( cube_in_GeometryShader.uniforms_["cut_volume_size"].location , cut_volume_size );
-//
-//				glUniform4fv ( cube_in_GeometryShader.uniforms_["min_point"].location , 1 , Celer::Vector4<float> ( cutVolumes[cluster].box_min ( ) , 1.0f ) );
-//				glUniform4fv ( cube_in_GeometryShader.uniforms_["max_point"].location , 1 , Celer::Vector4<float> ( cutVolumes[cluster].box_max ( ) , 1.0f ) );
-//
-//				glUniform3fv ( cube_in_GeometryShader.uniforms_["center_point"].location , 1 , cutVolumes[cluster].center ( ));
-//				glUniform3fv ( cube_in_GeometryShader.uniforms_["new_x"].location , 1 ,  new_x );
-//				glUniform3fv ( cube_in_GeometryShader.uniforms_["new_y"].location , 1 ,  new_y );
-//				glUniform3fv ( cube_in_GeometryShader.uniforms_["new_z"].location , 1 ,  new_z );
-//
-//				glUniform2f ( cube_in_GeometryShader.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
-//				glUniformMatrix4fv ( cube_in_GeometryShader.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-//				glUniformMatrix4fv ( cube_in_GeometryShader.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
-//
-//				glBindVertexArray ( vertexArray_Cube );
-//				glDrawArrays ( GL_TRIANGLES_ADJACENCY , 0 , reservoir_list_of_triangles_adjacency_vertices.size ( ) );
-//				glBindVertexArray ( 0 );
-//
-//				cube_in_GeometryShader.deactive ( );
-
 
 //				BoundingBoxDebug.active ( );
 //
@@ -1507,9 +1262,9 @@ void GLWidget::NoCutawaySetUp ( )
 				glUniformMatrix4fv ( secondary.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
 				glUniformMatrix4fv ( secondary.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
 
-				glBindVertexArray(vertexArray);
-				glDrawArrays ( GL_LINES_ADJACENCY , 0 , reservoir_list_of_vertices.size());
-				glBindVertexArray(0);
+				glBindVertexArray ( vertexArray_cube_interleaved );
+				glDrawArrays ( GL_POINTS , 0 , cube_interleaved.size() );
+				glBindVertexArray ( 0 );
 
 				secondary.deactive ( );
 			}
@@ -1539,9 +1294,9 @@ void GLWidget::NoCutawaySetUp ( )
 			glUniformMatrix4fv ( primary.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
 			glUniformMatrix4fv ( primary.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
 
-			glBindVertexArray(vertexArray);
-			glDrawArrays ( GL_LINES_ADJACENCY , 0 , reservoir_list_of_vertices.size());
-			glBindVertexArray(0);
+			glBindVertexArray ( vertexArray_cube_interleaved );
+			glDrawArrays ( GL_POINTS , 0 , cube_interleaved.size() );
+			glBindVertexArray ( 0 );
 
 			primary.deactive ( );
 
@@ -1588,13 +1343,16 @@ void GLWidget::BurnsCutawaySetup ( )
 		glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
 		glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
+		glUniform3fv ( BurnsJFAInitializing430.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
+		glUniform2f ( BurnsJFAInitializing430.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
 		glUniformMatrix4fv ( BurnsJFAInitializing430.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
 		glUniformMatrix4fv ( BurnsJFAInitializing430.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix()  );
 
 		//VAO
-		glBindVertexArray(vertexArray);
-		glDrawArrays ( GL_TRIANGLES , 0 , reservoir_list_of_vertices.size());
-		glBindVertexArray(0);
+
+		glBindVertexArray ( vertexArray_cube_interleaved );
+		glDrawArrays ( GL_POINTS , 0 , cube_interleaved.size() );
+		glBindVertexArray ( 0 );
 
 		fboStep[1]->release( );
 
@@ -1651,7 +1409,7 @@ void GLWidget::BurnsCutawaySetup ( )
 		glClearColor ( 1.0 , 1.0 , 1.0 , 1.0 );
 		glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-		if ( draw_secondary && (reservoir_list_of_vertices.size ( ) != 0) )
+		if ( draw_secondary && (cube_interleaved.size() != 0) )
 		{
 			BurnsCutaway430Wireframe.active ( );
 
@@ -1670,51 +1428,31 @@ void GLWidget::BurnsCutawaySetup ( )
 			glUniformMatrix4fv ( BurnsCutaway430Wireframe.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
 
 			// VAO
-			glBindVertexArray(vertexArray);
-			glDrawArrays ( GL_LINES_ADJACENCY , 0 , reservoir_list_of_vertices.size());
-			glBindVertexArray(0);
+			glBindVertexArray ( vertexArray_cube_interleaved );
+			glDrawArrays ( GL_POINTS , 0 , cube_interleaved.size() );
+			glBindVertexArray ( 0 );
 			glDisable ( GL_TEXTURE_RECTANGLE );
 
 			BurnsCutaway430Wireframe.deactive ( );
 		}
 
-		if ( draw_primary && (reservoir_list_of_vertices.size ( ) != 0)  )
+		if ( draw_primary && (cube_interleaved.size() != 0)  )
 		{
 			primary.active ( );
 
 			glUniform3fv ( primary.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
 
 			glUniform2f ( primary.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
-			glUniform1i ( primary.uniforms_["cutaway"].location , 1 );
+
 			glUniformMatrix4fv ( primary.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
 			glUniformMatrix4fv ( primary.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
 
-			glBindVertexArray(vertexArray);
-			glDrawArrays ( GL_LINES_ADJACENCY , 0 , reservoir_list_of_vertices.size());
-			glBindVertexArray(0);
+			glBindVertexArray ( vertexArray_cube_interleaved );
+			glDrawArrays ( GL_POINTS , 0 , cube_interleaved.size() );
+			glBindVertexArray ( 0 );
 
 			primary.deactive ( );
 		}
-
-	}
-	else if ( ires_has_been_open_sucessefully )
-	{
-
-//		secondary.active ( );
-//
-//		glUniform3fv ( secondary.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
-//
-//		glUniform2f ( secondary.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
-//		glUniform1i ( secondary.uniforms_["cutaway"].location , 0 );
-//
-//		glUniformMatrix4fv ( secondary.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-//		glUniformMatrix4fv ( secondary.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
-//
-//		glBindVertexArray(vertexArray);
-//		glDrawArrays ( GL_LINES_ADJACENCY , 0 , reservoir_list_of_vertices.size());
-//		glBindVertexArray(0);
-//
-//		secondary.deactive ( );
 
 	}
 
@@ -1746,15 +1484,6 @@ void GLWidget::loadShaders ( )
 	qDebug () << "Directory " << shadersDir.path ();
 
 
-
-
-	charles_Shader.create( "Charles Shader" ,(shaderDirectory + "Charles.vert").toStdString(),
-						 (shaderDirectory + "Charles.geom").toStdString(),
-						 (shaderDirectory + "Charles.frag").toStdString() );
-
-	textureViewer.create("textureViewer",(shaderDirectory + "fboTest.vert").toStdString(),
-				             (shaderDirectory + "fboTest.frag").toStdString());
-
 	cutVolume.create("cutVolume",(shaderDirectory + "CutVolume.vert").toStdString(),
 				     (shaderDirectory + "CutVolume.geom").toStdString(),
 				     (shaderDirectory + "CutVolume.frag").toStdString());
@@ -1766,15 +1495,13 @@ void GLWidget::loadShaders ( )
 	secondary.create("secondary",(shaderDirectory + "Secondary.vert").toStdString(),
 			             (shaderDirectory + "Secondary.geom").toStdString(),
 				     (shaderDirectory + "Secondary.frag").toStdString());
-	// Burns Approach
-	BurnsCutaway430.create("BurnsCutaway430",(shaderDirectory + "BurnsCutaway430.vert").toStdString(),
-						 (shaderDirectory + "BurnsCutaway430.frag").toStdString());
 
 	BurnsCutaway430Wireframe.create("BurnsCutaway430Wireframe",(shaderDirectory + "BurnsCutaway430Wireframe.vert").toStdString(),
 								   (shaderDirectory + "BurnsCutaway430Wireframe.geom").toStdString(),
 								   (shaderDirectory + "BurnsCutaway430Wireframe.frag").toStdString());
 
 	BurnsJFAInitializing430.create("BurnsJFAInitializing430",(shaderDirectory + "BurnsJFAInitializing430.vert").toStdString(),
+								 (shaderDirectory + "BurnsJFAInitializing430.geom").toStdString(),
 								 (shaderDirectory + "BurnsJFAInitializing430.frag").toStdString());
 
 	BurnsJFAStep430.create("BurnsJFAStep430",(shaderDirectory + "BurnsJFAStep430.vert").toStdString(),
@@ -1797,23 +1524,6 @@ void GLWidget::loadShaders ( )
 			   (shaderDirectory + "DebugNormal.geom").toStdString(),
 			   (shaderDirectory + "DebugNormal.frag").toStdString());
 
-
-	wireframe.create ("SinglePassWireframe",  (shaderDirectory + "SinglePassWireframe.vert").toStdString(),
-			 (shaderDirectory + "SinglePassWireframe.geom").toStdString(),
-			 (shaderDirectory + "SinglePassWireframe.frag").toStdString());
-
-
-	orientedBoxApproach.create ( "OrientedBoxApproach", (shaderDirectory + "OrientedBoxApproach.vert").toStdString(),
-				   (shaderDirectory + "OrientedBoxApproach.geom").toStdString(),
-				   (shaderDirectory + "OrientedBoxApproach.frag").toStdString());
-
-
-
-	/// Cube in Geometry Shader
-	cube_in_GeometryShader.create ( "Cube_in_Geometry_Shader", (shaderDirectory + "Cube_in_Geometry_Shader.vert").toStdString(),
-								   (shaderDirectory + "Cube_in_Geometry_Shader.geom").toStdString(),
-								   (shaderDirectory + "Cube_in_Geometry_Shader.frag").toStdString());
-
 	cube_interleaved_shader.create ("cube_interleaved", (shaderDirectory + "Cube_Interleaved.vert").toStdString(),
 			   (shaderDirectory   + "Cube_Interleaved.geom").toStdString(),
 			   (shaderDirectory   + "Cube_Interleaved.frag").toStdString());
@@ -1823,66 +1533,6 @@ void GLWidget::loadShaders ( )
 			   (shaderDirectory   + "HongKongCutaway.geom").toStdString(),
 			   (shaderDirectory   + "HongKongCutaway.frag").toStdString());
 
-//	textureViewer.create("textureViewer",(shadersDir.path ()+"/share/Shaders/fboTest.vert").toStdString(),
-//			                             (shadersDir.path ()+"/share/Shaders/fboTest.frag").toStdString());
-//
-//	cutVolume.create("cutVolume",(shadersDir.path ()+"/share/Shaders/CutVolume.vert").toStdString(),
-//			             (shadersDir.path ()+"/share/Shaders/CutVolume.geom").toStdString(),
-//			             (shadersDir.path ()+"/share/Shaders/CutVolume.frag").toStdString());
-//
-//	primary.create("primary",(shadersDir.path ()+"/share/Shaders/Primary.vert").toStdString(),
-//			                 (shadersDir.path ()+"/share/Shaders/Primary.geom").toStdString(),
-//			                 (shadersDir.path ()+"/share/Shaders/Primary.frag").toStdString());
-//
-//	secondary.create("secondary",(shadersDir.path ()+"/share/Shaders/Secondary.vert").toStdString(),
-//			                     (shadersDir.path ()+"/share/Shaders/Secondary.geom").toStdString(),
-//			                     (shadersDir.path ()+"/share/Shaders/Secondary.frag").toStdString());
-//	// Burns Approach
-//	BurnsCutaway430.create("BurnsCutaway430",(shadersDir.path ()+"/share/Shaders/BurnsCutaway430.vert").toStdString(),
-//			                         (shadersDir.path ()+"/share/Shaders/BurnsCutaway430.frag").toStdString());
-//
-//	BurnsCutaway430Wireframe.create("BurnsCutaway430Wireframe",(shadersDir.path ()+"/share/Shaders/BurnsCutaway430Wireframe.vert").toStdString(),
-//		                                                   (shadersDir.path ()+"/share/Shaders/BurnsCutaway430Wireframe.geom").toStdString(),
-//	                                                           (shadersDir.path ()+"/share/Shaders/BurnsCutaway430Wireframe.frag").toStdString());
-//
-//	BurnsJFAInitializing430.create("BurnsJFAInitializing430",(shadersDir.path ()+"/share/Shaders/BurnsJFAInitializing430.vert").toStdString(),
-//			                                         (shadersDir.path ()+"/share/Shaders/BurnsJFAInitializing430.frag").toStdString());
-//
-//	BurnsJFAStep430.create("BurnsJFAStep430",(shadersDir.path ()+"/share/Shaders/BurnsJFAStep430.vert").toStdString(),
-//			                         (shadersDir.path ()+"/share/Shaders/BurnsJFAStep430.frag").toStdString());
-//	// BoudingBox Approach
-//	BoundingBoxInitialization.create ("BoundingBoxApproach",(shadersDir.path ()+"/share/Shaders/BoundingBoxApproach.vert").toStdString(),
-//							        (shadersDir.path ()+"/share/Shaders/BoundingBoxApproach.geom").toStdString(),
-//							        (shadersDir.path ()+"/share/Shaders/BoundingBoxApproach.frag").toStdString());
-//
-//	BoundingBoxDebug.create ("BoundingBoxApproach Debug",(shadersDir.path ()+"/share/Shaders/BoundingBoxApproach.vert").toStdString(),
-//							     (shadersDir.path ()+"/share/Shaders/BoundingBoxApproach.geom").toStdString(),
-//							     (shadersDir.path ()+"/share/Shaders/BoundingBoxApproachDebug.frag").toStdString());
-//
-//	BoundingBoxCutaway.create ("BoundingBoxCutaway",(shadersDir.path ()+"/share/Shaders/BoundingBoxCutaway.vert").toStdString(),
-//							(shadersDir.path ()+"/share/Shaders/BoundingBoxCutaway.geom").toStdString(),
-//							(shadersDir.path ()+"/share/Shaders/BoundingBoxCutaway.frag").toStdString());
-//
-//
-//	debugNormal.create ("DebugNormal",  (shadersDir.path ()+"/share/Shaders/DebugNormal.vert").toStdString(),
-//			   (shadersDir.path ()+"/share/Shaders/DebugNormal.geom").toStdString(),
-//			   (shadersDir.path ()+"/share/Shaders/DebugNormal.frag").toStdString());
-//
-//
-//	wireframe.create ("SinglePassWireframe",  (shadersDir.path ()+"/share/Shaders/SinglePassWireframe.vert").toStdString(),
-//			 (shadersDir.path ()+"/share/Shaders/SinglePassWireframe.geom").toStdString(),
-//			 (shadersDir.path ()+"/share/Shaders/SinglePassWireframe.frag").toStdString());
-//
-//
-//	orientedBoxApproach.create ( "OrientedBoxApproach", (shadersDir.path ()+"/share/Shaders/OrientedBoxApproach.vert").toStdString(),
-//                                   (shadersDir.path ()+"/share/Shaders/OrientedBoxApproach.geom").toStdString(),
-//			           (shadersDir.path ()+"/share/Shaders/OrientedBoxApproach.frag").toStdString());
-//
-//
-//	/// Cube in Geometry Shader
-//	cube_in_GeometryShader.create ( "Cube_in_Geometry_Shader", (shadersDir.path ()+"/share/Shaders/Cube_in_Geometry_Shader.vert").toStdString(),
-//							           (shadersDir.path ()+"/share/Shaders/Cube_in_Geometry_Shader.geom").toStdString(),
-//							           (shadersDir.path ()+"/share/Shaders/Cube_in_Geometry_Shader.frag").toStdString());
 
 }
 /// KeyInput
@@ -2109,14 +1759,14 @@ void GLWidget::dragLeaveEvent(QDragLeaveEvent *event)
 
 void GLWidget::setPrimaryVisibility( bool visibility )
 {
-	if ( reservoir_list_of_vertices.size( ) > 0 )
+	if ( cube_interleaved.size() > 0 )
 		draw_primary = visibility;
 	updateGL();
 }
 
 void GLWidget::setSecondaryVisibility( bool visibility )
 {
-	if ( reservoir_list_of_vertices.size( ) > 0 )
+	if ( cube_interleaved.size() > 0 )
 		draw_secondary = visibility;
 	updateGL();
 }

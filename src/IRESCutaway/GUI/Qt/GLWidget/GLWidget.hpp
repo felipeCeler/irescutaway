@@ -149,55 +149,13 @@ private:
 	Celer::OpenGL::ShaderManager	textureViewer;
 	Celer::OpenGL::Texture2D 	facePhoto;
 
-	GLuint vertexArray;
 	GLuint vertexArrayScreen;
 	GLuint screen_buffer;
 	GLuint texture_buffer;
 
-	// Reservoir Attributes on GPU
-	GLuint reservoir_vertices_buffer;
-	GLuint reservoir_vertices_location;
-	GLuint reservoir_normal_buffer;
-	GLuint reservoir_normal_location;
-	GLuint reservoir_color_buffer;
-	GLuint reservoir_color_location;
-	GLuint reservoir_renderFlag_buffer;
-	GLuint reservoir_renderFlag_location;
-	GLuint reservoir_IJK_buffer;
-	GLuint reservoir_IJK_location;
-
-	GLuint reservoir_indices_buffer;
 
 	bool ires_has_been_open_sucessefully;
 
-	std::vector<int> 			reservoir_list_of_indices;
-	std::vector<Celer::Vector4<GLfloat> > 	reservoir_list_of_normals;
-	std::vector<Celer::Vector4<GLfloat> > 	reservoir_list_of_vertices;
-	std::vector<Celer::Vector4<GLfloat> >   reservoir_list_of_colors;
-	std::vector<Celer::Vector4<GLint> >     reservoir_list_of_IJKs;
-	std::vector<Celer::Vector4<GLfloat> >   reservoir_list_of_renderFlag;
-
-	/// Cube in Geometry Shader ---
-	GLuint vertexArray_Cube;
-
-	GLuint reservoir_vertices_triangles_adjacency_buffer;
-	GLuint reservoir_vertices_triangles_adjacency_location;
-	GLuint reservoir_normal_triangles_adjacency_buffer;
-	GLuint reservoir_normal_triangles_adjacency_location;
-	GLuint reservoir_color_triangles_adjacency_buffer;
-	GLuint reservoir_color_triangles_adjacency_location;
-	GLuint reservoir_focus_triangles_adjacency_buffer;
-	GLuint reservoir_focus_triangles_adjacency_location;
-	GLuint reservoir_IJK_triangles_adjacency_buffer;
-	GLuint reservoir_IJK_triangles_adjacency_location;
-
-	std::vector<Celer::Vector4<GLfloat> > 	reservoir_list_of_triangles_adjacency_vertices;
-	std::vector<Celer::Vector4<GLfloat> > 	reservoir_list_of_triangles_adjacency_normals;
-	std::vector<Celer::Vector4<GLfloat> >   reservoir_list_of_triangles_adjacency_colors;
-	std::vector<Celer::Vector4<GLint> >     reservoir_list_of_triangles_adjacency_IJKs;
-	std::vector<Celer::Vector4<GLfloat> >   reservoir_list_of_triangles_adjacency_focus;
-
-	Celer::OpenGL::ShaderManager cube_in_GeometryShader;
 
 	// Cube in Interleaved VertexBuffer
 	// Use same layout location as vertexArray
@@ -219,16 +177,9 @@ private:
 	std::vector<CubeData> cube_interleaved;
 	Celer::OpenGL::ShaderManager cube_interleaved_shader;
 
-
 	// Hong Kong Cutaway
 	Celer::OpenGL::ShaderManager hongKong_cutaway_shader;
 
-	// Charles IRES v2
-	GLuint vertexArray_Charles;
-	GLuint reservoir_vertices_charles_buffer;
-	GLuint reservoir_vertices_charles_location;
-	std::vector<Celer::Vector4<GLfloat> > 	reservoir_list_of_charles;
-	Celer::OpenGL::ShaderManager charles_Shader;
 
 	Celer::BoundingBox3<float> 		   box;
 	std::list  <Celer::BoundingBox3<GLfloat> > boxes;
@@ -249,7 +200,6 @@ private:
 	// Burns Approach
 	Celer::OpenGL::ShaderManager	BurnsJFAInitializing430;
 	Celer::OpenGL::ShaderManager	BurnsJFAStep430;
-	Celer::OpenGL::ShaderManager	BurnsCutaway430;
 	Celer::OpenGL::ShaderManager	BurnsCutaway430Wireframe;
 
 	// BoundingBox Visualization

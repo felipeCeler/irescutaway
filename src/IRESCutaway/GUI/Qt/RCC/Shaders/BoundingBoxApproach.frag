@@ -38,10 +38,10 @@ void main(void)
 	vec4 color =    vec4 ( la.rgb + ld.xyz + ls.rgb , 1.0 ) ;
 
 
-	if (gl_FrontFacing)
-	{
-		discard;
-	}
+//	if (gl_FrontFacing)
+//	{
+//		discard;
+//	}
 
 	if (pass == 1)
 		outputColor =  vec4 ( VertexOut.vert , gl_FragCoord.z );//VertexOut.color;
