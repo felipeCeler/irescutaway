@@ -270,3 +270,18 @@ void MainWindow::on_spinBox_Cluster_Number_valueChanged  ( int i)
 {
 	glWidget->updateCluster(i);
 }
+
+
+void MainWindow::on_action_Trackball_triggered  ( )
+{
+	glWidget->CameraTrackball();
+}
+void MainWindow::on_action_Fly_Camera_triggered ( )
+{
+	glWidget->CameraFly();
+}
+
+void MainWindow::on_action_Freeze_View_triggered()
+{
+	glWidget->freezeView();
+}

@@ -140,6 +140,8 @@ void GLWidget::initializeGL ( )
 	connect ( &fpsTimer_ , SIGNAL ( timeout ( ) ) , this , SLOT ( fpsCounter( ) ) );
 	fpsTimer_.start ( 1000 );
 
+	freezeView_ = 0;
+
 }
 
 bool GLWidget::isIresWasOpenedSucessufully ( ) const
@@ -844,7 +846,7 @@ void GLWidget::openIRESCharles( const std::string& filename )
 
 		camera_.setBehavior ( Celer::Camera<float>::REVOLVE_AROUND_MODE );
 
-		cameraStep_ = 0.1f;
+		cameraStep_ = 0.001f;
 
 
 		glBindVertexArray(vertexArray);
@@ -1040,6 +1042,26 @@ void GLWidget::paintGL ( )
 
 	camera_.setPerspectiveProjectionMatrix ( zoom_angle_ , camera_.aspectRatio ( ) , 0.1 , 500 );
 
+	if(!freezeView_)
+	{
+		if (cutVolumes.size() > 0)
+		{
+			new_z = camera_.position() - cutVolumes[cluster].center();
+
+			new_z.normalize();
+
+			new_x = new_z ^ camera_.UpVector();
+
+			new_x.normalize();
+
+			new_y = new_z ^ new_x;
+
+			new_y.normalize();
+
+			lookatCamera = Celer::Matrix4x4<float>(new_x, new_y, new_z);
+		}
+	}
+
 	if 	( isBurnsApproach )
 	{
 		camera_.setTarget( reservoir_model_.box_v2.center( ) );
@@ -1078,19 +1100,6 @@ void GLWidget::BoundingVolumeCutawaySetup( int cluster )
 
 	/// FIXME Conditions  - Primary and Secondary well defined.
 
-	Celer::Vector3<float> new_z =  camera_.position() - cutVolumes[cluster].center ( );
-
-	new_z.normalize();
-
-	Celer::Vector3<float> new_x = new_z ^ camera_.UpVector();
-
-	new_x.normalize();
-
-	Celer::Vector3<float> new_y = new_z ^ new_x;
-
-	new_y.normalize();
-
-	Celer::Matrix4x4<float> lookatCamera ( new_x, new_y , new_z  );
 
 
  	if ( ires_has_been_open_sucessefully )
@@ -1323,20 +1332,6 @@ void GLWidget::NoCutawaySetUp ( )
 
 			if ( cutVolumes.size ( ) > 0 )
 			{
-
-				Celer::Vector3<float> new_z =  camera_.position() - cutVolumes[cluster].center ( );
-
-				new_z.normalize();
-
-				Celer::Vector3<float> new_x = new_z ^ camera_.UpVector();
-
-				new_x.normalize();
-
-				Celer::Vector3<float> new_y = new_z ^ new_x;
-
-				new_y.normalize();
-
-				Celer::Matrix4x4<float> lookatCamera ( new_x, new_y , new_z );
 
 
 				BoundingBoxInitialization.active ( );
@@ -1938,14 +1933,14 @@ foreach( int key , keysPresseds_)
 	{
 
 		if ( cameraStep_ < 2.0 )
-		cameraStep_ += 0.01;
+		cameraStep_ += 0.0001;
 
 	}
 	if ( key == Qt::Key_Minus )
 	{
 
 		if ( cameraStep_ > 0.0 )
-		cameraStep_ -= 0.01;
+		cameraStep_ -= 0.0001;
 	}
 
 
@@ -2126,3 +2121,19 @@ void GLWidget::setSecondaryVisibility( bool visibility )
 	updateGL();
 }
 
+
+void GLWidget::CameraTrackball()
+{
+	camera_.setBehavior( Celer::Camera<float>::REVOLVE_AROUND_MODE);
+}
+
+void GLWidget::CameraFly()
+{
+	camera_.setBehavior( Celer::Camera<float>::FIRST_PERSON );
+}
+
+void GLWidget::freezeView( )
+{
+	freezeView_ = !freezeView_;
+
+}

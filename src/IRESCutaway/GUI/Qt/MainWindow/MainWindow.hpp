@@ -20,12 +20,17 @@ class MainWindow: public QMainWindow
 
 	public slots:
 
-		void on_action_Open_IRES_triggered ( );
+		// Camera Slots
+		void on_action_Trackball_triggered   ( );
+		void on_action_Fly_Camera_triggered  ( );
+		void on_action_Freeze_View_triggered ( );
+		// Load Shaders
 		void on_action_Load_Shaders_triggered ( );
+		// --
+		void on_action_Open_IRES_triggered ( );
 		void on_pushButton_changePropertyRange_clicked ( );
 		void on_pushButton_Reset_IJK_clicked( );
 		void on_pushButton_changeIJK_clicked( );
-
 
 		void on_action_Bounding_Box_Approach_triggered ( );
 		void on_action_Burns_Approach_triggered ( );

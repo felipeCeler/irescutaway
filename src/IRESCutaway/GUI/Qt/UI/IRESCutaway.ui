@@ -43,7 +43,7 @@
        <enum>QTabWidget::Rounded</enum>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <property name="documentMode">
        <bool>true</bool>
@@ -100,7 +100,7 @@
      <x>0</x>
      <y>0</y>
      <width>1263</width>
-     <height>20</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -137,6 +137,11 @@
     <addaction name="action_No_Cutaway"/>
     <addaction name="action_Bounding_Box_Approach"/>
     <addaction name="action_Burns_Approach"/>
+    <addaction name="separator"/>
+    <addaction name="separator"/>
+    <addaction name="action_Trackball"/>
+    <addaction name="action_Fly_Camera"/>
+    <addaction name="action_Freeze_View"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuTools"/>
@@ -554,6 +559,30 @@
   <action name="action_Open_IRES2">
    <property name="text">
     <string>Open Ires2 *.ires</string>
+   </property>
+  </action>
+  <action name="action_Trackball">
+   <property name="text">
+    <string>Trackball</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+Shift+T</string>
+   </property>
+  </action>
+  <action name="action_Fly_Camera">
+   <property name="text">
+    <string>Fly Camera</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+Shift+F</string>
+   </property>
+  </action>
+  <action name="action_Freeze_View">
+   <property name="text">
+    <string>Freeze View</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+Shift+S</string>
    </property>
   </action>
  </widget>

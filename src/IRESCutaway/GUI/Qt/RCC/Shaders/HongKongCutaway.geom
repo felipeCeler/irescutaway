@@ -72,101 +72,6 @@ vec4 vp[4];
 
 mat3 normalMatrix;
 
-void renderProxy ( in vec4 color )
-{
-
-	vec4 v[8];
-	CutPlane cutPlaneIn;
-
-	// Plane Line Intersection - geomalgorithms.com/a05-_intersect-1.html
-	float s;
-	vec4 w;
-	vec4 u;
-	
-	vec4 source;
-	vec4 target;
-
-
-	int proxy_index = 0;
-	// For each cut volume
-	for (int j = 0 ; j < 1 ; j++)
-	{
-		vec3 center_of_mass = center_points[j].xyz;
-
-		v[0] = vec4(center_of_mass + ext_x + ext_y + 100*ext_z + 5*ext_x,1.0);
-		v[1] = vec4(center_of_mass + ext_x + ext_y - ext_z,1.0);
-		v[2] = vec4(center_of_mass - ext_x + ext_y - ext_z,1.0);
-		v[3] = vec4(center_of_mass - ext_x + ext_y + 100*ext_z - 5*ext_x,1.0);
-
-		v[4] = vec4(center_of_mass + ext_x - ext_y + 100*ext_z + 5*ext_x,1.0);
-		v[5] = vec4(center_of_mass - ext_x - ext_y + 100*ext_z - 5*ext_x,1.0);
-		v[6] = vec4(center_of_mass - ext_x - ext_y - ext_z,1.0);
-		v[7] = vec4(center_of_mass + ext_x - ext_y - ext_z,1.0);
-
-
-		// For each Edge in the cube
-		for ( int edge_index = 0; edge_index < 12; edge_index++)
-		{
-		// CLIPE O  PLANE DE CORTE COM AS FACES DA CELULA !! SO EASY
-			for ( int i = 0; i < 6; i++)
-			{
-				vec3 normal = normalize (cross ( (v[cutVolume[i].vertices[3]].xyz - v[cutVolume[i].vertices[0]].xyz),
-							 					 (v[cutVolume[i].vertices[1]].xyz - v[cutVolume[i].vertices[0]].xyz) ) );
-
-				cutPlaneIn.point  = v[cutVolume[i].vertices[3]];
-				cutPlaneIn.normal = vec4(normal,0.0);
-
-
-				source = cube[0].v[edges[edge_index].source];
-				target = cube[0].v[edges[edge_index].target];
-
-				w = source - cutPlaneIn.point;
-				u = target - source;
-
-				s =  ( dot (-cutPlaneIn.normal, w) ) / ( dot (cutPlaneIn.normal , u) );
-
-				// Project target into the plane in the direction of the edge
-				if (  ( s >= 0.0 ) && ( s <= 1.0 )  )
-
-				{
-					proxyFace[proxy_index] = vec4( source + s*(target - source));
-					if ( proxy_index < 6 )
-						proxy_index++;
-				}
-
-			}
-
-
-		}
-
-	}
-
-	if ( proxy_index >= 3 )
-	{
-
-		VertexOut.proxy = true;
-		dist = vec4(0,0,-1,0);
-		VertexOut.normal = vec4(1.0,0.0,0.0,0.0);
-		VertexOut.color = color;
-
-		VertexOut.vertice  = ViewMatrix * proxyFace[0];
-		gl_Position = ProjectionMatrix * ViewMatrix * proxyFace[0];
-		EmitVertex();
-
-		VertexOut.vertice  = ViewMatrix * proxyFace[1];;
-		gl_Position =  ProjectionMatrix * ViewMatrix * proxyFace[1];
-		EmitVertex();
-		
-		VertexOut.vertice  = ViewMatrix * proxyFace[2];
-		gl_Position = ProjectionMatrix * ViewMatrix * proxyFace[2];
-		EmitVertex();
-	
-		EndPrimitive();
-	}
-}
-
-
-
 
 void renderCube( in vec4 color ,bool proxy )
 {
@@ -228,8 +133,9 @@ void renderCut( in vec4 color ,bool proxy )
 {
 	vec4	v[8];
 
-	for ( int i = 0; i < 6; i++)
+	for ( int i = 0; i < 5; i++)
 	{
+
 		vec3 center_of_mass = center_points[0].xyz;
 
 		v[0] = vec4(center_of_mass + ext_x + ext_y + ext_z + 100*ext_z+ 5*ext_x,1.0);
@@ -242,25 +148,30 @@ void renderCut( in vec4 color ,bool proxy )
 		v[6] = vec4(center_of_mass - ext_x - ext_y - ext_z,1.0);
 		v[7] = vec4(center_of_mass + ext_x - ext_y - ext_z,1.0);
 
+		vec3 normal = normalize (cross ( (v[cutVolume[i].vertices[3]].xyz - v[cutVolume[i].vertices[0]].xyz),
+					 				     (v[cutVolume[i].vertices[1]].xyz - v[cutVolume[i].vertices[0]].xyz) ) );
 
-		VertexOut.normal = cube[0].n[i];
+		VertexOut.normal = vec4(normalMatrix * normal,0.0);
 		VertexOut.color = color;
 		VertexOut.proxy = proxy;
 		dist = vec4(0,0,0, 0);
 		//Top face
-
+		dist = vec4(0,0,0, 0);
 		VertexOut.vertice  = ViewMatrix * v[cutVolume[i].vertices[0]];
 		gl_Position = ProjectionMatrix * ViewMatrix * v[cutVolume[i].vertices[0]];
 		EmitVertex();
 
+		dist = vec4(0,0,0, 0);
 		VertexOut.vertice  = ViewMatrix * v[cutVolume[i].vertices[1]];
 		gl_Position = ProjectionMatrix * ViewMatrix * v[cutVolume[i].vertices[1]];
 		EmitVertex();
 
+		dist = vec4(0,0,0, 0);
 		VertexOut.vertice  = ViewMatrix * v[cutVolume[i].vertices[3]];
 		gl_Position = ProjectionMatrix * ViewMatrix * v[cutVolume[i].vertices[3]];
 		EmitVertex();
 
+		dist = vec4(0,0,0, 0);
 		VertexOut.vertice  = ViewMatrix * v[cutVolume[i].vertices[2]];
 		gl_Position = ProjectionMatrix * ViewMatrix * v[cutVolume[i].vertices[2]];
 		EmitVertex();
@@ -326,8 +237,8 @@ void main(void)
 
 	/// Culling Procedure
 
-	ext_x = new_x*0.2;
-	ext_y = new_y*0.3;
+	ext_x = new_x*0.5;
+	ext_y = new_y*0.5;
 	ext_z = new_z*0.1;
 
 	// top
@@ -341,24 +252,24 @@ void main(void)
 	cutVolume[1].vertices[2] = 6;
 	cutVolume[1].vertices[3] = 7;
 	// front
-	cutVolume[2].vertices[0] = 0;
-	cutVolume[2].vertices[1] = 3;
-	cutVolume[2].vertices[2] = 5;
-	cutVolume[2].vertices[3] = 4;
+//	cutVolume[2].vertices[0] = 0;
+//	cutVolume[2].vertices[1] = 3;
+//	cutVolume[2].vertices[2] = 5;
+//	cutVolume[2].vertices[3] = 4;
 	// back
-	cutVolume[3].vertices[0] = 1;
-	cutVolume[3].vertices[1] = 7;
-	cutVolume[3].vertices[2] = 6;
-	cutVolume[3].vertices[3] = 2;
+	cutVolume[2].vertices[0] = 1;
+	cutVolume[2].vertices[1] = 7;
+	cutVolume[2].vertices[2] = 6;
+	cutVolume[2].vertices[3] = 2;
 	// right
-	cutVolume[4].vertices[0] = 0;
-	cutVolume[4].vertices[1] = 4;
-	cutVolume[4].vertices[2] = 7;
-	cutVolume[4].vertices[3] = 1;
+	cutVolume[3].vertices[0] = 0;
+	cutVolume[3].vertices[1] = 4;
+	cutVolume[3].vertices[2] = 7;
+	cutVolume[3].vertices[3] = 1;
 	// left
-	cutVolume[5].vertices[0] = 2;
-	cutVolume[5].vertices[1] = 6;
-	cutVolume[5].vertices[2] = 5;
+	cutVolume[4].vertices[0] = 2;
+	cutVolume[4].vertices[1] = 6;
+	cutVolume[4].vertices[2] = 5;
 	cutVolume[5].vertices[3] = 3;
 
 	// Not culled
@@ -372,8 +283,7 @@ void main(void)
 		 (cube[0].culled[7]) )
 	{
 
-		renderCube(cube[0].color,false);
-		renderProxy(vec4(1.0,0.0,0.0,1.0));
+		//renderCube(cube[0].color,false);
 
 	// To be partial culled
 	}else if ((cube[0].culled[0]) ||
@@ -386,7 +296,8 @@ void main(void)
 			  (cube[0].culled[7]) )
 	{
 
-		renderCube (vec4(1.0,0.0,0.0,1.0),true);
+		renderCube (cube[0].color,true);
+		//renderCut (vec4(1.0,0.0,0.0,1.0),false);
 
 	// Full culled
 	}else

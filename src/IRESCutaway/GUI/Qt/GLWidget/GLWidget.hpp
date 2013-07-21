@@ -109,6 +109,10 @@ class GLWidget: public QGLWidget
 
 		void IRES_v1_to_IRESv2 ( const std::string& filename );
 
+		void CameraTrackball ( );
+		void CameraFly ( );
+		void freezeView ( );
+
 	protected:
 		void dragEnterEvent ( QDragEnterEvent *event );
 		void dragMoveEvent  ( QDragMoveEvent *event );
@@ -290,6 +294,16 @@ private:
 	QTimer fpsTimer_;
 	QTimer updateTimer_;
 	int fps;
+
+	bool freezeView_;
+
+	Celer::Vector3<float> new_z;
+
+	Celer::Vector3<float> new_x;
+
+	Celer::Vector3<float> new_y;
+
+	Celer::Matrix4x4<float> lookatCamera;
 
 
 };

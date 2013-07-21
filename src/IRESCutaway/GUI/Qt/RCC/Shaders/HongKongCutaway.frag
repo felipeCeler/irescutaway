@@ -31,13 +31,41 @@ void main(void)
 	float d = min(dist[0], min(dist[1], min(dist[2], dist[3])));
 	float I = exp2(-2 * d * d);
 
+	gl_FragDepth = gl_FragCoord.z;
+
 	if (gl_FragCoord.z < (cutaway.w)) //&&  length( gl_FragCoord.st - color.xy) < 20.0 )
 	{
-		discard;
+		if(VertexIn.proxy)
+		{
+//			//discard;
+			newNormal = cutaway.xyz;
+			gl_FragDepth = cutaway.w;
+//			I = 0;
+
+		}else if ( abs(gl_FragCoord.z - (cutaway.w)) < 0.00025 )
+		{
+			newNormal = cutaway.xyz;
+			gl_FragDepth = cutaway.w;
+		}
+		else
+		{
+			discard;
+		}
+//		if ( gl_FrontFacing)
+//		{
+//			discard;
+//		}else
+//		{
+//			newNormal = cutaway.xyz;
+//					newVert.z = cutaway.w;
+//					gl_FragDepth = vertices.z;
+//		}
+
 
 	}
+
 	{
-		gl_FragDepth = gl_FragCoord.z;
+
 //	if ( abs(gl_FragCoord.z - cutaway.w ) < 0.00001 )
 //	{
 //		//discard;

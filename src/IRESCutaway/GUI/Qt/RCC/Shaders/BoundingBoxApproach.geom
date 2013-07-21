@@ -27,18 +27,13 @@ void byCentroid ( )
 	vec4 v[8];
 	vec4 vertex[8];
 
-
 	float diagonal = distance(max_point,min_point);
 
 	float side_of_cube = (diagonal * sqrt(3.0) ) / 3.0;
 
-	vec3 ext_x = new_x * side_of_cube;
-	vec3 ext_y = new_y * side_of_cube;
-	vec3 ext_z = new_z * side_of_cube;
-
-//	vec3 ext_x = vec3(1,0,0);
-//	vec3 ext_y = vec3(0,1,0);
-//	vec3 ext_z = vec3(0,0,1);
+	vec3 ext_x = new_x * 0.5;
+	vec3 ext_y = new_y * 0.5;
+	vec3 ext_z = new_z * 0.1;
 
 //	vec3 center_of_mass =  vec3(0,0,0);
 	vec3 center_of_mass =  center_point;
