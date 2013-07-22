@@ -63,18 +63,16 @@ void GLWidget::initializeGL ( )
 	fboStep[0] 	  = new  QGLFramebufferObject ( width() , height() , format );
 	fboStep[1] 	  = new  QGLFramebufferObject ( width() , height() , format );
 
-	// Viewport
-	glGenBuffers ( 1, &screen_buffer);
-	glGenBuffers ( 1, &texture_buffer);
+
 
 	glGenVertexArrays ( 1 , &vertexArrayScreen );
+	// Viewport
+		glGenBuffers ( 1, &screen_buffer);
+		glGenBuffers ( 1, &texture_buffer);
 
 	// Cube in Interleaved
 	glGenVertexArrays ( 1, &vertexArray_cube_interleaved );
-	glGenBuffers ( 1, &vertexBuffer_cube_interleaved );
-
-
-
+		glGenBuffers  ( 1, &vertexBuffer_cube_interleaved );
 	/// ---
 
 	draw_secondary = 1;
@@ -84,12 +82,11 @@ void GLWidget::initializeGL ( )
 	isBoudingBoxApproach = 0;
 	cluster = 0;
 
-	glGenVertexArrays (1, &vertexArray_box);
-		glGenBuffers( 1, &vertexBuffer_box);
+	glGenVertexArrays ( 1, &vertexArray_box);
+		glGenBuffers  ( 1, &vertexBuffer_box);
 
 
 	cube_.createBuffers( Celer::Vector3<float>(0,0,0) );
-
 
 	center_points.resize(256);
 	max_points.resize(256);
@@ -209,7 +206,7 @@ void GLWidget::cutVolumeGenerator( )
 			// Bottom Face
 			v4,v5,v7,v6,
 			// Front Face
-		  //v0,v3,v4,v5,
+			v0,v3,v4,v5,
 			// Back Face
 			v2,v1,v6,v7,
 			// Right Face
@@ -219,23 +216,23 @@ void GLWidget::cutVolumeGenerator( )
 		};
 
 
-		// Care about the type: GL_DOUBLE or GL_FLOAT
-		Celer::Vector3<GLfloat> normals[] =
-		{
-		  // X Y Z
-			//  Top Face
-			topNormal,topNormal,topNormal,topNormal,
-			// Bottom Face
-			bottomNormal,bottomNormal,bottomNormal,bottomNormal,
-			// Front Face
-		      //frontNormal,frontNormal,frontNormal,frontNormal,
-			// Back Face
-			backmNormal,backmNormal,backmNormal,backmNormal,
-			// Right Face
-			rightNormal,rightNormal,rightNormal,rightNormal,
-			// Left Face
-			leftNormal,leftNormal,leftNormal,leftNormal
-		};
+//		// Care about the type: GL_DOUBLE or GL_FLOAT
+//		Celer::Vector3<GLfloat> normals[] =
+//		{
+//		  // X Y Z
+//			//  Top Face
+//			topNormal,topNormal,topNormal,topNormal,
+//			// Bottom Face
+//			bottomNormal,bottomNormal,bottomNormal,bottomNormal,
+//			// Front Face
+//		      //frontNormal,frontNormal,frontNormal,frontNormal,
+//			// Back Face
+//			backmNormal,backmNormal,backmNormal,backmNormal,
+//			// Right Face
+//			rightNormal,rightNormal,rightNormal,rightNormal,
+//			// Left Face
+//			leftNormal,leftNormal,leftNormal,leftNormal
+//		};
 
 		std::copy ( vertices, vertices + 24 , std::back_inserter ( box_vertices  ) );
 
@@ -351,8 +348,6 @@ void GLWidget::changeProperty ( int property_index )
 
 	std::cout << "Property Max : " << min << std::endl;
 	std::cout << "Property Min : " << max << std::endl;
-
-	std::size_t i = 0;
 
 	std::vector<Celer::Vector4<GLfloat> > colors;
 
@@ -604,13 +599,13 @@ void GLWidget::IRES_v1_to_IRESv2( const std::string& filename )
 		std::cout << " Static " <<  new_names.size() << std::endl;
 
 
-		for ( int i = 0 ; i < new_names.size( ); i++)
+		for ( std::size_t i = 0 ; i < new_names.size( ); i++)
 		{
 			std::cout << " names " << new_names[i] << std::endl;
 		}
 
 
-		for  ( int j = 0 ; j <  reservoir_model_.static_porperties.size() ; j++)
+		for  ( std::size_t j = 0 ; j <  reservoir_model_.static_porperties.size() ; j++)
 		{
 			new_reservoir_file_.getStaticPropertyValues(j , new_values );
 			std::cout << " Ires 1.0 " << reservoir_model_.static_porperties[j].name << " : " << reservoir_model_.static_porperties[j].values_[cont] << std::endl;
@@ -900,9 +895,10 @@ void GLWidget::BoundingVolumeCutawaySetup( int cluster )
  			for ( std::size_t cluster_index = 0 ; cluster_index < 1 ; cluster_index++)
  			{
  				glUniform1i ( BoundingBoxInitialization.uniforms_["pass"].location , 1 );
- 				glUniform4fv ( BoundingBoxInitialization.uniforms_["min_point"].location , 1 , Celer::Vector4<float> ( cutVolumes[cluster_index].box_min ( ) , 1.0f ) );
- 				glUniform4fv ( BoundingBoxInitialization.uniforms_["max_point"].location , 1 , Celer::Vector4<float> ( cutVolumes[cluster_index].box_max ( ) , 1.0f ) );
- 				glUniform3fv ( BoundingBoxInitialization.uniforms_["center_point"].location , 1 , cutVolumes[cluster_index].center ( ) );
+				glUniform4fv ( BoundingBoxInitialization.uniforms_["center_points[0]"].location , cut_volume_size , center_points[0] );
+				glUniform4fv ( BoundingBoxInitialization.uniforms_["max_points[0]"].location , cut_volume_size , max_points[0]);
+				glUniform4fv ( BoundingBoxInitialization.uniforms_["min_points[0]"].location , cut_volume_size , min_points[0] );
+				glUniform1i  ( BoundingBoxInitialization.uniforms_["cut_volume_size"].location , cut_volume_size );
  				glUniform3fv ( BoundingBoxInitialization.uniforms_["new_x"].location , 1 ,  new_x );
  				glUniform3fv ( BoundingBoxInitialization.uniforms_["new_y"].location , 1 ,  new_y );
  				glUniform3fv ( BoundingBoxInitialization.uniforms_["new_z"].location , 1 ,  new_z );
@@ -931,9 +927,10 @@ void GLWidget::BoundingVolumeCutawaySetup( int cluster )
  			{
 
  				glUniform1i ( BoundingBoxInitialization.uniforms_["pass"].location , 2 );
- 				glUniform4fv ( BoundingBoxInitialization.uniforms_["min_point"].location , 1 , Celer::Vector4<float> ( cutVolumes[cluster_index].box_min ( ) , 1.0f ) );
- 				glUniform4fv ( BoundingBoxInitialization.uniforms_["max_point"].location , 1 , Celer::Vector4<float> ( cutVolumes[cluster_index].box_max ( ) , 1.0f ) );
- 				glUniform3fv ( BoundingBoxInitialization.uniforms_["center_point"].location , 1 , cutVolumes[cluster_index].center ( ) );
+				glUniform4fv ( BoundingBoxInitialization.uniforms_["center_points[0]"].location , cut_volume_size , center_points[0] );
+				glUniform4fv ( BoundingBoxInitialization.uniforms_["max_points[0]"].location , cut_volume_size , max_points[0]);
+				glUniform4fv ( BoundingBoxInitialization.uniforms_["min_points[0]"].location , cut_volume_size , min_points[0] );
+				glUniform1i  ( BoundingBoxInitialization.uniforms_["cut_volume_size"].location , cut_volume_size );
  				glUniform3fv ( BoundingBoxInitialization.uniforms_["new_x"].location , 1 ,  new_x );
  				glUniform3fv ( BoundingBoxInitialization.uniforms_["new_y"].location , 1 ,  new_y );
  				glUniform3fv ( BoundingBoxInitialization.uniforms_["new_z"].location , 1 ,  new_z );
@@ -1005,32 +1002,17 @@ void GLWidget::BoundingVolumeCutawaySetup( int cluster )
 			if ( cutVolumes.size ( ) > 0 )
 			{
 				BoundingBoxDebug.active ( );
-
-				new_z =  camera_.position() - cutVolumes[cluster].center();
-
-				new_z.normalize();
-
-				new_x = new_z ^ camera_.UpVector();
-
-				new_x.normalize();
-
-				new_y = new_z ^ new_x;
-
-				new_y.normalize();
-
-				lookatCamera = Celer::Matrix4x4<float>( new_x, new_y , new_z  );
-
 				// FIXME Throw an Exception when std::map doesnt find A VARIABLE !!!
-				glUniform4fv ( BoundingBoxDebug.uniforms_["min_point"].location , 1 , Celer::Vector4<float> ( cutVolumes[cluster].box_min ( ) , 1.0f ) );
-				glUniform4fv ( BoundingBoxDebug.uniforms_["max_point"].location , 1 , Celer::Vector4<float> ( cutVolumes[cluster].box_max ( ) , 1.0f ) );
-				glUniform3fv ( BoundingBoxDebug.uniforms_["center_point"].location , 1 , cutVolumes[cluster].center ( ));
-				glUniform3fv ( BoundingBoxDebug.uniforms_["new_x"].location , 1 ,  new_x );
-				glUniform3fv ( BoundingBoxDebug.uniforms_["new_y"].location , 1 ,  new_y );
-				glUniform3fv ( BoundingBoxDebug.uniforms_["new_z"].location , 1 ,  new_z );
-				glUniformMatrix4fv ( BoundingBoxDebug.uniforms_["ModelMatrix"].location , 1 , GL_TRUE , lookatCamera );
-				glUniformMatrix4fv ( BoundingBoxDebug.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-				glUniformMatrix4fv ( BoundingBoxDebug.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
-				//VAO
+				glUniform4fv ( BoundingBoxDebug.uniforms_["center_points[0]"].location , cut_volume_size , center_points[0] );
+				glUniform4fv ( BoundingBoxDebug.uniforms_["max_points[0]"].location , cut_volume_size , max_points[0]);
+				glUniform4fv ( BoundingBoxDebug.uniforms_["min_points[0]"].location , cut_volume_size , min_points[0] );
+				glUniform1i  ( BoundingBoxDebug.uniforms_["cut_volume_size"].location , cut_volume_size );
+ 				glUniform3fv ( BoundingBoxDebug.uniforms_["new_x"].location , 1 ,  new_x );
+ 				glUniform3fv ( BoundingBoxDebug.uniforms_["new_y"].location , 1 ,  new_y );
+ 				glUniform3fv ( BoundingBoxDebug.uniforms_["new_z"].location , 1 ,  new_z );
+ 				glUniformMatrix4fv ( BoundingBoxDebug.uniforms_["ModelMatrix"].location , 1 , GL_TRUE , lookatCamera );
+ 				glUniformMatrix4fv ( BoundingBoxDebug.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+ 				glUniformMatrix4fv ( BoundingBoxDebug.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );				//VAO
 				glBindVertexArray ( vertexArray_cube_interleaved );
 				glDrawArrays ( GL_POINTS , 0 , 1 );
 				glBindVertexArray ( 0 );
@@ -1124,9 +1106,10 @@ void GLWidget::NoCutawaySetUp ( )
 	 			for ( std::size_t cluster_index = 0 ; cluster_index < 1 ; cluster_index++)
 	 			{
 	 				glUniform1i ( BoundingBoxInitialization.uniforms_["pass"].location , 1 );
-	 				glUniform4fv ( BoundingBoxInitialization.uniforms_["min_point"].location , 1 , Celer::Vector4<float> ( cutVolumes[cluster_index].box_min ( ) , 1.0f ) );
-	 				glUniform4fv ( BoundingBoxInitialization.uniforms_["max_point"].location , 1 , Celer::Vector4<float> ( cutVolumes[cluster_index].box_max ( ) , 1.0f ) );
-	 				glUniform3fv ( BoundingBoxInitialization.uniforms_["center_point"].location , 1 , cutVolumes[cluster_index].center ( ) );
+					glUniform4fv ( BoundingBoxInitialization.uniforms_["center_points[0]"].location , cut_volume_size , center_points[0] );
+					glUniform4fv ( BoundingBoxInitialization.uniforms_["max_points[0]"].location , cut_volume_size , max_points[0]);
+					glUniform4fv ( BoundingBoxInitialization.uniforms_["min_points[0]"].location , cut_volume_size , min_points[0] );
+					glUniform1i  ( BoundingBoxInitialization.uniforms_["cut_volume_size"].location , cut_volume_size );
 	 				glUniform3fv ( BoundingBoxInitialization.uniforms_["new_x"].location , 1 ,  new_x );
 	 				glUniform3fv ( BoundingBoxInitialization.uniforms_["new_y"].location , 1 ,  new_y );
 	 				glUniform3fv ( BoundingBoxInitialization.uniforms_["new_z"].location , 1 ,  new_z );
@@ -1153,9 +1136,10 @@ void GLWidget::NoCutawaySetUp ( )
 	 			for ( std::size_t cluster_index = 0 ; cluster_index < 1 ; cluster_index++)
 	 			{
 	 				glUniform1i ( BoundingBoxInitialization.uniforms_["pass"].location , 2 );
-	 				glUniform4fv ( BoundingBoxInitialization.uniforms_["min_point"].location , 1 , Celer::Vector4<float> ( cutVolumes[cluster_index].box_min ( ) , 1.0f ) );
-	 				glUniform4fv ( BoundingBoxInitialization.uniforms_["max_point"].location , 1 , Celer::Vector4<float> ( cutVolumes[cluster_index].box_max ( ) , 1.0f ) );
-	 				glUniform3fv ( BoundingBoxInitialization.uniforms_["center_point"].location , 1 , cutVolumes[cluster_index].center ( ) );
+					glUniform4fv ( BoundingBoxInitialization.uniforms_["center_points[0]"].location , cut_volume_size , center_points[0] );
+					glUniform4fv ( BoundingBoxInitialization.uniforms_["max_points[0]"].location , cut_volume_size , max_points[0]);
+					glUniform4fv ( BoundingBoxInitialization.uniforms_["min_points[0]"].location , cut_volume_size , min_points[0] );
+					glUniform1i  ( BoundingBoxInitialization.uniforms_["cut_volume_size"].location , cut_volume_size );
 	 				glUniform3fv ( BoundingBoxInitialization.uniforms_["new_x"].location , 1 ,  new_x );
 	 				glUniform3fv ( BoundingBoxInitialization.uniforms_["new_y"].location , 1 ,  new_y );
 	 				glUniform3fv ( BoundingBoxInitialization.uniforms_["new_z"].location , 1 ,  new_z );

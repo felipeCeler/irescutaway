@@ -46,6 +46,6 @@ void main(void)
 	if (pass == 1)
 		outputColor =  vec4 ( VertexOut.vert , gl_FragCoord.z );//VertexOut.color;
 	else
-		outputColor =  vec4 ( color.xyz , gl_FragCoord.z );//VertexOut.color;
+		outputColor =  vec4 (VertexOut.normal.xyz , gl_FragCoord.z );//VertexOut.color;
 	//outputColor =  VertexOut.color;
 }

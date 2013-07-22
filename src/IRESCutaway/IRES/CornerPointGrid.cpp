@@ -253,8 +253,8 @@ namespace IRES
 
 				std::copy ( vertices 	, vertices + 24 , std::back_inserter ( new_block.vertices  ) );
 				std::copy ( normals 	, normals  + 24 , std::back_inserter ( new_block.normals) );
-				std::copy ( focus 	, focus    + 24 , std::back_inserter ( new_block.focus) );
-				std::copy ( IJKs 	, IJKs     + 24 , std::back_inserter ( new_block.IJK  ) );
+				std::copy ( focus 		, focus    + 24 , std::back_inserter ( new_block.focus) );
+				std::copy ( IJKs 		, IJKs     + 24 , std::back_inserter ( new_block.IJK  ) );
 
 				new_block.AABB.fromPointCloud( new_block.vertices.begin() , new_block.vertices.end() );
 

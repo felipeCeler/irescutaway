@@ -18,6 +18,7 @@ out VertexData
 		vec4 normal;
 		vec4 color;
 flat	bool proxy;
+flat 	int face;
 } VertexOut;
 
 noperspective out vec4 dist;
@@ -75,7 +76,21 @@ mat3 normalMatrix;
 
 void renderCube( in vec4 color ,bool proxy )
 {
-	for ( int i = 0; i < 6; i++)
+
+	int j = 0;
+	vec4 colors[6];
+
+	colors[0] = vec4(1.0,0.0,0.0,1.0);
+	colors[1] = vec4(0.0,1.0,0.0,1.0);
+	colors[2] = vec4(0.0,0.0,1.0,1.0);
+	colors[3] = vec4(1.0,1.0,0.0,1.0);
+	colors[4] = vec4(1.0,0.0,1.0,1.0);
+	colors[5] = vec4(0.0,1.0,1.0,1.0);
+
+	if (proxy)
+		j = 0;
+
+	for ( int i = j; i < 6; i++)
 	{
 
 		vp[0] = ProjectionMatrix * ViewMatrix * cube[0].v[faces[i].vertices[0]];
@@ -103,8 +118,12 @@ void renderCube( in vec4 color ,bool proxy )
 
 
 		VertexOut.normal = cube[0].n[i];
-		VertexOut.color = color;
+		if ( proxy )
+		VertexOut.color = colors[i];
+		else
+			VertexOut.color = color;
 		VertexOut.proxy = proxy;
+		VertexOut.face = i;
 
 		//Top face
 		dist = vec4(area4/length(v4), area3/length(v3), 0, 0);
@@ -129,57 +148,6 @@ void renderCube( in vec4 color ,bool proxy )
 	}
 }
 
-void renderCut( in vec4 color ,bool proxy )
-{
-	vec4	v[8];
-
-	for ( int i = 0; i < 5; i++)
-	{
-
-		vec3 center_of_mass = center_points[0].xyz;
-
-		v[0] = vec4(center_of_mass + ext_x + ext_y + ext_z + 100*ext_z+ 5*ext_x,1.0);
-		v[1] = vec4(center_of_mass + ext_x + ext_y - ext_z,1.0);
-		v[2] = vec4(center_of_mass - ext_x + ext_y - ext_z,1.0);
-		v[3] = vec4(center_of_mass - ext_x + ext_y + ext_z + 100*ext_z- 5*ext_x,1.0);
-
-		v[4] = vec4(center_of_mass + ext_x - ext_y + ext_z + 100*ext_z+ 5*ext_x,1.0);
-		v[5] = vec4(center_of_mass - ext_x - ext_y + ext_z + 100*ext_z- 5*ext_x,1.0);
-		v[6] = vec4(center_of_mass - ext_x - ext_y - ext_z,1.0);
-		v[7] = vec4(center_of_mass + ext_x - ext_y - ext_z,1.0);
-
-		vec3 normal = normalize (cross ( (v[cutVolume[i].vertices[3]].xyz - v[cutVolume[i].vertices[0]].xyz),
-					 				     (v[cutVolume[i].vertices[1]].xyz - v[cutVolume[i].vertices[0]].xyz) ) );
-
-		VertexOut.normal = vec4(normalMatrix * normal,0.0);
-		VertexOut.color = color;
-		VertexOut.proxy = proxy;
-		dist = vec4(0,0,0, 0);
-		//Top face
-		dist = vec4(0,0,0, 0);
-		VertexOut.vertice  = ViewMatrix * v[cutVolume[i].vertices[0]];
-		gl_Position = ProjectionMatrix * ViewMatrix * v[cutVolume[i].vertices[0]];
-		EmitVertex();
-
-		dist = vec4(0,0,0, 0);
-		VertexOut.vertice  = ViewMatrix * v[cutVolume[i].vertices[1]];
-		gl_Position = ProjectionMatrix * ViewMatrix * v[cutVolume[i].vertices[1]];
-		EmitVertex();
-
-		dist = vec4(0,0,0, 0);
-		VertexOut.vertice  = ViewMatrix * v[cutVolume[i].vertices[3]];
-		gl_Position = ProjectionMatrix * ViewMatrix * v[cutVolume[i].vertices[3]];
-		EmitVertex();
-
-		dist = vec4(0,0,0, 0);
-		VertexOut.vertice  = ViewMatrix * v[cutVolume[i].vertices[2]];
-		gl_Position = ProjectionMatrix * ViewMatrix * v[cutVolume[i].vertices[2]];
-		EmitVertex();
-
-		EndPrimitive();
-
-	}
-}
 
 void main(void)
 {
@@ -218,59 +186,13 @@ void main(void)
 	faces[5].vertices[2] = 4;
 	faces[5].vertices[3] = 7;
 
-	// Cube Orientation as IRESv2
-	// top
-	edges[0].source  = 0; edges[0].target  = 1;
-	edges[1].source  = 1; edges[1].target  = 2;
-	edges[2].source  = 2; edges[2].target  = 3;
-	edges[3].source  = 3; edges[3].target  = 0;
-
-	edges[4].source  = 4; edges[4].target  = 5;
-	edges[5].source  = 5; edges[5].target  = 6;
-	edges[6].source  = 6; edges[6].target  = 7;
-	edges[7].source  = 7; edges[7].target  = 0;
-
-	edges[8].source  = 4; edges[8].target  = 0;
-	edges[9].source  = 5; edges[9].target  = 1;
-	edges[10].source = 6; edges[10].target = 2;
-	edges[11].source = 7; edges[11].target = 3;
 
 	/// Culling Procedure
 
-	ext_x = new_x*0.2;
+	ext_x = new_x*0.3;
 	ext_y = new_y*0.3;
 	ext_z = new_z*0.1;
 
-	// top
-	cutVolume[0].vertices[0] = 0;
-	cutVolume[0].vertices[1] = 1;
-	cutVolume[0].vertices[2] = 2;
-	cutVolume[0].vertices[3] = 3;
-	// bottom
-	cutVolume[1].vertices[0] = 4;
-	cutVolume[1].vertices[1] = 5;
-	cutVolume[1].vertices[2] = 6;
-	cutVolume[1].vertices[3] = 7;
-	// front
-//	cutVolume[2].vertices[0] = 0;
-//	cutVolume[2].vertices[1] = 3;
-//	cutVolume[2].vertices[2] = 5;
-//	cutVolume[2].vertices[3] = 4;
-	// back
-	cutVolume[2].vertices[0] = 1;
-	cutVolume[2].vertices[1] = 7;
-	cutVolume[2].vertices[2] = 6;
-	cutVolume[2].vertices[3] = 2;
-	// right
-	cutVolume[3].vertices[0] = 0;
-	cutVolume[3].vertices[1] = 4;
-	cutVolume[3].vertices[2] = 7;
-	cutVolume[3].vertices[3] = 1;
-	// left
-	cutVolume[4].vertices[0] = 2;
-	cutVolume[4].vertices[1] = 6;
-	cutVolume[4].vertices[2] = 5;
-	cutVolume[5].vertices[3] = 3;
 
 	// Not culled
 	if ( (cube[0].culled[0]) &&
@@ -284,6 +206,7 @@ void main(void)
 	{
 
 		//renderCube(cube[0].color,false);
+		//renderCube (vec4(0.0,1.0,0.0,1.0),false);
 
 	// To be partial culled
 	}else if ((cube[0].culled[0]) ||
@@ -297,6 +220,7 @@ void main(void)
 	{
 
 		renderCube (cube[0].color,true);
+		//renderCube (vec4(1.0,0.0,0.0,1.0),true);
 		//renderCut (vec4(1.0,0.0,0.0,1.0),false);
 
 	// Full culled

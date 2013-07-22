@@ -33,13 +33,25 @@ void main(void)
 
 	//I = 0;
 
+	gl_FragDepth = gl_FragCoord.z;
+
 	if ( gl_FragCoord.z < ( cutaway.w ) )
 	{
 		discard;
+		gl_FragDepth = cutaway.w/vertice.w;
 		newNormal = cutaway.xyz;
 		newVert   = vertice.xyz;
 		color_t = vec4(cutaway.xyz,1.0);
+
 	}
+	else if ( (abs(gl_FragCoord.z - (cutaway.w)) < 0.0000095) )
+	{
+		I = 0;
+		gl_FragDepth = cutaway.w;
+		newNormal = cutaway.xyz;
+		newVert   = vertice.xyz;
+	}
+	{
 
 //	if ( !gl_FrontFacing )
 //	{
@@ -62,7 +74,7 @@ void main(void)
 	vec4 ls = color_t * 0.4 * pow ( max ( 0.0 , dot ( eye_dir , ref ) ) , 5.0 );
 
 	outputColor = I * vec4(0.0, 0.0, 0.0, 1.0) + (1.0 - I) * ( VertexIn.color );
-
+	}
 
 
 }

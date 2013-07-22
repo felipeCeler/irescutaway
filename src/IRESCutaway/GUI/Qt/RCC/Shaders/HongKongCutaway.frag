@@ -12,6 +12,7 @@ in VertexData
 		vec4 normal;
 		vec4 color;
 flat 	bool proxy;
+flat    int face;
 } VertexIn;
 
 
@@ -21,6 +22,8 @@ noperspective in vec4 dist;
 void main(void)
 {
 
+	float far  = 500.0;
+	float near = 0.1;
 	vec4 cutaway  = texture2DRect( normals  , gl_FragCoord.xy).rgba;
 	vec4 vertices = texture2DRect( vertices , gl_FragCoord.xy).rgba;
 
@@ -37,41 +40,36 @@ void main(void)
 	{
 		if(VertexIn.proxy)
 		{
-//			//discard;
+//			discard;
 			newNormal = cutaway.xyz;
-			gl_FragDepth = cutaway.w;
-//			I = 0;
+			float normDepth = vertices.z/vertices.w;
+//			color_t = vec4(cutaway.xyz,1.0);
+			//newVert   = vertices.xyz;
+			gl_FragDepth = (((far-near)/2.)*normDepth)+((far+near)/2.);
 
-		}else if ( abs(gl_FragCoord.z - (cutaway.w)) < 0.00025 )
-		{
-			newNormal = cutaway.xyz;
-			gl_FragDepth = cutaway.w;
+			I = 0;
+
+
+			if ( abs(gl_FragCoord.z - (cutaway.w)) < 0.0000015 )
+			{
+				I = 1;
+			}
+
 		}
 		else
 		{
 			discard;
 		}
-//		if ( gl_FrontFacing)
-//		{
-//			discard;
-//		}else
-//		{
-//			newNormal = cutaway.xyz;
-//					newVert.z = cutaway.w;
-//					gl_FragDepth = vertices.z;
-//		}
-
-
 	}
-
+    else if ( abs(gl_FragCoord.z - (cutaway.w)) < 0.000095 )
 	{
-
-//	if ( abs(gl_FragCoord.z - cutaway.w ) < 0.00001 )
-//	{
-//		//discard;
-//		color_t = vec4(1.0, 0.0, 0.0, 0.0);
-//
-//	}
+//		newNormal = cutaway.xyz;
+//		float normDepth = cutaway.w/vertices.w;
+////			color_t = vec4(cutaway.xyz,1.0);
+//		//newVert   = vertices.xyz;
+//		gl_FragDepth = (((far-near)/2.)*normDepth)+((far+near)/2.);
+	}
+	{
 
 	newNormal = normalize ( newNormal );
 
@@ -88,10 +86,8 @@ void main(void)
 
 	outputColor = I * vec4 ( 0.0 , 0.0 , 0.0 , 1.0 ) + ( 1.0 - I ) * vec4 ( la.rgb + ld.xyz + ls.rgb , 1.0 );
 
+	//outputColor = I * vec4 ( 0.0 , 0.0 , 0.0 , 1.0 ) + ( 1.0 - I ) * vec4 ( color_t );
+
 	}
-
-	//outputColor = vec4 ( la.rgb + ld.xyz + ls.rgb , 1.0 );
-	//outputColor = VertexIn.color;
-
 
 }
