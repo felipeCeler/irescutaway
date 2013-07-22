@@ -49,7 +49,7 @@ void main(void)
 
 			I = 0;
 
-
+//
 			if ( abs(gl_FragCoord.z - (cutaway.w)) < 0.0000015 )
 			{
 				I = 1;
@@ -61,32 +61,24 @@ void main(void)
 			discard;
 		}
 	}
-    else if ( abs(gl_FragCoord.z - (cutaway.w)) < 0.000095 )
-	{
-//		newNormal = cutaway.xyz;
-//		float normDepth = cutaway.w/vertices.w;
-////			color_t = vec4(cutaway.xyz,1.0);
-//		//newVert   = vertices.xyz;
-//		gl_FragDepth = (((far-near)/2.)*normDepth)+((far+near)/2.);
-	}
 	{
 
-	newNormal = normalize ( newNormal );
+//	newNormal = normalize ( newNormal );
+//
+//	vec3 light_dir = vec3 ( 0.0 , 0.0 , 1.0 );
+//	vec3 eye_dir = normalize ( -newVert.xyz );
+//
+//
+//	vec3 ref = normalize ( -reflect ( light_dir , newNormal ) );
+//	vec4 la = vec4 ( 0.2 );
+//	vec4 ld = color_t * 0.9 * max ( 0.0 , dot ( newNormal , light_dir ) );
+//	vec4 ls = color_t * 0.4 * pow ( max ( 0.0 , dot ( eye_dir , ref ) ) , 5.0 );
+//
+//
+//
+//	outputColor = I * vec4 ( 0.0 , 0.0 , 0.0 , 1.0 ) + ( 1.0 - I ) * vec4 ( la.rgb + ld.xyz + ls.rgb , 1.0 );
 
-	vec3 light_dir = vec3 ( 0.0 , 0.0 , 1.0 );
-	vec3 eye_dir = normalize ( -newVert.xyz );
-
-
-	vec3 ref = normalize ( -reflect ( light_dir , newNormal ) );
-	vec4 la = vec4 ( 0.2 );
-	vec4 ld = color_t * 0.9 * max ( 0.0 , dot ( newNormal , light_dir ) );
-	vec4 ls = color_t * 0.4 * pow ( max ( 0.0 , dot ( eye_dir , ref ) ) , 5.0 );
-
-
-
-	outputColor = I * vec4 ( 0.0 , 0.0 , 0.0 , 1.0 ) + ( 1.0 - I ) * vec4 ( la.rgb + ld.xyz + ls.rgb , 1.0 );
-
-	//outputColor = I * vec4 ( 0.0 , 0.0 , 0.0 , 1.0 ) + ( 1.0 - I ) * vec4 ( color_t );
+	outputColor = I * vec4 ( 0.0 , 0.0 , 0.0 , 1.0 ) + ( 1.0 - I ) * vec4 ( color_t );
 
 	}
 

@@ -118,8 +118,8 @@ void renderCube( in vec4 color ,bool proxy )
 
 
 		VertexOut.normal = cube[0].n[i];
-		if ( proxy )
-		VertexOut.color = colors[i];
+		if ( !proxy )
+			VertexOut.color = color;
 		else
 			VertexOut.color = color;
 		VertexOut.proxy = proxy;

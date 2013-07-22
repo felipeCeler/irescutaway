@@ -78,8 +78,6 @@ void main(void)
 
 	cube.color    = color;
 
-
-
 	/// Culling Procedure
 
 	ext_x = new_x*0.3;
