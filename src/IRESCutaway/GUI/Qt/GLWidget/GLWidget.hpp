@@ -22,7 +22,6 @@
 
 #include <QtOpenGL/QGLWidget>
 #include <QGLFramebufferObject>
-#include <QGLShaderProgram>
 
 // Standard Library
 #include <limits>
@@ -42,7 +41,7 @@
 #include <QtCore/QSet>
 #include <QtCore/QMimeData>
 #include <QtCore/QTime>
-
+#include <QtCore/QElapsedTimer>
 
 #include <IRES/CornerPointGrid.hpp>
 
@@ -243,6 +242,7 @@ private:
 	/// Celer Gaming Looping 0.1
 	QTimer fpsTimer_;
 	QTimer updateTimer_;
+	QElapsedTimer delta_time;
 	int fps;
 
 	bool freezeView_;
@@ -254,6 +254,12 @@ private:
 	Celer::Vector3<float> new_y;
 
 	Celer::Matrix4x4<float> lookatCamera;
+
+	float vmax;
+	float acc;
+	float v0;
+	float v;
+
 
 
 };

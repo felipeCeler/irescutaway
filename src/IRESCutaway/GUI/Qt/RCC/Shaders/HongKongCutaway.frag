@@ -44,12 +44,12 @@ void main(void)
 		discard;
 	}
 
-	if(VertexIn.proxy)
+	if(true)
 	{
 
 		if (dot (newNormal.xyz,vec3(0.0,0.0,-1.0)) > 0 )
 		{
-			newNormal = cutaway.xyz;
+			//newNormal = cutaway.xyz;
 
 
 		//color_t = vec4(cutaway.xyz,1.0);

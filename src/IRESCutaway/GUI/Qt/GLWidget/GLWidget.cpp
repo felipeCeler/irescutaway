@@ -97,6 +97,8 @@ void GLWidget::initializeGL ( )
 
 	fps = 0;
 
+	delta_time.start();
+
 	updateTimer_.setSingleShot ( false );
 	connect ( &updateTimer_ , SIGNAL ( timeout ( ) ) , this , SLOT ( gameLooping ( ) ) );
 	updateTimer_.start( 0 );
@@ -106,6 +108,11 @@ void GLWidget::initializeGL ( )
 	fpsTimer_.start ( 1000 );
 
 	freezeView_ = 0;
+
+	vmax = 0.01;
+	v0   = 0.001;
+	acc = 0.001;
+	v  = 0;
 
 }
 
@@ -1444,7 +1451,16 @@ void GLWidget::BurnsCutawaySetup ( )
 
 void GLWidget::gameLooping ( )
 {
+
+	if ( v < vmax)
+		v = v0 + 0.00001;
+
+	std::cout << "fps :" << v  << std::endl;
+
+	camera_.moveForward( ( v) );
+
 	updateGL();
+
 	fps++;
 }
 
@@ -1452,8 +1468,14 @@ void GLWidget::fpsCounter ( )
 {
 
 	//std::cout << "fps :" << fps  << std::endl;
+
+	int milliseconds = delta_time.elapsed();
+
+	float dt =  float(milliseconds / 1000.0f);
+
 	fps = 0;
 
+	delta_time.restart();
 }
 
 void GLWidget::loadShaders ( )
