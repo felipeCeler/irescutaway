@@ -93,6 +93,7 @@ void renderCube( in vec4 color ,bool proxy )
 	for ( int i = j; i < 6; i++)
 	{
 
+
 		vp[0] = ProjectionMatrix * ViewMatrix * cube[0].v[faces[i].vertices[0]];
 		vp[1] = ProjectionMatrix * ViewMatrix * cube[0].v[faces[i].vertices[1]];
 		vp[2] = ProjectionMatrix * ViewMatrix * cube[0].v[faces[i].vertices[2]];
@@ -125,7 +126,7 @@ void renderCube( in vec4 color ,bool proxy )
 		VertexOut.proxy = proxy;
 		VertexOut.face = i;
 
-		//Top face
+
 		dist = vec4(area4/length(v4), area3/length(v3), 0, 0);
 		VertexOut.vertice  = ViewMatrix * cube[0].v[faces[i].vertices[0]];
 		gl_Position = vp[0];

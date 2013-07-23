@@ -34,34 +34,40 @@ void main(void)
 	float d = min(dist[0], min(dist[1], min(dist[2], dist[3])));
 	float I = exp2(-2 * d * d);
 
+
 	gl_FragDepth = gl_FragCoord.z;
+
 
 	if (gl_FragCoord.z < (cutaway.w)) //&&  length( gl_FragCoord.st - color.xy) < 20.0 )
 	{
-		if(VertexIn.proxy)
+
+		discard;
+	}
+
+	if(VertexIn.proxy)
+	{
+
+		if (dot (newNormal.xyz,vec3(0.0,0.0,-1.0)) > 0 )
 		{
-//			discard;
 			newNormal = cutaway.xyz;
-			float normDepth = vertices.z/vertices.w;
-//			color_t = vec4(cutaway.xyz,1.0);
-			//newVert   = vertices.xyz;
-			gl_FragDepth = (((far-near)/2.)*normDepth)+((far+near)/2.);
+
+
+		//color_t = vec4(cutaway.xyz,1.0);
+
 
 			I = 0;
 
-//
-			if ( abs(gl_FragCoord.z - (cutaway.w)) < 0.0000015 )
-			{
+
+			if (abs(gl_FragCoord.z - (cutaway.w)) < 0.0000015) {
 				I = 1;
 			}
 
-		}
-		else
-		{
-			discard;
+			gl_FragDepth = gl_FragCoord.z-0.0000001;
 		}
 	}
+
 	{
+
 
 //	newNormal = normalize ( newNormal );
 //
