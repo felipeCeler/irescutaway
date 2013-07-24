@@ -74,12 +74,15 @@ class GLWidget: public QGLWidget
 
 	public slots:
 
+		// TODO Physics
 		void gameLooping ( );
 		void fpsCounter ( );
+
 		void loadShaders ( );
-		void cutVolumeGenerator ( );
 		void openIRESCharles  ( const std::string& filename );
 		bool isIresWasOpenedSucessufully () const;
+
+		void cutVolumeGenerator ( );
 		void changeProperty ( int property_index );
 		void changePropertyRange ( const double& min, const double& max, int property_index );
 
@@ -133,20 +136,12 @@ private:
 
 	bool getVertices(unsigned int , float * vertices );
 
-	Cube cube_;
-
-	Celer::OpenGL::ShaderManager    wireframe;
-	Celer::OpenGL::ShaderManager    orientedBoxApproach;
 	Celer::OpenGL::ShaderManager	debugNormal;
 
 	QPoint lastPos;
 	/// Avoid camera_ movement issues
 	QSet<int> keysPresseds_;
-	bool buttonRelease_;
-
-	/// Celer OpenGL Frameworks
-	Celer::OpenGL::ShaderManager	textureViewer;
-	Celer::OpenGL::Texture2D 	facePhoto;
+	bool 	  buttonRelease_;
 
 	GLuint vertexArrayScreen;
 	GLuint screen_buffer;
@@ -183,7 +178,8 @@ private:
 	Celer::BoundingBox3<float> 		   box;
 	std::list  <Celer::BoundingBox3<GLfloat> > boxes;
 	std::vector<Celer::BoundingBox3<GLfloat> > cutVolumes;
-	std::vector<Celer::Vector4<GLfloat> >      box_vertices;
+	std::vector<Celer::Vector3<GLfloat> >      box_vertices;
+
 
 	GLuint vertexArray_box;
 	GLuint vertexBuffer_box;
@@ -232,12 +228,6 @@ private:
 	int min_J_;
 	int max_K_;
 	int min_K_;
-
-	std::vector<Celer::Vector4<float> > center_points;
-	std::vector<Celer::Vector4<float> > max_points;
-	std::vector<Celer::Vector4<float> > min_points;
-
-	int cut_volume_size;
 
 	/// Celer Gaming Looping 0.1
 	QTimer fpsTimer_;

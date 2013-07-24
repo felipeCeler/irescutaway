@@ -44,9 +44,6 @@ void main(void)
 		discard;
 	}
 
-	if(true)
-	{
-
 		if (dot (newNormal.xyz,vec3(0.0,0.0,-1.0)) > 0 )
 		{
 			//newNormal = cutaway.xyz;
@@ -59,12 +56,12 @@ void main(void)
 
 
 			if (abs(gl_FragCoord.z - (cutaway.w)) < 0.0000015) {
-				I = 1;
+				I = 1-(abs(dot (newNormal.xyz,cutaway.xyz)));
 			}
 
 			gl_FragDepth = gl_FragCoord.z-0.0000001;
 		}
-	}
+
 
 	{
 

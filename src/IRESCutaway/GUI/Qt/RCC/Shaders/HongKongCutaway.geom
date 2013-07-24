@@ -28,25 +28,12 @@ in CubeData
 	vec4 v[8];
 	vec4 n[6];
 	vec4 color;
-flat	bool culled[8];
-
 } cube[1];
-
-struct Edge
-{
-	int source;
-	int target;
-};
 
 struct Face
 {
-	int 	vertices[4];
-};
-
-struct CutPlane
-{
-   vec4 point;
-   vec4 normal;
+	int 	vertices[6];
+	vec3 	normal;
 };
 
 // For while, all transformations come from the Celer::Camera.
@@ -57,42 +44,17 @@ uniform mat4 ProjectionMatrix;
 uniform vec2 WIN_SCALE;
 
 Face faces[6];
-Edge edges[12];
 
-vec4 proxyFace[6];
-
-/// Culling Procedure
-Face cutVolume[6];
-
-vec3 ext_x;
-vec3 ext_y;
-vec3 ext_z;
-
-// Rendering lines
 vec4 vp[4];
 
-mat3 normalMatrix;
 
 
 void renderCube( in vec4 color ,bool proxy )
 {
 
-	int j = 0;
-	vec4 colors[6];
 
-	colors[0] = vec4(1.0,0.0,0.0,1.0);
-	colors[1] = vec4(0.0,1.0,0.0,1.0);
-	colors[2] = vec4(0.0,0.0,1.0,1.0);
-	colors[3] = vec4(1.0,1.0,0.0,1.0);
-	colors[4] = vec4(1.0,0.0,1.0,1.0);
-	colors[5] = vec4(0.0,1.0,1.0,1.0);
-
-	if (proxy)
-		j = 0;
-
-	for ( int i = j; i < 6; i++)
+	for ( int i = 0; i < 6; i++)
 	{
-
 
 		vp[0] = ProjectionMatrix * ViewMatrix * cube[0].v[faces[i].vertices[0]];
 		vp[1] = ProjectionMatrix * ViewMatrix * cube[0].v[faces[i].vertices[1]];
@@ -119,10 +81,7 @@ void renderCube( in vec4 color ,bool proxy )
 
 
 		VertexOut.normal = cube[0].n[i];
-		if ( !proxy )
-			VertexOut.color = color;
-		else
-			VertexOut.color = color;
+		VertexOut.color = color;
 		VertexOut.proxy = proxy;
 		VertexOut.face = i;
 
@@ -152,8 +111,6 @@ void renderCube( in vec4 color ,bool proxy )
 
 void main(void)
 {
-	normalMatrix = inverse(transpose(mat3(ViewMatrix)));
-
 
 	// Cube Orientation as IRESv2
 	// top
@@ -188,49 +145,6 @@ void main(void)
 	faces[5].vertices[3] = 7;
 
 
-	/// Culling Procedure
-
-	ext_x = new_x*0.3;
-	ext_y = new_y*0.3;
-	ext_z = new_z*0.1;
-
-
-	// Not culled
-	if ( (cube[0].culled[0]) &&
-		 (cube[0].culled[1]) &&
-		 (cube[0].culled[2]) &&
-		 (cube[0].culled[3]) &&
-		 (cube[0].culled[4]) &&
-		 (cube[0].culled[5]) &&
-		 (cube[0].culled[6]) &&
-		 (cube[0].culled[7]) )
-	{
-
-		//renderCube(cube[0].color,false);
-		//renderCube (vec4(0.0,1.0,0.0,1.0),false);
-
-	// To be partial culled
-	}else if ((cube[0].culled[0]) ||
-			  (cube[0].culled[1]) ||
-			  (cube[0].culled[2]) ||
-			  (cube[0].culled[3]) ||
-			  (cube[0].culled[4]) ||
-			  (cube[0].culled[5]) ||
-			  (cube[0].culled[6]) ||
-			  (cube[0].culled[7]) )
-	{
-
-		renderCube (cube[0].color,true);
-		//renderCube (vec4(1.0,0.0,0.0,1.0),true);
-		//renderCut (vec4(1.0,0.0,0.0,1.0),false);
-
-	// Full culled
-	}else
-	{
-
-		renderCube(cube[0].color,false);
-	}
-
-
+	renderCube(cube[0].color,true);
 
 }

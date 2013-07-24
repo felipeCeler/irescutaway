@@ -15,17 +15,7 @@ layout(location = 10) in vec4 focus;
 layout(location = 11) in vec4 center;
 
 
-struct Face
-{
-	int 	vertices[6];
-	vec3 	normal;
-};
 
-struct CutPlane
-{
-   vec4 point;
-   vec4 normal;
-};
 
 /// FIXME - Do research and understand the best away to alignment data on Shader.
 out CubeData
@@ -33,7 +23,7 @@ out CubeData
 		vec4 v[8];
 		vec4 n[6];
 		vec4 color;
-flat	bool culled[8];
+//flat	bool culled[8];
 
 } cube;
 
@@ -43,25 +33,6 @@ uniform mat4 ViewMatrix;
 uniform mat4 ProjectionMatrix;
 
 
-uniform vec4 center_points[256];
-uniform vec4 max_points[256];
-uniform vec4 min_points[256];
-uniform int cut_volume_size;
-
-uniform vec3 new_x;
-uniform vec3 new_y;
-uniform vec3 new_z;
-
-
-/// Culling Procedure
-vec4 v[8];
-
-CutPlane cutPlaneIn;
-Face cutVolume[6];
-
-vec3 ext_x;
-vec3 ext_y;
-vec3 ext_z;
 
 void main(void)
 {
@@ -79,90 +50,6 @@ void main(void)
 	cube.color    = color;
 
 	/// Culling Procedure
-
-	ext_x = new_x*0.3;
-	ext_y = new_y*0.3;
-	ext_z = new_z*0.1;
-
-	// top
-	cutVolume[0].vertices[0] = 0;
-	cutVolume[0].vertices[1] = 1;
-	cutVolume[0].vertices[2] = 2;
-	cutVolume[0].vertices[3] = 3;
-	// bottom
-	cutVolume[1].vertices[0] = 4;
-	cutVolume[1].vertices[1] = 5;
-	cutVolume[1].vertices[2] = 6;
-	cutVolume[1].vertices[3] = 7;
-	// front
-	cutVolume[2].vertices[0] = 0;
-	cutVolume[2].vertices[1] = 3;
-	cutVolume[2].vertices[2] = 5;
-	cutVolume[2].vertices[3] = 4;
-	// back
-	cutVolume[3].vertices[0] = 1;
-	cutVolume[3].vertices[1] = 7;
-	cutVolume[3].vertices[2] = 6;
-	cutVolume[3].vertices[3] = 2;
-	// right
-	cutVolume[4].vertices[0] = 0;
-	cutVolume[4].vertices[1] = 4;
-	cutVolume[4].vertices[2] = 7;
-	cutVolume[4].vertices[3] = 1;
-	// left
-	cutVolume[5].vertices[0] = 2;
-	cutVolume[5].vertices[1] = 6;
-	cutVolume[5].vertices[2] = 5;
-	cutVolume[5].vertices[3] = 3;
-
-	vec4 center_v = (v0 + v1 + v2 + v3 + v4 + v5 + v6 + v7) / 8;
-
-	bool isclipped_locally  = false;
-
-
-	// For each cut volume
-	for (int j = 0 ; j < 1 ; j++)
-	{
-		vec3 center_of_mass = center_points[j].xyz;
-
-		v[0] = vec4(center_of_mass + ext_x + ext_y + 100*ext_z + 5*ext_x,1.0);
-		v[1] = vec4(center_of_mass + ext_x + ext_y - ext_z,1.0);
-		v[2] = vec4(center_of_mass - ext_x + ext_y - ext_z,1.0);
-		v[3] = vec4(center_of_mass - ext_x + ext_y + 100*ext_z - 5*ext_x,1.0);
-
-		v[4] = vec4(center_of_mass + ext_x - ext_y + 100*ext_z + 5*ext_x,1.0);
-		v[5] = vec4(center_of_mass - ext_x - ext_y + 100*ext_z - 5*ext_x,1.0);
-		v[6] = vec4(center_of_mass - ext_x - ext_y - ext_z,1.0);
-		v[7] = vec4(center_of_mass + ext_x - ext_y - ext_z,1.0);
-
-		// For each vertex in the cube
-		for ( int vertex_index = 0; vertex_index < 8; vertex_index++)
-		{
-
-			cube.culled[vertex_index] = true;
-
-			// For each side of the cube volume
-			for ( int i = 0; i < 6; i++)
-			{
-				vec3 normal = normalize (cross ( (v[cutVolume[i].vertices[3]].xyz - v[cutVolume[i].vertices[0]].xyz),
-							 				     (v[cutVolume[i].vertices[1]].xyz - v[cutVolume[i].vertices[0]].xyz) ) );
-
-				cutPlaneIn.point  = v[cutVolume[i].vertices[3]];
-				cutPlaneIn.normal = vec4(normal,0.0);
-
-				// Vertex lies in the same side
-				if ( dot ( cutPlaneIn.normal , ( cube.v[vertex_index] - cutPlaneIn.point ) ) < 0.0 )
-				{
-					cube.culled[vertex_index] = false;
-				}
-
-
-			}
-
-
-		}
-
-	}
 
 	mat3 normalMatrix = inverse(transpose(mat3(ViewMatrix)));
 

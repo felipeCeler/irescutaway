@@ -86,12 +86,6 @@ void GLWidget::initializeGL ( )
 		glGenBuffers  ( 1, &vertexBuffer_box);
 
 
-	cube_.createBuffers( Celer::Vector3<float>(0,0,0) );
-
-	center_points.resize(256);
-	max_points.resize(256);
-	min_points.resize(256);
-	cut_volume_size = 0;
 
 	//Timer Animation
 
@@ -161,18 +155,12 @@ void GLWidget::cutVolumeGenerator( )
 
 	}
 
-	cut_volume_size = 0;
+
+	box_vertices.resize( cutVolumes.size( ) );
+	int cont = 0;
 
 	for ( std::vector<Celer::BoundingBox3<GLfloat> >::iterator it = cutVolumes.begin(); it != cutVolumes.end();++it)
 	{
-		if (cut_volume_size < 256)
-		{
-			center_points[cut_volume_size] = Celer::Vector4<float>(it->center(),1.0f);
-			max_points[cut_volume_size] = Celer::Vector4<float>(it->box_max(),1.0f);
-			min_points[cut_volume_size] = Celer::Vector4<float>(it->box_min(),1.0f);
-			cut_volume_size++;
-		}
-
 
 		Celer::Vector3<GLfloat> v0 ( it->box_max ( ).x , it->box_max ( ).y , it->box_max ( ).z );
 		Celer::Vector3<GLfloat> v1 ( it->box_max ( ).x , it->box_max ( ).y , it->box_min ( ).z );
@@ -187,7 +175,6 @@ void GLWidget::cutVolumeGenerator( )
 
 		std::cout << "min -- " << it->box_min ( ) <<  std::endl;
 		std::cout << "max == " << it->box_max ( ) << std::endl;
-
 
 
 		Celer::Vector3<GLfloat> topNormal 	= ((v0 - v1) ^ (v0 - v3)).norm();
@@ -205,7 +192,7 @@ void GLWidget::cutVolumeGenerator( )
 
 
 		// Care about the type: GL_DOUBLE or GL_FLOAT
-		Celer::Vector3<GLfloat> vertices[] =
+		Celer::Vector4<GLfloat> vertices[] =
 		{
 		  // X Y Z
 			//  Top Face
@@ -223,25 +210,8 @@ void GLWidget::cutVolumeGenerator( )
 		};
 
 
-//		// Care about the type: GL_DOUBLE or GL_FLOAT
-//		Celer::Vector3<GLfloat> normals[] =
-//		{
-//		  // X Y Z
-//			//  Top Face
-//			topNormal,topNormal,topNormal,topNormal,
-//			// Bottom Face
-//			bottomNormal,bottomNormal,bottomNormal,bottomNormal,
-//			// Front Face
-//		      //frontNormal,frontNormal,frontNormal,frontNormal,
-//			// Back Face
-//			backmNormal,backmNormal,backmNormal,backmNormal,
-//			// Right Face
-//			rightNormal,rightNormal,rightNormal,rightNormal,
-//			// Left Face
-//			leftNormal,leftNormal,leftNormal,leftNormal
-//		};
-
-		std::copy ( vertices, vertices + 24 , std::back_inserter ( box_vertices  ) );
+		box_vertices[cont] = it->center( );
+		cont++;
 
 	}
 
@@ -249,8 +219,8 @@ void GLWidget::cutVolumeGenerator( )
 		glBindBuffer ( GL_ARRAY_BUFFER , vertexBuffer_box );
 		glBufferData ( GL_ARRAY_BUFFER , box_vertices.size( ) * sizeof ( box_vertices[0] ) , &box_vertices[0] , GL_STATIC_DRAW );
 		// Set up generic attributes pointers
-		glEnableVertexAttribArray ( 1 );
-		glVertexAttribPointer ( 1 , 4 , GL_FLOAT , GL_FALSE , 0 , 0 );
+		glEnableVertexAttribArray ( 0 );
+		glVertexAttribPointer ( 0 , 3 , GL_FLOAT , GL_FALSE , 0 , 0 );
 	glBindVertexArray ( 0 );
 
 }
@@ -899,57 +869,38 @@ void GLWidget::BoundingVolumeCutawaySetup( int cluster )
 			glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
 			glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
- 			for ( std::size_t cluster_index = 0 ; cluster_index < 1 ; cluster_index++)
- 			{
- 				glUniform1i ( BoundingBoxInitialization.uniforms_["pass"].location , 1 );
-				glUniform4fv ( BoundingBoxInitialization.uniforms_["center_points[0]"].location , cut_volume_size , center_points[0] );
-				glUniform4fv ( BoundingBoxInitialization.uniforms_["max_points[0]"].location , cut_volume_size , max_points[0]);
-				glUniform4fv ( BoundingBoxInitialization.uniforms_["min_points[0]"].location , cut_volume_size , min_points[0] );
-				glUniform1i  ( BoundingBoxInitialization.uniforms_["cut_volume_size"].location , cut_volume_size );
- 				glUniform3fv ( BoundingBoxInitialization.uniforms_["new_x"].location , 1 ,  new_x );
- 				glUniform3fv ( BoundingBoxInitialization.uniforms_["new_y"].location , 1 ,  new_y );
- 				glUniform3fv ( BoundingBoxInitialization.uniforms_["new_z"].location , 1 ,  new_z );
- 				glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ModelMatrix"].location , 1 , GL_TRUE , lookatCamera );
- 				glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
- 				glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
- 				//VAO
- 				glBindVertexArray ( vertexArray_cube_interleaved );
- 				glDrawArrays ( GL_POINTS , 0 , 1 );
- 				glBindVertexArray ( 0 );
 
- 			}
+ 			glUniform1i ( BoundingBoxInitialization.uniforms_["pass"].location , 1 );
+			glUniform3fv ( BoundingBoxInitialization.uniforms_["new_x"].location , 1 , new_x );
+			glUniform3fv ( BoundingBoxInitialization.uniforms_["new_y"].location , 1 , new_y );
+			glUniform3fv ( BoundingBoxInitialization.uniforms_["new_z"].location , 1 , new_z );
+			glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ModelMatrix"].location , 1 , GL_TRUE , lookatCamera );
+			glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+			glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+			//VAO
+			glBindVertexArray ( vertexArray_box );
+			glDrawArrays ( GL_POINTS , 0 , box_vertices.size());
+			glBindVertexArray ( 0 );
 
 			fboStep[0]->release ( );
-			BoundingBoxInitialization.deactive ( );
 
-
-			BoundingBoxInitialization.active ( );
 
 			fboStep[1]->bind ( );
 
 			glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
 			glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
- 			for ( std::size_t cluster_index = 0 ; cluster_index < 1 ; cluster_index++)
- 			{
-
- 				glUniform1i ( BoundingBoxInitialization.uniforms_["pass"].location , 2 );
-				glUniform4fv ( BoundingBoxInitialization.uniforms_["center_points[0]"].location , cut_volume_size , center_points[0] );
-				glUniform4fv ( BoundingBoxInitialization.uniforms_["max_points[0]"].location , cut_volume_size , max_points[0]);
-				glUniform4fv ( BoundingBoxInitialization.uniforms_["min_points[0]"].location , cut_volume_size , min_points[0] );
-				glUniform1i  ( BoundingBoxInitialization.uniforms_["cut_volume_size"].location , cut_volume_size );
- 				glUniform3fv ( BoundingBoxInitialization.uniforms_["new_x"].location , 1 ,  new_x );
- 				glUniform3fv ( BoundingBoxInitialization.uniforms_["new_y"].location , 1 ,  new_y );
- 				glUniform3fv ( BoundingBoxInitialization.uniforms_["new_z"].location , 1 ,  new_z );
- 				glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ModelMatrix"].location , 1 , GL_TRUE , lookatCamera );
- 				glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
- 				glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
- 				//VAO
- 				glBindVertexArray ( vertexArray_cube_interleaved );
- 				glDrawArrays ( GL_POINTS , 0 , 1 );
- 				glBindVertexArray ( 0 );
-
- 			}
+ 			glUniform1i ( BoundingBoxInitialization.uniforms_["pass"].location , 1 );
+			glUniform3fv ( BoundingBoxInitialization.uniforms_["new_x"].location , 1 , new_x );
+			glUniform3fv ( BoundingBoxInitialization.uniforms_["new_y"].location , 1 , new_y );
+			glUniform3fv ( BoundingBoxInitialization.uniforms_["new_z"].location , 1 , new_z );
+			glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ModelMatrix"].location , 1 , GL_TRUE , lookatCamera );
+			glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+			glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+			//VAO
+			glBindVertexArray ( vertexArray_box );
+			glDrawArrays ( GL_POINTS , 0 , box_vertices.size());
+			glBindVertexArray ( 0 );
 
 			fboStep[1]->release ( );
 			BoundingBoxInitialization.deactive ( );
@@ -1010,20 +961,16 @@ void GLWidget::BoundingVolumeCutawaySetup( int cluster )
 			{
 				BoundingBoxDebug.active ( );
 				// FIXME Throw an Exception when std::map doesnt find A VARIABLE !!!
-				glUniform4fv ( BoundingBoxDebug.uniforms_["center_points[0]"].location , cut_volume_size , center_points[0] );
-				glUniform4fv ( BoundingBoxDebug.uniforms_["max_points[0]"].location , cut_volume_size , max_points[0]);
-				glUniform4fv ( BoundingBoxDebug.uniforms_["min_points[0]"].location , cut_volume_size , min_points[0] );
-				glUniform1i  ( BoundingBoxDebug.uniforms_["cut_volume_size"].location , cut_volume_size );
- 				glUniform3fv ( BoundingBoxDebug.uniforms_["new_x"].location , 1 ,  new_x );
- 				glUniform3fv ( BoundingBoxDebug.uniforms_["new_y"].location , 1 ,  new_y );
- 				glUniform3fv ( BoundingBoxDebug.uniforms_["new_z"].location , 1 ,  new_z );
- 				glUniformMatrix4fv ( BoundingBoxDebug.uniforms_["ModelMatrix"].location , 1 , GL_TRUE , lookatCamera );
- 				glUniformMatrix4fv ( BoundingBoxDebug.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
- 				glUniformMatrix4fv ( BoundingBoxDebug.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );				//VAO
-				glBindVertexArray ( vertexArray_cube_interleaved );
-				glDrawArrays ( GL_POINTS , 0 , 1 );
+				glUniform3fv ( BoundingBoxDebug.uniforms_["new_x"].location , 1 , new_x );
+				glUniform3fv ( BoundingBoxDebug.uniforms_["new_y"].location , 1 , new_y );
+				glUniform3fv ( BoundingBoxDebug.uniforms_["new_z"].location , 1 , new_z );
+				glUniformMatrix4fv ( BoundingBoxDebug.uniforms_["ModelMatrix"].location , 1 , GL_TRUE , lookatCamera );
+				glUniformMatrix4fv ( BoundingBoxDebug.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+				glUniformMatrix4fv ( BoundingBoxDebug.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+				//VAO
+				glBindVertexArray ( vertexArray_box );
+				glDrawArrays ( GL_POINTS , 0 , box_vertices.size());
 				glBindVertexArray ( 0 );
-
 				BoundingBoxDebug.deactive ( );
 			}
 
@@ -1110,55 +1057,36 @@ void GLWidget::NoCutawaySetUp ( )
 				glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
 				glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-	 			for ( std::size_t cluster_index = 0 ; cluster_index < 1 ; cluster_index++)
-	 			{
-	 				glUniform1i ( BoundingBoxInitialization.uniforms_["pass"].location , 1 );
-					glUniform4fv ( BoundingBoxInitialization.uniforms_["center_points[0]"].location , cut_volume_size , center_points[0] );
-					glUniform4fv ( BoundingBoxInitialization.uniforms_["max_points[0]"].location , cut_volume_size , max_points[0]);
-					glUniform4fv ( BoundingBoxInitialization.uniforms_["min_points[0]"].location , cut_volume_size , min_points[0] );
-					glUniform1i  ( BoundingBoxInitialization.uniforms_["cut_volume_size"].location , cut_volume_size );
-	 				glUniform3fv ( BoundingBoxInitialization.uniforms_["new_x"].location , 1 ,  new_x );
-	 				glUniform3fv ( BoundingBoxInitialization.uniforms_["new_y"].location , 1 ,  new_y );
-	 				glUniform3fv ( BoundingBoxInitialization.uniforms_["new_z"].location , 1 ,  new_z );
-	 				glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ModelMatrix"].location , 1 , GL_TRUE , lookatCamera );
-	 				glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-	 				glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
-	 				//VAO
-	 				glBindVertexArray ( vertexArray_cube_interleaved );
-	 				glDrawArrays ( GL_POINTS , 0 , 1 );
-	 				glBindVertexArray ( 0 );
-
-	 			}
+	 			glUniform1i ( BoundingBoxInitialization.uniforms_["pass"].location , 1 );
+				glUniform3fv ( BoundingBoxInitialization.uniforms_["new_x"].location , 1 , new_x );
+				glUniform3fv ( BoundingBoxInitialization.uniforms_["new_y"].location , 1 , new_y );
+				glUniform3fv ( BoundingBoxInitialization.uniforms_["new_z"].location , 1 , new_z );
+				glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ModelMatrix"].location , 1 , GL_TRUE , lookatCamera );
+				glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+				glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+				//VAO
+				glBindVertexArray ( vertexArray_box );
+				glDrawArrays ( GL_POINTS , 0 , 1);
+				glBindVertexArray ( 0 );
 
 				fboStep[0]->release ( );
-				BoundingBoxInitialization.deactive ( );
-
-				BoundingBoxInitialization.active ( );
 
 				fboStep[1]->bind ( );
 
 				glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
 				glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-	 			for ( std::size_t cluster_index = 0 ; cluster_index < 1 ; cluster_index++)
-	 			{
-	 				glUniform1i ( BoundingBoxInitialization.uniforms_["pass"].location , 2 );
-					glUniform4fv ( BoundingBoxInitialization.uniforms_["center_points[0]"].location , cut_volume_size , center_points[0] );
-					glUniform4fv ( BoundingBoxInitialization.uniforms_["max_points[0]"].location , cut_volume_size , max_points[0]);
-					glUniform4fv ( BoundingBoxInitialization.uniforms_["min_points[0]"].location , cut_volume_size , min_points[0] );
-					glUniform1i  ( BoundingBoxInitialization.uniforms_["cut_volume_size"].location , cut_volume_size );
-	 				glUniform3fv ( BoundingBoxInitialization.uniforms_["new_x"].location , 1 ,  new_x );
-	 				glUniform3fv ( BoundingBoxInitialization.uniforms_["new_y"].location , 1 ,  new_y );
-	 				glUniform3fv ( BoundingBoxInitialization.uniforms_["new_z"].location , 1 ,  new_z );
-	 				glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ModelMatrix"].location , 1 , GL_TRUE , lookatCamera );
-	 				glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-	 				glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
-	 				//VAO
-	 				glBindVertexArray ( vertexArray_cube_interleaved );
-	 				glDrawArrays ( GL_POINTS , 0 , 1 );
-	 				glBindVertexArray ( 0 );
-
-	 			}
+	 			glUniform1i ( BoundingBoxInitialization.uniforms_["pass"].location , 1 );
+				glUniform3fv ( BoundingBoxInitialization.uniforms_["new_x"].location , 1 , new_x );
+				glUniform3fv ( BoundingBoxInitialization.uniforms_["new_y"].location , 1 , new_y );
+				glUniform3fv ( BoundingBoxInitialization.uniforms_["new_z"].location , 1 , new_z );
+				glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ModelMatrix"].location , 1 , GL_TRUE , lookatCamera );
+				glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+				glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+				//VAO
+				glBindVertexArray ( vertexArray_box );
+				glDrawArrays ( GL_POINTS , 0 , 1);
+				glBindVertexArray ( 0 );
 
 				fboStep[1]->release ( );
 				BoundingBoxInitialization.deactive ( );
@@ -1177,11 +1105,6 @@ void GLWidget::NoCutawaySetUp ( )
 
 	 			glUniform1i ( hongKong_cutaway_shader.uniforms_["normals"].location , 0 );
 	 			glUniform1i ( hongKong_cutaway_shader.uniforms_["normals"].location , 1 );
-
-				glUniform4fv ( hongKong_cutaway_shader.uniforms_["center_points[0]"].location , cut_volume_size , center_points[0] );
-				glUniform4fv ( hongKong_cutaway_shader.uniforms_["max_points[0]"].location , cut_volume_size , max_points[0]);
-				glUniform4fv ( hongKong_cutaway_shader.uniforms_["min_points[0]"].location , cut_volume_size , min_points[0] );
-				glUniform1i  ( hongKong_cutaway_shader.uniforms_["cut_volume_size"].location , cut_volume_size );
 
 				glUniform3fv ( hongKong_cutaway_shader.uniforms_["new_x"].location , 1 ,  new_x );
 				glUniform3fv ( hongKong_cutaway_shader.uniforms_["new_y"].location , 1 ,  new_y );
@@ -1291,24 +1214,24 @@ void GLWidget::NoCutawaySetUp ( )
 
 			primary.deactive ( );
 
-			glEnable ( GL_BLEND );
-			glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
-
-			cutVolume.active ( );
-
-			glUniform3fv ( cutVolume.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
-
-			glUniform2f ( cutVolume.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
-
-			glUniformMatrix4fv ( cutVolume.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-			glUniformMatrix4fv ( cutVolume.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
-
-			glBindVertexArray ( vertexArray_box );
-			glDrawArrays ( GL_LINES_ADJACENCY , 0 , box_vertices.size() );
-			glBindVertexArray ( 0 );
-
-			cutVolume.deactive ( );
-			glDisable ( GL_BLEND );
+//			glEnable ( GL_BLEND );
+//			glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+//
+//			cutVolume.active ( );
+//
+//			glUniform3fv ( cutVolume.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
+//
+//			glUniform2f ( cutVolume.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
+//
+//			glUniformMatrix4fv ( cutVolume.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+//			glUniformMatrix4fv ( cutVolume.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+//
+//			glBindVertexArray ( vertexArray_box );
+//			glDrawArrays ( GL_LINES_ADJACENCY , 0 , box_vertices.size() );
+//			glBindVertexArray ( 0 );
+//
+//			cutVolume.deactive ( );
+//			glDisable ( GL_BLEND );
 
 
 		}
@@ -1455,7 +1378,7 @@ void GLWidget::gameLooping ( )
 	if ( v < vmax)
 		v = v0 + 0.00001;
 
-	std::cout << "fps :" << v  << std::endl;
+	//std::cout << "fps :" << v  << std::endl;
 
 	camera_.moveForward( ( v) );
 
@@ -1742,14 +1665,6 @@ void GLWidget::dropEvent(QDropEvent *event)
 		QImage image 			= QImage(text);
 		QImage imageOpenGL = QGLWidget::convertToGLFormat( image );
 
-
-		facePhoto.create(image.width(), image.height() );
-
-		qDebug() << " ID Texture " << facePhoto.id() << " w x h " << image.width() << " x " << image.height();
-
-		facePhoto.loadFromRawData(imageOpenGL.bits());
-
-		facePhoto.bind();
 
 		qDebug() << "Soltou";
 
