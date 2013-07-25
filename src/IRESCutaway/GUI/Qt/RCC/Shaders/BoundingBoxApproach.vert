@@ -51,8 +51,8 @@ void main(void)
 	normal_bottom = normalize(normalMatrix * normal_bottom);
 
 	// Front
-	vec3 normal_front = normalize (cross ( (v[4] - v[3]).xyz, (v[0] - v[3]).xyz ) );
-	normal_bottom = normalize(normalMatrix * normal_bottom);
+	vec3 normal_front = normalize (cross ( (v[4] - v[0]).xyz, (v[3] - v[0]).xyz ) );
+	normal_front = normalize(normalMatrix * normal_front);
 
 	// Back
 	vec3 normal_back = normalize (cross ( (v[2] - v[1]).xyz, (v[7] - v[1]).xyz ) );
@@ -79,7 +79,7 @@ void main(void)
 
 	cube.n[0] = normal_top;
 	cube.n[1] = normal_bottom;
-	cube.n[2] = normal_front;
+	cube.n[2] = -normal_front;
 	cube.n[3] = normal_back;
 	cube.n[4] = normal_right;
 	cube.n[5] = normal_left;

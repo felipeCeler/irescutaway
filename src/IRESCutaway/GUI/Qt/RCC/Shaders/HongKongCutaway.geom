@@ -19,6 +19,7 @@ out VertexData
 		vec4 color;
 flat	bool proxy;
 flat 	int face;
+flat    int id;
 } VertexOut;
 
 noperspective out vec4 dist;
@@ -84,6 +85,7 @@ void renderCube( in vec4 color ,bool proxy )
 		VertexOut.color = color;
 		VertexOut.proxy = proxy;
 		VertexOut.face = i;
+		VertexOut.id   = i;
 
 
 		dist = vec4(area4/length(v4), area3/length(v3), 0, 0);

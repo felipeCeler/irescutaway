@@ -17,7 +17,7 @@ in CubeData
 	vec4 v[8];
 	vec4 n[6];
 	vec4 color;
-
+flat	float internal;
 } cube[1];
 
 struct Face

@@ -1,8 +1,8 @@
 #version 430
 #extension GL_ARB_texture_rectangle : enable
 
-uniform sampler2DRect normals;
-uniform sampler2DRect vertices;
+uniform sampler2DRect depthBuffer;
+uniform sampler2DRect verticeBuffer;
 
 out vec4 outputColor;
 
@@ -13,6 +13,7 @@ in VertexData
 		vec4 color;
 flat 	bool proxy;
 flat    int face;
+flat    int id;
 } VertexIn;
 
 
@@ -22,49 +23,43 @@ noperspective in vec4 dist;
 void main(void)
 {
 
-	float far  = 500.0;
-	float near = 0.1;
-	vec4 cutaway  = texture2DRect( normals  , gl_FragCoord.xy).rgba;
-	vec4 vertices = texture2DRect( vertices , gl_FragCoord.xy).rgba;
-
-	vec3 newNormal = VertexIn.normal.xyz;
-	vec3 newVert = VertexIn.vertice.xyz;
-	vec4 color_t = VertexIn.color;
-
-	float d = min(dist[0], min(dist[1], min(dist[2], dist[3])));
-	float I = exp2(-2 * d * d);
+	vec4 cutaway 	  = texture2DRect(depthBuffer, gl_FragCoord.xy).rgba;
+	vec4 vertice 	  = texture2DRect(verticeBuffer, gl_FragCoord.xy).rgba;
 
 
-	gl_FragDepth = gl_FragCoord.z;
+		float far = 500.0;
+		float near = 0.1;
 
+		vec3 newNormal = VertexIn.normal.xyz;
+		vec3 newVert = VertexIn.vertice.xyz;
+		vec4 color_t = VertexIn.color;
 
-	if (gl_FragCoord.z < (cutaway.w)) //&&  length( gl_FragCoord.st - color.xy) < 20.0 )
-	{
+		float d = min(dist[0], min(dist[1], min(dist[2], dist[3])));
+		float I = exp2(-2 * d * d);
 
-		discard;
-	}
+		gl_FragDepth = gl_FragCoord.z;
 
-		if (dot (newNormal.xyz,vec3(0.0,0.0,-1.0)) > 0 )
+		if (gl_FragCoord.z < (cutaway.w)) //&&  length( gl_FragCoord.st - color.xy) < 20.0 )
 		{
+
+			discard;
+		}
+
+		if (dot(newNormal.xyz, vec3(0.0, 0.0, -1.0)) > 0) {
 			//newNormal = cutaway.xyz;
 
-
-		//color_t = vec4(cutaway.xyz,1.0);
-
+			//color_t = vec4(cutaway.xyz,1.0);
 
 			I = 0;
 
-
-			if (abs(gl_FragCoord.z - (cutaway.w)) < 0.0000015) {
-				I = 1-(abs(dot (newNormal.xyz,cutaway.xyz)));
+			if (abs(gl_FragCoord.z - (cutaway.w)) < 0.00001) {
+				I = 1 - (abs(dot(newNormal.xyz, cutaway.xyz)));
 			}
 
-			gl_FragDepth = gl_FragCoord.z-0.0000001;
+			gl_FragDepth = gl_FragCoord.z - 0.0000001;
 		}
 
-
-	{
-
+		{
 
 //	newNormal = normalize ( newNormal );
 //
@@ -81,8 +76,13 @@ void main(void)
 //
 //	outputColor = I * vec4 ( 0.0 , 0.0 , 0.0 , 1.0 ) + ( 1.0 - I ) * vec4 ( la.rgb + ld.xyz + ls.rgb , 1.0 );
 
-	outputColor = I * vec4 ( 0.0 , 0.0 , 0.0 , 1.0 ) + ( 1.0 - I ) * vec4 ( color_t );
 
-	}
+
+				outputColor = I * vec4(0.0, 0.0, 0.0, 1.0) + (1.0 - I) * vec4(color_t);
+
+
+		}
+
+
 
 }

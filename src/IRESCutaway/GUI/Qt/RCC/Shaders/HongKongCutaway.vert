@@ -53,6 +53,7 @@ void main(void)
 
 	mat3 normalMatrix = inverse(transpose(mat3(ViewMatrix)));
 
+
 	cube.n[0] = vec4 ( normalize( normalMatrix * cross( (cube.v[5]-cube.v[4]).xyz , (cube.v[7]-cube.v[4]).xyz )),0.0);
 	cube.n[1] = vec4 ( normalize( normalMatrix * cross( (cube.v[3]-cube.v[0]).xyz , (cube.v[1]-cube.v[0]).xyz )),0.0);
 
