@@ -78,9 +78,16 @@ void GLWidget::initializeGL ( )
 
 	// Uniform Buffer Global Matrix
 
-	glGenBuffers(1, &globalMatrices_);
-	glBindBuffer(GL_UNIFORM_BUFFER, globalMatrices_);
-	glBufferData(GL_UNIFORM_BUFFER, sizeof(Celer::Matrix4x4<float>) * 3, 0, GL_STREAM_DRAW);
+	glGenBuffers(1, &uniformBuffer_globalMatrices_);
+	glBindBuffer(GL_UNIFORM_BUFFER, uniformBuffer_globalMatrices_);
+	glBufferData(GL_UNIFORM_BUFFER, sizeof(transformationMatrices_), 0, GL_STREAM_DRAW);
+	// Like glActiveTexture + glBindTexture() combo, we need a slot in the opengl
+	// context to share the uniform buffer information. The same value need to be
+	// bind to the glsl program. In this case slot Zero.
+	// The glUniformBlockBinding() is like the glUniform1i() for textures.
+	// The glBindBufferBase is like the glBindTexture() for textures.
+	// @link http://www.opengl.org/discussion_boards/showthread.php/175577-Uniform-Buffer-confusion
+	glBindBufferBase(GL_UNIFORM_BUFFER, 0, uniformBuffer_globalMatrices_);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
 	draw_secondary = 1;
@@ -815,6 +822,14 @@ void GLWidget::paintGL ( )
 
 	camera_.setPerspectiveProjectionMatrix ( zoom_angle_ , camera_.aspectRatio ( ) , 0.1 , 500 );
 
+	glBindBuffer(GL_UNIFORM_BUFFER, this->uniformBuffer_globalMatrices_);
+
+	transformationMatrices_.ModelMatrix      = ~camera_.viewMatrix ( );
+	transformationMatrices_.ViewMatrix       = ~camera_.viewMatrix ( );
+	transformationMatrices_.ProjectionMatrix = ~camera_.perspectiveProjectionMatrix( );
+
+	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(this->transformationMatrices_), &this->transformationMatrices_ );
+
 	if(!freezeView_)
 	{
 		if (cutVolumes.size() > 0)
@@ -1226,8 +1241,8 @@ void GLWidget::NoCutawaySetUp ( )
 
 				glUniform2f ( secondary.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
 
-				glUniformMatrix4fv ( secondary.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-				glUniformMatrix4fv ( secondary.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+				//glUniformMatrix4fv ( secondary.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+				//glUniformMatrix4fv ( secondary.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
 
 				glBindVertexArray ( vertexArray_cube_interleaved );
 				glDrawArrays ( GL_POINTS , 0 , cube_interleaved.size() );
@@ -1459,17 +1474,16 @@ void GLWidget::loadShaders ( )
 	qDebug ( ) << "ATIM !!";
 	QDir shadersDir = QDir ( qApp->applicationDirPath ( ) );
 
-	#if defined(WIN32) || defined(WIN64)
+	#if defined(_WIN32) || defined(_WIN64) // Windows Directory Style
 	/* Do windows stuff */
 	QString shaderDirectory ("D:\\Workspace\\IRESCutaway\\src\\IRESCutaway\\GUI\\Qt\\RCC\\Shaders\\");
-	#elif defined(UNIX) 
+	#elif defined(__linux__)               // Linux Directory Style
 	/* Do linux stuff */
 	QString shaderDirectory ("/media/d/Workspace/IRESCutaway/src/IRESCutaway/GUI/Qt/RCC/Shaders/");
 	#else
 	/* Error, both can't be defined or undefined same time */
 	#endif
 
-	
 
 	qDebug () << "Directory " << shadersDir.path ();
 	shadersDir.cdUp ();
@@ -1525,6 +1539,11 @@ void GLWidget::loadShaders ( )
 			   (shaderDirectory   + "HongKongCutaway.geom").toStdString(),
 			   (shaderDirectory   + "HongKongCutaway.frag").toStdString());
 
+
+	// Uniform Buffer Usage @link http://www.arcsynthesis.org/gltut/Positioning/Tut07%20Shared%20Uniforms.html
+	// For earch program where the uniform is defined, build a link to the Uniform Block bind.
+
+	glUniformBlockBinding(secondary.id( ), secondary.uniform_blocks_["GlobalMatrices"].index, 0);
 
 }
 /// KeyInput
