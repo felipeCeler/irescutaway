@@ -76,6 +76,13 @@ void GLWidget::initializeGL ( )
 		glGenBuffers  ( 1, &vertexBuffer_cube_interleaved );
 	/// ---
 
+	// Uniform Buffer Global Matrix
+
+	glGenBuffers(1, &globalMatrices_);
+	glBindBuffer(GL_UNIFORM_BUFFER, globalMatrices_);
+	glBufferData(GL_UNIFORM_BUFFER, sizeof(Celer::Matrix4x4<float>) * 3, 0, GL_STREAM_DRAW);
+	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
 	draw_secondary = 1;
 	draw_primary = 0;
 
@@ -1452,7 +1459,17 @@ void GLWidget::loadShaders ( )
 	qDebug ( ) << "ATIM !!";
 	QDir shadersDir = QDir ( qApp->applicationDirPath ( ) );
 
+	#if defined(WIN32) || defined(WIN64)
+	/* Do windows stuff */
+	QString shaderDirectory ("D:\\Workspace\\IRESCutaway\\src\\IRESCutaway\\GUI\\Qt\\RCC\\Shaders\\");
+	#elif defined(UNIX) 
+	/* Do linux stuff */
 	QString shaderDirectory ("/media/d/Workspace/IRESCutaway/src/IRESCutaway/GUI/Qt/RCC/Shaders/");
+	#else
+	/* Error, both can't be defined or undefined same time */
+	#endif
+
+	
 
 	qDebug () << "Directory " << shadersDir.path ();
 	shadersDir.cdUp ();

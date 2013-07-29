@@ -15,7 +15,12 @@ layout(location = 10) in vec4 focus;
 layout(location = 11) in vec4 center;
 
 
-
+layout(std140) uniform GlobalMatrices
+{
+	mat4 ViewMatrixU;
+	mat4 ProjectionMatrixU;
+	mat4 ModelMatrixU;
+};
 
 /// FIXME - Do research and understand the best away to alignment data on Shader.
 out CubeData

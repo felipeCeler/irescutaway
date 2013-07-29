@@ -8,7 +8,7 @@
 #  GLEW_LIBRARIES, the libraries to link against
 #  GLEW_FOUND, If false, do not try to use GLEW.
 # Also defined, but not for general use are:
-#  GLEW_GLEW_LIBRARY = the full path to the glew library.
+#  GLEW_LIBRARY = the full path to the glew library.
 
 IF (WIN32)
 
@@ -16,7 +16,7 @@ IF (WIN32)
 
     FIND_PATH( GLEW_INCLUDE_DIR GL/glew.h)
 
-    FIND_LIBRARY( GLEW_GLEW_LIBRARY glew32
+    FIND_LIBRARY( GLEW_LIBRARY glew32
       ${OPENGL_LIBRARY_DIR}
       /usr/lib/w32api
       /usr/X11R6/lib
@@ -29,7 +29,7 @@ IF (WIN32)
       $ENV{GLEW_ROOT_PATH}/include
     )
 
-    FIND_LIBRARY( GLEW_GLEW_LIBRARY
+    FIND_LIBRARY( GLEW_LIBRARY
       NAMES glew glew32 
       PATHS
       $ENV{GLEW_ROOT_PATH}/lib
@@ -46,7 +46,7 @@ ELSE (WIN32)
       /System/Library/Frameworks/GLEW.framework/Versions/A/Headers
       ${OPENGL_LIBRARY_DIR}
     )
-    SET(GLEW_GLEW_LIBRARY "-framework GLEW" CACHE STRING "GLEW library for OSX")
+    SET(GLEW_LIBRARY "-framework GLEW" CACHE STRING "GLEW library for OSX")
     SET(GLEW_cocoa_LIBRARY "-framework Cocoa" CACHE STRING "Cocoa framework for OSX")
   ELSE (APPLE)
 
@@ -60,7 +60,7 @@ ELSE (WIN32)
       /opt/graphics/OpenGL/contrib/libglew
     )
 
-    FIND_LIBRARY( GLEW_GLEW_LIBRARY GLEW
+    FIND_LIBRARY( GLEW_LIBRARY GLEW
       /usr/openwin/lib
       /usr/X11R6/lib
     )
@@ -71,11 +71,11 @@ ENDIF (WIN32)
 
 SET( GLEW_FOUND "NO" )
 IF(GLEW_INCLUDE_DIR)
-  IF(GLEW_GLEW_LIBRARY)
+  IF(GLEW_LIBRARY)
     # Is -lXi and -lXmu required on all platforms that have it?
     # If not, we need some way to figure out what platform we are on.
     SET( GLEW_LIBRARIES
-      ${GLEW_GLEW_LIBRARY}
+      ${GLEW_LIBRARY}
       ${GLEW_cocoa_LIBRARY}
     )
     SET( GLEW_FOUND "YES" )
@@ -84,7 +84,7 @@ IF(GLEW_INCLUDE_DIR)
     SET (GLEW_LIBRARY ${GLEW_LIBRARIES})
     SET (GLEW_INCLUDE_PATH ${GLEW_INCLUDE_DIR})
 
-  ENDIF(GLEW_GLEW_LIBRARY)
+  ENDIF(GLEW_LIBRARY)
 ENDIF(GLEW_INCLUDE_DIR)
 
 IF(GLEW_FOUND)
@@ -99,7 +99,7 @@ ENDIF(GLEW_FOUND)
 
 MARK_AS_ADVANCED(
   GLEW_INCLUDE_DIR
-  GLEW_GLEW_LIBRARY
+  GLEW_LIBRARY
   GLEW_Xmu_LIBRARY
   GLEW_Xi_LIBRARY
 )

@@ -207,6 +207,9 @@ private:
 	Celer::OpenGL::ShaderManager	primary;
 	Celer::OpenGL::ShaderManager	secondary;
 
+	// Uniform Buffers
+	GLuint  globalMatrices_;
+
 	QImage fbo;
 	float  angle;
 	float  zoom_angle_;
