@@ -134,6 +134,18 @@ private:
 	float centerX_;
 	float centerY_;
 
+	// Uniform Buffers
+	GLuint  uniformBuffer_globalMatrices_;
+
+	struct Transformation
+	{
+			Celer::Matrix4x4<float> ModelMatrix;
+			Celer::Matrix4x4<float> ViewMatrix;
+			Celer::Matrix4x4<float> ProjectionMatrix;
+ 	};
+
+	Transformation transformationMatrices_;
+
 	bool getVertices(unsigned int , float * vertices );
 
 	Celer::OpenGL::ShaderManager	debugNormal;
@@ -175,6 +187,17 @@ private:
 	Celer::OpenGL::ShaderManager hongKong_cutaway_shader;
 
 
+	// Cut Volume Stuffs
+	GLuint  uniformBuffer_cutVolumes_;
+
+	struct CutVolume
+	{
+		Celer::Vector4<float> center_points[255];
+		int cut_volume_size;
+	};
+
+	CutVolume cutVolume_;
+
 	Celer::BoundingBox3<float> 		   box;
 	std::list  <Celer::BoundingBox3<GLfloat> > boxes;
 	std::vector<Celer::BoundingBox3<GLfloat> > cutVolumes;
@@ -206,9 +229,6 @@ private:
 	// No cutaway Visualization
 	Celer::OpenGL::ShaderManager	primary;
 	Celer::OpenGL::ShaderManager	secondary;
-
-	// Uniform Buffers
-	GLuint  globalMatrices_;
 
 	QImage fbo;
 	float  angle;
@@ -252,8 +272,6 @@ private:
 	float acc;
 	float v0;
 	float v;
-
-
 
 };
 

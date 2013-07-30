@@ -24,10 +24,17 @@ flat	float internal;
 } cube;
 
 // For while, all transformations come from the Celer::Camera.
+
+layout(std140) uniform GlobalMatrices
+{
+    mat4 ModelMatrix;
+    mat4 ViewMatrix;
+    mat4 ProjectionMatrix;
+} globalMatrices;
+
 uniform mat4 ModelMatrix;
 uniform mat4 ViewMatrix;
 uniform mat4 ProjectionMatrix;
-
 
 void main(void)
 {
@@ -48,7 +55,7 @@ void main(void)
 
 				cube.color    = color;
 
-				mat3 normalMatrix = inverse(transpose(mat3(ViewMatrix)));
+				mat3 normalMatrix = inverse(transpose(mat3(globalMatrices.ViewMatrix)));
 
 				cube.n[0] = vec4 ( normalize( normalMatrix * cross( (cube.v[5]-cube.v[4]).xyz , (cube.v[7]-cube.v[4]).xyz )),0.0);
 				cube.n[1] = vec4 ( normalize( normalMatrix * cross( (cube.v[3]-cube.v[0]).xyz , (cube.v[1]-cube.v[0]).xyz )),0.0);
@@ -75,7 +82,7 @@ void main(void)
 
 				cube.color    = color;
 
-				mat3 normalMatrix = inverse(transpose(mat3(ViewMatrix)));
+				mat3 normalMatrix = inverse(transpose(mat3(globalMatrices.ViewMatrix)));
 
 				cube.n[0] = vec4 ( normalize( normalMatrix * cross( (cube.v[5]-cube.v[4]).xyz , (cube.v[7]-cube.v[4]).xyz )),0.0);
 				cube.n[1] = vec4 ( normalize( normalMatrix * cross( (cube.v[3]-cube.v[0]).xyz , (cube.v[1]-cube.v[0]).xyz )),0.0);
