@@ -12,6 +12,13 @@ uniform vec3 new_x;
 uniform vec3 new_y;
 uniform vec3 new_z;
 
+layout(std140) uniform GlobalMatrices
+{
+    mat4 ModelMatrix;
+    mat4 ViewMatrix;
+    mat4 ProjectionMatrix;
+} globalMatrices;
+
 out VertexData
 {
 		vec4 vertice;
@@ -29,18 +36,15 @@ in CubeData
 	vec4 v[8];
 	vec4 n[6];
 	vec4 color;
+flat    bool culled[8];
 } cube[1];
 
 struct Face
 {
 	int 	vertices[6];
-	vec3 	normal;
 };
 
-// For while, all transformations come from the Celer::Camera.
-uniform mat4 ModelMatrix;
-uniform mat4 ViewMatrix;
-uniform mat4 ProjectionMatrix;
+
 
 uniform vec2 WIN_SCALE;
 
@@ -57,10 +61,10 @@ void renderCube( in vec4 color ,bool proxy )
 	for ( int i = 0; i < 6; i++)
 	{
 
-		vp[0] = ProjectionMatrix * ViewMatrix * cube[0].v[faces[i].vertices[0]];
-		vp[1] = ProjectionMatrix * ViewMatrix * cube[0].v[faces[i].vertices[1]];
-		vp[2] = ProjectionMatrix * ViewMatrix * cube[0].v[faces[i].vertices[2]];
-		vp[3] = ProjectionMatrix * ViewMatrix * cube[0].v[faces[i].vertices[3]];
+		vp[0] = globalMatrices.ProjectionMatrix * globalMatrices.ViewMatrix * cube[0].v[faces[i].vertices[0]];
+		vp[1] = globalMatrices.ProjectionMatrix * globalMatrices.ViewMatrix * cube[0].v[faces[i].vertices[1]];
+		vp[2] = globalMatrices.ProjectionMatrix * globalMatrices.ViewMatrix * cube[0].v[faces[i].vertices[2]];
+		vp[3] = globalMatrices.ProjectionMatrix * globalMatrices.ViewMatrix * cube[0].v[faces[i].vertices[3]];
 
 		vec2 p0 = WIN_SCALE * (vp[0].xy / vp[0].w);
 		vec2 p1 = WIN_SCALE * (vp[1].xy / vp[1].w);
@@ -89,19 +93,19 @@ void renderCube( in vec4 color ,bool proxy )
 
 
 		dist = vec4(area4/length(v4), area3/length(v3), 0, 0);
-		VertexOut.vertice  = ViewMatrix * cube[0].v[faces[i].vertices[0]];
+		VertexOut.vertice  = cube[0].v[faces[i].vertices[0]];
 		gl_Position = vp[0];
 		EmitVertex();
 		dist = vec4(area2/length(v4), 0, 0, area1/length(v2));
-		VertexOut.vertice  = ViewMatrix * cube[0].v[faces[i].vertices[1]];
+		VertexOut.vertice  = cube[0].v[faces[i].vertices[1]];
 		gl_Position = vp[1];
 		EmitVertex();
 		dist = vec4(0, area2/length(v3), area1/length(v0), 0);
-		VertexOut.vertice  = ViewMatrix * cube[0].v[faces[i].vertices[2]];
+		VertexOut.vertice  = cube[0].v[faces[i].vertices[2]];
 		gl_Position = vp[2];
 		EmitVertex();
 		dist = vec4(0, 0, area3/length(v0), area4/length(v2));
-		VertexOut.vertice  = ViewMatrix * cube[0].v[faces[i].vertices[3]];
+		VertexOut.vertice  = cube[0].v[faces[i].vertices[3]];
 		gl_Position = vp[3];
 		EmitVertex();
 
@@ -146,7 +150,42 @@ void main(void)
 	faces[5].vertices[2] = 4;
 	faces[5].vertices[3] = 7;
 
+        // Not culled
+        if ( (cube[0].culled[0]) &&
+                 (cube[0].culled[1]) &&
+                 (cube[0].culled[2]) &&
+                 (cube[0].culled[3]) &&
+                 (cube[0].culled[4]) &&
+                 (cube[0].culled[5]) &&
+                 (cube[0].culled[6]) &&
+                 (cube[0].culled[7]) )
+        {
 
-	renderCube(cube[0].color,true);
+                //renderCube(cube[0].color,false);
+                //renderCube (vec4(0.0,1.0,0.0,1.0),false);
+
+        // To be partial culled
+        }else if ((cube[0].culled[0]) ||
+                          (cube[0].culled[1]) ||
+                          (cube[0].culled[2]) ||
+                          (cube[0].culled[3]) ||
+                          (cube[0].culled[4]) ||
+                          (cube[0].culled[5]) ||
+                          (cube[0].culled[6]) ||
+                          (cube[0].culled[7]) )
+        {
+
+                renderCube (cube[0].color,true);
+                //renderCube (vec4(1.0,0.0,0.0,1.0),true);
+                //renderCut (vec4(1.0,0.0,0.0,1.0),false);
+
+        // Full culled
+        }else
+        {
+
+                renderCube(cube[0].color,false);
+        }
+
+//	renderCube(cube[0].color,true);
 
 }

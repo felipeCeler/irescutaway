@@ -32,10 +32,6 @@ layout(std140) uniform GlobalMatrices
     mat4 ProjectionMatrix;
 } globalMatrices;
 
-uniform mat4 ModelMatrix;
-uniform mat4 ViewMatrix;
-uniform mat4 ProjectionMatrix;
-
 void main(void)
 {
 

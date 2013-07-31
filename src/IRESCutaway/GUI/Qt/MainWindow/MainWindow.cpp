@@ -75,7 +75,7 @@ void MainWindow::open( QString pFilename,bool who ) {
 
 	// Filling Dock Widget Layers
 
-	if ( glWidget->isIresWasOpenedSucessufully( ))
+	if ( glWidget->isIRESOpen( ))
 	{
 		QString title ( reinterpret_cast<char*>(glWidget->reservoir_model_.header_v2_.title) );
 
@@ -173,7 +173,7 @@ void MainWindow::on_pushButton_changePropertyRange_clicked()
 {
 	QMessageBox msgBox;
 
-	if ( glWidget->isIresWasOpenedSucessufully( ))
+	if ( glWidget->isIRESOpen( ))
 	{
 		glWidget->changePropertyRange( ui->doubleSpinMin->value(), ui->doubleSpinMax->value(), ui->comboBox_choose_an_property_->currentIndex() );
 	}else

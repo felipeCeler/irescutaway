@@ -80,7 +80,7 @@ class GLWidget: public QGLWidget
 
 		void loadShaders ( );
 		void openIRESCharles  ( const std::string& filename );
-		bool isIresWasOpenedSucessufully () const;
+		bool isIRESOpen () const;
 
 		void cutVolumeGenerator ( );
 		void changeProperty ( int property_index );
@@ -160,7 +160,7 @@ private:
 	GLuint texture_buffer;
 
 
-	bool ires_has_been_open_sucessefully;
+	bool isIRESOpen_;
 
 
 	// Cube in Interleaved VertexBuffer
@@ -184,16 +184,20 @@ private:
 	Celer::OpenGL::ShaderManager cube_interleaved_shader;
 
 	// Hong Kong Cutaway
-	Celer::OpenGL::ShaderManager hongKong_cutaway_shader;
+	Celer::OpenGL::ShaderManager cutawayVolumes;
 
 
 	// Cut Volume Stuffs
 	GLuint  uniformBuffer_cutVolumes_;
 
+
+	// Vector4<int> to mach std140 on shader. I'm still confusing.
+	// @link http://www.gamedev.net/topic/577950-glsl-uniform-block-std140-layout-question/
+	// @link http://stackoverflow.com/questions/15750788/glsl-layout-std140-padding-dilemma
 	struct CutVolume
 	{
-		Celer::Vector4<float> center_points[255];
-		int cut_volume_size;
+		Celer::Vector4<float> center_points[63];
+		Celer::Vector4<int> cut_volume_size;
 	};
 
 	CutVolume cutVolume_;

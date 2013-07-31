@@ -1,6 +1,11 @@
 #version 430 core
 
-layout(location = 0) in vec3 center_point;
+
+layout(std140) uniform CutVolumes
+{
+        vec4   center_points[63];
+        ivec4  size;
+}cutVolumes;
 
 out CubeData
 {
@@ -32,15 +37,17 @@ void main(void)
 	ext_y = new_y*0.3;
 	ext_z = new_z*0.1;
 
-	v[0] = vec4(center_point + ext_x + ext_y + 100*ext_z + 5*ext_x + 5*ext_y,1.0);
-	v[1] = vec4(center_point + ext_x + ext_y - ext_z,1.0);
-	v[2] = vec4(center_point - ext_x + ext_y - ext_z,1.0);
-	v[3] = vec4(center_point - ext_x + ext_y + 100*ext_z - 5*ext_x + 5*ext_y,1.0);
+	vec3 center_of_mass = cutVolumes.center_points[0].xyz;
 
-	v[4] = vec4(center_point + ext_x - ext_y + 100*ext_z + 5*ext_x - 5*ext_y,1.0);
-	v[5] = vec4(center_point - ext_x - ext_y + 100*ext_z - 5*ext_x - 5*ext_y,1.0);
-	v[6] = vec4(center_point - ext_x - ext_y - ext_z,1.0);
-	v[7] = vec4(center_point + ext_x - ext_y - ext_z,1.0);
+	v[0] = vec4(center_of_mass + ext_x + ext_y + 100*ext_z + 5*ext_x + 5*ext_y,1.0);
+	v[1] = vec4(center_of_mass + ext_x + ext_y - ext_z,1.0);
+	v[2] = vec4(center_of_mass - ext_x + ext_y - ext_z,1.0);
+	v[3] = vec4(center_of_mass - ext_x + ext_y + 100*ext_z - 5*ext_x + 5*ext_y,1.0);
+
+	v[4] = vec4(center_of_mass + ext_x - ext_y + 100*ext_z + 5*ext_x - 5*ext_y,1.0);
+	v[5] = vec4(center_of_mass - ext_x - ext_y + 100*ext_z - 5*ext_x - 5*ext_y,1.0);
+	v[6] = vec4(center_of_mass - ext_x - ext_y - ext_z,1.0);
+	v[7] = vec4(center_of_mass + ext_x - ext_y - ext_z,1.0);
 
 	// Top Face
 	vec3 normal_top = normalize (cross ( (v[3] - v[0]).xyz, (v[1] - v[0]).xyz ) );
@@ -84,5 +91,5 @@ void main(void)
 	cube.n[4] = normal_right;
 	cube.n[5] = normal_left;
 
-	gl_Position = vec4(center_point,1.0);
+	gl_Position = vec4(cutVolumes.center_points[1].xyz,1.0);
 }
