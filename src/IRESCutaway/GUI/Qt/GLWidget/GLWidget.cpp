@@ -30,7 +30,6 @@ void GLWidget::initializeGL ( )
 	glClearColor ( 0.0 , 0.0 , 0.0 , 1.0 );
 	glDisable(GL_BLEND);
 
-
 	setMinimumSize ( 640 , 480 );
 	setSizePolicy ( QSizePolicy::MinimumExpanding , QSizePolicy::MinimumExpanding );
 	/// Key event to GLWidget not o MainWindow ! | @QtDocumentation
@@ -912,8 +911,10 @@ void GLWidget::BoundingVolumeCutawaySetup( int cluster )
 			fboStep[0]->bind ( );
 
 			glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
-			glDepthFunc(GL_GEQUAL);
-			glClearDepth(1.0f);
+			glEnable ( GL_DEPTH_TEST );
+			glDepthMask(GL_TRUE);
+			glDepthFunc(GL_GREATER);
+			glClearDepth(0.0);
 			glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
 
@@ -935,7 +936,7 @@ void GLWidget::BoundingVolumeCutawaySetup( int cluster )
 			fboStep[1]->bind ( );
 
 			glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
-			glDepthFunc(GL_GEQUAL);
+			glDepthFunc(GL_LESS);
 			glClearDepth(1.0f);
 			glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 

@@ -175,8 +175,8 @@ void main(void)
                           (cube[0].culled[7]) )
         {
 
-                renderCube (cube[0].color,true);
-                //renderCube (vec4(1.0,0.0,0.0,1.0),true);
+                //renderCube (cube[0].color,true);
+                renderCube (vec4(1.0,0.0,0.0,1.0),true);
                 //renderCut (vec4(1.0,0.0,0.0,1.0),false);
 
         // Full culled

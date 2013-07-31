@@ -102,7 +102,8 @@ void main(void)
 
         if (gl_FragCoord.z < (cutaway.w)) //&&  length( gl_FragCoord.st - color.xy) < 20.0 )
         {
-                discard;
+        	if (VertexIn.proxy)
+        		discard;
         }
         if ( VertexIn.proxy)
         {
@@ -117,11 +118,11 @@ void main(void)
                         I = 0;
 
 
-                        if (abs(gl_FragCoord.z - (cutaway.w)) < 0.000001) {
+                        if (abs(gl_FragCoord.z - (cutaway.w)) < 0.0000015) {
                                 I = 0;
                         }
 
-                        gl_FragDepth = gl_FragCoord.z-0.0000001;
+                        //gl_FragDepth = gl_FragCoord.z-0.0000001;
                 }
 
 
