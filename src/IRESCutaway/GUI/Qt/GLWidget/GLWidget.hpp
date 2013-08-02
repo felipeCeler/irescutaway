@@ -197,7 +197,7 @@ private:
 	struct CutVolume
 	{
 		Celer::Vector4<float> center_points[63];
-		Celer::Vector4<int> cut_volume_size;
+		Celer::Vector4<int>   size;
 	};
 
 	CutVolume cutVolume_;

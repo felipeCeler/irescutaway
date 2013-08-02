@@ -1,4 +1,7 @@
 #version 430 core
+#extension GL_ARB_texture_rectangle : enable
+
+layout(location = 0) uniform sampler2DRect normals;
 
 uniform vec3 lightDirection;
 
@@ -15,6 +18,9 @@ in vec2 texcoord;
 
 void main(void)
 {
+
+
+	vec4 cutaway = texture2DRect( normals , gl_FragCoord.xy).rgba;
 
 	vec3 newNormal = VertexOut.normal.xyz;
 	vec3 newVert = VertexOut.vert.xyz;
@@ -38,7 +44,14 @@ void main(void)
 //		outputColor = vec4(abs(VertexOut.normal),1.0) ;
 //	}else
 //	{
-		outputColor =    vec4 ( la.rgb + ld.xyz + ls.rgb , 1.0 ) ;
+	  float zbuffer = cutaway.z / cutaway.w ;
+
+	  zbuffer = 1.0 - (zbuffer) / 50.0;
+
+	  zbuffer = cutaway.w * 15;
+
+	  outputColor = vec4(zbuffer, zbuffer, zbuffer, 1.0);
+	  //outputColor =    vec4 ( la.rgb + ld.xyz + ls.rgb , 1.0 ) ;
 //	}
 
 	//outputColor = vec4(abs(VertexOut.normal),1.0) ;

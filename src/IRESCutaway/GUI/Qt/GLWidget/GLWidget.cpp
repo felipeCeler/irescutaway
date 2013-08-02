@@ -56,9 +56,10 @@ void GLWidget::initializeGL ( )
 	QGLFramebufferObjectFormat format;
 	format.setSamples(4);
 
-	//format.setAttachment(QGLFramebufferObject::Depth);
+	format.setAttachment(QGLFramebufferObject::Depth);
 	format.setInternalTextureFormat ( GL_RGBA32F );
 	format.setTextureTarget ( GL_TEXTURE_RECTANGLE );
+
 
 	fboStep[0] 	  = new  QGLFramebufferObject ( width() , height() , format );
 	fboStep[1] 	  = new  QGLFramebufferObject ( width() , height() , format );
@@ -244,7 +245,7 @@ void GLWidget::cutVolumeGenerator( )
 
 	}
 
-	cutVolume_.cut_volume_size = Celer::Vector4<int> (cutVolumeIndex,0,0,0);
+	cutVolume_.size = Celer::Vector4<int> (cutVolumeIndex,0,0,0);
 
 	glBindVertexArray ( vertexArray_box );
 		glBindBuffer ( GL_ARRAY_BUFFER , vertexBuffer_box );
@@ -785,7 +786,7 @@ void GLWidget::resizeGL ( int width , int height )
 
 
 	QGLFramebufferObjectFormat format;
-	//format.setAttachment(QGLFramebufferObject::Depth);
+	format.setAttachment(QGLFramebufferObject::Depth);
 	format.setTextureTarget ( GL_TEXTURE_RECTANGLE );
 	format.setInternalTextureFormat ( GL_RGBA32F );
 
@@ -884,8 +885,8 @@ void GLWidget::BoundingVolumeCutawaySetup( int cluster )
 //		{
 //			glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
 //			glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-//			glDepthFunc(GL_LEQUAL);
-//			glClearDepth(1.0f);
+//			glDepthFunc(GL_GREATER);
+//			glClearDepth(0.0f);
 //			BoundingBoxDebug.active ( );
 //			// FIXME Throw an Exception when std::map doesnt find A VARIABLE !!!
 //			glUniform3fv ( BoundingBoxDebug.uniforms_["new_x"].location , 1 , new_x );
@@ -904,21 +905,17 @@ void GLWidget::BoundingVolumeCutawaySetup( int cluster )
  		if ( cutVolumes.size( ) > 0)
  		{
 
-
-
-			BoundingBoxInitialization.active ( );
+			glDepthFunc ( GL_GREATER);
+			glClearDepth ( 0.0 );
 
 			fboStep[0]->bind ( );
 
 			glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
-			glEnable ( GL_DEPTH_TEST );
-			glDepthMask(GL_TRUE);
-			glDepthFunc(GL_GREATER);
-			glClearDepth(0.0);
 			glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
+			BoundingBoxInitialization.active ( );
 
- 			glUniform1i ( BoundingBoxInitialization.uniforms_["pass"].location , 1 );
+ 			glUniform1i ( BoundingBoxInitialization.uniforms_["pass"].location , 0 );
 			glUniform3fv ( BoundingBoxInitialization.uniforms_["new_x"].location , 1 , new_x );
 			glUniform3fv ( BoundingBoxInitialization.uniforms_["new_y"].location , 1 , new_y );
 			glUniform3fv ( BoundingBoxInitialization.uniforms_["new_z"].location , 1 , new_z );
@@ -927,8 +924,10 @@ void GLWidget::BoundingVolumeCutawaySetup( int cluster )
 			glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
 			//VAO
 			glBindVertexArray ( vertexArray_box );
-			glDrawArrays ( GL_POINTS , 0 , box_vertices.size());
+			glDrawArrays ( GL_POINTS , 0 , cutVolume_.size.x);
 			glBindVertexArray ( 0 );
+
+			BoundingBoxInitialization.deactive ( );
 
 			fboStep[0]->release ( );
 
@@ -936,9 +935,9 @@ void GLWidget::BoundingVolumeCutawaySetup( int cluster )
 			fboStep[1]->bind ( );
 
 			glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
-			glDepthFunc(GL_LESS);
-			glClearDepth(1.0f);
 			glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
+			BoundingBoxInitialization.active ( );
 
  			glUniform1i ( BoundingBoxInitialization.uniforms_["pass"].location , 1 );
 			glUniform3fv ( BoundingBoxInitialization.uniforms_["new_x"].location , 1 , new_x );
@@ -949,11 +948,13 @@ void GLWidget::BoundingVolumeCutawaySetup( int cluster )
 			glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
 			//VAO
 			glBindVertexArray ( vertexArray_box );
-			glDrawArrays ( GL_POINTS , 0 , box_vertices.size());
+			glDrawArrays ( GL_POINTS , 0 , cutVolume_.size.x);
 			glBindVertexArray ( 0 );
 
-			fboStep[1]->release ( );
 			BoundingBoxInitialization.deactive ( );
+
+			fboStep[1]->release ( );
+
 
  		}
 
@@ -962,7 +963,6 @@ void GLWidget::BoundingVolumeCutawaySetup( int cluster )
 		glDepthFunc(GL_LESS);
 		glClearDepth(1.0f);
 		glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-// 		glDisable(GL_BLEND);
 
 		if ( draw_secondary )
 		{
@@ -972,7 +972,6 @@ void GLWidget::BoundingVolumeCutawaySetup( int cluster )
  			glBindTexture ( GL_TEXTURE_RECTANGLE , fboStep[0]->texture ( ) );
  			glActiveTexture ( GL_TEXTURE1 );
  			glBindTexture ( GL_TEXTURE_RECTANGLE , fboStep[1]->texture ( ) );
-
 
  			glUniform1i ( BoundingBoxCutaway.uniforms_["normals"].location , 0 );
  			glUniform1i ( BoundingBoxCutaway.uniforms_["vertices"].location , 1 );
@@ -1009,24 +1008,30 @@ void GLWidget::BoundingVolumeCutawaySetup( int cluster )
 		if ( draw_primary )
 		{
 
-			if ( cutVolumes.size ( ) > 0 )
-			{
-				glDepthFunc(GL_GEQUAL);
-				glClearDepth(1.0f);
-				BoundingBoxDebug.active ( );
-				// FIXME Throw an Exception when std::map doesnt find A VARIABLE !!!
-				glUniform3fv ( BoundingBoxDebug.uniforms_["new_x"].location , 1 , new_x );
-				glUniform3fv ( BoundingBoxDebug.uniforms_["new_y"].location , 1 , new_y );
-				glUniform3fv ( BoundingBoxDebug.uniforms_["new_z"].location , 1 , new_z );
-				glUniformMatrix4fv ( BoundingBoxDebug.uniforms_["ModelMatrix"].location , 1 , GL_TRUE , lookatCamera );
-				glUniformMatrix4fv ( BoundingBoxDebug.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-				glUniformMatrix4fv ( BoundingBoxDebug.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
-				//VAO
-				glBindVertexArray ( vertexArray_box );
-				glDrawArrays ( GL_POINTS , 0 , box_vertices.size());
-				glBindVertexArray ( 0 );
-				BoundingBoxDebug.deactive ( );
-			}
+//			if ( cutVolumes.size ( ) > 0 )
+//			{
+//				glDepthFunc(GL_GREATER);
+//				glClearDepth(0.0);
+//				glClear ( GL_DEPTH_BUFFER_BIT );
+//
+//				BoundingBoxDebug.active ( );
+//				glActiveTexture ( GL_TEXTURE0 );
+//	 			glBindTexture ( GL_TEXTURE_RECTANGLE , fboStep[0]->texture ( ) );
+//				// FIXME Throw an Exception when std::map doesnt find A VARIABLE !!!
+//	 			glUniform1i ( BoundingBoxDebug.uniforms_["normals"].location , 0 );
+//				glUniform3fv ( BoundingBoxDebug.uniforms_["new_x"].location , 1 , new_x );
+//				glUniform3fv ( BoundingBoxDebug.uniforms_["new_y"].location , 1 , new_y );
+//				glUniform3fv ( BoundingBoxDebug.uniforms_["new_z"].location , 1 , new_z );
+//				glUniformMatrix4fv ( BoundingBoxDebug.uniforms_["ModelMatrix"].location , 1 , GL_TRUE , lookatCamera );
+//				glUniformMatrix4fv ( BoundingBoxDebug.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+//				glUniformMatrix4fv ( BoundingBoxDebug.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+//				//VAO
+//				glBindVertexArray ( vertexArray_box );
+//				glDrawArrays ( GL_POINTS , 0 , cutVolume_.cut_volume_size.x );
+//				glBindVertexArray ( 0 );
+//				BoundingBoxDebug.deactive ( );
+//			}
+
 
  			primary.active ( );
 
@@ -1044,7 +1049,6 @@ void GLWidget::BoundingVolumeCutawaySetup( int cluster )
 			primary.deactive ( );
 
 		}
-//
 	}
 
 
@@ -1089,27 +1093,23 @@ void GLWidget::BoundingVolumeCutawaySetup( int cluster )
 
 void GLWidget::NoCutawaySetUp ( )
 {
-	glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-
 	/// FIXME Conditions  - Just the model opened.
-
 
  	if ( isIRESOpen_ )
 	{
-
 		if ( draw_secondary )
 		{
-
 			if ( cutVolumes.size ( ) > 0 )
 			{
-
-
-				BoundingBoxInitialization.active ( );
+				glDepthFunc ( GL_GREATER);
+				glClearDepth ( 0.0 );
 
 				fboStep[0]->bind ( );
 
 				glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
 				glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
+				BoundingBoxInitialization.active ( );
 
 	 			glUniform1i ( BoundingBoxInitialization.uniforms_["pass"].location , 0 );
 				glUniform3fv ( BoundingBoxInitialization.uniforms_["new_x"].location , 1 , new_x );
@@ -1123,6 +1123,8 @@ void GLWidget::NoCutawaySetUp ( )
 				glDrawArrays ( GL_POINTS , 0 , 1);
 				glBindVertexArray ( 0 );
 
+				BoundingBoxInitialization.deactive ( );
+
 				fboStep[0]->release ( );
 
 
@@ -1130,6 +1132,8 @@ void GLWidget::NoCutawaySetUp ( )
 
 				glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
 				glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
+				BoundingBoxInitialization.active ( );
 
 	 			glUniform1i ( BoundingBoxInitialization.uniforms_["pass"].location , 1 );
 				glUniform3fv ( BoundingBoxInitialization.uniforms_["new_x"].location , 1 , new_x );
@@ -1143,14 +1147,18 @@ void GLWidget::NoCutawaySetUp ( )
 				glDrawArrays ( GL_POINTS , 0 , 1);
 				glBindVertexArray ( 0 );
 
+				BoundingBoxInitialization.deactive ( );
+
 				fboStep[1]->release ( );
-
-
-				cutawayVolumes.active();
 
 
 				glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
 				glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
+				glDepthFunc(GL_LESS);
+				glClearDepth( 1.0f );
+
+				cutawayVolumes.active();
 
 	 			glActiveTexture ( GL_TEXTURE0 );
 	 			glBindTexture ( GL_TEXTURE_RECTANGLE , fboStep[0]->texture ( ) );
@@ -1159,7 +1167,6 @@ void GLWidget::NoCutawaySetUp ( )
 
 	 			glUniform1i ( cutawayVolumes.uniforms_["depthBuffer"].location , 0 );
 	 			glUniform1i ( cutawayVolumes.uniforms_["verticeBuffer"].location , 1 );
-	 			glUniform1i ( cutawayVolumes.uniforms_["doIntersection"].location , 0 );
 
 				glUniform3fv ( cutawayVolumes.uniforms_["new_x"].location , 1 ,  new_x );
 				glUniform3fv ( cutawayVolumes.uniforms_["new_y"].location , 1 ,  new_y );
@@ -1218,8 +1225,11 @@ void GLWidget::NoCutawaySetUp ( )
 
 			}else
 			{
+				glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
+				glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-
+				glDepthFunc(GL_LESS);
+				glClearDepth( 1.0f );
 
 				secondary.active ( );
 
@@ -1537,6 +1547,7 @@ void GLWidget::loadShaders ( )
 
 	glUniformBlockBinding(cutawayVolumes.id( ), cutawayVolumes.uniform_blocks_["CutVolumes"].index, 1);
 	glUniformBlockBinding(BoundingBoxInitialization.id( ), BoundingBoxInitialization.uniform_blocks_["CutVolumes"].index, 1);
+	glUniformBlockBinding(BoundingBoxDebug.id( ), BoundingBoxDebug.uniform_blocks_["CutVolumes"].index, 1);
 
 
 

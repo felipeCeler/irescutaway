@@ -1,8 +1,8 @@
 #version 430 core
 #extension GL_ARB_texture_rectangle : enable
 
-uniform sampler2DRect normals;
-uniform sampler2DRect vertices;
+layout(location = 0) uniform sampler2DRect normals;
+layout(location = 1) uniform sampler2DRect vertices;
 
 in VertexData
 {

@@ -152,37 +152,32 @@ void main(void)
 
         // Not culled
         if ( (cube[0].culled[0]) &&
-                 (cube[0].culled[1]) &&
-                 (cube[0].culled[2]) &&
-                 (cube[0].culled[3]) &&
-                 (cube[0].culled[4]) &&
-                 (cube[0].culled[5]) &&
-                 (cube[0].culled[6]) &&
-                 (cube[0].culled[7]) )
+             (cube[0].culled[1]) &&
+             (cube[0].culled[2]) &&
+             (cube[0].culled[3]) &&
+             (cube[0].culled[4]) &&
+             (cube[0].culled[5]) &&
+             (cube[0].culled[6]) &&
+             (cube[0].culled[7]) )
         {
-
                 //renderCube(cube[0].color,false);
-                //renderCube (vec4(0.0,1.0,0.0,1.0),false);
-
+                renderCube (vec4(0.0,1.0,0.0,1.0),false);
         // To be partial culled
-        }else if ((cube[0].culled[0]) ||
-                          (cube[0].culled[1]) ||
-                          (cube[0].culled[2]) ||
-                          (cube[0].culled[3]) ||
-                          (cube[0].culled[4]) ||
-                          (cube[0].culled[5]) ||
-                          (cube[0].culled[6]) ||
-                          (cube[0].culled[7]) )
+        }else if ( (cube[0].culled[0]) ||
+                   (cube[0].culled[1]) ||
+                   (cube[0].culled[2]) ||
+                   (cube[0].culled[3]) ||
+                   (cube[0].culled[4]) ||
+                   (cube[0].culled[5]) ||
+                   (cube[0].culled[6]) ||
+                   (cube[0].culled[7]) )
         {
-
                 //renderCube (cube[0].color,true);
                 renderCube (vec4(1.0,0.0,0.0,1.0),true);
                 //renderCut (vec4(1.0,0.0,0.0,1.0),false);
-
         // Full culled
         }else
         {
-
                 renderCube(cube[0].color,false);
         }
 

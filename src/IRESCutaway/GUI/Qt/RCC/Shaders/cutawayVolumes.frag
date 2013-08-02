@@ -1,16 +1,16 @@
 #version 430
 #extension GL_ARB_texture_rectangle : enable
 
-uniform sampler2DRect depthBuffer;
-uniform sampler2DRect verticeBuffer;
+layout (location = 0) uniform sampler2DRect depthBuffer;
+layout (location = 1) uniform sampler2DRect verticeBuffer;
 
 out vec4 outputColor;
 
 in VertexData
 {
-		vec4 vertice;
-		vec4 normal;
-		vec4 color;
+	vec4 vertice;
+	vec4 normal;
+	vec4 color;
 flat 	bool proxy;
 flat    int face;
 flat    int id;
@@ -97,50 +97,34 @@ void main(void)
 
         float d = min(dist[0], min(dist[1], min(dist[2], dist[3])));
         float I = exp2(-2 * d * d);
-
-        gl_FragDepth = gl_FragCoord.z;
-
+//
+//        gl_FragDepth = gl_FragCoord.z;
+//
         if (gl_FragCoord.z < (cutaway.w)) //&&  length( gl_FragCoord.st - color.xy) < 20.0 )
         {
-        	if (VertexIn.proxy)
+        	//if (VertexIn.proxy)
         		discard;
         }
-        if ( VertexIn.proxy)
-        {
-                if (dot (newNormal.xyz,vec3(0.0,0.0,-1.0)) > 0 )
-                {
-                        newNormal = cutaway.xyz;
-                        newVert   = vertice.xyz;
-
-
-
-
-                        I = 0;
-
-
-                        if (abs(gl_FragCoord.z - (cutaway.w)) < 0.0000015) {
-                                I = 0;
-                        }
-
-                        //gl_FragDepth = gl_FragCoord.z-0.0000001;
-                }
-
-
-        }
-
-//		if (dot(newNormal.xyz, vec3(0.0, 0.0, -1.0)) > 0) {
-//			//newNormal = cutaway.xyz;
+//        if ( VertexIn.proxy)
+//        {
+//                if (dot (newNormal.xyz,vec3(0.0,0.0,-1.0)) > 0 )
+//                {
+//                        newNormal = cutaway.xyz;
+//                        newVert   = vertice.xyz;
 //
-//			//color_t = vec4(cutaway.xyz,1.0);
 //
-//			I = 0;
+//                        I = 0;
 //
-//			if (abs(gl_FragCoord.z - (cutaway.w)) < 0.00001) {
-//				I = 1 - (abs(dot(newNormal.xyz, cutaway.xyz)));
-//			}
 //
-//			gl_FragDepth = gl_FragCoord.z - 0.0000001;
-//		}
+//                        if (abs(gl_FragCoord.z - (cutaway.w)) < 0.0000015) {
+//                                I = 0;
+//                        }
+//
+//                        gl_FragDepth = gl_FragCoord.z-0.0000001;
+//                }
+//
+//
+//        }
 
         {
 

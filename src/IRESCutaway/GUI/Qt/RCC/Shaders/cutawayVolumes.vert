@@ -114,8 +114,18 @@ void main(void)
         cutVolume[5].vertices[2] = 5;
         cutVolume[5].vertices[3] = 3;
 
+
+        cube.culled[0] = true;
+        cube.culled[1] = true;
+        cube.culled[2] = true;
+        cube.culled[3] = true;
+        cube.culled[4] = true;
+        cube.culled[5] = true;
+        cube.culled[6] = true;
+        cube.culled[7] = true;
+
         // For each cut volume
-        for (int j = 0 ; j < 1 ; j++)
+	for ( int j = 0; j < cutVolumes.size.x ; j++ )
         {
                 vec3 center_of_mass = cutVolumes.center_points[j].xyz;
 
@@ -132,8 +142,6 @@ void main(void)
                 // For each vertex in the cube
                 for ( int vertex_index = 0; vertex_index < 8; vertex_index++)
                 {
-                        cube.culled[vertex_index] = true;
-
                         // For each side of the cube volume
                         for ( int i = 0; i < 6; i++)
                         {
