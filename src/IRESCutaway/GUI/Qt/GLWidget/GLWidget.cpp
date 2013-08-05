@@ -1094,6 +1094,9 @@ void GLWidget::NoCutawaySetUp ( )
 {
 	/// FIXME Conditions  - Just the model opened.
 
+        glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
+        glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
  	if ( isIRESOpen_ )
 	{
 		if ( draw_secondary )
@@ -1150,27 +1153,28 @@ void GLWidget::NoCutawaySetUp ( )
 
 	                        fboStep[1]->release ( );
 
+
                                 glDepthFunc(GL_LESS);
                                 glClearDepth( 1.0f );
-				glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
-				glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
+                                glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
+                                glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+//
 				cutawayVolumes.active();
 
-	 			glActiveTexture ( GL_TEXTURE0 );
-	 			glBindTexture ( GL_TEXTURE_RECTANGLE , fboStep[0]->texture ( ) );
-	 			glActiveTexture ( GL_TEXTURE1 );
-	 			glBindTexture ( GL_TEXTURE_RECTANGLE , fboStep[1]->texture ( ) );
+				glActiveTexture ( GL_TEXTURE0 );
+				glBindTexture ( GL_TEXTURE_RECTANGLE , fboStep[0]->texture ( ) );
+				glActiveTexture ( GL_TEXTURE1 );
+				glBindTexture ( GL_TEXTURE_RECTANGLE , fboStep[1]->texture ( ) );
 
-	 			glUniform1i ( cutawayVolumes.uniforms_["depthBuffer"].location , 0 );
-	 			glUniform1i ( cutawayVolumes.uniforms_["verticeBuffer"].location , 1 );
+				glUniform1i ( cutawayVolumes.uniforms_["depthBuffer"].location , 0 );
+				glUniform1i ( cutawayVolumes.uniforms_["verticeBuffer"].location , 1 );
 
 				glUniform3fv ( cutawayVolumes.uniforms_["new_x"].location , 1 ,  new_x );
 				glUniform3fv ( cutawayVolumes.uniforms_["new_y"].location , 1 ,  new_y );
 				glUniform3fv ( cutawayVolumes.uniforms_["new_z"].location , 1 ,  new_z );
 
 				glUniform2f ( cutawayVolumes.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
-
 
 				glBindVertexArray ( vertexArray_cube_interleaved );
 				glDrawArrays ( GL_POINTS , 0 , cube_interleaved.size() );
@@ -1219,27 +1223,47 @@ void GLWidget::NoCutawaySetUp ( )
 //
 //				BoundingBoxDebug.deactive ( );
 
-			}else
+			}
+			else
 			{
 
-                                glDepthFunc(GL_LESS);
-                                glClearDepth( 1.0f );
+				glDepthFunc(GL_LESS);
+				glClearDepth( 1.0f );
 
 				glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
 				glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-				secondary.active ( );
+				cutawayVolumes.active ( );
 
-				glUniform3fv ( secondary.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
-				glUniform3i  ( secondary.uniforms_["min_IJK"].location , min_I_, min_J_, min_K_ );
-				glUniform3i  ( secondary.uniforms_["max_IJK"].location , max_I_, max_J_, max_K_ );
-				glUniform2f  ( secondary.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
+				glUniform3fv ( cutawayVolumes.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
+				glUniform3i  ( cutawayVolumes.uniforms_["min_IJK"].location , min_I_, min_J_, min_K_ );
+				glUniform3i  ( cutawayVolumes.uniforms_["max_IJK"].location , max_I_, max_J_, max_K_ );
+				glUniform2f  ( cutawayVolumes.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
 
 				glBindVertexArray ( vertexArray_cube_interleaved );
 				glDrawArrays ( GL_POINTS , 0 , cube_interleaved.size() );
 				glBindVertexArray ( 0 );
 
-				secondary.deactive ( );
+				cutawayVolumes.deactive ( );
+
+//                              glDepthFunc(GL_LESS);
+//                              glClearDepth( 1.0f );
+//
+//				glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
+//				glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+//
+//				secondary.active ( );
+//
+//				glUniform3fv ( secondary.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
+//				glUniform3i  ( secondary.uniforms_["min_IJK"].location , min_I_, min_J_, min_K_ );
+//				glUniform3i  ( secondary.uniforms_["max_IJK"].location , max_I_, max_J_, max_K_ );
+//				glUniform2f  ( secondary.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
+//
+//				glBindVertexArray ( vertexArray_cube_interleaved );
+//				glDrawArrays ( GL_POINTS , 0 , cube_interleaved.size() );
+//				glBindVertexArray ( 0 );
+//
+//				secondary.deactive ( );
 			}
 
 //			debugNormal.active( );
