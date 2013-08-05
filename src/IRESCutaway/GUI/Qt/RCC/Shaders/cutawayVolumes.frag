@@ -98,12 +98,12 @@ void main(void)
         float d = min(dist[0], min(dist[1], min(dist[2], dist[3])));
         float I = exp2(-2 * d * d);
 //
-//        gl_FragDepth = gl_FragCoord.z;
+        //gl_FragDepth = gl_FragCoord.z;
 //
         if (gl_FragCoord.z < (cutaway.w)) //&&  length( gl_FragCoord.st - color.xy) < 20.0 )
         {
         	//if (VertexIn.proxy)
-        		discard;
+        		//discard;
         }
 //        if ( VertexIn.proxy)
 //        {
@@ -126,7 +126,6 @@ void main(void)
 //
 //        }
 
-        {
 
 	newNormal = normalize ( newNormal );
 
@@ -144,11 +143,10 @@ void main(void)
 	//outputColor = I * vec4 ( 0.0 , 0.0 , 0.0 , 1.0 ) + ( 1.0 - I ) * vec4 ( la.rgb + ld.xyz + ls.rgb , 1.0 );
 
 
-
 	outputColor = I * vec4(0.0, 0.0, 0.0, 1.0) + (1.0 - I) * vec4(color_t);
 
 
-        }
+
 
 
 

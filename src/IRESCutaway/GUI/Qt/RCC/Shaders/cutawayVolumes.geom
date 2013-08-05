@@ -1,16 +1,7 @@
 #version 430
 
 layout ( points ) in;
-layout ( triangle_strip, max_vertices=48 ) out;
-
-uniform vec4 center_points[256];
-uniform vec4 max_points[256];
-uniform vec4 min_points[256];
-uniform int cut_volume_size;
-
-uniform vec3 new_x;
-uniform vec3 new_y;
-uniform vec3 new_z;
+layout ( triangle_strip, max_vertices=24 ) out;
 
 layout(std140) uniform GlobalMatrices
 {
@@ -21,9 +12,9 @@ layout(std140) uniform GlobalMatrices
 
 out VertexData
 {
-		vec4 vertice;
-		vec4 normal;
-		vec4 color;
+	vec4 vertice;
+	vec4 normal;
+	vec4 color;
 flat	bool proxy;
 flat 	int face;
 flat    int id;
@@ -44,23 +35,17 @@ struct Face
 	int 	vertices[6];
 };
 
-
-
 uniform vec2 WIN_SCALE;
 
 Face faces[6];
 
 vec4 vp[4];
 
-
-
 void renderCube( in vec4 color ,bool proxy )
 {
 
-
 	for ( int i = 0; i < 6; i++)
 	{
-
 		vp[0] = globalMatrices.ProjectionMatrix * globalMatrices.ViewMatrix * cube[0].v[faces[i].vertices[0]];
 		vp[1] = globalMatrices.ProjectionMatrix * globalMatrices.ViewMatrix * cube[0].v[faces[i].vertices[1]];
 		vp[2] = globalMatrices.ProjectionMatrix * globalMatrices.ViewMatrix * cube[0].v[faces[i].vertices[2]];
@@ -84,13 +69,11 @@ void renderCube( in vec4 color ,bool proxy )
 		float area3 = abs(v0.x * v5.y - v0.y * v5.x);
 		float area4 = abs(v2.x * v5.y - v2.y * v5.x);
 
-
 		VertexOut.normal = cube[0].n[i];
 		VertexOut.color = color;
 		VertexOut.proxy = proxy;
 		VertexOut.face = i;
 		VertexOut.id   = i;
-
 
 		dist = vec4(area4/length(v4), area3/length(v3), 0, 0);
 		VertexOut.vertice  = cube[0].v[faces[i].vertices[0]];
@@ -110,14 +93,12 @@ void renderCube( in vec4 color ,bool proxy )
 		EmitVertex();
 
 		EndPrimitive();
-
 	}
 }
 
 
 void main(void)
 {
-
 	// Cube Orientation as IRESv2
 	// top
 	faces[0].vertices[0] = 4;
@@ -150,7 +131,7 @@ void main(void)
 	faces[5].vertices[2] = 4;
 	faces[5].vertices[3] = 7;
 
-        // Not culled
+        // Full culled
         if ( (cube[0].culled[0]) &&
              (cube[0].culled[1]) &&
              (cube[0].culled[2]) &&
@@ -175,12 +156,10 @@ void main(void)
                 //renderCube (cube[0].color,true);
                 renderCube (vec4(1.0,0.0,0.0,1.0),true);
                 //renderCut (vec4(1.0,0.0,0.0,1.0),false);
-        // Full culled
         }else
         {
-                renderCube(cube[0].color,false);
+                renderCube(vec4(0.0,0.0,1.0,1.0),false);
         }
 
-//	renderCube(cube[0].color,true);
-
+        renderCube(cube[0].color,false);
 }

@@ -1,4 +1,5 @@
 #version 430
+#pragma optionNV(unroll all)
 
 layout(location = 0) in vec4 v0;
 layout(location = 1) in vec4 v1;
@@ -145,6 +146,7 @@ void main(void)
                         // For each side of the cube volume
                         for ( int i = 0; i < 6; i++)
                         {
+                                // normals point inside the volume
                                 vec3 normal = normalize (cross ( (v[cutVolume[i].vertices[3]].xyz - v[cutVolume[i].vertices[0]].xyz),
                                                                  (v[cutVolume[i].vertices[1]].xyz - v[cutVolume[i].vertices[0]].xyz) ) );
 
