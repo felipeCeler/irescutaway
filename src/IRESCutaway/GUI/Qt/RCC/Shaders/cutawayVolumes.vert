@@ -57,6 +57,8 @@ struct Face
 /// Culling Procedure
 vec4 v[8];
 
+int sum_table[8];
+
 CutPlane cutPlaneIn;
 Face cutVolume[6];
 
@@ -77,7 +79,7 @@ void main(void)
 	cube.v[1] = v1;
 	cube.v[2] = v2;
 
-	cube.color    = color;
+	cube.color  = color;
 
         /// Culling Procedure
         ext_x = new_x*0.3;
@@ -125,6 +127,16 @@ void main(void)
         cube.culled[6] = true;
         cube.culled[7] = true;
 
+        sum_table[0] = 0;
+        sum_table[1] = 0;
+        sum_table[2] = 0;
+        sum_table[3] = 0;
+        sum_table[4] = 0;
+        sum_table[5] = 0;
+        sum_table[6] = 0;
+        sum_table[7] = 0;
+
+        bool outside = false;
         // For each cut volume
 	for ( int j = 0; j < cutVolumes.size.x ; j++ )
         {
@@ -155,11 +167,28 @@ void main(void)
                                 // Vertex lies in the same side
                                 if ( dot ( cutPlaneIn.normal , ( cube.v[vertex_index] - cutPlaneIn.point ) ) < 0.0 )
                                 {
-                                        cube.culled[vertex_index] = false;
+                                        outside = true;
                                 }
+                        }
+
+                        if ( outside )
+                        {
+                                sum_table[vertex_index]++;
                         }
                 }
         }
+
+
+
+        // For each vertex in the cube
+        for ( int vertex_index = 0; vertex_index < 8; vertex_index++)
+        {
+                if ( sum_table[vertex_index] == cutVolumes.size.x )
+                {
+                        cube.culled[vertex_index] = false;
+                }
+        }
+
 
 	mat3 normalMatrix = inverse(transpose(mat3(globalMatrices.ViewMatrix)));
 
