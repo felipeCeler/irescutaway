@@ -270,6 +270,9 @@ private:
 
 	Celer::Vector3<float> new_y;
 
+	float volume_width;
+	float volume_height;
+
 	Celer::Matrix4x4<float> lookatCamera;
 
 	float vmax;

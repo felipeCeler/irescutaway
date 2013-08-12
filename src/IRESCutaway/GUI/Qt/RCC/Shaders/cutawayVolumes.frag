@@ -117,13 +117,11 @@ void main(void)
 
 
                         if (abs(gl_FragCoord.z - (cutaway.w)) < 0.0000015) {
-                                I = 0;
+                                I = 1;
                         }
 
                         gl_FragDepth = gl_FragCoord.z-0.0000001;
                 }
-
-
         }
 
 

@@ -60,6 +60,9 @@ vec4 v[8];
 CutPlane cutPlaneIn;
 Face cutVolume[6];
 
+uniform float x;
+uniform float y;
+
 vec3 ext_x;
 vec3 ext_y;
 vec3 ext_z;
@@ -79,10 +82,6 @@ void main(void)
 
 	cube.color  = color;
 
-        /// Culling Procedure
-        ext_x = new_x*0.3;
-        ext_y = new_y*0.3;
-        ext_z = new_z*0.1;
 
         // top
         cutVolume[0].vertices[0] = 0;
@@ -134,15 +133,20 @@ void main(void)
         {
 		for ( int j = 0; j < cutVolumes.size.x ; j++ )
 		{
+
+		        ext_x = new_x*0.1;
+		        ext_y = new_y*0.1;
+		        ext_z = new_z*0.1;
+
 			vec3 center_of_mass = cutVolumes.center_points[j].xyz;
 
-			v[0] = vec4(center_of_mass + ext_x + ext_y + 100*ext_z + 5*ext_x + 5*ext_y,1.0);
+			v[0] = vec4(center_of_mass + ext_x + ext_y + 100*ext_z + x*ext_x + y*ext_y,1.0);
 			v[1] = vec4(center_of_mass + ext_x + ext_y - ext_z,1.0);
 			v[2] = vec4(center_of_mass - ext_x + ext_y - ext_z,1.0);
-			v[3] = vec4(center_of_mass - ext_x + ext_y + 100*ext_z - 5*ext_x + 5*ext_y,1.0);
+			v[3] = vec4(center_of_mass - ext_x + ext_y + 100*ext_z - x*ext_x + y*ext_y,1.0);
 
-			v[4] = vec4(center_of_mass + ext_x - ext_y + 100*ext_z + 5*ext_x - 5*ext_y,1.0);
-			v[5] = vec4(center_of_mass - ext_x - ext_y + 100*ext_z - 5*ext_x - 5*ext_y,1.0);
+			v[4] = vec4(center_of_mass + ext_x - ext_y + 100*ext_z + x*ext_x - y*ext_y,1.0);
+			v[5] = vec4(center_of_mass - ext_x - ext_y + 100*ext_z - x*ext_x - y*ext_y,1.0);
 			v[6] = vec4(center_of_mass - ext_x - ext_y - ext_z,1.0);
 			v[7] = vec4(center_of_mass + ext_x - ext_y - ext_z,1.0);
 

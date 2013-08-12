@@ -18,10 +18,12 @@ uniform mat4 ModelMatrix;
 uniform mat4 ViewMatrix;
 uniform mat4 ProjectionMatrix;
 
-
 uniform vec3 new_x;
 uniform vec3 new_y;
 uniform vec3 new_z;
+
+uniform float x;
+uniform float y;
 
 vec3 ext_x;
 vec3 ext_y;
@@ -33,19 +35,19 @@ void main(void)
 {
 	mat3 normalMatrix = inverse(transpose(mat3(ViewMatrix)));
 
-	ext_x = new_x*0.3;
-	ext_y = new_y*0.3;
-	ext_z = new_z*0.1;
+        ext_x = new_x*0.1;
+        ext_y = new_y*0.1;
+        ext_z = new_z*0.1;
 
 	vec3 center_of_mass = cutVolumes.center_points[gl_VertexID].xyz;
 
-	v[0] = vec4(center_of_mass + ext_x + ext_y + 100*ext_z + 5*ext_x + 5*ext_y,1.0);
+	v[0] = vec4(center_of_mass + ext_x + ext_y + 100*ext_z + x*ext_x + y*ext_y,1.0);
 	v[1] = vec4(center_of_mass + ext_x + ext_y - ext_z,1.0);
 	v[2] = vec4(center_of_mass - ext_x + ext_y - ext_z,1.0);
-	v[3] = vec4(center_of_mass - ext_x + ext_y + 100*ext_z - 5*ext_x + 5*ext_y,1.0);
+	v[3] = vec4(center_of_mass - ext_x + ext_y + 100*ext_z - x*ext_x + y*ext_y,1.0);
 
-	v[4] = vec4(center_of_mass + ext_x - ext_y + 100*ext_z + 5*ext_x - 5*ext_y,1.0);
-	v[5] = vec4(center_of_mass - ext_x - ext_y + 100*ext_z - 5*ext_x - 5*ext_y,1.0);
+	v[4] = vec4(center_of_mass + ext_x - ext_y + 100*ext_z + x*ext_x - y*ext_y,1.0);
+	v[5] = vec4(center_of_mass - ext_x - ext_y + 100*ext_z - x*ext_x - y*ext_y,1.0);
 	v[6] = vec4(center_of_mass - ext_x - ext_y - ext_z,1.0);
 	v[7] = vec4(center_of_mass + ext_x - ext_y - ext_z,1.0);
 

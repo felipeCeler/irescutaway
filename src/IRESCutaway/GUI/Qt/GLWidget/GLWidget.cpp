@@ -133,6 +133,9 @@ void GLWidget::initializeGL ( )
 
 	freezeView_ = 0;
 
+	volume_width = 0.0f;
+	volume_height = 0.0f;
+
 	vmax = 0.01;
 	v0   = 0.001;
 	acc = 0.001;
@@ -914,6 +917,8 @@ void GLWidget::BoundingVolumeCutawaySetup( int cluster )
 
 			BoundingBoxInitialization.active ( );
 
+                        glUniform1f ( BoundingBoxInitialization.uniforms_["x"].location , volume_width );
+                        glUniform1f ( BoundingBoxInitialization.uniforms_["y"].location , volume_height );
  			glUniform1i ( BoundingBoxInitialization.uniforms_["pass"].location , 0 );
 			glUniform3fv ( BoundingBoxInitialization.uniforms_["new_x"].location , 1 , new_x );
 			glUniform3fv ( BoundingBoxInitialization.uniforms_["new_y"].location , 1 , new_y );
@@ -938,6 +943,8 @@ void GLWidget::BoundingVolumeCutawaySetup( int cluster )
 
 			BoundingBoxInitialization.active ( );
 
+                        glUniform1f ( BoundingBoxInitialization.uniforms_["x"].location , volume_width );
+                        glUniform1f ( BoundingBoxInitialization.uniforms_["y"].location , volume_height );
  			glUniform1i ( BoundingBoxInitialization.uniforms_["pass"].location , 1 );
 			glUniform3fv ( BoundingBoxInitialization.uniforms_["new_x"].location , 1 , new_x );
 			glUniform3fv ( BoundingBoxInitialization.uniforms_["new_y"].location , 1 , new_y );
@@ -1113,6 +1120,8 @@ void GLWidget::NoCutawaySetUp ( )
 
 	                        BoundingBoxInitialization.active ( );
 
+	                        glUniform1f ( BoundingBoxInitialization.uniforms_["x"].location , volume_width );
+	                        glUniform1f ( BoundingBoxInitialization.uniforms_["y"].location , volume_height );
 	                        glUniform1i ( BoundingBoxInitialization.uniforms_["pass"].location , 0 );
 	                        glUniform3fv ( BoundingBoxInitialization.uniforms_["new_x"].location , 1 , new_x );
 	                        glUniform3fv ( BoundingBoxInitialization.uniforms_["new_y"].location , 1 , new_y );
@@ -1169,6 +1178,9 @@ void GLWidget::NoCutawaySetUp ( )
 
 				glUniform1i ( cutawayVolumes.uniforms_["depthBuffer"].location , 0 );
 				glUniform1i ( cutawayVolumes.uniforms_["verticeBuffer"].location , 1 );
+
+	                        glUniform1f ( cutawayVolumes.uniforms_["x"].location , volume_width );
+	                        glUniform1f ( cutawayVolumes.uniforms_["y"].location , volume_height );
 
 				glUniform3fv ( cutawayVolumes.uniforms_["new_x"].location , 1 ,  new_x );
 				glUniform3fv ( cutawayVolumes.uniforms_["new_y"].location , 1 ,  new_y );
@@ -1624,6 +1636,26 @@ foreach( int key , keysPresseds_)
 
 		if ( cameraStep_ > 0.0 )
 		cameraStep_ -= 0.0001;
+	}
+	if( key == Qt::Key_Left)
+	{
+		if ( volume_width  > 0.0 )
+			volume_width--;
+	}
+	if( key == Qt::Key_Right)
+	{
+		if ( volume_width  <= 30.0 )
+			volume_width++;
+	}
+	if( key == Qt::Key_Up)
+	{
+		if ( volume_height  <= 30.0 )
+			volume_height++;
+	}
+	if( key == Qt::Key_Down)
+	{
+		if ( volume_height  > 0.0 )
+			volume_height--;
 	}
 
 
