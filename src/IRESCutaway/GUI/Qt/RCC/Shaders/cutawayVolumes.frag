@@ -98,33 +98,33 @@ void main(void)
         float d = min(dist[0], min(dist[1], min(dist[2], dist[3])));
         float I = exp2(-2 * d * d);
 //
-        //gl_FragDepth = gl_FragCoord.z;
+       gl_FragDepth = gl_FragCoord.z;
 //
         if (gl_FragCoord.z < (cutaway.w)) //&&  length( gl_FragCoord.st - color.xy) < 20.0 )
         {
         	//if (VertexIn.proxy)
-        		//discard;
+        		discard;
         }
-//        if ( VertexIn.proxy)
-//        {
-//                if (dot (newNormal.xyz,vec3(0.0,0.0,-1.0)) > 0 )
-//                {
-//                        newNormal = cutaway.xyz;
-//                        newVert   = vertice.xyz;
-//
-//
-//                        I = 0;
-//
-//
-//                        if (abs(gl_FragCoord.z - (cutaway.w)) < 0.0000015) {
-//                                I = 0;
-//                        }
-//
-//                        gl_FragDepth = gl_FragCoord.z-0.0000001;
-//                }
-//
-//
-//        }
+        if ( VertexIn.proxy)
+        {
+                if (dot (newNormal.xyz,vec3(0.0,0.0,-1.0)) > 0 )
+                {
+                        newNormal = cutaway.xyz;
+                        newVert   = vertice.xyz;
+
+
+                        I = 0;
+
+
+                        if (abs(gl_FragCoord.z - (cutaway.w)) < 0.0000015) {
+                                I = 0;
+                        }
+
+                        gl_FragDepth = gl_FragCoord.z-0.0000001;
+                }
+
+
+        }
 
 
 	newNormal = normalize ( newNormal );

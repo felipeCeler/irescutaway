@@ -57,8 +57,6 @@ struct Face
 /// Culling Procedure
 vec4 v[8];
 
-int sum_table[8];
-
 CutPlane cutPlaneIn;
 Face cutVolume[6];
 
@@ -118,44 +116,38 @@ void main(void)
         cutVolume[5].vertices[3] = 3;
 
 
-        cube.culled[0] = true;
-        cube.culled[1] = true;
-        cube.culled[2] = true;
-        cube.culled[3] = true;
-        cube.culled[4] = true;
-        cube.culled[5] = true;
-        cube.culled[6] = true;
-        cube.culled[7] = true;
+        cube.culled[0] = false;
+        cube.culled[1] = false;
+        cube.culled[2] = false;
+        cube.culled[3] = false;
+        cube.culled[4] = false;
+        cube.culled[5] = false;
+        cube.culled[6] = false;
+        cube.culled[7] = false;
 
-        sum_table[0] = 0;
-        sum_table[1] = 0;
-        sum_table[2] = 0;
-        sum_table[3] = 0;
-        sum_table[4] = 0;
-        sum_table[5] = 0;
-        sum_table[6] = 0;
-        sum_table[7] = 0;
-
-        bool outside = false;
         // For each cut volume
-	for ( int j = 0; j < cutVolumes.size.x ; j++ )
+        // For each vertex in the cube
+
+        int hits = 0;
+
+        for ( int vertex_index = 0; vertex_index < 8; vertex_index++)
         {
-                vec3 center_of_mass = cutVolumes.center_points[j].xyz;
+		for ( int j = 0; j < cutVolumes.size.x ; j++ )
+		{
+			vec3 center_of_mass = cutVolumes.center_points[j].xyz;
 
-                v[0] = vec4(center_of_mass + ext_x + ext_y + 100*ext_z + 5*ext_x + 5*ext_y,1.0);
-                v[1] = vec4(center_of_mass + ext_x + ext_y - ext_z,1.0);
-                v[2] = vec4(center_of_mass - ext_x + ext_y - ext_z,1.0);
-                v[3] = vec4(center_of_mass - ext_x + ext_y + 100*ext_z - 5*ext_x + 5*ext_y,1.0);
+			v[0] = vec4(center_of_mass + ext_x + ext_y + 100*ext_z + 5*ext_x + 5*ext_y,1.0);
+			v[1] = vec4(center_of_mass + ext_x + ext_y - ext_z,1.0);
+			v[2] = vec4(center_of_mass - ext_x + ext_y - ext_z,1.0);
+			v[3] = vec4(center_of_mass - ext_x + ext_y + 100*ext_z - 5*ext_x + 5*ext_y,1.0);
 
-                v[4] = vec4(center_of_mass + ext_x - ext_y + 100*ext_z + 5*ext_x - 5*ext_y,1.0);
-                v[5] = vec4(center_of_mass - ext_x - ext_y + 100*ext_z - 5*ext_x - 5*ext_y,1.0);
-                v[6] = vec4(center_of_mass - ext_x - ext_y - ext_z,1.0);
-                v[7] = vec4(center_of_mass + ext_x - ext_y - ext_z,1.0);
+			v[4] = vec4(center_of_mass + ext_x - ext_y + 100*ext_z + 5*ext_x - 5*ext_y,1.0);
+			v[5] = vec4(center_of_mass - ext_x - ext_y + 100*ext_z - 5*ext_x - 5*ext_y,1.0);
+			v[6] = vec4(center_of_mass - ext_x - ext_y - ext_z,1.0);
+			v[7] = vec4(center_of_mass + ext_x - ext_y - ext_z,1.0);
 
-                // For each vertex in the cube
-                for ( int vertex_index = 0; vertex_index < 8; vertex_index++)
-                {
                         // For each side of the cube volume
+			hits = 0;
                         for ( int i = 0; i < 6; i++)
                         {
                                 // normals point inside the volume
@@ -163,31 +155,22 @@ void main(void)
                                                                  (v[cutVolume[i].vertices[1]].xyz - v[cutVolume[i].vertices[0]].xyz) ) );
 
                                 cutPlaneIn.point  = v[cutVolume[i].vertices[3]];
-                                cutPlaneIn.normal = vec4(normal,0.0);
+                                cutPlaneIn.normal = vec4(-normal,0.0);
                                 // Vertex lies in the same side
-                                if ( dot ( cutPlaneIn.normal , ( cube.v[vertex_index] - cutPlaneIn.point ) ) < 0.0 )
+                                if ( dot ( cutPlaneIn.normal , ( cube.v[vertex_index] - cutPlaneIn.point  ) ) < 0.0 )
                                 {
-                                        outside = true;
+                                	hits++;
                                 }
                         }
 
-                        if ( outside )
+                        if (hits == 6)
                         {
-                                sum_table[vertex_index]++;
+                        	 cube.culled[vertex_index] = true;
                         }
+
                 }
         }
 
-
-
-        // For each vertex in the cube
-        for ( int vertex_index = 0; vertex_index < 8; vertex_index++)
-        {
-                if ( sum_table[vertex_index] == cutVolumes.size.x )
-                {
-                        cube.culled[vertex_index] = false;
-                }
-        }
 
 
 	mat3 normalMatrix = inverse(transpose(mat3(globalMatrices.ViewMatrix)));

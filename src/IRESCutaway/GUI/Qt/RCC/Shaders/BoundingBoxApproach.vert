@@ -39,13 +39,13 @@ void main(void)
 
 	vec3 center_of_mass = cutVolumes.center_points[gl_VertexID].xyz;
 
-	v[0] = vec4(center_of_mass + ext_x + ext_y + 200*ext_z + 5*ext_x + 5*ext_y,1.0);
+	v[0] = vec4(center_of_mass + ext_x + ext_y + 100*ext_z + 5*ext_x + 5*ext_y,1.0);
 	v[1] = vec4(center_of_mass + ext_x + ext_y - ext_z,1.0);
 	v[2] = vec4(center_of_mass - ext_x + ext_y - ext_z,1.0);
-	v[3] = vec4(center_of_mass - ext_x + ext_y + 200*ext_z - 5*ext_x + 5*ext_y,1.0);
+	v[3] = vec4(center_of_mass - ext_x + ext_y + 100*ext_z - 5*ext_x + 5*ext_y,1.0);
 
-	v[4] = vec4(center_of_mass + ext_x - ext_y + 200*ext_z + 5*ext_x - 5*ext_y,1.0);
-	v[5] = vec4(center_of_mass - ext_x - ext_y + 200*ext_z - 5*ext_x - 5*ext_y,1.0);
+	v[4] = vec4(center_of_mass + ext_x - ext_y + 100*ext_z + 5*ext_x - 5*ext_y,1.0);
+	v[5] = vec4(center_of_mass - ext_x - ext_y + 100*ext_z - 5*ext_x - 5*ext_y,1.0);
 	v[6] = vec4(center_of_mass - ext_x - ext_y - ext_z,1.0);
 	v[7] = vec4(center_of_mass + ext_x - ext_y - ext_z,1.0);
 
