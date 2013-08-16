@@ -136,10 +136,13 @@ void GLWidget::initializeGL ( )
 	volume_width = 0.0f;
 	volume_height = 0.0f;
 
-	vmax = 0.01;
-	v0   = 0.001;
-	acc = 0.001;
-	v  = 0;
+	Celer::Matrix4x4<float> m (  11,12,35,0,
+		                         45, 47,7,0,
+								 9, 6, 32,0,
+								 0,0,0,1);
+
+	std::cout << "Inverse Matrix " << m.inverse() << std::endl; 
+
 
 }
 
@@ -1470,12 +1473,7 @@ void GLWidget::BurnsCutawaySetup ( )
 void GLWidget::gameLooping ( )
 {
 
-	if ( v < vmax)
-		v = v0 + 0.00001;
-
 	//std::cout << "fps :" << v  << std::endl;
-
-	camera_.moveForward( ( v) );
 
 	updateGL();
 

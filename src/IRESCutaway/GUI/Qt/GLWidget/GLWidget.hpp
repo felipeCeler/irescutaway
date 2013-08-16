@@ -21,7 +21,7 @@
 #include <Celer/Scene/Camera.hpp>
 
 #include <QtOpenGL/QGLWidget>
-#include <QGLFramebufferObject>
+#include <QtOpenGL/QGLFramebufferObject>
 
 // Standard Library
 #include <limits>
@@ -275,10 +275,6 @@ private:
 
 	Celer::Matrix4x4<float> lookatCamera;
 
-	float vmax;
-	float acc;
-	float v0;
-	float v;
 
 };
 
