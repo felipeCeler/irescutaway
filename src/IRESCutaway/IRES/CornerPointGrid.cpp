@@ -373,7 +373,7 @@ namespace IRES
 
 				dynamic_properties[i].name = std::string ( data.begin ( ) , data.end ( ) );
 
-				//std::cout << " dynamic names: " << dynamic_properties[i].name << std::endl;
+				std::cout << " dynamic names: " << dynamic_properties[i].name << std::endl;
 
 				data.clear ( );
 				data.resize ( 64 );
@@ -612,8 +612,8 @@ namespace IRES
 			// FIXME Temporary array of values.
 			std::vector<float> blocks_values;
 
-			// dynamic_properties_values.resize(header_.number_of_Dynamic_Properties );
-			// For each time step ....
+			//dynamic_properties_values.resize(header_.number_of_Dynamic_Properties );
+			// For each time step //....
 			for ( int name_index = 0; name_index < header_.number_of_Dynamic_Properties; name_index++ )
 			{
 
@@ -628,12 +628,20 @@ namespace IRES
 
 					dynamic_properties[name_index].values_.push_back ( std::make_pair ( time_index , blocks_values ) );
 
-					//std::cout << " Time Step : " << time_index <<  "Blocks : "<< blocks_values[0] << std::endl;
-
 					blocks_values.clear ( );
 
 				}
 
+			}
+
+			for ( int time_index = 0; time_index < header_.number_of_Time_Steps; time_index++ )
+				{std::cout << " Time Step : " << time_index <<  "Blocks : "<<
+				dynamic_properties[0].name << " min : " <<
+				*std::min_element ( dynamic_properties[0].values_[time_index].second.begin ( ) , dynamic_properties[0].values_[time_index].second.end ( ) ) << std::endl;
+				std::cout << " Time Step : " << 14 <<  "Blocks : "<<
+				dynamic_properties[0].name << " min : " <<
+				*std::max_element ( dynamic_properties[0].values_[time_index].second.begin ( ) , dynamic_properties[0].values_[time_index].second.end ( ) ) << std::endl;
+				std::cout << " Time Step : " << std::endl;
 			}
 
 			//std::cout << " Position Static: " << inFile.tellg ( ) << std::endl;
