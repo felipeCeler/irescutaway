@@ -260,6 +260,8 @@ namespace IRES
 
 				this->box_v2 = this->box_v2 + new_block.AABB;
 
+				new_block.valid = true;
+
 			}else
 			{
 
@@ -301,6 +303,47 @@ namespace IRES
 
 
 		}// for
+
+
+		if ( this->box_v2.diagonal() > 6.0f)
+		{
+			std::cout << " Vector " <<  this->box_v2.diagonal() << std::endl;
+			// Scaling
+
+			for ( std::size_t  i = 0; i < this->blocks.size ( ) ; i++)
+			{
+				//std::cout << " Vector " <<  i << std::endl;
+				if ( this->blocks[i].valid )
+				{
+					for ( std::size_t b = 0; b < this->blocks[i].vertices.size ( ); b++ )
+					{
+						this->blocks[i].vertices[b] -=  Celer::Vector4<float> (this->box_v2.center ( ),0.0);
+						this->blocks[i].vertices[b].x /= ( this->box_v2.diagonal ( ) / 6 );
+						this->blocks[i].vertices[b].y /= ( this->box_v2.diagonal ( ) / 6 );
+						this->blocks[i].vertices[b].z /= ( this->box_v2.diagonal ( ) / 6 );
+						//std::cout << " Vector " <<  this->blocks[i].vertices.size ( ) << std::endl;
+					}
+				}
+
+			}
+
+			this->box_v2.reset();
+			Celer::BoundingBox3<float> AABB;
+
+			for ( std::size_t  i = 0; i < this->blocks.size ( ) ; i++)
+			{
+				if (this->blocks[i].valid )
+				{
+					AABB.fromPointCloud( this->blocks[i].vertices.begin() , this->blocks[i].vertices.end() );	//std::cout << " Vector " <<  vertices[i] << std::endl;
+					this->box_v2 = this->box_v2 + AABB;
+					AABB.reset();
+				}
+			}
+			std::cout << " Vector " <<  this->box_v2.diagonal() << std::endl;
+			std::cout << " Vector " <<  this->blocks[0].vertices[0] << std::endl;
+
+		}
+
 	}
 
 	void CornerPointGrid::openIRES ( const std::string& filename )

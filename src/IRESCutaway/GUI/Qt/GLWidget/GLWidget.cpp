@@ -606,9 +606,9 @@ void GLWidget::IRES_v1_to_IRESv2( const std::string& filename )
 void GLWidget::openIRESCharles( const std::string& filename )
 {
 
-	reservoir_model_.openIRES( filename );
+	//reservoir_model_.openIRES( filename );
 
-	//reservoir_model_.openIRES_Version_2( filename );
+	reservoir_model_.openIRES_Version_2( filename );
 
 
 	if ( reservoir_model_.blocks.size( ) > 0 )
