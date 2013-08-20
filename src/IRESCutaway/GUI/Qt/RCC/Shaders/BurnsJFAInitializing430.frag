@@ -23,6 +23,7 @@ void main(void)
 	float I = exp2(-2 * d * d);
 
 	fragmentColor = vec4 ( gl_FragCoord.xyz,1.0 );
+	//fragmentColor = vec4 ( 1.0,0.0,0.0,1.0 );
 
 }
 

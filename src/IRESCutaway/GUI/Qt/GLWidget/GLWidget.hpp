@@ -100,16 +100,18 @@ class GLWidget: public QGLWidget
 		void setSecondaryVisibility ( bool );
 
 
-		void NoCutawaySetUp ( );
-		void BurnsCutawaySetup ( );
-		void BoundingVolumeCutawaySetup ( int cluster );
-		void updateCluster( int i ) { cluster = i; updateGL();}
+		void NoCutaway          ( );
+		void BurnsCutaway       ( );
+		void RawCutaway         ( int cluster );
+		void FelipeCutaway      ( );
+		void updateCluster      ( int i ) { cluster = i; updateGL();}
 
-		void setNoCutawayVisibility     ( bool visibility ) { isNoCutaway 	   = visibility; updateGL(); }
-		void setBoundingBoxVisibility   ( bool visibility ) { isBoudingBoxApproach = visibility; updateGL();}
-		void setBurnsApproachVisibility ( bool visibility ) { isBurnsApproach      = visibility; updateGL();}
+		void setNoCutawayVisibility     ( bool visibility ) { isNoCutaway      = visibility; updateGL();}
+		void setBurnsCutawayVisibility  ( bool visibility ) { isBurnsApproach  = visibility; updateGL();}
+		void setRawCutawayVisibility    ( bool visibility ) { isRawApproach    = visibility; updateGL();}
+		void setFelipeCutawayVisibility ( bool visibility ) { isFelipeApproach = visibility; updateGL();}
 
-		void IRES_v1_to_IRESv2 ( const std::string& filename );
+		void IRESv1_to_IRESv2 ( const std::string& filename );
 
 		void CameraTrackball ( );
 		void CameraFly ( );
@@ -159,9 +161,7 @@ private:
 	GLuint screen_buffer;
 	GLuint texture_buffer;
 
-
 	bool isIRESOpen_;
-
 
 	// Cube in Interleaved VertexBuffer
 	// Use same layout location as vertexArray
@@ -180,15 +180,15 @@ private:
 		Celer::Vector4<float> centroid;
 	};
 
-	std::vector<CubeData> cube_interleaved;
-	Celer::OpenGL::ShaderManager cube_interleaved_shader;
+	std::vector<CubeData>           cube_interleaved;
+	Celer::OpenGL::ShaderManager    cube_interleaved_shader;
 
 	// Hong Kong Cutaway
-	Celer::OpenGL::ShaderManager cutawayVolumes;
+	Celer::OpenGL::ShaderManager    cutawayVolumes;
 
 
 	// Cut Volume Stuffs
-	GLuint  uniformBuffer_cutVolumes_;
+	GLuint                          uniformBuffer_cutVolumes_;
 
 
 	// Vector4<int> to mach std140 on shader. I'm still confusing.
@@ -219,6 +219,9 @@ private:
 
 	QGLFramebufferObject*   fboStep[2];
 
+	QGLFramebufferObject*   fboBurns[2];
+
+
 	// Burns Approach
 	Celer::OpenGL::ShaderManager	BurnsJFAInitializing430;
 	Celer::OpenGL::ShaderManager	BurnsJFAStep430;
@@ -240,9 +243,10 @@ private:
 	int cluster;
 
 
-	bool  isBurnsApproach;
-	bool  isBoudingBoxApproach;
 	bool  isNoCutaway;
+	bool  isBurnsApproach;
+	bool  isRawApproach;
+	bool  isFelipeApproach;
 
 	bool draw_secondary;
 	bool draw_primary;

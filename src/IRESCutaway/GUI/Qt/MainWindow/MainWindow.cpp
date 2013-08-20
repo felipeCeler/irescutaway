@@ -54,14 +54,16 @@ MainWindow::MainWindow ( QMainWindow *parent ) :
 
 	QActionGroup* CutawayTypeGroup = new QActionGroup ( this );
 	CutawayTypeGroup->setExclusive(1);
-	CutawayTypeGroup->addAction ( ui->action_Bounding_Box_Approach );
-	CutawayTypeGroup->addAction ( ui->action_Burns_Approach );
 	CutawayTypeGroup->addAction ( ui->action_No_Cutaway );
+	CutawayTypeGroup->addAction ( ui->action_Burns_Cutaway );	
+	CutawayTypeGroup->addAction ( ui->action_Raw_Cutaway );
+	CutawayTypeGroup->addAction ( ui->action_Felipe_Cutaway );
 
 	// Change the Cutaway Type
-	connect(ui->action_No_Cutaway,            SIGNAL(toggled(bool)), glWidget, SLOT(setNoCutawayVisibility(bool)));
-	connect(ui->action_Bounding_Box_Approach, SIGNAL(toggled(bool)), glWidget, SLOT(setBoundingBoxVisibility(bool)));
-	connect(ui->action_Burns_Approach,        SIGNAL(toggled(bool)), glWidget, SLOT(setBurnsApproachVisibility(bool)));
+	connect(ui->action_No_Cutaway,           SIGNAL(toggled(bool)), glWidget, SLOT(setNoCutawayVisibility(bool)));
+	connect(ui->action_Burns_Cutaway,        SIGNAL(toggled(bool)), glWidget, SLOT(setBurnsCutawayVisibility(bool)));
+	connect(ui->action_Raw_Cutaway,          SIGNAL(toggled(bool)), glWidget, SLOT(setRawCutawayVisibility(bool)));
+	connect(ui->action_Felipe_Cutaway,       SIGNAL(toggled(bool)), glWidget, SLOT(setFelipeCutawayVisibility(bool)));
 	// Change visibility  of cells
 	connect(ui->action_Show_Primary_Cells,   SIGNAL(toggled(bool)), glWidget, SLOT(setPrimaryVisibility(bool)));
 	connect(ui->action_Show_Secondary_Cells, SIGNAL(toggled(bool)), glWidget, SLOT(setSecondaryVisibility(bool)));
@@ -239,16 +241,6 @@ void MainWindow::on_action_Load_Shaders_triggered()
 	glWidget->loadShaders();
 }
 
-void MainWindow::on_action_Bounding_Box_Approach_triggered ( )
-{
-
-}
-
-void MainWindow::on_action_Burns_Approach_triggered ( )
-{
-
-}
-
 void MainWindow::keyPressEvent(QKeyEvent *e)
 {
 	if(e->key()==Qt::Key_Return && e->modifiers()==Qt::AltModifier)
@@ -271,11 +263,11 @@ void MainWindow::on_spinBox_Cluster_Number_valueChanged  ( int i)
 	glWidget->updateCluster(i);
 }
 
-
 void MainWindow::on_action_Trackball_triggered  ( )
 {
 	glWidget->CameraTrackball();
 }
+
 void MainWindow::on_action_Fly_Camera_triggered ( )
 {
 	glWidget->CameraFly();

@@ -32,9 +32,6 @@ class MainWindow: public QMainWindow
 		void on_pushButton_Reset_IJK_clicked( );
 		void on_pushButton_changeIJK_clicked( );
 
-		void on_action_Bounding_Box_Approach_triggered ( );
-		void on_action_Burns_Approach_triggered ( );
-
 		void updateDoubleSpinMax( int property_index );
 		void updateDoubleSpinMin( int property_index );
 

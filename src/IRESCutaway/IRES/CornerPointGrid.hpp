@@ -20,6 +20,7 @@
 #include <string>
 #include <cstring>
 #include <cctype>
+#include <ctime>
 
 // Celer Framework
 #include <Celer/Core/Geometry/Math/Vector3.hpp>
@@ -109,7 +110,7 @@ namespace IRES
 			};
 
 			// TODO Really confused !! Now It's Totally confused.
-			// Building the structure of the using Nicole's Presentation
+			// Building the structure of wells using Nicole's Presentation as guide !
 			struct Well_Data
 			{
 
@@ -199,8 +200,10 @@ namespace IRES
 
 			virtual ~CornerPointGrid ( );
 
+			// Using Charles IRESv2
 			void openIRES_Version_2 ( const std::string& filename );
 
+			// My crazy implementation
 			void openIRES ( const std::string& filename );
 
 
