@@ -18,7 +18,7 @@ GLWidget::GLWidget (  QWidget* parent , const QGLWidget* shareWidget , Qt::Windo
 void GLWidget::initializeGL ( )
 {
 	/// Celer OpenGL
-	Celer::OpenGL::OpenGLContext::instance ( )->glewInitialize ( "File GLWidget.cpp line 31" );
+	Celer::OpenGL::OpenGLContext::instance ( )->glewInitialize ( "File GLWidget.cpp method initializeGL ( )" );
 	/// Celer OpenGL
 
 	buttonRelease_ = false;
@@ -49,8 +49,6 @@ void GLWidget::initializeGL ( )
 	scrollStep_ = 45.0f;
 	zoom_angle_ = 45.0f;
 	angle = static_cast<float>(1.0/std::tan(scrollStep_ * Celer::Math::kDeg2Rad));
-	theta = angle;
-	pm_sz = 0.0f;
 
 
 	QGLFramebufferObjectFormat format;
@@ -63,10 +61,6 @@ void GLWidget::initializeGL ( )
 	fboStep[0] 	  = new  QGLFramebufferObject ( width() , height() , format );
 	fboStep[1] 	  = new  QGLFramebufferObject ( width() , height() , format );
 
-	glGenVertexArrays ( 1 , &vertexArrayScreen );
-	// Viewport
-		glGenBuffers ( 1, &screen_buffer);
-		glGenBuffers ( 1, &texture_buffer);
 
 	// Cube in Interleaved
 	glGenVertexArrays ( 1, &vertexArray_cube_interleaved );
@@ -107,8 +101,7 @@ void GLWidget::initializeGL ( )
 	draw_secondary = 1;
 	draw_primary = 0;
 
-	isBurnsApproach         = 0;
-	isRawApproach			= 0;
+	isRawApproach	      = 0;
 	isIRESApproach        = 0;
 
 	cluster = 0;
@@ -709,45 +702,9 @@ void GLWidget::openIRESCharles( const std::string& filename )
                                 glVertexAttribPointer(location, 4, GL_FLOAT, GL_FALSE, size_of_struct , reinterpret_cast<void*>(size_of_vertice * location));
                         }
 
-                        glBindVertexArray(0);
-
-		glBindVertexArray(vertexArrayScreen);
+                glBindVertexArray(0);
 
 
-		GLfloat openGLScreenCoordinates[] =
-		{
-		       -1.0f,  1.0f,
-			1.0f,  1.0f,
-			1.0f, -1.0f,
-		        1.0f, -1.0f,
-		       -1.0f, -1.0f,
-		       -1.0f,  1.0f
-		 };
-
-		GLfloat textureCoordinates[] =
-		{
-			0.0f,  0.0f,
-			0.0f,  1.0f,
-			1.0f,  0.0f,
-
-			0.0f,  1.0f,
-			1.0f,  1.0f,
-			1.0f,  0.0f,
-		};
-
-		glBindBuffer ( GL_ARRAY_BUFFER , screen_buffer );
-		glBufferData ( GL_ARRAY_BUFFER, 12 *  sizeof( openGLScreenCoordinates[0] ), openGLScreenCoordinates, GL_STATIC_DRAW);
-		// Vertex Array : Set up generic attributes pointers
-		glEnableVertexAttribArray(6);
-		glVertexAttribPointer(6, 2, GL_FLOAT, GL_FALSE, 0, 0);
-
-		glBindBuffer ( GL_ARRAY_BUFFER , texture_buffer );
-		glBufferData ( GL_ARRAY_BUFFER, 12 * sizeof( textureCoordinates[0] ), textureCoordinates , GL_STATIC_DRAW);
-		// Vertex Array : Set up generic attributes pointers
-		glEnableVertexAttribArray(7);
-		glVertexAttribPointer(7, 2, GL_FLOAT, GL_FALSE, 0, 0);
-
-		glBindVertexArray(0);
 
 
 		isIRESOpen_ = 1;
@@ -838,11 +795,7 @@ void GLWidget::paintGL ( )
 		}
 	}
 
-	if 	( isBurnsApproach )
-	{
-		BurnsCutaway ( );
-	}
-	else if ( isRawApproach )
+	if ( isRawApproach )
 	{
 		RawCutaway ( cluster );
 	}
@@ -907,139 +860,6 @@ void GLWidget::NoCutaway ( )
         }
 }
 
-void GLWidget::BurnsCutaway ( )
-{
-
-        /// FIXME Conditions  - Primary and Secondary well defined.
-
-                int i = 1;
-
-                if ( isIRESOpen_  )
-                {
-
-                        glDepthFunc(GL_LESS);
-                        glClearDepth(1.0f);
-
-                        BurnsJFAInitializing430.active ( );
-
-                        fboStep[1]->bind();
-
-                        glClearColor ( 1.0 , 1.0 , 1.0 , 1.0 );
-                        glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-
-                        glUniform3fv ( BurnsJFAInitializing430.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
-                        glUniform2f ( BurnsJFAInitializing430.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
-                        glUniformMatrix4fv ( BurnsJFAInitializing430.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-                        glUniformMatrix4fv ( BurnsJFAInitializing430.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix()  );
-
-                        //VAO
-
-                        glBindVertexArray ( vertexArray_cube_interleaved );
-                        glDrawArrays ( GL_POINTS , 0 , cube_interleaved.size() );
-                        glBindVertexArray ( 0 );
-
-                        fboStep[1]->release( );
-
-                        BurnsJFAInitializing430.deactive ( );
-
-
-                        // Do Jumping Flooding Algorithm
-                        int stepSize = ( width ( ) > height ( ) ? width ( ) : height ( ) ) * 0.5;
-                        bool ExitLoop = 0;
-
-
-                        BurnsJFAStep430.active( );
-
-
-                        glUniform2f ( BurnsJFAStep430.uniforms_["viewport"].location, (float)width ( ) , (float)height ( ) );
-
-                        pm_sz = ( camera_.nearPlane ( ) + camera_.farPlane ( ) ) / ( camera_.nearPlane ( ) - camera_.farPlane ( ) );
-
-
-                        camera_.setOrthographicProjectionMatrix ( 0.0 , GLfloat ( width ( ) ) , 0.0 , GLfloat ( height ( ) ) , -100.0 , 100.0 );
-
-                        while ( !ExitLoop )
-                        {
-                                //std::cout << " i " << stepSize << std::endl;
-                                i = ( i + 1 ) % 2;
-                                fboStep[i]->bind ( );
-                                glActiveTexture ( GL_TEXTURE0 );
-                                glEnable ( GL_TEXTURE_RECTANGLE );
-                                glBindTexture ( GL_TEXTURE_RECTANGLE , fboStep[ ( i + 1 ) % 2]->texture ( ) );
-
-
-                                glUniform1f ( BurnsJFAStep430.uniforms_["pm_sz"].location,pm_sz );
-                                glUniform1f ( BurnsJFAStep430.uniforms_["theta"].location,angle );
-                                glUniform1i ( BurnsJFAStep430.uniforms_["stepSize"].location,stepSize );
-                                glUniformMatrix4fv ( BurnsJFAStep430.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.orthographicProjectionMatrix() );
-
-                                glClearColor ( 0.0 , 0.0 , 0.0 , 1.0 );
-                                glClear ( GL_COLOR_BUFFER_BIT );
-
-                                glBindVertexArray(vertexArrayScreen);
-                                glDrawArrays(GL_TRIANGLES, 0, 6);
-                                glBindVertexArray(0);
-
-                                stepSize *= 0.5;
-                                if ( stepSize < 1 )
-                                        ExitLoop = true;
-                                glDisable ( GL_TEXTURE_RECTANGLE );
-                                fboStep[i]->release ( );
-                        }
-
-                        BurnsJFAStep430.deactive( ) ;
-
-
-                        glClearColor ( 1.0 , 1.0 , 1.0 , 1.0 );
-                        glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-
-                        if ( draw_secondary && (cube_interleaved.size() != 0) )
-                        {
-                                BurnsCutaway430Wireframe.active ( );
-
-                                glActiveTexture ( GL_TEXTURE0 );
-                                glEnable ( GL_TEXTURE_RECTANGLE );
-                                glBindTexture ( GL_TEXTURE_RECTANGLE , fboStep[i]->texture ( ) );
-
-                                glUniform3fv ( BurnsCutaway430Wireframe.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
-
-                                glUniform3i ( BurnsCutaway430Wireframe.uniforms_["min_IJK"].location , min_I_, min_J_, min_K_ );
-                                glUniform3i ( BurnsCutaway430Wireframe.uniforms_["max_IJK"].location , max_I_, max_J_, max_K_ );
-
-                                glUniform2f ( BurnsCutaway430Wireframe.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
-                                glUniform1i ( BurnsCutaway430Wireframe.uniforms_["cutaway"].location , 1 );
-                                glUniformMatrix4fv ( BurnsCutaway430Wireframe.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-                                glUniformMatrix4fv ( BurnsCutaway430Wireframe.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
-
-                                // VAO
-                                glBindVertexArray ( vertexArray_cube_interleaved );
-                                glDrawArrays ( GL_POINTS , 0 , cube_interleaved.size() );
-                                glBindVertexArray ( 0 );
-                                glDisable ( GL_TEXTURE_RECTANGLE );
-
-                                BurnsCutaway430Wireframe.deactive ( );
-                        }
-
-                        if ( draw_primary && (cube_interleaved.size() != 0)  )
-                        {
-                                primary.active ( );
-
-                                glUniform3fv ( primary.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
-
-                                glUniform2f ( primary.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
-
-                                glUniformMatrix4fv ( primary.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-                                glUniformMatrix4fv ( primary.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
-
-                                glBindVertexArray ( vertexArray_cube_interleaved );
-                                glDrawArrays ( GL_POINTS , 0 , cube_interleaved.size() );
-                                glBindVertexArray ( 0 );
-
-                                primary.deactive ( );
-                        }
-
-                }
-}
 
 void GLWidget::RawCutaway ( int cluster )
 {
@@ -1048,27 +868,6 @@ void GLWidget::RawCutaway ( int cluster )
 //
  	if ( isIRESOpen_ )
 	{
-
-//		if ( cutVolumes.size ( ) > 0 )
-//		{
-//			glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
-//			glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-//			glDepthFunc(GL_GREATER);
-//			glClearDepth(0.0f);
-//			BoundingBoxDebug.active ( );
-//			// FIXME Throw an Exception when std::map doesnt find A VARIABLE !!!
-//			glUniform3fv ( BoundingBoxDebug.uniforms_["new_x"].location , 1 , new_x );
-//			glUniform3fv ( BoundingBoxDebug.uniforms_["new_y"].location , 1 , new_y );
-//			glUniform3fv ( BoundingBoxDebug.uniforms_["new_z"].location , 1 , new_z );
-//			glUniformMatrix4fv ( BoundingBoxDebug.uniforms_["ModelMatrix"].location , 1 , GL_TRUE , lookatCamera );
-//			glUniformMatrix4fv ( BoundingBoxDebug.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-//			glUniformMatrix4fv ( BoundingBoxDebug.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
-//			//VAO
-//			glBindVertexArray ( vertexArray_box );
-//			glDrawArrays ( GL_POINTS , 0 , box_vertices.size());
-//			glBindVertexArray ( 0 );
-//			BoundingBoxDebug.deactive ( );
-//		}
 
  		if ( cutVolumes.size( ) > 0)
  		{
@@ -1165,32 +964,22 @@ void GLWidget::RawCutaway ( int cluster )
 			BoundingBoxCutaway.deactive ( );
 
 
-//			debugNormal.active( );
-//
-//			glUniformMatrix4fv ( debugNormal.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-//			glUniformMatrix4fv ( debugNormal.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
-//
-//			glBindVertexArray(vertexArray);
-//			glDrawArrays ( GL_LINES_ADJACENCY , 0 , reservoir_list_of_vertices.size());
-//			glBindVertexArray(0);
-//
-//			debugNormal.deactive( );
-
 		}
 		if ( draw_primary )
 		{
 
 //			if ( cutVolumes.size ( ) > 0 )
 //			{
-//				glDepthFunc(GL_GREATER);
-//				glClearDepth(0.0);
-//				glClear ( GL_DEPTH_BUFFER_BIT );
 //
 //				BoundingBoxDebug.active ( );
 //				glActiveTexture ( GL_TEXTURE0 );
-//	 			glBindTexture ( GL_TEXTURE_RECTANGLE , fboStep[0]->texture ( ) );
+//	 			glBindTexture ( GL_TEXTURE_RECTANGLE , fboStep[1]->texture ( ) );
 //				// FIXME Throw an Exception when std::map doesnt find A VARIABLE !!!
 //	 			glUniform1i ( BoundingBoxDebug.uniforms_["normals"].location , 0 );
+//
+//                                glUniform1f ( BoundingBoxDebug.uniforms_["x"].location , volume_width );
+//                                glUniform1f ( BoundingBoxDebug.uniforms_["y"].location , volume_height );
+//
 //				glUniform3fv ( BoundingBoxDebug.uniforms_["new_x"].location , 1 , new_x );
 //				glUniform3fv ( BoundingBoxDebug.uniforms_["new_y"].location , 1 , new_y );
 //				glUniform3fv ( BoundingBoxDebug.uniforms_["new_z"].location , 1 , new_z );
@@ -1199,7 +988,7 @@ void GLWidget::RawCutaway ( int cluster )
 //				glUniformMatrix4fv ( BoundingBoxDebug.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
 //				//VAO
 //				glBindVertexArray ( vertexArray_box );
-//				glDrawArrays ( GL_POINTS , 0 , cutVolume_.cut_volume_size.x );
+//				glDrawArrays ( GL_POINTS , 0 , cutVolume_.size.x );
 //				glBindVertexArray ( 0 );
 //				BoundingBoxDebug.deactive ( );
 //			}
@@ -1222,44 +1011,6 @@ void GLWidget::RawCutaway ( int cluster )
 
 		}
 	}
-//
-//
-////	wireframe.active();
-////	glUniform3fv(wireframe.uniforms_["lightDirection"].location,1,camera_.position());
-////	glUniform2f(wireframe.uniforms_["WIN_SCALE"].location,(float)width(),(float)height());
-////	glUniformMatrix4fv(wireframe.uniforms_["ModelMatrix"].location,1,GL_TRUE, lookatCamera);
-////	glUniformMatrix4fv(wireframe.uniforms_["ViewMatrix"].location,1,GL_TRUE, camera_.viewMatrix());
-////	glUniformMatrix4fv(wireframe.uniforms_["ProjectionMatrix"].location,1,GL_TRUE, camera_.perspectiveProjectionMatrix() );
-////	cube_.drawQuadStrips();
-////	wireframe.deactive();
-//
-//
-////	Celer::Vector3<float> new_z =  cutVolumes[0].center() - camera_.position();
-////
-////	new_z.normalize();
-////
-////	Celer::Vector3<float> new_x = new_z ^ camera_.UpVector();
-////
-////	new_x.normalize();
-////
-////	Celer::Vector3<float> new_y = new_z ^ new_x;
-////
-////	new_y.normalize();
-////
-////	Celer::Matrix4x4<float> lookatCamera ( new_x, new_y , new_z  );
-////
-////	orientedBoxApproach.active ( );
-////	glBindVertexArray ( vertexArray );
-////	glUniform4fv ( orientedBoxApproach.uniforms_["min_point"].location , 1 , Celer::Vector4<float> ( cutVolumes[0].min ( ) , 1.0f ) );
-////	glUniform4fv ( orientedBoxApproach.uniforms_["max_point"].location , 1 , Celer::Vector4<float> ( cutVolumes[0].max ( ) , 1.0f ) );
-////	glUniform3fv ( orientedBoxApproach.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
-////	glUniformMatrix4fv ( orientedBoxApproach.uniforms_["ModelMatrix"].location , 1 , GL_TRUE , lookatCamera );
-////	glUniformMatrix4fv ( orientedBoxApproach.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-////	glUniformMatrix4fv ( orientedBoxApproach.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
-////	glDrawArrays ( GL_POINTS , 0 , 1 );
-////	glBindVertexArray ( 0 );
-////	orientedBoxApproach.deactive ( );
-//
 
 }
 
@@ -1360,47 +1111,6 @@ void GLWidget::IRESCutaway ( )
 
                                 cutawayVolumes.deactive();
 
-
-
-//                              cube_interleaved_shader.active();
-//                              glUniform4fv ( cube_interleaved_shader.uniforms_["center_points[0]"].location , cut_volume_size , center_points[0] );
-//                              glUniform4fv ( cube_interleaved_shader.uniforms_["max_points[0]"].location , cut_volume_size , max_points[0]);
-//                              glUniform4fv ( cube_interleaved_shader.uniforms_["min_points[0]"].location , cut_volume_size , min_points[0] );
-//                              glUniform1i  ( cube_interleaved_shader.uniforms_["cut_volume_size"].location , cut_volume_size );
-//
-//                              glUniform3fv ( cube_interleaved_shader.uniforms_["new_x"].location , 1 ,  new_x );
-//                              glUniform3fv ( cube_interleaved_shader.uniforms_["new_y"].location , 1 ,  new_y );
-//                              glUniform3fv ( cube_interleaved_shader.uniforms_["new_z"].location , 1 ,  new_z );
-//
-//                              glUniform2f ( cube_interleaved_shader.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
-//                              glUniformMatrix4fv ( cube_interleaved_shader.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-//                              glUniformMatrix4fv ( cube_interleaved_shader.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
-//                              glBindVertexArray ( vertexArray_cube_interleaved );
-//                              glDrawArrays ( GL_POINTS , 0 , cube_interleaved.size() );
-//                              glBindVertexArray ( 0 );
-//                              cube_interleaved_shader.deactive();
-
-
-
-//                              BoundingBoxDebug.active ( );
-//
-//                              // FIXME Throw an Exception when std::map doesnt find A VARIABLE !!!
-//                              glUniform4fv ( BoundingBoxDebug.uniforms_["min_point"].location , 1 , Celer::Vector4<float> ( cutVolumes[cluster].min ( ) , 1.0f ) );
-//                              glUniform4fv ( BoundingBoxDebug.uniforms_["max_point"].location , 1 , Celer::Vector4<float> ( cutVolumes[cluster].max ( ) , 1.0f ) );
-//                              glUniform3fv ( BoundingBoxDebug.uniforms_["center_point"].location , 1 , cutVolumes[cluster].center ( ));
-//                              glUniform3fv ( BoundingBoxDebug.uniforms_["new_x"].location , 1 ,  new_x );
-//                              glUniform3fv ( BoundingBoxDebug.uniforms_["new_y"].location , 1 ,  new_y );
-//                              glUniform3fv ( BoundingBoxDebug.uniforms_["new_z"].location , 1 ,  new_z );
-//                              glUniformMatrix4fv ( BoundingBoxDebug.uniforms_["ModelMatrix"].location , 1 , GL_TRUE , lookatCamera );
-//                              glUniformMatrix4fv ( BoundingBoxDebug.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-//                              glUniformMatrix4fv ( BoundingBoxDebug.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
-//                              //VAO
-//                              glBindVertexArray ( vertexArray );
-//                              glDrawArrays ( GL_POINTS , 0 , 1 );
-//                              glBindVertexArray ( 0 );
-//
-//                              BoundingBoxDebug.deactive ( );
-
                         }
                         else
                         {
@@ -1424,36 +1134,8 @@ void GLWidget::IRESCutaway ( )
 
                                 cutawayVolumes.deactive ( );
 
-//                              glDepthFunc(GL_LESS);
-//                              glClearDepth( 1.0f );
-//
-//                              glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
-//                              glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-//
-//                              secondary.active ( );
-//
-//                              glUniform3fv ( secondary.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
-//                              glUniform3i  ( secondary.uniforms_["min_IJK"].location , min_I_, min_J_, min_K_ );
-//                              glUniform3i  ( secondary.uniforms_["max_IJK"].location , max_I_, max_J_, max_K_ );
-//                              glUniform2f  ( secondary.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
-//
-//                              glBindVertexArray ( vertexArray_cube_interleaved );
-//                              glDrawArrays ( GL_POINTS , 0 , cube_interleaved.size() );
-//                              glBindVertexArray ( 0 );
-//
-//                              secondary.deactive ( );
-                        }
 
-//                      debugNormal.active( );
-//
-//                      glUniformMatrix4fv ( debugNormal.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-//                      glUniformMatrix4fv ( debugNormal.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
-//
-//                      glBindVertexArray(vertexArray);
-//                      glDrawArrays ( GL_LINES_ADJACENCY , 0 , reservoir_list_of_vertices.size());
-//                      glBindVertexArray(0);
-//
-//                      debugNormal.deactive( );
+                        }
 
 
                 }
@@ -1516,10 +1198,6 @@ void GLWidget::fpsCounter ( )
 
 	//std::cout << "fps :" << fps  << std::endl;
 
-	int milliseconds = delta_time.elapsed();
-
-	float dt =  float(milliseconds / 1000.0f);
-
 	fps = 0;
 
 	delta_time.restart();
@@ -1545,9 +1223,6 @@ void GLWidget::loadShaders ( )
 	qDebug () << "Directory " << shadersDir.path ();
 
 
-	cutVolume.create("cutVolume",(shaderDirectory + "CutVolume.vert").toStdString(),
-				     (shaderDirectory + "CutVolume.geom").toStdString(),
-				     (shaderDirectory + "CutVolume.frag").toStdString());
 
 	primary.create("primary",(shaderDirectory + "Primary.vert").toStdString(),
 				 (shaderDirectory + "Primary.geom").toStdString(),
@@ -1557,16 +1232,6 @@ void GLWidget::loadShaders ( )
 			             (shaderDirectory + "Secondary.geom").toStdString(),
 				     (shaderDirectory + "Secondary.frag").toStdString());
 
-	BurnsCutaway430Wireframe.create("BurnsCutaway430Wireframe",(shaderDirectory + "BurnsCutaway430Wireframe.vert").toStdString(),
-								   (shaderDirectory + "BurnsCutaway430Wireframe.geom").toStdString(),
-								   (shaderDirectory + "BurnsCutaway430Wireframe.frag").toStdString());
-
-	BurnsJFAInitializing430.create("BurnsJFAInitializing430",(shaderDirectory + "BurnsJFAInitializing430.vert").toStdString(),
-								 (shaderDirectory + "BurnsJFAInitializing430.geom").toStdString(),
-								 (shaderDirectory + "BurnsJFAInitializing430.frag").toStdString());
-
-	BurnsJFAStep430.create("BurnsJFAStep430",(shaderDirectory + "BurnsJFAStep430.vert").toStdString(),
-						 (shaderDirectory + "BurnsJFAStep430.frag").toStdString());
 	// BoudingBox Approach
 	BoundingBoxInitialization.create ("BoundingBoxApproach",(shaderDirectory + "BoundingBoxApproach.vert").toStdString(),
 								(shaderDirectory + "BoundingBoxApproach.geom").toStdString(),
@@ -1585,10 +1250,6 @@ void GLWidget::loadShaders ( )
 			   (shaderDirectory + "DebugNormal.geom").toStdString(),
 			   (shaderDirectory + "DebugNormal.frag").toStdString());
 
-	cube_interleaved_shader.create ("cube_interleaved", (shaderDirectory + "Cube_Interleaved.vert").toStdString(),
-			               (shaderDirectory   + "Cube_Interleaved.geom").toStdString(),
-			               (shaderDirectory   + "Cube_Interleaved.frag").toStdString());
-
 
 	cutawayVolumes.create("cutawayVolumes", (shaderDirectory + "cutawayVolumes.vert").toStdString(),
 			     (shaderDirectory   + "cutawayVolumes.geom").toStdString(),
@@ -1606,89 +1267,87 @@ void GLWidget::loadShaders ( )
 	glUniformBlockBinding(BoundingBoxInitialization.id( ), BoundingBoxInitialization.uniform_blocks_["CutVolumes"].index, 1);
 	glUniformBlockBinding(BoundingBoxDebug.id( ), BoundingBoxDebug.uniform_blocks_["CutVolumes"].index, 1);
 
-
-
 }
 /// KeyInput
 void GLWidget::processMultiKeys ( )
 {
-foreach( int key , keysPresseds_)
-{
-
-	//std::cout  << camera_.position();
-
-	if ( key == Qt::Key_Q )
-	{
-		camera_.moveUpward ( cameraStep_ );
-
-	}
-	if ( key == Qt::Key_E )
-	{
-		camera_.moveUpward ( -cameraStep_ );
-
-	}
-	else if ( key == Qt::Key_W )
-	{
-		camera_.moveForward ( cameraStep_ );
-
-	}
-	if ( key == Qt::Key_S )
-	{
-		camera_.moveForward ( -cameraStep_ );
-
-	}
-	if ( key == Qt::Key_A )
-	{
-		camera_.strafeRight ( -cameraStep_ );
-
-	}
-	if ( key == Qt::Key_D )
-	{
-		camera_.strafeRight ( cameraStep_ );
-
-	}
-	if ( key == Qt::Key_R )
+	foreach( int key , keysPresseds_)
 	{
 
-		camera_.reset ( );
+		//std::cout  << camera_.position();
+
+		if ( key == Qt::Key_Q )
+		{
+			camera_.moveUpward ( cameraStep_ );
+
+		}
+		if ( key == Qt::Key_E )
+		{
+			camera_.moveUpward ( -cameraStep_ );
+
+		}
+		else if ( key == Qt::Key_W )
+		{
+			camera_.moveForward ( cameraStep_ );
+
+		}
+		if ( key == Qt::Key_S )
+		{
+			camera_.moveForward ( -cameraStep_ );
+
+		}
+		if ( key == Qt::Key_A )
+		{
+			camera_.strafeRight ( -cameraStep_ );
+
+		}
+		if ( key == Qt::Key_D )
+		{
+			camera_.strafeRight ( cameraStep_ );
+
+		}
+		if ( key == Qt::Key_R )
+		{
+
+			camera_.reset ( );
+
+		}
+		if ( key == Qt::Key_Plus )
+		{
+
+			if ( cameraStep_ < 2.0 )
+			cameraStep_ += 0.0001;
+
+		}
+		if ( key == Qt::Key_Minus )
+		{
+
+			if ( cameraStep_ > 0.0 )
+			cameraStep_ -= 0.0001;
+		}
+		if( key == Qt::Key_Left)
+		{
+			if ( volume_width  > 0.0 )
+				volume_width--;
+		}
+		if( key == Qt::Key_Right)
+		{
+			if ( volume_width  <= 30.0 )
+				volume_width++;
+		}
+		if( key == Qt::Key_Up)
+		{
+			if ( volume_height  <= 30.0 )
+				volume_height++;
+		}
+		if( key == Qt::Key_Down)
+		{
+			if ( volume_height  > 0.0 )
+				volume_height--;
+		}
+
 
 	}
-	if ( key == Qt::Key_Plus )
-	{
-
-		if ( cameraStep_ < 2.0 )
-		cameraStep_ += 0.0001;
-
-	}
-	if ( key == Qt::Key_Minus )
-	{
-
-		if ( cameraStep_ > 0.0 )
-		cameraStep_ -= 0.0001;
-	}
-	if( key == Qt::Key_Left)
-	{
-		if ( volume_width  > 0.0 )
-			volume_width--;
-	}
-	if( key == Qt::Key_Right)
-	{
-		if ( volume_width  <= 30.0 )
-			volume_width++;
-	}
-	if( key == Qt::Key_Up)
-	{
-		if ( volume_height  <= 30.0 )
-			volume_height++;
-	}
-	if( key == Qt::Key_Down)
-	{
-		if ( volume_height  > 0.0 )
-			volume_height--;
-	}
-
-
-}
 }
 
 void GLWidget::keyPressEvent ( QKeyEvent * event )
@@ -1701,8 +1360,6 @@ void GLWidget::keyPressEvent ( QKeyEvent * event )
 		loadShaders();
 		qDebug() << " Hello ";
 	}
-
-
 }
 
 void GLWidget::keyReleaseEvent ( QKeyEvent * event )
@@ -1715,19 +1372,17 @@ void GLWidget::mousePressEvent ( QMouseEvent *event )
 {
 	event->accept ( );
 
-		if ( event->button ( ) == Qt::LeftButton )
-		{
-			camera_.lockMouse ( true );
-			centerX_ = static_cast<float> ( event->x ( ) );
-			centerY_ = static_cast<float> ( event->y ( ) );
-		}
+	if ( event->button ( ) == Qt::LeftButton )
+	{
+		camera_.lockMouse ( true );
+		centerX_ = static_cast<float> ( event->x ( ) );
+		centerY_ = static_cast<float> ( event->y ( ) );
+	}
 
-		if ( event->button ( ) == Qt::RightButton )
-		{
-			lastPos = event->pos ( );
-		}
-
-
+	if ( event->button ( ) == Qt::RightButton )
+	{
+		lastPos = event->pos ( );
+	}
 }
 
 void GLWidget::mouseReleaseEvent ( QMouseEvent *event )

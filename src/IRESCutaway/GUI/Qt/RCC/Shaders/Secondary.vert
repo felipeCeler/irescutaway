@@ -38,7 +38,7 @@ uniform vec3 max_IJK;
 void main(void)
 {
 
-                      if ( ( IJK.x >= min_IJK.x ) && ( IJK.x < max_IJK.x ) || ( IJK.y >= min_IJK.y ) && ( IJK.y < max_IJK.y ) || ( IJK.z >= min_IJK.z ) && ( IJK.z < max_IJK.z ) )
+                if ( ( IJK.x >= min_IJK.x ) && ( IJK.x < max_IJK.x ) && ( IJK.y >= min_IJK.y ) && ( IJK.y < max_IJK.y ) && ( IJK.z >= min_IJK.z ) && ( IJK.z < max_IJK.z ) )
                 {
                         cube.internal = IJK.w;
 

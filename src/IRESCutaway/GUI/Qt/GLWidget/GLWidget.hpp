@@ -101,13 +101,11 @@ class GLWidget: public QGLWidget
 
 
 		void NoCutaway          ( );
-		void BurnsCutaway       ( );
 		void RawCutaway         ( int cluster );
-		void IRESCutaway      ( );
+		void IRESCutaway      	( );
 		void updateCluster      ( int i ) { cluster = i; updateGL();}
 
 		void setNoCutawayVisibility     ( bool visibility ) { isNoCutaway      = visibility; updateGL();}
-		void setBurnsCutawayVisibility  ( bool visibility ) { isBurnsApproach  = visibility; updateGL();}
 		void setRawCutawayVisibility    ( bool visibility ) { isRawApproach    = visibility; updateGL();}
 		void setIRESCutawayVisibility   ( bool visibility ) {   isIRESApproach = visibility; updateGL();}
 
@@ -150,7 +148,6 @@ private:
 
 	bool getVertices(unsigned int , float * vertices );
 
-	Celer::OpenGL::ShaderManager	debugNormal;
 
 	QPoint lastPos;
 	/// Avoid camera_ movement issues
@@ -207,25 +204,12 @@ private:
 	std::vector<Celer::BoundingBox3<GLfloat> > cutVolumes;
 	std::vector<Celer::Vector3<GLfloat> >      box_vertices;
 
-
 	GLuint vertexArray_box;
 	GLuint vertexBuffer_box;
 
-	// From Image Cutaway.
-
-	float theta;
-
-	float pm_sz;
-
 	QGLFramebufferObject*   fboStep[2];
 
-	// Burns Approach
-	Celer::OpenGL::ShaderManager	BurnsJFAInitializing430;
-	Celer::OpenGL::ShaderManager	BurnsJFAStep430;
-	Celer::OpenGL::ShaderManager	BurnsCutaway430Wireframe;
-
 	// BoundingBox Visualization
-	Celer::OpenGL::ShaderManager	cutVolume;
 	Celer::OpenGL::ShaderManager    BoundingBoxInitialization;
 	Celer::OpenGL::ShaderManager    BoundingBoxDebug;
 	Celer::OpenGL::ShaderManager    BoundingBoxCutaway;
@@ -234,14 +218,16 @@ private:
 	Celer::OpenGL::ShaderManager	primary;
 	Celer::OpenGL::ShaderManager	secondary;
 
+	Celer::OpenGL::ShaderManager	debugNormal;
+
 	QImage fbo;
 	float  angle;
 	float  zoom_angle_;
-	int cluster;
+	int    cluster;
 
 
+	// Controls over the rendering
 	bool  isNoCutaway;
-	bool  isBurnsApproach;
 	bool  isRawApproach;
 	bool  isIRESApproach;
 
@@ -257,24 +243,31 @@ private:
 	int max_K_;
 	int min_K_;
 
-	/// Celer Gaming Looping 0.1
+	// Celer Gaming Looping 0.1 -> For animation
 	QTimer fpsTimer_;
 	QTimer updateTimer_;
 	QElapsedTimer delta_time;
 	int fps;
 
-	bool freezeView_;
 
+	// View dependent parameters
 	Celer::Vector3<float> new_z;
 
 	Celer::Vector3<float> new_x;
 
 	Celer::Vector3<float> new_y;
 
+	Celer::Matrix4x4<float> lookatCamera;
+
+	// Fixed view
+	bool freezeView_;
+
+	// Aperture
 	float volume_width;
 	float volume_height;
 
-	Celer::Matrix4x4<float> lookatCamera;
+
+
 
 
 };

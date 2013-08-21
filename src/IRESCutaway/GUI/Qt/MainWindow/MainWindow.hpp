@@ -30,7 +30,6 @@ class MainWindow: public QMainWindow
 		void on_action_Open_IRES_triggered ( );
 		void on_pushButton_changePropertyRange_clicked ( );
 		void on_pushButton_Reset_IJK_clicked( );
-		void on_pushButton_changeIJK_clicked( );
 
 		void updateDoubleSpinMax( int property_index );
 		void updateDoubleSpinMin( int property_index );

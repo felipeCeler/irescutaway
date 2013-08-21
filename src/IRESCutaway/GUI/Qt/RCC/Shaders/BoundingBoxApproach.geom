@@ -18,7 +18,8 @@ in CubeData
 out VertexData
 {
    vec4 color;
-   vec4 vertice;
+   vec4 verticeEye;
+   vec4 verticeProj;
    vec3 normal;
 } VertexOut;
 
@@ -43,21 +44,25 @@ void byCentroid ( )
 		VertexOut.color  = cube[0].color;
 
 
-		VertexOut.vertice  = ViewMatrix * cube[0].v[cutVolume[i].vertices[0]];
-		gl_Position = ProjectionMatrix * VertexOut.vertice;
+		VertexOut.verticeEye  = ViewMatrix * cube[0].v[cutVolume[i].vertices[0]];
+		gl_Position = ProjectionMatrix * VertexOut.verticeEye;
+		VertexOut.verticeProj = gl_Position;
 		EmitVertex();
 
 
-		VertexOut.vertice  = ViewMatrix * cube[0].v[cutVolume[i].vertices[1]];
-		gl_Position = ProjectionMatrix * VertexOut.vertice;
+		VertexOut.verticeEye  = ViewMatrix * cube[0].v[cutVolume[i].vertices[1]];
+		gl_Position = ProjectionMatrix * VertexOut.verticeEye;
+		VertexOut.verticeProj = gl_Position;
 		EmitVertex();
 
-		VertexOut.vertice  = ViewMatrix * cube[0].v[cutVolume[i].vertices[3]];
-		gl_Position = ProjectionMatrix * VertexOut.vertice;
+		VertexOut.verticeEye  = ViewMatrix * cube[0].v[cutVolume[i].vertices[3]];
+		gl_Position = ProjectionMatrix * VertexOut.verticeEye;
+		VertexOut.verticeProj = gl_Position;
 		EmitVertex();
 
-		VertexOut.vertice  = ViewMatrix * cube[0].v[cutVolume[i].vertices[2]];
-		gl_Position = ProjectionMatrix * VertexOut.vertice;
+		VertexOut.verticeEye  = ViewMatrix * cube[0].v[cutVolume[i].vertices[2]];
+		gl_Position = ProjectionMatrix * VertexOut.verticeEye;
+		VertexOut.verticeProj = gl_Position;
 		EmitVertex();
 
 		EndPrimitive();

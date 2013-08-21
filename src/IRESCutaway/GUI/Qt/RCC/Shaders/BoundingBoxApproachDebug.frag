@@ -8,7 +8,8 @@ uniform vec3 lightDirection;
 in VertexData
 {
    vec4 color;
-   vec3 vert;
+   vec4 verticeEye;
+   vec4 verticeProj;
    vec3 normal;
 } VertexOut;
 
@@ -23,7 +24,7 @@ void main(void)
 	vec4 cutaway = texture2DRect( normals , gl_FragCoord.xy).rgba;
 
 	vec3 newNormal = VertexOut.normal.xyz;
-	vec3 newVert = VertexOut.vert.xyz;
+	vec3 newVert = VertexOut.verticeEye.xyz;
 
 	newNormal = normalize ( newNormal );
 
@@ -39,20 +40,12 @@ void main(void)
 	vec4 ld = color_t * 0.9 * max ( 0.0 , dot ( newNormal , light_dir ) );
 	vec4 ls = color_t * 0.4 * pow ( max ( 0.0 , dot ( eye_dir , ref ) ) , 5.0 );
 
-//	if (VertexOut.color.g == 1.0)
-//	{
-//		outputColor = vec4(abs(VertexOut.normal),1.0) ;
-//	}else
-//	{
-	  float zbuffer = cutaway.z / cutaway.w ;
 
-	  zbuffer = 1.0 - (zbuffer) / 50.0;
+	// @link http://stackoverflow.com/questions/15151076/gl-fragcoord-x-y-z-being-1-for-all-pixels-and-w-being-the-depth
+	float zbuffer = cutaway.w/35;
 
-	  zbuffer = cutaway.w * 15;
+	outputColor = vec4(zbuffer, zbuffer, zbuffer, 1.0);
+	//outputColor =    vec4 ( la.rgb + ld.xyz + ls.rgb , 1.0 ) ;
 
-	  outputColor = vec4(zbuffer, zbuffer, zbuffer, 1.0);
-	  //outputColor =    vec4 ( la.rgb + ld.xyz + ls.rgb , 1.0 ) ;
-//	}
 
-	//outputColor = vec4(abs(VertexOut.normal),1.0) ;
 }

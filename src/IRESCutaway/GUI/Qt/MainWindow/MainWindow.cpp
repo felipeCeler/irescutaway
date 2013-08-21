@@ -11,8 +11,8 @@ MainWindow::MainWindow ( QMainWindow *parent ) :
 
 	QGLFormat glFormat;
 	glFormat.setSwapInterval ( 0 ); // vsync
-	//glFormat.setVersion(3,3);
-	//glFormat.setProfile(QGLFormat::CompatibilityProfile);
+//	glFormat.setVersion(3,3);
+//	glFormat.setProfile(QGLFormat::CompatibilityProfile);
 //	glFormat.setSampleBuffers(true);
 //	glFormat.setSamples(4);
 
@@ -52,16 +52,15 @@ MainWindow::MainWindow ( QMainWindow *parent ) :
 	// About Widget
 	connect(ui->action_About, SIGNAL(triggered()), aboutIRESReader, SLOT(show()));
 
+	// Controls over the rendering
 	QActionGroup* CutawayTypeGroup = new QActionGroup ( this );
 	CutawayTypeGroup->setExclusive(1);
 	CutawayTypeGroup->addAction ( ui->action_No_Cutaway );
-	CutawayTypeGroup->addAction ( ui->action_Burns_Cutaway );	
 	CutawayTypeGroup->addAction ( ui->action_Raw_Cutaway );
 	CutawayTypeGroup->addAction ( ui->action_IRES_Cutaway );
 
 	// Change the Cutaway Type
 	connect(ui->action_No_Cutaway,           SIGNAL(toggled(bool)), glWidget, SLOT(setNoCutawayVisibility(bool)));
-	connect(ui->action_Burns_Cutaway,        SIGNAL(toggled(bool)), glWidget, SLOT(setBurnsCutawayVisibility(bool)));
 	connect(ui->action_Raw_Cutaway,          SIGNAL(toggled(bool)), glWidget, SLOT(setRawCutawayVisibility(bool)));
 	connect(ui->action_IRES_Cutaway,       SIGNAL(toggled(bool)), glWidget, SLOT(setIRESCutawayVisibility(bool)));
 	// Change visibility  of cells
@@ -227,13 +226,6 @@ void MainWindow::on_pushButton_Reset_IJK_clicked( )
 	ui->horizontalslider_min_J->setValue ( 0 );
 	ui->horizontalslider_min_K->setValue ( 0 );
 
-}
-
-void MainWindow::on_pushButton_changeIJK_clicked()
-{
-	glWidget->changeIJK( ui->horizontalslider_min_I->value(), ui->horizontalslider_max_I->value(),
-	                     ui->horizontalslider_min_J->value(), ui->horizontalslider_max_J->value(),
-	                     ui->horizontalslider_min_K->value(), ui->horizontalslider_max_K->value());
 }
 
 void MainWindow::on_action_Load_Shaders_triggered()
