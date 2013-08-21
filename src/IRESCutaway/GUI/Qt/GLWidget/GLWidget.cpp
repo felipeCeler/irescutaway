@@ -63,15 +63,6 @@ void GLWidget::initializeGL ( )
 	fboStep[0] 	  = new  QGLFramebufferObject ( width() , height() , format );
 	fboStep[1] 	  = new  QGLFramebufferObject ( width() , height() , format );
 
-        QGLFramebufferObjectFormat formatBurns;
-        formatBurns.setSamples(4);
-        formatBurns.setInternalTextureFormat ( GL_RGBA32F );
-        formatBurns.setTextureTarget ( GL_TEXTURE_RECTANGLE );
-
-        fboBurns[0]        = new  QGLFramebufferObject ( width() , height() , formatBurns );
-        fboBurns[1]        = new  QGLFramebufferObject ( width() , height() , formatBurns );
-
-
 	glGenVertexArrays ( 1 , &vertexArrayScreen );
 	// Viewport
 		glGenBuffers ( 1, &screen_buffer);
@@ -118,7 +109,7 @@ void GLWidget::initializeGL ( )
 
 	isBurnsApproach         = 0;
 	isRawApproach			= 0;
-	isFelipeApproach        = 0;
+	isIRESApproach        = 0;
 
 	cluster = 0;
 
@@ -651,10 +642,12 @@ void GLWidget::openIRESCharles( const std::string& filename )
 				{
 					// Internal Cell;
 					cube_temp.IJK    = Celer::Vector4<float> ( reservoir_model_.blocks[i].IJK[0].x , reservoir_model_.blocks[i].IJK[0].y , reservoir_model_.blocks[i].IJK[0].z , 0.0f );
+
 				}else
 				{
 					// Surface  Cell;
 					cube_temp.IJK    = Celer::Vector4<float> ( reservoir_model_.blocks[i].IJK[0].x , reservoir_model_.blocks[i].IJK[0].y , reservoir_model_.blocks[i].IJK[0].z , 1.0f );
+
 				}
 
 				cube_temp.focus  = Celer::Vector4<float> ( 1.0f, 1.0f ,0.0f ,1.0f );
@@ -788,13 +781,6 @@ void GLWidget::resizeGL ( int width , int height )
 	if ( fboStep[1] )
 		delete fboStep[1];
 
-        if ( fboBurns[0] )
-                delete fboBurns[0];
-
-        if ( fboBurns[1] )
-                delete fboBurns[1];
-
-
 	QGLFramebufferObjectFormat format;
 	format.setAttachment(QGLFramebufferObject::Depth);
 	format.setTextureTarget ( GL_TEXTURE_RECTANGLE );
@@ -803,13 +789,7 @@ void GLWidget::resizeGL ( int width , int height )
 	fboStep[0] = new QGLFramebufferObject ( width , height , format );
 	fboStep[1] = new QGLFramebufferObject ( width , height , format );
 
-        QGLFramebufferObjectFormat formatBurns;
-        formatBurns.setSamples(4);
-        formatBurns.setInternalTextureFormat ( GL_RGBA32F );
-        formatBurns.setTextureTarget ( GL_TEXTURE_RECTANGLE );
 
-        fboBurns[0]        = new  QGLFramebufferObject ( width , height , formatBurns );
-        fboBurns[1]        = new  QGLFramebufferObject ( width , height , formatBurns );
 
 }
 /// For DropArea's implementation, we clear invoke clear() and then accept the proposed event.
@@ -860,28 +840,18 @@ void GLWidget::paintGL ( )
 
 	if 	( isBurnsApproach )
 	{
-		camera_.setTarget( reservoir_model_.box_v2.center( ) );
 		BurnsCutaway ( );
 	}
 	else if ( isRawApproach )
 	{
-		if ( cutVolumes.size() > 0)
-			camera_.setTarget( cutVolumes[cluster].center( ) );
-		camera_.setTarget( reservoir_model_.box_v2.center( ) );
 		RawCutaway ( cluster );
 	}
-	else if ( isFelipeApproach )
+	else if ( isIRESApproach )
 	{
-		if ( cutVolumes.size() > 0)
-			camera_.setTarget( cutVolumes[cluster].center( ) );
-		camera_.setTarget( reservoir_model_.box_v2.center( ) );
-		FelipeCutaway ( );
+		IRESCutaway ( );
 	}else
 	{
-                if ( cutVolumes.size() > 0)
-                        camera_.setTarget( cutVolumes[cluster].center( ) );
-                camera_.setTarget( reservoir_model_.box_v2.center( ) );
-                NoCutaway ( );
+        NoCutaway ( );
 	}
 
 	fps++;
@@ -907,8 +877,8 @@ void GLWidget::NoCutaway ( )
                 secondary.active ( );
 
                 glUniform3fv ( secondary.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
-                glUniform3i  ( secondary.uniforms_["min_IJK"].location , min_I_, min_J_, min_K_ );
-                glUniform3i  ( secondary.uniforms_["max_IJK"].location , max_I_, max_J_, max_K_ );
+                glUniform3f  ( secondary.uniforms_["min_IJK"].location , (float)min_I_,(float)min_J_,(float)min_K_ );
+                glUniform3f  ( secondary.uniforms_["max_IJK"].location , (float)max_I_, (float)max_J_, (float)max_K_ );
                 glUniform2f  ( secondary.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
 
                 glBindVertexArray ( vertexArray_cube_interleaved );
@@ -947,13 +917,14 @@ void GLWidget::BurnsCutaway ( )
                 if ( isIRESOpen_  )
                 {
 
+                        glDepthFunc(GL_LESS);
+                        glClearDepth(1.0f);
+
                         BurnsJFAInitializing430.active ( );
 
                         fboStep[1]->bind();
 
                         glClearColor ( 1.0 , 1.0 , 1.0 , 1.0 );
-                        glDepthFunc(GL_LESS);
-                        glClearDepth(1.0f);
                         glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
                         glUniform3fv ( BurnsJFAInitializing430.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
@@ -1073,8 +1044,8 @@ void GLWidget::BurnsCutaway ( )
 void GLWidget::RawCutaway ( int cluster )
 {
 
-	/// FIXME Conditions  - Primary and Secondary well defined.
-
+//	/// FIXME Conditions  - Primary and Secondary well defined.
+//
  	if ( isIRESOpen_ )
 	{
 
@@ -1251,51 +1222,51 @@ void GLWidget::RawCutaway ( int cluster )
 
 		}
 	}
-
-
-//	wireframe.active();
-//	glUniform3fv(wireframe.uniforms_["lightDirection"].location,1,camera_.position());
-//	glUniform2f(wireframe.uniforms_["WIN_SCALE"].location,(float)width(),(float)height());
-//	glUniformMatrix4fv(wireframe.uniforms_["ModelMatrix"].location,1,GL_TRUE, lookatCamera);
-//	glUniformMatrix4fv(wireframe.uniforms_["ViewMatrix"].location,1,GL_TRUE, camera_.viewMatrix());
-//	glUniformMatrix4fv(wireframe.uniforms_["ProjectionMatrix"].location,1,GL_TRUE, camera_.perspectiveProjectionMatrix() );
-//	cube_.drawQuadStrips();
-//	wireframe.deactive();
-
-
-//	Celer::Vector3<float> new_z =  cutVolumes[0].center() - camera_.position();
 //
-//	new_z.normalize();
 //
-//	Celer::Vector3<float> new_x = new_z ^ camera_.UpVector();
+////	wireframe.active();
+////	glUniform3fv(wireframe.uniforms_["lightDirection"].location,1,camera_.position());
+////	glUniform2f(wireframe.uniforms_["WIN_SCALE"].location,(float)width(),(float)height());
+////	glUniformMatrix4fv(wireframe.uniforms_["ModelMatrix"].location,1,GL_TRUE, lookatCamera);
+////	glUniformMatrix4fv(wireframe.uniforms_["ViewMatrix"].location,1,GL_TRUE, camera_.viewMatrix());
+////	glUniformMatrix4fv(wireframe.uniforms_["ProjectionMatrix"].location,1,GL_TRUE, camera_.perspectiveProjectionMatrix() );
+////	cube_.drawQuadStrips();
+////	wireframe.deactive();
 //
-//	new_x.normalize();
 //
-//	Celer::Vector3<float> new_y = new_z ^ new_x;
+////	Celer::Vector3<float> new_z =  cutVolumes[0].center() - camera_.position();
+////
+////	new_z.normalize();
+////
+////	Celer::Vector3<float> new_x = new_z ^ camera_.UpVector();
+////
+////	new_x.normalize();
+////
+////	Celer::Vector3<float> new_y = new_z ^ new_x;
+////
+////	new_y.normalize();
+////
+////	Celer::Matrix4x4<float> lookatCamera ( new_x, new_y , new_z  );
+////
+////	orientedBoxApproach.active ( );
+////	glBindVertexArray ( vertexArray );
+////	glUniform4fv ( orientedBoxApproach.uniforms_["min_point"].location , 1 , Celer::Vector4<float> ( cutVolumes[0].min ( ) , 1.0f ) );
+////	glUniform4fv ( orientedBoxApproach.uniforms_["max_point"].location , 1 , Celer::Vector4<float> ( cutVolumes[0].max ( ) , 1.0f ) );
+////	glUniform3fv ( orientedBoxApproach.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
+////	glUniformMatrix4fv ( orientedBoxApproach.uniforms_["ModelMatrix"].location , 1 , GL_TRUE , lookatCamera );
+////	glUniformMatrix4fv ( orientedBoxApproach.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+////	glUniformMatrix4fv ( orientedBoxApproach.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+////	glDrawArrays ( GL_POINTS , 0 , 1 );
+////	glBindVertexArray ( 0 );
+////	orientedBoxApproach.deactive ( );
 //
-//	new_y.normalize();
-//
-//	Celer::Matrix4x4<float> lookatCamera ( new_x, new_y , new_z  );
-//
-//	orientedBoxApproach.active ( );
-//	glBindVertexArray ( vertexArray );
-//	glUniform4fv ( orientedBoxApproach.uniforms_["min_point"].location , 1 , Celer::Vector4<float> ( cutVolumes[0].min ( ) , 1.0f ) );
-//	glUniform4fv ( orientedBoxApproach.uniforms_["max_point"].location , 1 , Celer::Vector4<float> ( cutVolumes[0].max ( ) , 1.0f ) );
-//	glUniform3fv ( orientedBoxApproach.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
-//	glUniformMatrix4fv ( orientedBoxApproach.uniforms_["ModelMatrix"].location , 1 , GL_TRUE , lookatCamera );
-//	glUniformMatrix4fv ( orientedBoxApproach.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-//	glUniformMatrix4fv ( orientedBoxApproach.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
-//	glDrawArrays ( GL_POINTS , 0 , 1 );
-//	glBindVertexArray ( 0 );
-//	orientedBoxApproach.deactive ( );
-
 
 }
 
-void GLWidget::FelipeCutaway ( )
+void GLWidget::IRESCutaway ( )
 {
-        /// FIXME Conditions  - Just the model opened.
-
+//        /// FIXME Conditions  - Just the model opened.
+//
         glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
         glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
@@ -1529,6 +1500,7 @@ void GLWidget::FelipeCutaway ( )
         }
 
 }
+
 void GLWidget::gameLooping ( )
 {
 

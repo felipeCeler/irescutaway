@@ -101,7 +101,7 @@ namespace IRES
 
 			Celer::Vector4<int> IJK ( I, J, K, 0 );
 
-			new_block.IJK.resize(24,IJK);
+			std::fill (new_block.IJK.begin(),new_block.IJK.end(),IJK);
 
 			if ( reservoir_file.getBlockVertices ( i , v ) )
 			{

@@ -137,7 +137,7 @@
     <addaction name="action_No_Cutaway"/>
     <addaction name="action_Burns_Cutaway"/>
     <addaction name="action_Raw_Cutaway"/>
-    <addaction name="action_Felipe_Cutaway"/>
+    <addaction name="action_IRES_Cutaway"/>
     <addaction name="separator"/>
     <addaction name="separator"/>
     <addaction name="action_Trackball"/>
@@ -587,12 +587,12 @@
     <string>Alt+Shift+S</string>
    </property>
   </action>
-  <action name="action_Felipe_Cutaway">
+  <action name="action_IRES_Cutaway">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Felipe Cutaway</string>
+    <string>IRES Cutaway</string>
    </property>
    <property name="shortcut">
     <string>F12</string>

@@ -57,13 +57,13 @@ MainWindow::MainWindow ( QMainWindow *parent ) :
 	CutawayTypeGroup->addAction ( ui->action_No_Cutaway );
 	CutawayTypeGroup->addAction ( ui->action_Burns_Cutaway );	
 	CutawayTypeGroup->addAction ( ui->action_Raw_Cutaway );
-	CutawayTypeGroup->addAction ( ui->action_Felipe_Cutaway );
+	CutawayTypeGroup->addAction ( ui->action_IRES_Cutaway );
 
 	// Change the Cutaway Type
 	connect(ui->action_No_Cutaway,           SIGNAL(toggled(bool)), glWidget, SLOT(setNoCutawayVisibility(bool)));
 	connect(ui->action_Burns_Cutaway,        SIGNAL(toggled(bool)), glWidget, SLOT(setBurnsCutawayVisibility(bool)));
 	connect(ui->action_Raw_Cutaway,          SIGNAL(toggled(bool)), glWidget, SLOT(setRawCutawayVisibility(bool)));
-	connect(ui->action_Felipe_Cutaway,       SIGNAL(toggled(bool)), glWidget, SLOT(setFelipeCutawayVisibility(bool)));
+	connect(ui->action_IRES_Cutaway,       SIGNAL(toggled(bool)), glWidget, SLOT(setIRESCutawayVisibility(bool)));
 	// Change visibility  of cells
 	connect(ui->action_Show_Primary_Cells,   SIGNAL(toggled(bool)), glWidget, SLOT(setPrimaryVisibility(bool)));
 	connect(ui->action_Show_Secondary_Cells, SIGNAL(toggled(bool)), glWidget, SLOT(setSecondaryVisibility(bool)));
@@ -123,9 +123,9 @@ void MainWindow::open( QString pFilename,bool who ) {
 		ui->horizontalslider_min_J->setMaximum(glWidget->reservoir_model_.header_.number_of_Blocks_in_J_Direction+1);
 		ui->horizontalslider_min_K->setMaximum(glWidget->reservoir_model_.header_.number_of_Blocks_in_K_Direction+1);
 
-		ui->horizontalslider_max_I->setValue ( 0 );
-		ui->horizontalslider_max_J->setValue ( 0 );
-		ui->horizontalslider_max_K->setValue ( 0 );
+		ui->horizontalslider_max_I->setValue ( glWidget->reservoir_model_.header_.number_of_Blocks_in_I_Direction+1 );
+		ui->horizontalslider_max_J->setValue ( glWidget->reservoir_model_.header_.number_of_Blocks_in_J_Direction+1 );
+		ui->horizontalslider_max_K->setValue ( glWidget->reservoir_model_.header_.number_of_Blocks_in_K_Direction+1 );
 
 		ui->horizontalslider_min_I->setValue ( 0 );
 		ui->horizontalslider_min_J->setValue ( 0 );

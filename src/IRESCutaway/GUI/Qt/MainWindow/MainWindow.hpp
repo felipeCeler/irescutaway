@@ -37,10 +37,6 @@ class MainWindow: public QMainWindow
 
 		void on_spinBox_Cluster_Number_valueChanged  ( int i);
 
-
-
-
-
 	private:
 		Ui::MainWindow * ui;
 

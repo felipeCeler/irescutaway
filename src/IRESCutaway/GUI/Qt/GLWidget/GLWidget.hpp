@@ -103,13 +103,13 @@ class GLWidget: public QGLWidget
 		void NoCutaway          ( );
 		void BurnsCutaway       ( );
 		void RawCutaway         ( int cluster );
-		void FelipeCutaway      ( );
+		void IRESCutaway      ( );
 		void updateCluster      ( int i ) { cluster = i; updateGL();}
 
 		void setNoCutawayVisibility     ( bool visibility ) { isNoCutaway      = visibility; updateGL();}
 		void setBurnsCutawayVisibility  ( bool visibility ) { isBurnsApproach  = visibility; updateGL();}
 		void setRawCutawayVisibility    ( bool visibility ) { isRawApproach    = visibility; updateGL();}
-		void setFelipeCutawayVisibility ( bool visibility ) { isFelipeApproach = visibility; updateGL();}
+		void setIRESCutawayVisibility   ( bool visibility ) {   isIRESApproach = visibility; updateGL();}
 
 		void IRESv1_to_IRESv2 ( const std::string& filename );
 
@@ -219,9 +219,6 @@ private:
 
 	QGLFramebufferObject*   fboStep[2];
 
-	QGLFramebufferObject*   fboBurns[2];
-
-
 	// Burns Approach
 	Celer::OpenGL::ShaderManager	BurnsJFAInitializing430;
 	Celer::OpenGL::ShaderManager	BurnsJFAStep430;
@@ -246,7 +243,7 @@ private:
 	bool  isNoCutaway;
 	bool  isBurnsApproach;
 	bool  isRawApproach;
-	bool  isFelipeApproach;
+	bool  isIRESApproach;
 
 	bool draw_secondary;
 	bool draw_primary;
