@@ -804,7 +804,7 @@ void GLWidget::paintGL ( )
 		IRESCutaway ( );
 	}else
 	{
-        NoCutaway ( );
+		NoCutaway ( );
 	}
 
 	fps++;

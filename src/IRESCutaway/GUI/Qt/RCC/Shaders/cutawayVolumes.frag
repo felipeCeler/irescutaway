@@ -1,4 +1,4 @@
-#version 430
+#version 420
 #extension GL_ARB_texture_rectangle : enable
 
 layout (location = 0) uniform sampler2DRect depthBuffer;

@@ -1,4 +1,4 @@
-#version 430 core
+#version 420 core
 #extension GL_ARB_texture_rectangle : enable
 
 uniform sampler2DRect primary;

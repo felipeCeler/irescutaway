@@ -324,10 +324,11 @@ namespace IRES
 				}
 			}
 
-			// std::cout << " Vector " <<  this->box_v2.diagonal() << std::endl;
+			std::cout << " Vector " <<  this->box_v2.diagonal() << std::endl;
 			this->box_v2.reset( );
 			this->box_v2 = AABB;
-			// std::cout << " Vector " <<  this->box_v2.diagonal() << std::endl;
+			std::cout << " Vector " <<  this->box_v2.diagonal() << std::endl;
+			std::cout << " Vector " <<  this->box_v2.center() << std::endl;
 		}
 
 		time (&bend);

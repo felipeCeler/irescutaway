@@ -1,16 +1,4 @@
-//#version 420
-//
-//in vec3 normal;
-//in vec4 color;
-//
-//out vec4 fragmentColor;
-////
-////
-//void main ( void )
-//{
-//	fragmentColor = vec4 ( color );
-//}
-#version 430
+#version 420
 
 ////in  float angle;
 //uniform  vec3 lightDirection;
