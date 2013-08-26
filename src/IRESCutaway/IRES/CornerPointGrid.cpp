@@ -321,6 +321,7 @@ namespace IRES
 					}
 
 					AABB.fromPointCloud( this->blocks[i].vertices.begin() , this->blocks[i].vertices.end() );       //std::cout << " Vector " <<  vertices[i] << std::endl;
+					this->blocks[i].AABB = AABB;
 				}
 			}
 
