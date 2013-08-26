@@ -39,7 +39,6 @@ void main(void)
 	vec4 cutaway 	  = texture2DRect(depthBuffer, gl_FragCoord.xy).rgba;
 	vec4 vertice 	  = texture2DRect(verticeBuffer, gl_FragCoord.xy).rgba;
 
-
         float far = 500.0;
         float near = 0.1;
 
