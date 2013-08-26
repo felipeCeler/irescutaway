@@ -42,7 +42,9 @@ void main(void)
 		cube.v[2] = v2;
 
 		if ( IJK.w == 1 )
-
+		{
+			cube.color = vec4(0.0,0.0,1.0,1.0);
+		}
 		cube.color    = color;
 
 		mat3 normalMatrix = inverse(transpose(mat3(ViewMatrix)));
