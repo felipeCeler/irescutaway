@@ -1,4 +1,4 @@
-#version 420
+#version 430
 #pragma optionNV(unroll all)
 
 layout(location = 0) in vec4 v0;

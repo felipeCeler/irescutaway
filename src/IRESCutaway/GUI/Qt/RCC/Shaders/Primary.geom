@@ -1,4 +1,4 @@
-#version 420
+#version 430
 
 layout ( points ) in;
 layout ( triangle_strip, max_vertices=24 ) out;

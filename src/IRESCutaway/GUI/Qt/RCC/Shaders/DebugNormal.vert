@@ -1,4 +1,4 @@
-#version 420 core
+#version 430 core
 
 layout (location = 1 ) in vec4 vertices;
 layout (location = 2 ) in vec4 normals;
