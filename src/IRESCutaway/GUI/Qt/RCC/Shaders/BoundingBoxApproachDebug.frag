@@ -1,7 +1,6 @@
 #version 430 core
-#extension GL_ARB_texture_rectangle : enable
 
-layout(location = 0) uniform sampler2DRect normals;
+layout(location = 0) uniform sampler2D normals;
 
 uniform vec3 lightDirection;
 
@@ -21,7 +20,7 @@ void main(void)
 {
 
 
-	vec4 cutaway = texture2DRect( normals , gl_FragCoord.xy).rgba;
+        vec4 cutaway = texture( normals , gl_FragCoord.xy / vec2(textureSize(normals).xy)).rgba;
 
 	vec3 newNormal = VertexOut.normal.xyz;
 	vec3 newVert = VertexOut.verticeEye.xyz;
@@ -42,7 +41,7 @@ void main(void)
 
 
 	// @link http://stackoverflow.com/questions/15151076/gl-fragcoord-x-y-z-being-1-for-all-pixels-and-w-being-the-depth
-	float zbuffer = cutaway.w/35;
+        float zbuffer = cutaway.w/35.0;
 
 	outputColor = vec4(zbuffer, zbuffer, zbuffer, 1.0);
 	//outputColor =    vec4 ( la.rgb + ld.xyz + ls.rgb , 1.0 ) ;

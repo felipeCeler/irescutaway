@@ -26,7 +26,7 @@ void GLWidget::initializeGL ( )
 	/// OpenGL Stuffs
 	glEnable ( GL_DEPTH_TEST );
 	glDepthMask(GL_TRUE);
-	glEnable ( GL_TEXTURE_RECTANGLE );
+    glEnable ( GL_TEXTURE_2D );
 	glClearColor ( 0.0 , 0.0 , 0.0 , 1.0 );
 	glDisable(GL_BLEND);
 
@@ -56,7 +56,7 @@ void GLWidget::initializeGL ( )
 
 	format.setAttachment(QGLFramebufferObject::Depth);
 	format.setInternalTextureFormat ( GL_RGBA32F );
-	format.setTextureTarget ( GL_TEXTURE_RECTANGLE );
+    format.setTextureTarget ( GL_TEXTURE_2D );
 
 	fboStep[0] 	  = new  QGLFramebufferObject ( width() , height() , format );
 	fboStep[1] 	  = new  QGLFramebufferObject ( width() , height() , format );
@@ -254,9 +254,9 @@ void GLWidget::cutVolumeGenerator( )
 void GLWidget::changePropertyRange ( const double& minRange, const double& maxRange, int property_index )
 {
 
-	boxes.clear ( );
+    boxes.clear ( );
 
-	std::cout << "Changing the property to : " << reservoir_model_.static_porperties[property_index].name << std::endl;
+//	std::cout << "Changing the property to : " << reservoir_model_.static_porperties[property_index].name << std::endl;
 
 	float min = *std::min_element ( reservoir_model_.static_porperties[property_index].values_.begin ( ) , reservoir_model_.static_porperties[property_index].values_.end ( ) );
 	float max = *std::max_element ( reservoir_model_.static_porperties[property_index].values_.begin ( ) , reservoir_model_.static_porperties[property_index].values_.end ( ) );
@@ -743,7 +743,7 @@ void GLWidget::resizeGL ( int width , int height )
 
 	QGLFramebufferObjectFormat format;
 	format.setAttachment(QGLFramebufferObject::Depth);
-	format.setTextureTarget ( GL_TEXTURE_RECTANGLE );
+    format.setTextureTarget ( GL_TEXTURE_2D );
 	format.setInternalTextureFormat ( GL_RGBA32F );
 
 	fboStep[0] = new QGLFramebufferObject ( width , height , format );
@@ -904,30 +904,30 @@ void GLWidget::RawCutaway ( int cluster )
 			fboStep[0]->release ( );
 
 
-			fboStep[1]->bind ( );
+//			fboStep[1]->bind ( );
 
-			glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
-			glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+//			glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
+//			glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-			BoundingBoxInitialization.active ( );
+//			BoundingBoxInitialization.active ( );
 
-                        glUniform1f ( BoundingBoxInitialization.uniforms_["x"].location , volume_width );
-                        glUniform1f ( BoundingBoxInitialization.uniforms_["y"].location , volume_height );
- 			glUniform1i ( BoundingBoxInitialization.uniforms_["pass"].location , 1 );
-			glUniform3fv ( BoundingBoxInitialization.uniforms_["new_x"].location , 1 , new_x );
-			glUniform3fv ( BoundingBoxInitialization.uniforms_["new_y"].location , 1 , new_y );
-			glUniform3fv ( BoundingBoxInitialization.uniforms_["new_z"].location , 1 , new_z );
-			glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ModelMatrix"].location , 1 , GL_TRUE , lookatCamera );
-			glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-			glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
-			//VAO
-			glBindVertexArray ( vertexArray_box );
-			glDrawArrays ( GL_POINTS , 0 , cutVolume_.size.x);
-			glBindVertexArray ( 0 );
+//                        glUniform1f ( BoundingBoxInitialization.uniforms_["x"].location , volume_width );
+//                        glUniform1f ( BoundingBoxInitialization.uniforms_["y"].location , volume_height );
+// 			glUniform1i ( BoundingBoxInitialization.uniforms_["pass"].location , 1 );
+//			glUniform3fv ( BoundingBoxInitialization.uniforms_["new_x"].location , 1 , new_x );
+//			glUniform3fv ( BoundingBoxInitialization.uniforms_["new_y"].location , 1 , new_y );
+//			glUniform3fv ( BoundingBoxInitialization.uniforms_["new_z"].location , 1 , new_z );
+//			glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ModelMatrix"].location , 1 , GL_TRUE , lookatCamera );
+//			glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+//			glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+//			//VAO
+//			glBindVertexArray ( vertexArray_box );
+//			glDrawArrays ( GL_POINTS , 0 , cutVolume_.size.x);
+//			glBindVertexArray ( 0 );
 
-			BoundingBoxInitialization.deactive ( );
+//			BoundingBoxInitialization.deactive ( );
 
-			fboStep[1]->release ( );
+//			fboStep[1]->release ( );
 
 
  		}
@@ -943,12 +943,12 @@ void GLWidget::RawCutaway ( int cluster )
 
 			BoundingBoxCutaway.active ( );
  			glActiveTexture ( GL_TEXTURE0 );
- 			glBindTexture ( GL_TEXTURE_RECTANGLE , fboStep[0]->texture ( ) );
- 			glActiveTexture ( GL_TEXTURE1 );
- 			glBindTexture ( GL_TEXTURE_RECTANGLE , fboStep[1]->texture ( ) );
+            glBindTexture ( GL_TEXTURE_2D, fboStep[0]->texture ( ) );
+// 			glActiveTexture ( GL_TEXTURE1 );
+//            glBindTexture ( GL_TEXTURE_2D , fboStep[1]->texture ( ) );
 
  			glUniform1i ( BoundingBoxCutaway.uniforms_["normals"].location , 0 );
- 			glUniform1i ( BoundingBoxCutaway.uniforms_["vertices"].location , 1 );
+// 			glUniform1i ( BoundingBoxCutaway.uniforms_["vertices"].location , 1 );
 
  			glUniform3fv ( BoundingBoxCutaway.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
 
@@ -971,30 +971,30 @@ void GLWidget::RawCutaway ( int cluster )
 		if ( draw_primary )
 		{
 
-//			if ( cutVolumes.size ( ) > 0 )
-//			{
-//
-//				BoundingBoxDebug.active ( );
-//				glActiveTexture ( GL_TEXTURE0 );
-//	 			glBindTexture ( GL_TEXTURE_RECTANGLE , fboStep[1]->texture ( ) );
-//				// FIXME Throw an Exception when std::map doesnt find A VARIABLE !!!
-//	 			glUniform1i ( BoundingBoxDebug.uniforms_["normals"].location , 0 );
-//
-//                                glUniform1f ( BoundingBoxDebug.uniforms_["x"].location , volume_width );
-//                                glUniform1f ( BoundingBoxDebug.uniforms_["y"].location , volume_height );
-//
-//				glUniform3fv ( BoundingBoxDebug.uniforms_["new_x"].location , 1 , new_x );
-//				glUniform3fv ( BoundingBoxDebug.uniforms_["new_y"].location , 1 , new_y );
-//				glUniform3fv ( BoundingBoxDebug.uniforms_["new_z"].location , 1 , new_z );
-//				glUniformMatrix4fv ( BoundingBoxDebug.uniforms_["ModelMatrix"].location , 1 , GL_TRUE , lookatCamera );
-//				glUniformMatrix4fv ( BoundingBoxDebug.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-//				glUniformMatrix4fv ( BoundingBoxDebug.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
-//				//VAO
-//				glBindVertexArray ( vertexArray_box );
-//				glDrawArrays ( GL_POINTS , 0 , cutVolume_.size.x );
-//				glBindVertexArray ( 0 );
-//				BoundingBoxDebug.deactive ( );
-//			}
+            if ( cutVolumes.size ( ) > 0 )
+            {
+
+                BoundingBoxDebug.active ( );
+                glActiveTexture ( GL_TEXTURE0 );
+                glBindTexture ( GL_TEXTURE_2D , fboStep[1]->texture ( ) );
+                // FIXME Throw an Exception when std::map doesnt find A VARIABLE !!!
+                glUniform1i ( BoundingBoxDebug.uniforms_["normals"].location , 0 );
+
+                                glUniform1f ( BoundingBoxDebug.uniforms_["x"].location , volume_width );
+                                glUniform1f ( BoundingBoxDebug.uniforms_["y"].location , volume_height );
+
+                glUniform3fv ( BoundingBoxDebug.uniforms_["new_x"].location , 1 , new_x );
+                glUniform3fv ( BoundingBoxDebug.uniforms_["new_y"].location , 1 , new_y );
+                glUniform3fv ( BoundingBoxDebug.uniforms_["new_z"].location , 1 , new_z );
+                glUniformMatrix4fv ( BoundingBoxDebug.uniforms_["ModelMatrix"].location , 1 , GL_TRUE , lookatCamera );
+                glUniformMatrix4fv ( BoundingBoxDebug.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+                glUniformMatrix4fv ( BoundingBoxDebug.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+                //VAO
+                glBindVertexArray ( vertexArray_box );
+                glDrawArrays ( GL_POINTS , 0 , cutVolume_.size.x );
+                glBindVertexArray ( 0 );
+                BoundingBoxDebug.deactive ( );
+            }
 
 
  			primary.active ( );
@@ -1094,9 +1094,9 @@ void GLWidget::IRESCutaway ( )
                                 cutawayVolumes.active();
 
                                 glActiveTexture ( GL_TEXTURE0 );
-                                glBindTexture ( GL_TEXTURE_RECTANGLE , fboStep[0]->texture ( ) );
+                                glBindTexture ( GL_TEXTURE_2D , fboStep[0]->texture ( ) );
                                 glActiveTexture ( GL_TEXTURE1 );
-                                glBindTexture ( GL_TEXTURE_RECTANGLE , fboStep[1]->texture ( ) );
+                                glBindTexture ( GL_TEXTURE_2D , fboStep[1]->texture ( ) );
 
                                 glUniform1i ( cutawayVolumes.uniforms_["depthBuffer"].location , 0 );
                                 glUniform1i ( cutawayVolumes.uniforms_["verticeBuffer"].location , 1 );
@@ -1218,7 +1218,8 @@ void GLWidget::loadShaders ( )
 	QString shaderDirectory ("D:\\Workspace\\IRESCutaway\\src\\IRESCutaway\\GUI\\Qt\\RCC\\Shaders\\");
 	#elif defined(__linux__)               // Linux Directory Style
 	/* Do linux stuff */
-	QString shaderDirectory ("/media/d/Workspace/IRESCutaway/src/IRESCutaway/GUI/Qt/RCC/Shaders/");
+    QString shaderDirectory ("/home/ricardomarroquim/devel/irescutaway/src/IRESCutaway/GUI/Qt/RCC/Shaders/");
+    //QString shaderDirectory ("/media/d/Workspace/IRESCutaway/src/IRESCutaway/GUI/Qt/RCC/Shaders/");
 	#else
 	/* Error, both can't be defined or undefined same time */
 	#endif
