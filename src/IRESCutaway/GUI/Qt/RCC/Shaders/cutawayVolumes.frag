@@ -54,7 +54,7 @@ void main(void)
         if (gl_FragCoord.z < (cutaway.w)) //&&  length( gl_FragCoord.st - color.xy) < 20.0 )
         {
         	//if (VertexIn.proxy)
-        		discard;
+        		//discard;
         }
 //        if ( VertexIn.proxy)
 //        {
