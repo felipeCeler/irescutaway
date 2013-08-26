@@ -42,9 +42,7 @@ void main(void)
 //		discard;
 //	}
 
-	if (pass == 1)
-		outputColor =  vec4 ( VertexOut.verticeProj.xyz , VertexOut.verticeProj.w );//VertexOut.color;
-	else
-		outputColor =  vec4 ( VertexOut.normal, gl_FragCoord.z);//VertexOut.color;
+
+	outputColor =  vec4 ( VertexOut.normal, gl_FragCoord.z);//VertexOut.color;
 	//outputColor =  VertexOut.color;
 }

@@ -35,8 +35,6 @@ void main(void)
 	if ( gl_FragCoord.z < ( cutaway.w ) )
 	{
 		discard;
-
-
 	}
 
 	newNormal = normalize ( newNormal );
@@ -56,7 +54,12 @@ void main(void)
 	       I = 1;
 	}
 
+	I = 0;
 
+
+	if (abs(gl_FragCoord.z - (cutaway.w)) < 0.0000015) {
+		I = 1;
+	}
 
 	vec3 toLight = normalize ( -newVert.xyz );
 
@@ -71,6 +74,4 @@ void main(void)
 	vec4 ls = color_t * 0.4 * pow ( max ( 0.0 , dot ( eye_dir , ref ) ) , 5.0 );
 
 	outputColor = I * vec4(0.0, 0.0, 0.0, 1.0) + (1.0 - I) * ( VertexIn.color );
-
-
 }

@@ -141,8 +141,8 @@ void main(void)
              (cube[0].culled[6]) &&
              (cube[0].culled[7]) )
         {
-                renderCube(cube[0].color,false);
-                //renderCube (vec4(0.0,1.0,0.0,1.0),false);
+                //renderCube(cube[0].color,false);
+                renderCube (vec4(0.0,1.0,0.0,1.0),false);
         // To be partial culled
         }else if ( (cube[0].culled[0]) ||
                    (cube[0].culled[1]) ||
@@ -153,13 +153,13 @@ void main(void)
                    (cube[0].culled[6]) ||
                    (cube[0].culled[7]) )
         {
-                renderCube (cube[0].color,true);
-               // renderCube (vec4(1.0,0.0,0.0,1.0),true);
+                //renderCube (cube[0].color,true);
+                renderCube (vec4(1.0,0.0,0.0,1.0),true);
                 //renderCut (vec4(1.0,0.0,0.0,1.0),false);
         }else
         {
-                //renderCube(vec4(0.0,0.0,1.0,1.0),false);
+                renderCube(vec4(0.0,0.0,1.0,1.0),false);
         }
 
-        renderCube(cube[0].color,false);
+        //renderCube(cube[0].color,false);
 }

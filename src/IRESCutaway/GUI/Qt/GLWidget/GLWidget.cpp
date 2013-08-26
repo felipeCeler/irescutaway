@@ -904,35 +904,6 @@ void GLWidget::RawCutaway ( int cluster )
 			fboStep[0]->release ( );
 
 
-			fboStep[1]->bind ( );
-
-			glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
-			glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-
-			BoundingBoxInitialization.active ( );
-
-                        glUniform1f ( BoundingBoxInitialization.uniforms_["x"].location , volume_width );
-                        glUniform1f ( BoundingBoxInitialization.uniforms_["y"].location , volume_height );
- 			glUniform1i ( BoundingBoxInitialization.uniforms_["pass"].location , 1 );
-			glUniform3fv ( BoundingBoxInitialization.uniforms_["new_x"].location , 1 , new_x );
-			glUniform3fv ( BoundingBoxInitialization.uniforms_["new_y"].location , 1 , new_y );
-			glUniform3fv ( BoundingBoxInitialization.uniforms_["new_z"].location , 1 , new_z );
-			glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ModelMatrix"].location , 1 , GL_TRUE , lookatCamera );
-			glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-			glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
-			//VAO
-			glBindVertexArray ( vertexArray_box );
-			glDrawArrays ( GL_POINTS , 0 , cutVolume_.size.x);
-			glBindVertexArray ( 0 );
-
-			BoundingBoxInitialization.deactive ( );
-
-			fboStep[1]->release ( );
-
-
- 		}
-
-
 		glClearColor ( 1.0 , 1.0 , 1.0 , 1.0 );
 		glDepthFunc(GL_LESS);
 		glClearDepth(1.0f);
@@ -1057,32 +1028,6 @@ void GLWidget::IRESCutaway ( )
                                 BoundingBoxInitialization.deactive ( );
 
                                 fboStep[0]->release ( );
-
-
-                                fboStep[1]->bind ( );
-
-                                glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
-                                glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-
-                                BoundingBoxInitialization.active ( );
-
-                                glUniform1f ( BoundingBoxInitialization.uniforms_["x"].location , volume_width );
-                                glUniform1f ( BoundingBoxInitialization.uniforms_["y"].location , volume_height );
-                                glUniform1i ( BoundingBoxInitialization.uniforms_["pass"].location , 1 );
-                                glUniform3fv ( BoundingBoxInitialization.uniforms_["new_x"].location , 1 , new_x );
-                                glUniform3fv ( BoundingBoxInitialization.uniforms_["new_y"].location , 1 , new_y );
-                                glUniform3fv ( BoundingBoxInitialization.uniforms_["new_z"].location , 1 , new_z );
-                                glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ModelMatrix"].location , 1 , GL_TRUE , lookatCamera );
-                                glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-                                glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
-                                //VAO
-                                glBindVertexArray ( vertexArray_box );
-                                glDrawArrays ( GL_POINTS , 0 , cutVolume_.size.x);
-                                glBindVertexArray ( 0 );
-
-                                BoundingBoxInitialization.deactive ( );
-
-                                fboStep[1]->release ( );
 
 
                                 glDepthFunc(GL_LESS);
