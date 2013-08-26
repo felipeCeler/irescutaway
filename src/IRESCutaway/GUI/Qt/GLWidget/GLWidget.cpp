@@ -143,6 +143,8 @@ void GLWidget::cutVolumeGenerator( )
 	cutVolumes.clear();
 	box_vertices.clear();
 
+	std::cout << " number of boxes initial " << boxes.size() << std::endl;
+
 	while ( boxes.size ( ) != 0 )
 	{
 
@@ -234,6 +236,7 @@ void GLWidget::cutVolumeGenerator( )
 
 	cutVolume_.size = Celer::Vector4<int> (cutVolumeIndex,0,0,0);
 
+
 	glBindVertexArray ( vertexArray_box );
 		glBindBuffer ( GL_ARRAY_BUFFER , vertexBuffer_box );
 		glBufferData ( GL_ARRAY_BUFFER , box_vertices.size( ) * sizeof ( box_vertices[0] ) , &box_vertices[0] , GL_STATIC_DRAW );
@@ -293,7 +296,7 @@ void GLWidget::changePropertyRange ( const double& minRange, const double& maxRa
 			{
 				focus = Celer::Vector4<GLfloat> ( 0.0f , 1.0f , 0.0f , 1.0f );
 				renderFlags = std::vector<Celer::Vector4<GLfloat> > ( 24 , Celer::Vector4<GLfloat> ( 0.0f , 1.0f , 0.0f , 1.0f ) );
-
+				box.reset();
 				box.fromPointCloud ( reservoir_model_.blocks[i].vertices.begin ( ) , reservoir_model_.blocks[i].vertices.end ( ) );
 				boxes.push_back( box );
 
@@ -317,7 +320,7 @@ void GLWidget::changePropertyRange ( const double& minRange, const double& maxRa
 	// Loop over the boxes
 	cutVolumeGenerator();
 
-	std::cout << " number of boxes " << cutVolumes.size( ) << std::endl;
+	std::cout << " number of boxes " << cutVolume_.size << std::endl;
 
 	// Cube Interleaved
 	glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer_cube_interleaved);
@@ -1063,6 +1066,8 @@ void GLWidget::IRESCutaway ( )
 
                                 BoundingBoxInitialization.active ( );
 
+                                glUniform1f ( BoundingBoxInitialization.uniforms_["x"].location , volume_width );
+                                glUniform1f ( BoundingBoxInitialization.uniforms_["y"].location , volume_height );
                                 glUniform1i ( BoundingBoxInitialization.uniforms_["pass"].location , 1 );
                                 glUniform3fv ( BoundingBoxInitialization.uniforms_["new_x"].location , 1 , new_x );
                                 glUniform3fv ( BoundingBoxInitialization.uniforms_["new_y"].location , 1 , new_y );
