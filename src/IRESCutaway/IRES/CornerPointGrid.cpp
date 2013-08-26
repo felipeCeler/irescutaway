@@ -291,50 +291,50 @@ namespace IRES
 			this->blocks.push_back(new_block);
 
 		}// for
-                time (&end);
-                double diff = difftime (end,start);
-
-                std::cout << " IRESv2 Reading Done " << diff << " seconds. "  << std::endl;
-
-		time_t bstart, bend;
-                time (&bstart);
-
-		Celer::BoundingBox3<float> AABB;
-
-		if ( this->box_v2.diagonal() > 10.0f)
-		{
-		        std::cout << " Scaling the Model to make diagonal its bounding box about 10.0f " << std::endl;
-			// Scaling
-
-			for ( std::size_t  i = 0; i < this->blocks.size ( ) ; i++)
-			{
-				//std::cout << " Vector " <<  i << std::endl;
-				if ( this->blocks[i].valid )
-				{
-					for ( std::size_t b = 0; b < this->blocks[i].vertices.size ( ); b++ )
-					{
-						this->blocks[i].vertices[b] -=  Celer::Vector4<float> (this->box_v2.center ( ),0.0);
-						this->blocks[i].vertices[b].x /= ( this->box_v2.diagonal ( ) * 0.1f );
-						this->blocks[i].vertices[b].y /= ( this->box_v2.diagonal ( ) * 0.1f );
-						this->blocks[i].vertices[b].z /= ( this->box_v2.diagonal ( ) * 0.1f );
-						//std::cout << " Vector " <<  this->blocks[i].vertices.size ( ) << std::endl;
-					}
-
-					AABB.fromPointCloud( this->blocks[i].vertices.begin() , this->blocks[i].vertices.end() );       //std::cout << " Vector " <<  vertices[i] << std::endl;
-					this->blocks[i].AABB = AABB;
-				}
-			}
-
-			std::cout << " Vector " <<  this->box_v2.diagonal() << std::endl;
-			this->box_v2.reset( );
-			this->box_v2 = AABB;
-			std::cout << " Vector " <<  this->box_v2.diagonal() << std::endl;
-			std::cout << " Vector " <<  this->box_v2.center() << std::endl;
-		}
-
-		time (&bend);
-		double bdiff = difftime (bend,bstart);
-		std::cout << " New BB " << bdiff << " seconds. "  << std::endl;
+//                time (&end);
+//                double diff = difftime (end,start);
+//
+//                std::cout << " IRESv2 Reading Done " << diff << " seconds. "  << std::endl;
+//
+//		time_t bstart, bend;
+//                time (&bstart);
+//
+//		Celer::BoundingBox3<float> AABB;
+//
+//		if ( this->box_v2.diagonal() > 10.0f)
+//		{
+//		        std::cout << " Scaling the Model to make diagonal its bounding box about 10.0f " << std::endl;
+//			// Scaling
+//
+//			for ( std::size_t  i = 0; i < this->blocks.size ( ) ; i++)
+//			{
+//				//std::cout << " Vector " <<  i << std::endl;
+//				if ( this->blocks[i].valid )
+//				{
+//					for ( std::size_t b = 0; b < this->blocks[i].vertices.size ( ); b++ )
+//					{
+//						this->blocks[i].vertices[b] -=  Celer::Vector4<float> (this->box_v2.center ( ),0.0);
+//						this->blocks[i].vertices[b].x /= ( this->box_v2.diagonal ( ) * 0.1f );
+//						this->blocks[i].vertices[b].y /= ( this->box_v2.diagonal ( ) * 0.1f );
+//						this->blocks[i].vertices[b].z /= ( this->box_v2.diagonal ( ) * 0.1f );
+//						//std::cout << " Vector " <<  this->blocks[i].vertices.size ( ) << std::endl;
+//					}
+//
+//					AABB.fromPointCloud( this->blocks[i].vertices.begin() , this->blocks[i].vertices.end() );       //std::cout << " Vector " <<  vertices[i] << std::endl;
+//					this->blocks[i].AABB = AABB;
+//				}
+//			}
+//
+//			std::cout << " Vector " <<  this->box_v2.diagonal() << std::endl;
+//			this->box_v2.reset( );
+//			this->box_v2 = AABB;
+//			std::cout << " Vector " <<  this->box_v2.diagonal() << std::endl;
+//			std::cout << " Vector " <<  this->box_v2.center() << std::endl;
+//		}
+//
+//		time (&bend);
+//		double bdiff = difftime (bend,bstart);
+//		std::cout << " New BB " << bdiff << " seconds. "  << std::endl;
 	}
 
 	void CornerPointGrid::openIRES ( const std::string& filename )
