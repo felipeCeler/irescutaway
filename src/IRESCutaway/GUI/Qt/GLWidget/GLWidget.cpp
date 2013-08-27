@@ -737,7 +737,9 @@ void GLWidget::resizeGL ( int width , int height )
 
 	camera_.setAspectRatio ( width  , height  );
 	camera_.setPerspectiveProjectionMatrix ( 0 , camera_.aspectRatio ( ) , 0.1 , 500 );
-    camera_.setOrthographicProjectionMatrix( -1.0f, (float)1.0 , -1.0f, (float)1.0, 0.0, 1.0 );
+    camera_.setOrthographicProjectionMatrix( -20.0f, 20.0 , -20.0f, 20.0, 0.0, 60.0 );
+
+    std::cout << camera_.orthographicProjectionMatrix();
 
 	centerX_ = static_cast<float> ( width * 0.5 );
 	centerY_ = static_cast<float> ( height * 0.5 );
@@ -785,7 +787,7 @@ void GLWidget::paintGL ( )
 
 	transformationMatrices_.ModelMatrix      = ~camera_.viewMatrix ( );
 	transformationMatrices_.ViewMatrix       = ~camera_.viewMatrix ( );
-	transformationMatrices_.ProjectionMatrix = ~camera_.perspectiveProjectionMatrix( );
+	transformationMatrices_.ProjectionMatrix = ~camera_.orthographicProjectionMatrix( );
 
 	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(this->transformationMatrices_), &this->transformationMatrices_ );
 
@@ -1175,8 +1177,8 @@ void GLWidget::loadShaders ( )
 	QString shaderDirectory ("D:\\Workspace\\IRESCutaway\\src\\IRESCutaway\\GUI\\Qt\\RCC\\Shaders\\");
 	#elif defined(__linux__)               // Linux Directory Style
 	/* Do linux stuff */
-    QString shaderDirectory ("/home/ricardomarroquim/devel/irescutaway/src/IRESCutaway/GUI/Qt/RCC/Shaders/");
-    //QString shaderDirectory ("/media/d/Workspace/IRESCutaway/src/IRESCutaway/GUI/Qt/RCC/Shaders/");
+    //QString shaderDirectory ("/home/ricardomarroquim/devel/irescutaway/src/IRESCutaway/GUI/Qt/RCC/Shaders/");
+    QString shaderDirectory ("/media/d/Workspace/IRESCutaway/src/IRESCutaway/GUI/Qt/RCC/Shaders/");
 	#else
 	/* Error, both can't be defined or undefined same time */
 	#endif
