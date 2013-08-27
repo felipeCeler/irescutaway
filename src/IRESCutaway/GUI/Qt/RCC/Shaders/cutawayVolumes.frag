@@ -1,8 +1,6 @@
 #version 430
-#extension GL_ARB_texture_rectangle : enable
 
-layout (location = 0) uniform sampler2DRect depthBuffer;
-layout (location = 1) uniform sampler2DRect verticeBuffer;
+layout (location = 0) uniform sampler2D depthBuffer;
 
 out vec4 outputColor;
 
@@ -36,8 +34,7 @@ CutPlane cutPlaneIn;
 void main(void)
 {
 
-	vec4 cutaway 	  = texture2DRect(depthBuffer, gl_FragCoord.xy).rgba;
-	vec4 vertice 	  = texture2DRect(verticeBuffer, gl_FragCoord.xy).rgba;
+	 vec4 cutaway = texture( normals , gl_FragCoord.xy / vec2(textureSize(normals,0)).xy ).rgba;
 
         float far = 500.0;
         float near = 0.1;

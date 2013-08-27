@@ -26,7 +26,7 @@ void GLWidget::initializeGL ( )
 	/// OpenGL Stuffs
 	glEnable ( GL_DEPTH_TEST );
 	glDepthMask(GL_TRUE);
-	glEnable ( GL_TEXTURE_RECTANGLE );
+	glEnable ( GL_TEXTURE_2D );
 	glClearColor ( 0.0 , 0.0 , 0.0 , 1.0 );
 	glDisable(GL_BLEND);
 
@@ -56,7 +56,7 @@ void GLWidget::initializeGL ( )
 
 	format.setAttachment(QGLFramebufferObject::Depth);
 	format.setInternalTextureFormat ( GL_RGBA32F );
-	format.setTextureTarget ( GL_TEXTURE_RECTANGLE );
+	format.setTextureTarget ( GL_TEXTURE_2D );
 
 	fboStep[0] 	  = new  QGLFramebufferObject ( width() , height() , format );
 	fboStep[1] 	  = new  QGLFramebufferObject ( width() , height() , format );
@@ -743,7 +743,7 @@ void GLWidget::resizeGL ( int width , int height )
 
 	QGLFramebufferObjectFormat format;
 	format.setAttachment(QGLFramebufferObject::Depth);
-	format.setTextureTarget ( GL_TEXTURE_RECTANGLE );
+	format.setTextureTarget ( GL_TEXTURE_2D );
 	format.setInternalTextureFormat ( GL_RGBA32F );
 
 	fboStep[0] = new QGLFramebufferObject ( width , height , format );
@@ -868,7 +868,7 @@ void GLWidget::RawCutaway ( int cluster )
 {
 
 //	/// FIXME Conditions  - Primary and Secondary well defined.
-//
+
  	if ( isIRESOpen_ )
 	{
 
@@ -887,7 +887,6 @@ void GLWidget::RawCutaway ( int cluster )
 
                         glUniform1f ( BoundingBoxInitialization.uniforms_["x"].location , volume_width );
                         glUniform1f ( BoundingBoxInitialization.uniforms_["y"].location , volume_height );
- 			glUniform1i ( BoundingBoxInitialization.uniforms_["pass"].location , 0 );
 			glUniform3fv ( BoundingBoxInitialization.uniforms_["new_x"].location , 1 , new_x );
 			glUniform3fv ( BoundingBoxInitialization.uniforms_["new_y"].location , 1 , new_y );
 			glUniform3fv ( BoundingBoxInitialization.uniforms_["new_z"].location , 1 , new_z );
@@ -902,7 +901,7 @@ void GLWidget::RawCutaway ( int cluster )
 			BoundingBoxInitialization.deactive ( );
 
 			fboStep[0]->release ( );
-
+ 		}
 
 		glClearColor ( 1.0 , 1.0 , 1.0 , 1.0 );
 		glDepthFunc(GL_LESS);
@@ -914,12 +913,10 @@ void GLWidget::RawCutaway ( int cluster )
 
 			BoundingBoxCutaway.active ( );
  			glActiveTexture ( GL_TEXTURE0 );
- 			glBindTexture ( GL_TEXTURE_RECTANGLE , fboStep[0]->texture ( ) );
- 			glActiveTexture ( GL_TEXTURE1 );
- 			glBindTexture ( GL_TEXTURE_RECTANGLE , fboStep[1]->texture ( ) );
+ 			glBindTexture ( GL_TEXTURE_2D , fboStep[0]->texture ( ) );
+
 
  			glUniform1i ( BoundingBoxCutaway.uniforms_["normals"].location , 0 );
- 			glUniform1i ( BoundingBoxCutaway.uniforms_["vertices"].location , 1 );
 
  			glUniform3fv ( BoundingBoxCutaway.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
 
@@ -1013,7 +1010,6 @@ void GLWidget::IRESCutaway ( )
 
                                 glUniform1f ( BoundingBoxInitialization.uniforms_["x"].location , volume_width );
                                 glUniform1f ( BoundingBoxInitialization.uniforms_["y"].location , volume_height );
-                                glUniform1i ( BoundingBoxInitialization.uniforms_["pass"].location , 0 );
                                 glUniform3fv ( BoundingBoxInitialization.uniforms_["new_x"].location , 1 , new_x );
                                 glUniform3fv ( BoundingBoxInitialization.uniforms_["new_y"].location , 1 , new_y );
                                 glUniform3fv ( BoundingBoxInitialization.uniforms_["new_z"].location , 1 , new_z );
@@ -1040,8 +1036,6 @@ void GLWidget::IRESCutaway ( )
 
                                 glActiveTexture ( GL_TEXTURE0 );
                                 glBindTexture ( GL_TEXTURE_RECTANGLE , fboStep[0]->texture ( ) );
-                                glActiveTexture ( GL_TEXTURE1 );
-                                glBindTexture ( GL_TEXTURE_RECTANGLE , fboStep[1]->texture ( ) );
 
                                 glUniform1i ( cutawayVolumes.uniforms_["depthBuffer"].location , 0 );
                                 glUniform1i ( cutawayVolumes.uniforms_["verticeBuffer"].location , 1 );

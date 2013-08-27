@@ -1,7 +1,7 @@
 #version 430 core
-#extension GL_ARB_texture_rectangle : enable
 
-layout(location = 0) uniform sampler2DRect normals;
+
+layout(location = 0) uniform sampler2D normals;
 
 uniform vec3 lightDirection;
 
@@ -21,7 +21,7 @@ void main(void)
 {
 
 
-	vec4 cutaway = texture2DRect( normals , gl_FragCoord.xy).rgba;
+	 vec4 cutaway = texture( normals , gl_FragCoord.xy / vec2(textureSize(normals).xy)).rgba;
 
 	vec3 newNormal = VertexOut.normal.xyz;
 	vec3 newVert = VertexOut.verticeEye.xyz;

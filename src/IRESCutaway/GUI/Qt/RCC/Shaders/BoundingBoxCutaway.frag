@@ -1,8 +1,7 @@
 #version 430 core
-#extension GL_ARB_texture_rectangle : enable
 
-layout(location = 0) uniform sampler2DRect normals;
-layout(location = 1) uniform sampler2DRect vertices;
+
+layout(location = 0) uniform sampler2D normals;
 
 in VertexData
 {
@@ -18,8 +17,8 @@ out vec4 outputColor;
 void main(void)
 {
 
-	vec4 cutaway = texture2DRect( normals , gl_FragCoord.xy).rgba;
-	vec4 vertice = texture2DRect( vertices , gl_FragCoord.xy).rgba;
+	vec4 cutaway = texture( normals , gl_FragCoord.xy / vec2(textureSize(normals,0)).xy ).rgba;
+
 
 	float d = min(dist[0], min(dist[1], min(dist[2], dist[3])));
 	float I = exp2(-2.0 * d * d);
