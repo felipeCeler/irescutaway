@@ -1,9 +1,5 @@
 #version 430 core
 
-<<<<<<< HEAD
-
-=======
->>>>>>> ricardo
 layout(location = 0) uniform sampler2D normals;
 
 uniform vec3 lightDirection;
@@ -23,9 +19,7 @@ in vec2 texcoord;
 void main(void)
 {
 
-
-
-	 vec4 cutaway = texture( normals , gl_FragCoord.xy / vec2(textureSize(normals).xy)).rgba;
+	vec4 cutaway = texture( normals , gl_FragCoord.xy / vec2(textureSize(normals,0)).xy ).rgba;
 
 
 	vec3 newNormal = VertexOut.normal.xyz;
