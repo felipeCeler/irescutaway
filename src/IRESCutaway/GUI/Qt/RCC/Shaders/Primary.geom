@@ -44,10 +44,10 @@ void renderCube( in vec4 color )
 	for ( int i = 0; i < 6; i++)
 	{
 
-		vp[0] = ProjectionMatrix * ViewMatrix * cube[0].v[faces[i].vertices[0]];
-		vp[1] = ProjectionMatrix * ViewMatrix * cube[0].v[faces[i].vertices[1]];
-		vp[2] = ProjectionMatrix * ViewMatrix * cube[0].v[faces[i].vertices[2]];
-		vp[3] = ProjectionMatrix * ViewMatrix * cube[0].v[faces[i].vertices[3]];
+		vp[0] = ProjectionMatrix * ViewMatrix * ModelMatrix * cube[0].v[faces[i].vertices[0]];
+		vp[1] = ProjectionMatrix * ViewMatrix * ModelMatrix * cube[0].v[faces[i].vertices[1]];
+		vp[2] = ProjectionMatrix * ViewMatrix * ModelMatrix * cube[0].v[faces[i].vertices[2]];
+		vp[3] = ProjectionMatrix * ViewMatrix * ModelMatrix * cube[0].v[faces[i].vertices[3]];
 
 		vec2 p0 = WIN_SCALE * (vp[0].xy / vp[0].w);
 		vec2 p1 = WIN_SCALE * (vp[1].xy / vp[1].w);
