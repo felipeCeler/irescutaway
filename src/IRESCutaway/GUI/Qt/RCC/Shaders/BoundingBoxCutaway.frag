@@ -12,7 +12,12 @@ in VertexData
 
 noperspective in vec4 dist;
 
+vec2 dist_neighbor [4] = {vec2(-1,0), vec2(1,0), vec2(0,-1), vec2(0,1)};
+
+
 out vec4 outputColor;
+
+
 
 void main(void)
 {
@@ -51,18 +56,20 @@ void main(void)
         //if ( (abs(gl_FragCoord.z - (cutaway.w)) < 0.0000015) )
         {
             // check the neighbors, we are only interested in border pixels (neighbors to discarded pixels)
-            const int size = 8;
+            const int size = 4;
             float zneighbor[size];
-            for (int i = 0; i < size; ++i)
-                zneighbor[i] = 0.0;
-            zneighbor[0] = texture( normals , (gl_FragCoord.xy + vec2( -1, 0)) / vec2(textureSize(normals,0)).xy).w;
-            zneighbor[1] = texture( normals , (gl_FragCoord.xy + vec2( 1, 0)) / vec2(textureSize(normals,0)).xy).w;
-            zneighbor[2] = texture( normals , (gl_FragCoord.xy + vec2( 0, -1)) / vec2(textureSize(normals,0)).xy).w;
-            zneighbor[3] = texture( normals , (gl_FragCoord.xy + vec2( 0,  1)) / vec2(textureSize(normals,0)).xy).w;
-            zneighbor[4] = texture( normals , (gl_FragCoord.xy + vec2( -1, -1)) / vec2(textureSize(normals,0)).xy).w;
-            zneighbor[5] = texture( normals , (gl_FragCoord.xy + vec2( -1,  1)) / vec2(textureSize(normals,0)).xy).w;
-            zneighbor[6] = texture( normals , (gl_FragCoord.xy + vec2( 1, -1)) / vec2(textureSize(normals,0)).xy).w;
-            zneighbor[7] = texture( normals , (gl_FragCoord.xy + vec2( 1,  1)) / vec2(textureSize(normals,0)).xy).w;
+            for (int i = 0; i < size; ++i) {
+                zneighbor[i] = texture( normals , (gl_FragCoord.xy + dist_neighbor[i]) / vec2(textureSize(normals,0)).xy).w;
+            }
+
+//            zneighbor[0] = texture( normals , (gl_FragCoord.xy + vec2( -1, 0)) / vec2(textureSize(normals,0)).xy).w;
+//            zneighbor[1] = texture( normals , (gl_FragCoord.xy + vec2( 1, 0)) / vec2(textureSize(normals,0)).xy).w;
+//            zneighbor[2] = texture( normals , (gl_FragCoord.xy + vec2( 0, -1)) / vec2(textureSize(normals,0)).xy).w;
+//            zneighbor[3] = texture( normals , (gl_FragCoord.xy + vec2( 0,  1)) / vec2(textureSize(normals,0)).xy).w;
+//            zneighbor[4] = texture( normals , (gl_FragCoord.xy + vec2( -1, -1)) / vec2(textureSize(normals,0)).xy).w;
+//            zneighbor[5] = texture( normals , (gl_FragCoord.xy + vec2( -1,  1)) / vec2(textureSize(normals,0)).xy).w;
+//            zneighbor[6] = texture( normals , (gl_FragCoord.xy + vec2( 1, -1)) / vec2(textureSize(normals,0)).xy).w;
+//            zneighbor[7] = texture( normals , (gl_FragCoord.xy + vec2( 1,  1)) / vec2(textureSize(normals,0)).xy).w;
 
 
             for (int i = 0; i < size; ++i) {
