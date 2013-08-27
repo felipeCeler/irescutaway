@@ -179,9 +179,9 @@ void MainWindow::on_pushButton_changePropertyRange_clicked()
 		glWidget->changePropertyRange( ui->doubleSpinMin->value(), ui->doubleSpinMax->value(), ui->comboBox_choose_an_property_->currentIndex() );
 	}else
 	{
-		msgBox.setText("First of all. Open a file my friend !!  ");
+		//msgBox.setText("First of all. Open a file my friend !!  ");
 	}
-	msgBox.exec();
+	//msgBox.exec();
 
 }
 

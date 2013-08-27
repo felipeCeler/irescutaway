@@ -131,7 +131,6 @@ void GLWidget::initializeGL ( )
 
 	volume_width = 0.0f;
 	volume_height = 0.0f;
-
 }
 
 bool GLWidget::isIRESOpen ( ) const

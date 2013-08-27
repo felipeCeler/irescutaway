@@ -17,6 +17,7 @@ class MainWindow: public QMainWindow
 		MainWindow ( QMainWindow *parent = 0 );
 		void open ( QString fileName = QString ( ) , bool who = true );
 		void keyPressEvent ( QKeyEvent *e );
+		Ui::MainWindow * ui;
 
 	public slots:
 
@@ -36,8 +37,9 @@ class MainWindow: public QMainWindow
 
 		void on_spinBox_Cluster_Number_valueChanged  ( int i);
 
+
 	private:
-		Ui::MainWindow * ui;
+
 
 		bool showfullScreen_;
 

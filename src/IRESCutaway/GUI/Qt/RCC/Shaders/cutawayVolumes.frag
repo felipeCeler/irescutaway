@@ -1,6 +1,6 @@
 #version 430
 
-layout (location = 0) uniform sampler2D depthBuffer;
+layout (location = 0) uniform sampler2D normals;
 
 out vec4 outputColor;
 
