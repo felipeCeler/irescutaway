@@ -50,6 +50,13 @@ void GLWidget::initializeGL ( )
 
 	scrollStep_ = 45.0f;
 	zoom_angle_ = 45.0f;
+	orthoZoom   = 1.0f;
+
+	modelMatrix_ = Celer::Matrix4x4<float> ( 1.0f,0.0f,0.0f,0.0,
+					         0.0f,1.0f,0.0f,0.0,
+					         0.0f,0.0f,1.0f,0.0,
+					         0.0f,0.0f,0.0f,1.0);
+
 	angle = static_cast<float>(1.0/std::tan(scrollStep_ * Celer::Math::kDeg2Rad));
 
 
@@ -894,7 +901,7 @@ void GLWidget::RawCutaway ( int cluster )
 			glUniform3fv ( BoundingBoxInitialization.uniforms_["new_x"].location , 1 , new_x );
 			glUniform3fv ( BoundingBoxInitialization.uniforms_["new_y"].location , 1 , new_y );
 			glUniform3fv ( BoundingBoxInitialization.uniforms_["new_z"].location , 1 , new_z );
-			glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ModelMatrix"].location , 1 , GL_TRUE , lookatCamera );
+			glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ModelMatrix"].location , 1 , GL_TRUE , modelMatrix_ );
 			glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
 //            glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
             glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.orthographicProjectionMatrix() );
@@ -932,6 +939,7 @@ void GLWidget::RawCutaway ( int cluster )
 
 			glUniform2f ( BoundingBoxCutaway.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
 
+			glUniformMatrix4fv ( BoundingBoxCutaway.uniforms_["ModelMatrix"].location , 1 , GL_TRUE , modelMatrix_ );
 			glUniformMatrix4fv ( BoundingBoxCutaway.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
             //glUniformMatrix4fv ( BoundingBoxCutaway.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
             glUniformMatrix4fv ( BoundingBoxCutaway.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.orthographicProjectionMatrix() );
@@ -979,6 +987,7 @@ void GLWidget::RawCutaway ( int cluster )
 
 			glUniform2f ( primary.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
 
+			glUniformMatrix4fv ( primary.uniforms_["ModelMatrix"].location , 1 , GL_TRUE , modelMatrix_ );
 			glUniformMatrix4fv ( primary.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
             //glUniformMatrix4fv ( primary.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
             glUniformMatrix4fv ( primary.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.orthographicProjectionMatrix ( ) );
@@ -1390,6 +1399,13 @@ void GLWidget::wheelEvent ( QWheelEvent *event )
 	{
 		zoom_angle_ += event->delta ( ) / 120.0;
 
+		orthoZoom += event->delta ( ) / 1200.0;
+
+		modelMatrix_[0][0] = orthoZoom;
+		modelMatrix_[1][1] = orthoZoom;
+		modelMatrix_[2][2] = orthoZoom;
+
+		qDebug ( ) << orthoZoom;
 	}
 	else
 	{

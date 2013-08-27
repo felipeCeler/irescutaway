@@ -266,10 +266,8 @@ private:
 	float volume_width;
 	float volume_height;
 
-
-
-
-
+	float orthoZoom;
+	Celer::Matrix4x4<float> modelMatrix_;
 };
 
 #endif
