@@ -971,30 +971,30 @@ void GLWidget::RawCutaway ( int cluster )
 		if ( draw_primary )
 		{
 
-            if ( cutVolumes.size ( ) > 0 )
-            {
+//            if ( cutVolumes.size ( ) > 0 )
+//            {
 
-                BoundingBoxDebug.active ( );
-                glActiveTexture ( GL_TEXTURE0 );
-                glBindTexture ( GL_TEXTURE_2D , fboStep[1]->texture ( ) );
-                // FIXME Throw an Exception when std::map doesnt find A VARIABLE !!!
-                glUniform1i ( BoundingBoxDebug.uniforms_["normals"].location , 0 );
+//                BoundingBoxDebug.active ( );
+//                glActiveTexture ( GL_TEXTURE0 );
+//                glBindTexture ( GL_TEXTURE_2D , fboStep[1]->texture ( ) );
+//                // FIXME Throw an Exception when std::map doesnt find A VARIABLE !!!
+//                glUniform1i ( BoundingBoxDebug.uniforms_["normals"].location , 0 );
 
-                                glUniform1f ( BoundingBoxDebug.uniforms_["x"].location , volume_width );
-                                glUniform1f ( BoundingBoxDebug.uniforms_["y"].location , volume_height );
+//                                glUniform1f ( BoundingBoxDebug.uniforms_["x"].location , volume_width );
+//                                glUniform1f ( BoundingBoxDebug.uniforms_["y"].location , volume_height );
 
-                glUniform3fv ( BoundingBoxDebug.uniforms_["new_x"].location , 1 , new_x );
-                glUniform3fv ( BoundingBoxDebug.uniforms_["new_y"].location , 1 , new_y );
-                glUniform3fv ( BoundingBoxDebug.uniforms_["new_z"].location , 1 , new_z );
-                glUniformMatrix4fv ( BoundingBoxDebug.uniforms_["ModelMatrix"].location , 1 , GL_TRUE , lookatCamera );
-                glUniformMatrix4fv ( BoundingBoxDebug.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-                glUniformMatrix4fv ( BoundingBoxDebug.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
-                //VAO
-                glBindVertexArray ( vertexArray_box );
-                glDrawArrays ( GL_POINTS , 0 , cutVolume_.size.x );
-                glBindVertexArray ( 0 );
-                BoundingBoxDebug.deactive ( );
-            }
+//                glUniform3fv ( BoundingBoxDebug.uniforms_["new_x"].location , 1 , new_x );
+//                glUniform3fv ( BoundingBoxDebug.uniforms_["new_y"].location , 1 , new_y );
+//                glUniform3fv ( BoundingBoxDebug.uniforms_["new_z"].location , 1 , new_z );
+//                glUniformMatrix4fv ( BoundingBoxDebug.uniforms_["ModelMatrix"].location , 1 , GL_TRUE , lookatCamera );
+//                glUniformMatrix4fv ( BoundingBoxDebug.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+//                glUniformMatrix4fv ( BoundingBoxDebug.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+//                //VAO
+//                glBindVertexArray ( vertexArray_box );
+//                glDrawArrays ( GL_POINTS , 0 , cutVolume_.size.x );
+//                glBindVertexArray ( 0 );
+//                BoundingBoxDebug.deactive ( );
+//            }
 
 
  			primary.active ( );

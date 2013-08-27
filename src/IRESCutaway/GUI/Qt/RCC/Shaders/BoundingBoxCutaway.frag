@@ -1,7 +1,7 @@
 #version 430 core
 
 layout(location = 0) uniform sampler2D normals;
-layout(location = 1) uniform sampler2D vertices;
+//layout(location = 1) uniform sampler2D vertices;
 
 in VertexData
 {
@@ -18,7 +18,6 @@ void main(void)
 {
 
         vec4 cutaway = texture( normals , gl_FragCoord.xy / vec2(textureSize(normals,0)).xy ).rgba;
-       // cutaway.w /= 15.0;
 
         if ( gl_FragCoord.z < ( cutaway.w ) )
         {
@@ -26,7 +25,7 @@ void main(void)
         }
 
 
-        vec4 vertice = texture( vertices , gl_FragCoord.xy / vec2(textureSize(vertices,0)).xy ).rgba;
+        //vec4 vertice = texture( vertices , gl_FragCoord.xy / vec2(textureSize(vertices,0)).xy ).rgba;
 
 	float d = min(dist[0], min(dist[1], min(dist[2], dist[3])));
 	float I = exp2(-2.0 * d * d);
@@ -47,21 +46,32 @@ void main(void)
             discard;
         }
 
-        //I = 0;
+        I = 0;
 
-//        if ( (abs(gl_FragCoord.z - (cutaway.w)) < 0.0000015) )
-//        {
-//            // check the neighbors, we are only interested in border pixels (neighbors to discarded pixels)
-//            float zneighbor[4];
-//            zneighbor[0] = texture2DRect( normals , gl_FragCoord.xy + vec2(-1,0)).w;
-//            zneighbor[1] = texture2DRect( normals , gl_FragCoord.xy + vec2(1,0)).w;
+        //if ( (abs(gl_FragCoord.z - (cutaway.w)) < 0.0000015) )
+        {
+            // check the neighbors, we are only interested in border pixels (neighbors to discarded pixels)
+            const int size = 8;
+            float zneighbor[size];
+            for (int i = 0; i < size; ++i)
+                zneighbor[i] = 0.0;
+            zneighbor[0] = texture( normals , (gl_FragCoord.xy + vec2( -1, 0)) / vec2(textureSize(normals,0)).xy).w;
+            zneighbor[1] = texture( normals , (gl_FragCoord.xy + vec2( 1, 0)) / vec2(textureSize(normals,0)).xy).w;
+            zneighbor[2] = texture( normals , (gl_FragCoord.xy + vec2( 0, -1)) / vec2(textureSize(normals,0)).xy).w;
+            zneighbor[3] = texture( normals , (gl_FragCoord.xy + vec2( 0,  1)) / vec2(textureSize(normals,0)).xy).w;
+            zneighbor[4] = texture( normals , (gl_FragCoord.xy + vec2( -1, -1)) / vec2(textureSize(normals,0)).xy).w;
+            zneighbor[5] = texture( normals , (gl_FragCoord.xy + vec2( -1,  1)) / vec2(textureSize(normals,0)).xy).w;
+            zneighbor[6] = texture( normals , (gl_FragCoord.xy + vec2( 1, -1)) / vec2(textureSize(normals,0)).xy).w;
+            zneighbor[7] = texture( normals , (gl_FragCoord.xy + vec2( 1,  1)) / vec2(textureSize(normals,0)).xy).w;
 
-//            for (int i = 0; i < 2; ++i) {
-//                if (gl_FragCoord.z < zneighbor[i])
-//                    I = 0;
-//            }
 
-//        }
+            for (int i = 0; i < size; ++i) {
+                if (gl_FragCoord.z < zneighbor[i]) {
+                   I = 1;
+                }
+            }
+
+        }
 
 	vec3 toLight = normalize ( -newVert.xyz );
 
