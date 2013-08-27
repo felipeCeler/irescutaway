@@ -1,0 +1,8 @@
+#ifndef SHADERPATH_H
+#define SHADERPATH_H
+ 
+#define SHADER_PATH_TEMP @SHADER_PATH@
+
+#define SHADER_PATH @SHADER_PATH@
+ 
+#endif // SHADERPATH_H
