@@ -730,7 +730,7 @@ void GLWidget::resizeGL ( int width , int height )
 
 	camera_.setAspectRatio ( width  , height  );
 	camera_.setPerspectiveProjectionMatrix ( 0 , camera_.aspectRatio ( ) , 0.1 , 500 );
-    camera_.setOrthographicProjectionMatrix( -2.0f, (float)2.0 , -2.0f, (float)2.0, 0.0, 1.0 );
+    camera_.setOrthographicProjectionMatrix( -1.0f, (float)1.0 , -1.0f, (float)1.0, 0.0, 1.0 );
 
 	centerX_ = static_cast<float> ( width * 0.5 );
 	centerY_ = static_cast<float> ( height * 0.5 );

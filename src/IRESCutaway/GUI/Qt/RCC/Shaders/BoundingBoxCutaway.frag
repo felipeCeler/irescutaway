@@ -1,9 +1,7 @@
 #version 430 core
 
-
 layout(location = 0) uniform sampler2D normals;
 
-uniform vec2 WIN_SCALE;
 
 in VertexData
 {
@@ -14,9 +12,14 @@ in VertexData
 
 noperspective in vec4 dist;
 
-const vec2 dist_neighbor[4] = {vec2(-1,0), vec2(1,0), vec2(0,-1), vec2(0,1)};
+const vec2 dist_neighbor[8] = {vec2(-1,0), vec2(1,0), vec2(0,-1), vec2(0,1),
+                               vec2(-1,-1), vec2(-1,1), vec2(1,-1), vec2(1,-1)};
 
 out vec4 outputColor;
+
+
+uniform mat4 ProjectionMatrix;
+uniform vec2 WIN_SCALE;
 
 void main(void)
 {
@@ -52,17 +55,28 @@ void main(void)
         //if ( (abs(gl_FragCoord.z - (cutaway.w)) < 0.0000015) )
         {
             // check the neighbors, we are only interested in border pixels (neighbors to discarded pixels)
-            const int size = 4;
+            const int size = 8;
             float zsurface[size];
             float zneighbor[size];
 
             for (int i = 0; i < size; ++i) {
-                zsurface[i] = texture( normals , (gl_FragCoord.xy + dist_neighbor[i]) / vec2(textureSize(normals,0)).xy).w;
-                vec3 dvec = vec3(2.0*dist_neighbor[i].xy/WIN_SCALE.xy, 0.0) / gl_FragCoord.w;
+
+                // neighbor coordinate in range [0,1]
+                vec2 neighbor = (gl_FragCoord.xy + dist_neighbor[i]) / vec2(textureSize(normals,0)).xy ;
+                // depth of cutaway surface at neighbor pixel
+                zsurface[i] = texture( normals, neighbor).w;
+
+                // invert the orthographic projection
+                vec2 pixel = neighbor*2.0 - vec2(1.0);
+
+                // find the displacement vector (parallel to image plane) in camera space
+                vec3 dvec = vec3( pixel.xy - newVert.xy, 0.0 );
+
+                // compute the depth value in camera space for the neighbor point in face plane
                 zneighbor[i] = newVert.z + dot(newNormal, dvec);
             }
 
-            for (int i = 0; i < 4; ++i) {
+            for (int i = 0; i < size; ++i) {
                 if (zneighbor[i] > zsurface[i]) {
                    I = 1;
                 }
