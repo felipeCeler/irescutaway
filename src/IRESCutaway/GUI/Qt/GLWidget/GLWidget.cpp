@@ -731,8 +731,7 @@ void GLWidget::resizeGL ( int width , int height )
 
 	camera_.setAspectRatio ( width  , height  );
 	camera_.setPerspectiveProjectionMatrix ( 0 , camera_.aspectRatio ( ) , 0.1 , 500 );
-	camera_.setOrthographicProjectionMatrix( 0.0f, (float)width , 0.0f, (float)height, -100.0, 100.0 );
-
+    camera_.setOrthographicProjectionMatrix( -2.0f, (float)2.0 , -2.0f, (float)2.0, 0.0, 1.0 );
 
 	centerX_ = static_cast<float> ( width * 0.5 );
 	centerY_ = static_cast<float> ( height * 0.5 );
@@ -881,8 +880,8 @@ void GLWidget::RawCutaway ( int cluster )
  		if ( cutVolumes.size( ) > 0)
  		{
 
-			glDepthFunc ( GL_GREATER);
-			glClearDepth ( 0.0 );
+            glDepthFunc ( GL_GREATER);
+            glClearDepth ( 0.0 );
 
 			fboStep[0]->bind ( );
 
@@ -891,14 +890,16 @@ void GLWidget::RawCutaway ( int cluster )
 
 			BoundingBoxInitialization.active ( );
 
-                        glUniform1f ( BoundingBoxInitialization.uniforms_["x"].location , volume_width );
-                        glUniform1f ( BoundingBoxInitialization.uniforms_["y"].location , volume_height );
+            glUniform1f ( BoundingBoxInitialization.uniforms_["x"].location , volume_width );
+            glUniform1f ( BoundingBoxInitialization.uniforms_["y"].location , volume_height );
 			glUniform3fv ( BoundingBoxInitialization.uniforms_["new_x"].location , 1 , new_x );
 			glUniform3fv ( BoundingBoxInitialization.uniforms_["new_y"].location , 1 , new_y );
 			glUniform3fv ( BoundingBoxInitialization.uniforms_["new_z"].location , 1 , new_z );
 			glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ModelMatrix"].location , 1 , GL_TRUE , lookatCamera );
 			glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-			glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+//            glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+            glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.orthographicProjectionMatrix() );
+
 			//VAO
 			glBindVertexArray ( vertexArray_box );
 			glDrawArrays ( GL_POINTS , 0 , cutVolume_.size.x);
@@ -933,7 +934,8 @@ void GLWidget::RawCutaway ( int cluster )
 			glUniform2f ( BoundingBoxCutaway.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
 
 			glUniformMatrix4fv ( BoundingBoxCutaway.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-			glUniformMatrix4fv ( BoundingBoxCutaway.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+            //glUniformMatrix4fv ( BoundingBoxCutaway.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+            glUniformMatrix4fv ( BoundingBoxCutaway.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.orthographicProjectionMatrix() );
 
 			glBindVertexArray ( vertexArray_cube_interleaved );
 			glDrawArrays ( GL_POINTS , 0 , cube_interleaved.size() );
@@ -979,7 +981,8 @@ void GLWidget::RawCutaway ( int cluster )
 			glUniform2f ( primary.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
 
 			glUniformMatrix4fv ( primary.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-			glUniformMatrix4fv ( primary.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+            //glUniformMatrix4fv ( primary.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+            glUniformMatrix4fv ( primary.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.orthographicProjectionMatrix ( ) );
 
 			glBindVertexArray ( vertexArray_cube_interleaved );
 			glDrawArrays ( GL_POINTS , 0 , cube_interleaved.size() );
@@ -1164,8 +1167,8 @@ void GLWidget::loadShaders ( )
 	QString shaderDirectory ("D:\\Workspace\\IRESCutaway\\src\\IRESCutaway\\GUI\\Qt\\RCC\\Shaders\\");
 	#elif defined(__linux__)               // Linux Directory Style
 	/* Do linux stuff */
-    //QString shaderDirectory ("/home/ricardomarroquim/devel/irescutaway/src/IRESCutaway/GUI/Qt/RCC/Shaders/");
-    QString shaderDirectory ("/media/d/Workspace/IRESCutaway/src/IRESCutaway/GUI/Qt/RCC/Shaders/");
+    QString shaderDirectory ("/home/ricardomarroquim/devel/irescutaway/src/IRESCutaway/GUI/Qt/RCC/Shaders/");
+    //QString shaderDirectory ("/media/d/Workspace/IRESCutaway/src/IRESCutaway/GUI/Qt/RCC/Shaders/");
 	#else
 	/* Error, both can't be defined or undefined same time */
 	#endif

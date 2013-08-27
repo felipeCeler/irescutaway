@@ -3,6 +3,7 @@
 
 layout(location = 0) uniform sampler2D normals;
 
+uniform vec2 WIN_SCALE;
 
 in VertexData
 {
@@ -13,19 +14,18 @@ in VertexData
 
 noperspective in vec4 dist;
 
+const vec2 dist_neighbor[4] = {vec2(-1,0), vec2(1,0), vec2(0,-1), vec2(0,1)};
+
 out vec4 outputColor;
 
 void main(void)
 {
-
-
         vec4 cutaway = texture( normals , gl_FragCoord.xy / vec2(textureSize(normals,0)).xy ).rgba;
 
-        if ( gl_FragCoord.z < ( cutaway.w ) )
+        if ( VertexIn.vertice.z > cutaway.w )
         {
                 discard;
         }
-
 
 
 	float d = min(dist[0], min(dist[1], min(dist[2], dist[3])));
@@ -52,28 +52,22 @@ void main(void)
         //if ( (abs(gl_FragCoord.z - (cutaway.w)) < 0.0000015) )
         {
             // check the neighbors, we are only interested in border pixels (neighbors to discarded pixels)
-            const int size = 8;
+            const int size = 4;
+            float zsurface[size];
             float zneighbor[size];
-            for (int i = 0; i < size; ++i)
-                zneighbor[i] = 0.0;
-            zneighbor[0] = texture( normals , (gl_FragCoord.xy + vec2( -1, 0)) / vec2(textureSize(normals,0)).xy).w;
-            zneighbor[1] = texture( normals , (gl_FragCoord.xy + vec2( 1, 0)) / vec2(textureSize(normals,0)).xy).w;
-            zneighbor[2] = texture( normals , (gl_FragCoord.xy + vec2( 0, -1)) / vec2(textureSize(normals,0)).xy).w;
-            zneighbor[3] = texture( normals , (gl_FragCoord.xy + vec2( 0,  1)) / vec2(textureSize(normals,0)).xy).w;
-            zneighbor[4] = texture( normals , (gl_FragCoord.xy + vec2( -1, -1)) / vec2(textureSize(normals,0)).xy).w;
-            zneighbor[5] = texture( normals , (gl_FragCoord.xy + vec2( -1,  1)) / vec2(textureSize(normals,0)).xy).w;
-            zneighbor[6] = texture( normals , (gl_FragCoord.xy + vec2( 1, -1)) / vec2(textureSize(normals,0)).xy).w;
-            zneighbor[7] = texture( normals , (gl_FragCoord.xy + vec2( 1,  1)) / vec2(textureSize(normals,0)).xy).w;
-
 
             for (int i = 0; i < size; ++i) {
-                if (gl_FragCoord.z < zneighbor[i]) {
+                zsurface[i] = texture( normals , (gl_FragCoord.xy + dist_neighbor[i]) / vec2(textureSize(normals,0)).xy).w;
+                vec3 dvec = vec3(2.0*dist_neighbor[i].xy/WIN_SCALE.xy, 0.0) / gl_FragCoord.w;
+                zneighbor[i] = newVert.z + dot(newNormal, dvec);
+            }
+
+            for (int i = 0; i < 4; ++i) {
+                if (zneighbor[i] > zsurface[i]) {
                    I = 1;
                 }
             }
-
         }
-
 
 	vec3 toLight = normalize ( -newVert.xyz );
 
