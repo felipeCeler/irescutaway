@@ -737,14 +737,12 @@ void GLWidget::resizeGL ( int width , int height )
 
 	camera_.setAspectRatio ( width  , height  );
 	camera_.setPerspectiveProjectionMatrix ( 0 , camera_.aspectRatio ( ) , 0.1 , 500 );
-    camera_.setOrthographicProjectionMatrix( -20.0f, 20.0 , -20.0f, 20.0, 0.0, 60.0 );
+    camera_.setOrthographicProjectionMatrix( -1.0f, 1.0 , -1.0f, 1.0, 0.0, 500.0 );
 
     std::cout << camera_.orthographicProjectionMatrix();
 
 	centerX_ = static_cast<float> ( width * 0.5 );
 	centerY_ = static_cast<float> ( height * 0.5 );
-
-
 
 	if ( fboStep[0] )
 		delete fboStep[0];

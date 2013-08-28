@@ -5,8 +5,8 @@ layout ( triangle_strip, max_vertices=24 ) out;
 
 out VertexData
 {
-		vec4 vertice;
-		vec4 normal;
+                vec4 vertice;
+                flat vec4 normal;
 		vec4 color;
 } VertexOut;
 

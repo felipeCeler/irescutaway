@@ -1,87 +1,87 @@
 #version 430 core
 
 layout(location = 0) uniform sampler2D normals;
-
+//layout(pixel_center_integer) in vec4 gl_FragCoord;
 
 in VertexData
 {
-		vec4 vertice;
-		vec4 normal;
+                vec4 vertice;
+                flat vec4 normal;
 		vec4 color;
 } VertexIn;
 
 noperspective in vec4 dist;
 
-const vec2 dist_neighbor[8] = {vec2(-1,0), vec2(1,0), vec2(0,-1), vec2(0,1),
+const vec2 dist_neighbor[8] = {vec2(1,0), vec2(0,1), vec2(0,-1), vec2(-1,0),
                                vec2(-1,-1), vec2(-1,1), vec2(1,-1), vec2(1,-1)};
 
 out vec4 outputColor;
 
-
 uniform mat4 ProjectionMatrix;
-uniform vec2 WIN_SCALE;
+uniform mat4 ModelMatrix;
 
 void main(void)
 {
-        vec4 cutaway = texture( normals , gl_FragCoord.xy / vec2(textureSize(normals,0)).xy ).rgba;
 
-        if ( VertexIn.vertice.z > cutaway.w )
-        {
-                discard;
+        vec2 pixel_pos = vec2(floor(gl_FragCoord.x), floor(gl_FragCoord.y));
+        vec4 cutaway = texelFetch( normals , ivec2(pixel_pos), 0 ).rgba;
+
+        if ( VertexIn.vertice.z > cutaway.w ) {
+            discard;
         }
-
 
 	float d = min(dist[0], min(dist[1], min(dist[2], dist[3])));
 	float I = exp2(-2.0 * d * d);
-
 
 	vec3 newNormal = VertexIn.normal.xyz;
 	vec3 newVert = VertexIn.vertice.xyz;
 	vec4 color_t = VertexIn.color;
 
-        vec2 vector = gl_FragCoord.xy - cutaway.xy;
+        //gl_FragDepth = cutaway.w;
 
-        //I = 0;
-
-        gl_FragDepth = gl_FragCoord.z;
-
-        newNormal = normalize ( newNormal );
+        //newNormal = normalize ( newNormal );
         if (dot ( newNormal.xyz, vec3(0.0,0.0,-1.0)) < 0.0) {
             discard;
         }
 
+
+
+
         I = 0;
 
-        //if ( (abs(gl_FragCoord.z - (cutaway.w)) < 0.0000015) )
+        int size = 4;
         {
             // check the neighbors, we are only interested in border pixels (neighbors to discarded pixels)
-            const int size = 8;
-            float zsurface[size];
-            float zneighbor[size];
+
+            float zsurface;
+            float zneighbor;
 
             for (int i = 0; i < size; ++i) {
 
                 // neighbor coordinate in range [0,1]
-                vec2 neighbor = (gl_FragCoord.xy + dist_neighbor[i]) / vec2(textureSize(normals,0)).xy ;
-                // depth of cutaway surface at neighbor pixel
-                zsurface[i] = texture( normals, neighbor).w;
+                vec2 neighbor = (pixel_pos + dist_neighbor[i]) / vec2(textureSize(normals,0)).xy ;
 
-                // invert the orthographic projection
+                // depth of cutaway surface at neighbor pixel
+                zsurface = texelFetch( normals, ivec2(pixel_pos + dist_neighbor[i]), 0 ).w;
+
+                // invert the orthographic projection (considering ortho matrix is in range [-1,1]
                 vec2 pixel = neighbor*2.0 - vec2(1.0);
+                pixel /= ModelMatrix[0][0];
 
                 // find the displacement vector (parallel to image plane) in camera space
                 vec3 dvec = vec3( pixel.xy - newVert.xy, 0.0 );
 
                 // compute the depth value in camera space for the neighbor point in face plane
-                zneighbor[i] = newVert.z + dot(newNormal, dvec);
-            }
+                zneighbor = newVert.z + dot(newNormal, dvec);
 
-            for (int i = 0; i < size; ++i) {
-                if (zneighbor[i] > zsurface[i]) {
-                   I = 1;
+                if (zneighbor > zsurface)
+                {
+                   I=1;
                 }
             }
+
         }
+
 
 	vec3 toLight = normalize ( -newVert.xyz );
 
