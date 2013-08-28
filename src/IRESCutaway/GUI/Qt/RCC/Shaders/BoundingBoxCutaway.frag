@@ -12,8 +12,8 @@ in VertexData
 
 noperspective in vec4 dist;
 
-const vec2 dist_neighbor[8] = {vec2(1,0), vec2(0,1), vec2(0,-1), vec2(-1,0),
-                               vec2(-1,-1), vec2(-1,1), vec2(1,-1), vec2(1,-1)};
+const vec2 dist_neighbor[8] = {vec2(1,0), vec2(-1,0), vec2(0,1), vec2(0,-1),
+                                vec2(-1,-1), vec2(-1,1), vec2(1,-1), vec2(1,-1)};
 
 out vec4 outputColor;
 
@@ -23,7 +23,7 @@ uniform mat4 ModelMatrix;
 void main(void)
 {
 
-        vec2 pixel_pos = vec2(floor(gl_FragCoord.x), floor(gl_FragCoord.y));
+        vec2 pixel_pos = vec2(floor(gl_FragCoord.x), floor(gl_FragCoord.y)) + vec2(0.5);
         vec4 cutaway = texelFetch( normals , ivec2(pixel_pos), 0 ).rgba;
 
         if ( VertexIn.vertice.z > cutaway.w ) {
@@ -64,15 +64,17 @@ void main(void)
                 // depth of cutaway surface at neighbor pixel
                 zsurface = texelFetch( normals, ivec2(pixel_pos + dist_neighbor[i]), 0 ).w;
 
-                // invert the orthographic projection (considering ortho matrix is in range [-1,1]
+                // invert the orthographic projection (considering ortho planes are in range [-1,1]
                 vec2 pixel = neighbor*2.0 - vec2(1.0);
                 pixel /= ModelMatrix[0][0];
 
+                zneighbor = dot (newVert.xyz - vec3(pixel.xy, 0.0), newNormal.xyz) / newNormal.z;
+
                 // find the displacement vector (parallel to image plane) in camera space
-                vec3 dvec = vec3( pixel.xy - newVert.xy, 0.0 );
+                //vec3 dvec = vec3( pixel.xy - newVert.xy, 0.0 );
 
                 // compute the depth value in camera space for the neighbor point in face plane
-                zneighbor = newVert.z + dot(newNormal, dvec);
+                //zneighbor = newVert.z + dot(newNormal, dvec);
 
                 if (zneighbor > zsurface)
                 {
