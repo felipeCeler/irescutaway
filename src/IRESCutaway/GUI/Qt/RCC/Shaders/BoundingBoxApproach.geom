@@ -44,23 +44,23 @@ void byCentroid ( )
 		VertexOut.color  = cube[0].color;
 
 
-		VertexOut.verticeEye  = ViewMatrix * cube[0].v[cutVolume[i].vertices[0]];
+                VertexOut.verticeEye  = ViewMatrix * cube[0].v[cutVolume[i].vertices[0]];
 		gl_Position = ProjectionMatrix * ModelMatrix * VertexOut.verticeEye;
 		VertexOut.verticeProj = gl_Position;
 		EmitVertex();
 
 
-		VertexOut.verticeEye  = ViewMatrix * cube[0].v[cutVolume[i].vertices[1]];
+                VertexOut.verticeEye  = ViewMatrix * cube[0].v[cutVolume[i].vertices[1]];
 		gl_Position = ProjectionMatrix * ModelMatrix * VertexOut.verticeEye;
 		VertexOut.verticeProj = gl_Position;
 		EmitVertex();
 
-		VertexOut.verticeEye  = ViewMatrix * cube[0].v[cutVolume[i].vertices[3]];
+                VertexOut.verticeEye  = ViewMatrix * cube[0].v[cutVolume[i].vertices[3]];
 		gl_Position = ProjectionMatrix * ModelMatrix * VertexOut.verticeEye;
 		VertexOut.verticeProj = gl_Position;
 		EmitVertex();
 
-		VertexOut.verticeEye  = ViewMatrix * cube[0].v[cutVolume[i].vertices[2]];
+                VertexOut.verticeEye  = ViewMatrix * cube[0].v[cutVolume[i].vertices[2]];
 		gl_Position = ProjectionMatrix * ModelMatrix * VertexOut.verticeEye;
 		VertexOut.verticeProj = gl_Position;
 		EmitVertex();

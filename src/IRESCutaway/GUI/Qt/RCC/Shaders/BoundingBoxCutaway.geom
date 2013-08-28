@@ -38,9 +38,12 @@ Face faces[6];
 // Rendering lines
 vec4 vp[4];
 
-
 void renderCube( in vec4 color )
 {
+
+//        for ( int i = 0; i < 8; i++) {
+//            cube[0].v[i].y *= 3.0;
+//        }
 	for ( int i = 0; i < 6; i++)
 	{
 
@@ -71,21 +74,25 @@ void renderCube( in vec4 color )
 		VertexOut.normal = cube[0].n[i];
 		VertexOut.color = color;
 
-		//Top face
+                vec4 desloc = vec4(0.0);
+                //if (dot(cube[0].n[i].xyz, vec3(0.0,0.0,-1.0)) < 0.0)
+                //   desloc.xyz = -cube[0].n[i].xyz * 0.01;
+
+                //face
 		dist = vec4(area4/length(v4), area3/length(v3), 0, 0);
-		VertexOut.vertice  = ViewMatrix * cube[0].v[faces[i].vertices[0]];
+                VertexOut.vertice  = ViewMatrix * (cube[0].v[faces[i].vertices[0]] + desloc);
 		gl_Position = vp[0];
 		EmitVertex();
 		dist = vec4(area2/length(v4), 0, 0, area1/length(v2));
-		VertexOut.vertice  = ViewMatrix * cube[0].v[faces[i].vertices[1]];
+                VertexOut.vertice  = ViewMatrix * (cube[0].v[faces[i].vertices[1]] + desloc);
 		gl_Position = vp[1];
 		EmitVertex();
 		dist = vec4(0, area2/length(v3), area1/length(v0), 0);
-		VertexOut.vertice  = ViewMatrix * cube[0].v[faces[i].vertices[2]];
+                VertexOut.vertice  = ViewMatrix * (cube[0].v[faces[i].vertices[2]] + desloc);
 		gl_Position = vp[2];
 		EmitVertex();
 		dist = vec4(0, 0, area3/length(v0), area4/length(v2));
-		VertexOut.vertice  = ViewMatrix * cube[0].v[faces[i].vertices[3]];
+                VertexOut.vertice  = ViewMatrix * (cube[0].v[faces[i].vertices[3]] + desloc);
 		gl_Position = vp[3];
 		EmitVertex();
 
