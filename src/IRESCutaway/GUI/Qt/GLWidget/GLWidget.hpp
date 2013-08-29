@@ -19,7 +19,8 @@
 #include <Celer/Core/Geometry/Math/Vector4.hpp>
 	/// Scene
 #include <Celer/Scene/Camera.hpp>
-
+	///
+#include <shaderlib/trackball.hpp>
 #include <QtOpenGL/QGLWidget>
 #include <QtOpenGL/QGLFramebufferObject>
 
@@ -127,6 +128,8 @@ class GLWidget: public QGLWidget
 
 private:
 
+
+        Eigen::Vector2f convertToNormalizedDeviceCoordinates(Eigen::Vector2i position);
 	// About Scene
 	Celer::Camera<float> camera_;
 	float cameraStep_;
@@ -268,6 +271,10 @@ private:
 
 	float orthoZoom;
 	Celer::Matrix4x4<float> modelMatrix_;
+
+	// trackball
+	Trackball * trackball_;
+
 };
 
 #endif

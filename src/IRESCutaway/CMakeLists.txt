@@ -10,6 +10,7 @@ set(QT_WRAP_UI true)
 find_package(Qt4 REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
+find_package(Eigen REQUIRED)
 
 INCLUDE(${QT_USE_FILE})
 
@@ -19,6 +20,8 @@ include_directories(
 		${CMAKE_SOURCE_DIR}/libs/Celer/src
 		##- Ires Library
 		${CMAKE_SOURCE_DIR}/libs/Ires
+		## - LCG/shaderlib
+		${CMAKE_SOURCE_DIR}/libs/LCG
         ##- Qt     
         ${QT_INCLUDE_DIR}
         ${QT_QTCORE_INCLUDE_DIR}
@@ -27,6 +30,8 @@ include_directories(
         ##- OpenGL 
         ${GLEW_INCLUDE_DIR}
         ${OPENGL_INCLUDE_DIR}
+        ## - Eigen
+        ${EIGEN_INCLUDE_DIR}
         )
 
 include_directories (
@@ -46,6 +51,8 @@ set( ${PROJECT_NAME}_SOURCES App/main.cpp
     						 GUI/Qt/GLWidget/Cube.cpp
     						 IRES/CornerPointGrid.cpp
     						 IRES/Block.cpp
+    						 ${CMAKE_SOURCE_DIR}/libs/LCG/shaderlib/trackball.cpp
+    						 ${CMAKE_SOURCE_DIR}/libs/LCG/shaderlib/shader.cpp
     						 )
 	
 set( ${PROJECT_NAME}_HEADERS GUI/Qt/MainWindow/MainWindow.hpp
@@ -54,6 +61,8 @@ set( ${PROJECT_NAME}_HEADERS GUI/Qt/MainWindow/MainWindow.hpp
                              GUI/Qt/GLWidget/Cube.hpp
                              IRES/CornerPointGrid.hpp
                              IRES/Block.hpp
+                             ${CMAKE_SOURCE_DIR}/libs/LCG/shaderlib/trackball.hpp
+                             ${CMAKE_SOURCE_DIR}/libs/LCG/shaderlib/shader.hpp
                              )	
 
 set( MOC_HEADERS GUI/Qt/MainWindow/MainWindow.hpp

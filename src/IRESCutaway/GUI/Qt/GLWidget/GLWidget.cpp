@@ -44,7 +44,6 @@ void GLWidget::initializeGL ( )
 	setAcceptDrops(true);
 
 
-	loadShaders ( );
 
 	isIRESOpen_ = 0;
 
@@ -138,6 +137,15 @@ void GLWidget::initializeGL ( )
 
 	volume_width = 0.0f;
 	volume_height = 0.0f;
+
+	trackball_ = new Trackball();
+
+	trackball_->initOpenGLMatrices();
+
+	trackball_->initializeBuffers();
+
+	loadShaders ( );
+
 }
 
 bool GLWidget::isIRESOpen ( ) const
@@ -694,6 +702,8 @@ void GLWidget::openIRESCharles( const std::string& filename )
 		std::cout << reservoir_model_.box_v2.diagonal ( );
 		camera_.setOffset ( 3.0 * reservoir_model_.box_v2.diagonal ( ) );
 
+		trackball_->translateModelMatrix( Eigen::Vector3f(reservoir_model_.box_v2.center ( ).x,reservoir_model_.box_v2.center ( ).y,reservoir_model_.box_v2.center ( ).z));
+
 		std::cout << camera_.position ( );
 
 		camera_.setBehavior ( Celer::Camera<float>::REVOLVE_AROUND_MODE );
@@ -793,11 +803,38 @@ void GLWidget::paintGL ( )
 	{
 		if (cutVolumes.size() > 0)
 		{
-			new_z = camera_.position() - cutVolumes[cluster].center();
+//
+//			new_z = camera_.position() - cutVolumes[cluster].center();
+//
+//			new_z.normalize();
+//
+//			new_x = new_z ^ camera_.UpVector();
+//
+//			new_x.normalize();
+//
+//			new_y = new_z ^ new_x;
+//
+//			new_y.normalize();
+//
+//			lookatCamera = Celer::Matrix4x4<float>(new_x, new_y, new_z);
+
+			Eigen::Matrix4f inverseView = trackball_->getViewMatrix().matrix();
+
+			std::cout << inverseView.inverse() * Eigen::Vector4f(0.0,0.0,0.0,1.0) << std::endl;
+
+			Eigen::Vector4f camera_position = inverseView.inverse() * Eigen::Vector4f(0.0,0.0,0.0,1.0);
+			Eigen::Vector4f camera_up = trackball_->getRotationMatrix() * Eigen::Vector4f(0.0,1.0,0.0,1.0);
+
+			Celer::Vector3<float> celer_position (camera_position[0],camera_position[1],camera_position[2]);
+			Celer::Vector3<float> celer_up 	     (camera_up[0],camera_up[1],camera_up[2]);
+
+			std::cout << celer_up;
+
+			new_z = celer_position - cutVolumes[cluster].center();
 
 			new_z.normalize();
 
-			new_x = new_z ^ camera_.UpVector();
+			new_x = new_z ^ celer_up;
 
 			new_x.normalize();
 
@@ -805,7 +842,7 @@ void GLWidget::paintGL ( )
 
 			new_y.normalize();
 
-			lookatCamera = Celer::Matrix4x4<float>(new_x, new_y, new_z);
+
 		}
 	}
 
@@ -820,6 +857,8 @@ void GLWidget::paintGL ( )
 	{
 		NoCutaway ( );
 	}
+
+	//trackball_->render();
 
 	fps++;
 
@@ -902,9 +941,10 @@ void GLWidget::RawCutaway ( int cluster )
 			glUniform3fv ( BoundingBoxInitialization.uniforms_["new_y"].location , 1 , new_y );
 			glUniform3fv ( BoundingBoxInitialization.uniforms_["new_z"].location , 1 , new_z );
 			glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ModelMatrix"].location , 1 , GL_TRUE , modelMatrix_ );
-			glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-//            glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
-            glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.orthographicProjectionMatrix() );
+			//glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+			glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ViewMatrix"].location , 1 , GL_FALSE , trackball_->getViewMatrix().data() );
+			//glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+			glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.orthographicProjectionMatrix() );
 
 			//VAO
 			glBindVertexArray ( vertexArray_box );
@@ -940,9 +980,10 @@ void GLWidget::RawCutaway ( int cluster )
 			glUniform2f ( BoundingBoxCutaway.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
 
 			glUniformMatrix4fv ( BoundingBoxCutaway.uniforms_["ModelMatrix"].location , 1 , GL_TRUE , modelMatrix_ );
-			glUniformMatrix4fv ( BoundingBoxCutaway.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-            //glUniformMatrix4fv ( BoundingBoxCutaway.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
-            glUniformMatrix4fv ( BoundingBoxCutaway.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.orthographicProjectionMatrix() );
+			//glUniformMatrix4fv ( BoundingBoxCutaway.uniforms_["ViewMatrix"].location , 1 , GL_TREU , camera_.viewMatrix( ) );
+			glUniformMatrix4fv ( BoundingBoxCutaway.uniforms_["ViewMatrix"].location , 1 , GL_FALSE , trackball_->getViewMatrix().data() );
+			//glUniformMatrix4fv ( BoundingBoxCutaway.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+			glUniformMatrix4fv ( BoundingBoxCutaway.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.orthographicProjectionMatrix() );
 
 			glBindVertexArray ( vertexArray_cube_interleaved );
 			glDrawArrays ( GL_POINTS , 0 , cube_interleaved.size() );
@@ -988,7 +1029,8 @@ void GLWidget::RawCutaway ( int cluster )
 			glUniform2f ( primary.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
 
 			glUniformMatrix4fv ( primary.uniforms_["ModelMatrix"].location , 1 , GL_TRUE , modelMatrix_ );
-			glUniformMatrix4fv ( primary.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+			//glUniformMatrix4fv ( primary.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+			glUniformMatrix4fv ( primary.uniforms_["ViewMatrix"].location , 1 , GL_FALSE , trackball_->getViewMatrix().data() );
             //glUniformMatrix4fv ( primary.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
             glUniformMatrix4fv ( primary.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.orthographicProjectionMatrix ( ) );
 
@@ -1175,8 +1217,8 @@ void GLWidget::loadShaders ( )
 	QString shaderDirectory ("D:\\Workspace\\IRESCutaway\\src\\IRESCutaway\\GUI\\Qt\\RCC\\Shaders\\");
 	#elif defined(__linux__)               // Linux Directory Style
 	/* Do linux stuff */
-    QString shaderDirectory ("/home/ricardomarroquim/devel/irescutaway/src/IRESCutaway/GUI/Qt/RCC/Shaders/");
-    //QString shaderDirectory ("/media/d/Workspace/IRESCutaway/src/IRESCutaway/GUI/Qt/RCC/Shaders/");
+    //QString shaderDirectory ("/home/ricardomarroquim/devel/irescutaway/src/IRESCutaway/GUI/Qt/RCC/Shaders/");
+    QString shaderDirectory ("/media/d/Workspace/IRESCutaway/src/IRESCutaway/GUI/Qt/RCC/Shaders/");
 	#else
 	/* Error, both can't be defined or undefined same time */
 	#endif
@@ -1186,6 +1228,9 @@ void GLWidget::loadShaders ( )
 	qDebug () << "Directory " << shadersDir.path ();
 
 
+	trackball_->setShaders( (shaderDirectory + "trackballShader.vert").toStdString(),(shaderDirectory + "trackballShader.farg").toStdString());
+
+	trackball_->loadShader( );
 
 	primary.create("primary",(shaderDirectory + "Primary.vert").toStdString(),
 				 (shaderDirectory + "Primary.geom").toStdString(),
@@ -1335,16 +1380,28 @@ void GLWidget::mousePressEvent ( QMouseEvent *event )
 {
 	event->accept ( );
 
+	Eigen::Vector2i pos(event->x ( ),event->y ( ));
+
+	Eigen::Vector2f positionInTrackballSystem;
+	positionInTrackballSystem = convertToNormalizedDeviceCoordinates(pos);
+
+
 	if ( event->button ( ) == Qt::LeftButton )
 	{
 		camera_.lockMouse ( true );
 		centerX_ = static_cast<float> ( event->x ( ) );
 		centerY_ = static_cast<float> ( event->y ( ) );
+
+		trackball_->setInitialRotationPosition(positionInTrackballSystem[0],positionInTrackballSystem[1]);
+		trackball_->beginRotation();
 	}
 
 	if ( event->button ( ) == Qt::RightButton )
 	{
 		lastPos = event->pos ( );
+		trackball_->setInitialTranslationPosition(positionInTrackballSystem[0],positionInTrackballSystem[1]);
+		trackball_->beginTranslation();
+		qDebug() << " Translate ";
 	}
 }
 
@@ -1355,11 +1412,13 @@ void GLWidget::mouseReleaseEvent ( QMouseEvent *event )
 	if ( event->button ( ) == Qt::LeftButton )
 	{
 		camera_.lockMouse ( false );
+		trackball_->endRotation();
 
 	}
 	else if ( event->button ( ) == Qt::RightButton )
 	{
-
+		trackball_->endTranslation();
+		qDebug() << " Translate R";
 	}
 
 }
@@ -1367,7 +1426,9 @@ void GLWidget::mouseReleaseEvent ( QMouseEvent *event )
 void GLWidget::mouseMoveEvent ( QMouseEvent *event )
 {
 
-	if ( event->buttons ( ) & Qt::LeftButton )
+	std::cout << trackball_->isTranslating() << " - " <<  Qt::RightButton  << std::endl;
+
+	if ( event->buttons ( )  )
 	{
 		//camera_.SetMouseInfo(event->x(),event->y());
 		float heading = 0.0f;
@@ -1386,10 +1447,51 @@ void GLWidget::mouseMoveEvent ( QMouseEvent *event )
 		 *
 		 *  Tudo o que eu queria para implementar a First Person Camera !
 		 */
-		QCursor::setPos ( mapToGlobal ( QPoint ( static_cast<int> ( centerX_ ) , static_cast<int> ( centerY_ ) ) ) );
+//		/QCursor::setPos ( mapToGlobal ( QPoint ( static_cast<int> ( centerX_ ) , static_cast<int> ( centerY_ ) ) ) );
+
+
+		//Position vector in [0,viewportWidth] domain:
+		Eigen::Vector2i pos(event->x ( ),event->y ( ));
+
+		//Convert to Normalized Device Coordinates System:
+		Eigen::Vector2f positionInTrackballSystem;
+		positionInTrackballSystem = convertToNormalizedDeviceCoordinates(pos);
+
+		//Camera Rotating:
+		if(trackball_->isRotating() && (event->buttons ( ) & Qt::LeftButton ))  {
+			Eigen::Vector3f initialPosition = trackball_->getInitialRotationPosition();
+			if(positionInTrackballSystem != Eigen::Vector2f(initialPosition[0], initialPosition[1])) {
+				trackball_->setFinalRotationPosition(positionInTrackballSystem[0],positionInTrackballSystem[1]);
+				trackball_->rotateCamera();
+				trackball_->setInitialRotationPosition(positionInTrackballSystem[0],positionInTrackballSystem[1]);
+
+			}
+		}
+
+		if(trackball_->isTranslating() && (event->buttons ( ) & Qt::RightButton )) {
+			Eigen::Vector2f initialPosition = trackball_->getInitialTranslationPosition();
+			if(positionInTrackballSystem != Eigen::Vector2f(initialPosition[0], initialPosition[1])) {
+				trackball_->setFinalTranslationPosition(positionInTrackballSystem[0],positionInTrackballSystem[1]);
+				trackball_->translateCamera();
+				trackball_->setInitialTranslationPosition(positionInTrackballSystem[0],positionInTrackballSystem[1]);
+			}
+		}
 	}
 
+	std::cout << trackball_->getViewMatrix().matrix() << std::endl;
+	std::cout << "---" << std::endl;
 
+}
+
+Eigen::Vector2f GLWidget::convertToNormalizedDeviceCoordinates(Eigen::Vector2i position) {
+	float x = (float)position[0]/(float)(width()/2.0);
+	x = x-1;
+
+	float y = (float)position[1]/(float)(height()/2.0);
+	y = 1-y;
+
+	Eigen::Vector2f ret(x,y);
+	return ret;
 }
 
 void GLWidget::wheelEvent ( QWheelEvent *event )
@@ -1399,11 +1501,17 @@ void GLWidget::wheelEvent ( QWheelEvent *event )
 	{
 		zoom_angle_ += event->delta ( ) / 120.0;
 
+		if ( orthoZoom > event->delta ( ) / 1200.0)
+			trackball_->increaseZoom(1.05);
+		else
+			trackball_->decreaseZoom(1.05);
+
 		orthoZoom += event->delta ( ) / 1200.0;
 
 		modelMatrix_[0][0] = orthoZoom;
 		modelMatrix_[1][1] = orthoZoom;
 		modelMatrix_[2][2] = orthoZoom;
+
 
 		qDebug ( ) << orthoZoom;
 	}
