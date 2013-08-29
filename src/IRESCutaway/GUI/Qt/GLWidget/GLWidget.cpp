@@ -247,6 +247,7 @@ void GLWidget::cutVolumeGenerator( )
 		if ( cont < 63 )
 		{
 		        cutVolume_.center_points[cutVolumeIndex] = Celer::Vector4<float>(it->center( ),1.0);
+                cout << cont << "  " << cutVolume_.center_points[cutVolumeIndex] << endl;
 		        cutVolumeIndex++;
 		}
 		cont++;
@@ -702,7 +703,9 @@ void GLWidget::openIRESCharles( const std::string& filename )
 		std::cout << reservoir_model_.box_v2.diagonal ( );
 		camera_.setOffset ( 3.0 * reservoir_model_.box_v2.diagonal ( ) );
 
-		trackball_->translateModelMatrix( Eigen::Vector3f(reservoir_model_.box_v2.center ( ).x,reservoir_model_.box_v2.center ( ).y,reservoir_model_.box_v2.center ( ).z));
+        //trackball_->translateModelMatrix( Eigen::Vector3f(reservoir_model_.box_v2.center ( ).x,reservoir_model_.box_v2.center ( ).y,reservoir_model_.box_v2.center ( ).z));
+
+
 
 		std::cout << camera_.position ( );
 
@@ -820,15 +823,15 @@ void GLWidget::paintGL ( )
 
 			Eigen::Matrix4f inverseView = trackball_->getViewMatrix().matrix();
 
-			std::cout << inverseView.inverse() * Eigen::Vector4f(0.0,0.0,0.0,1.0) << std::endl;
+           // std::cout << inverseView.inverse().col(3).transpose() << std::endl;
 
-			Eigen::Vector4f camera_position = inverseView.inverse() * Eigen::Vector4f(0.0,0.0,0.0,1.0);
+            Eigen::Vector4f camera_position = inverseView.inverse().col(3).transpose();
 			Eigen::Vector4f camera_up = trackball_->getRotationMatrix() * Eigen::Vector4f(0.0,1.0,0.0,1.0);
 
 			Celer::Vector3<float> celer_position (camera_position[0],camera_position[1],camera_position[2]);
 			Celer::Vector3<float> celer_up 	     (camera_up[0],camera_up[1],camera_up[2]);
 
-			std::cout << celer_up;
+            //std::cout << celer_up;
 
 			new_z = celer_position - cutVolumes[cluster].center();
 
@@ -841,6 +844,8 @@ void GLWidget::paintGL ( )
 			new_y = new_z ^ new_x;
 
 			new_y.normalize();
+            //cout << cutVolumes[cluster].center();
+           // cout << "new : " << new_z << endl;
 
 
 		}
@@ -935,14 +940,17 @@ void GLWidget::RawCutaway ( int cluster )
 
 			BoundingBoxInitialization.active ( );
 
+            Eigen::Vector3f center = trackball_->getCenter();
+
+            //Eigen::Vector3f center = trackball_->getViewMatrix().linear() * trackball_->getViewMatrix().translation();
+
             glUniform1f ( BoundingBoxInitialization.uniforms_["x"].location , volume_width );
             glUniform1f ( BoundingBoxInitialization.uniforms_["y"].location , volume_height );
-			glUniform3fv ( BoundingBoxInitialization.uniforms_["new_x"].location , 1 , new_x );
-			glUniform3fv ( BoundingBoxInitialization.uniforms_["new_y"].location , 1 , new_y );
-			glUniform3fv ( BoundingBoxInitialization.uniforms_["new_z"].location , 1 , new_z );
-			glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ModelMatrix"].location , 1 , GL_TRUE , modelMatrix_ );
-			//glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-			glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ViewMatrix"].location , 1 , GL_FALSE , trackball_->getViewMatrix().data() );
+            glUniform3fv ( BoundingBoxInitialization.uniforms_["camera_center"].location , 1 , center.data() );
+            //glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ModelMatrix"].location , 1 , GL_TRUE , modelMatrix_ );
+            glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ModelMatrix"].location , 1 , GL_FALSE , trackball_->getModelMatrix().data() );
+			//glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );			
+            glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ViewMatrix"].location , 1 , GL_FALSE , trackball_->getViewMatrix().data() );
 			//glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
 			glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.orthographicProjectionMatrix() );
 
@@ -979,7 +987,8 @@ void GLWidget::RawCutaway ( int cluster )
 
 			glUniform2f ( BoundingBoxCutaway.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
 
-			glUniformMatrix4fv ( BoundingBoxCutaway.uniforms_["ModelMatrix"].location , 1 , GL_TRUE , modelMatrix_ );
+            //glUniformMatrix4fv ( BoundingBoxCutaway.uniforms_["ModelMatrix"].location , 1 , GL_TRUE , modelMatrix_ );
+            glUniformMatrix4fv ( BoundingBoxCutaway.uniforms_["ModelMatrix"].location , 1 , GL_FALSE , trackball_->getModelMatrix().data() );
 			//glUniformMatrix4fv ( BoundingBoxCutaway.uniforms_["ViewMatrix"].location , 1 , GL_TREU , camera_.viewMatrix( ) );
 			glUniformMatrix4fv ( BoundingBoxCutaway.uniforms_["ViewMatrix"].location , 1 , GL_FALSE , trackball_->getViewMatrix().data() );
 			//glUniformMatrix4fv ( BoundingBoxCutaway.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
@@ -1028,7 +1037,8 @@ void GLWidget::RawCutaway ( int cluster )
 
 			glUniform2f ( primary.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
 
-			glUniformMatrix4fv ( primary.uniforms_["ModelMatrix"].location , 1 , GL_TRUE , modelMatrix_ );
+            //glUniformMatrix4fv ( primary.uniforms_["ModelMatrix"].location , 1 , GL_TRUE , modelMatrix_ );
+            glUniformMatrix4fv ( primary.uniforms_["ModelMatrix"].location , 1 , GL_FALSE , trackball_->getModelMatrix().data() );
 			//glUniformMatrix4fv ( primary.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
 			glUniformMatrix4fv ( primary.uniforms_["ViewMatrix"].location , 1 , GL_FALSE , trackball_->getViewMatrix().data() );
             //glUniformMatrix4fv ( primary.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
@@ -1038,7 +1048,7 @@ void GLWidget::RawCutaway ( int cluster )
 			glDrawArrays ( GL_POINTS , 0 , cube_interleaved.size() );
 			glBindVertexArray ( 0 );
 
-			primary.deactive ( );
+            primary.deactive ( );
 
 		}
 	}
@@ -1217,8 +1227,8 @@ void GLWidget::loadShaders ( )
 	QString shaderDirectory ("D:\\Workspace\\IRESCutaway\\src\\IRESCutaway\\GUI\\Qt\\RCC\\Shaders\\");
 	#elif defined(__linux__)               // Linux Directory Style
 	/* Do linux stuff */
-    //QString shaderDirectory ("/home/ricardomarroquim/devel/irescutaway/src/IRESCutaway/GUI/Qt/RCC/Shaders/");
-    QString shaderDirectory ("/media/d/Workspace/IRESCutaway/src/IRESCutaway/GUI/Qt/RCC/Shaders/");
+    QString shaderDirectory ("/home/ricardomarroquim/devel/irescutaway/src/IRESCutaway/GUI/Qt/RCC/Shaders/");
+    //QString shaderDirectory ("/media/d/Workspace/IRESCutaway/src/IRESCutaway/GUI/Qt/RCC/Shaders/");
 	#else
 	/* Error, both can't be defined or undefined same time */
 	#endif
@@ -1228,9 +1238,9 @@ void GLWidget::loadShaders ( )
 	qDebug () << "Directory " << shadersDir.path ();
 
 
-	trackball_->setShaders( (shaderDirectory + "trackballShader.vert").toStdString(),(shaderDirectory + "trackballShader.farg").toStdString());
+    //trackball_->setShaders( (shaderDirectory + "trackballShader.vert").toStdString(),(shaderDirectory + "trackballShader.farg").toStdString());
 
-	trackball_->loadShader( );
+    //trackball_->loadShader( );
 
 	primary.create("primary",(shaderDirectory + "Primary.vert").toStdString(),
 				 (shaderDirectory + "Primary.geom").toStdString(),
@@ -1426,7 +1436,7 @@ void GLWidget::mouseReleaseEvent ( QMouseEvent *event )
 void GLWidget::mouseMoveEvent ( QMouseEvent *event )
 {
 
-	std::cout << trackball_->isTranslating() << " - " <<  Qt::RightButton  << std::endl;
+    //std::cout << trackball_->isTranslating() << " - " <<  Qt::RightButton  << std::endl;
 
 	if ( event->buttons ( )  )
 	{
@@ -1466,6 +1476,7 @@ void GLWidget::mouseMoveEvent ( QMouseEvent *event )
 				trackball_->setInitialRotationPosition(positionInTrackballSystem[0],positionInTrackballSystem[1]);
 
 			}
+
 		}
 
 		if(trackball_->isTranslating() && (event->buttons ( ) & Qt::RightButton )) {
@@ -1478,8 +1489,10 @@ void GLWidget::mouseMoveEvent ( QMouseEvent *event )
 		}
 	}
 
-	std::cout << trackball_->getViewMatrix().matrix() << std::endl;
-	std::cout << "---" << std::endl;
+
+
+    //std::cout << trackball_->getViewMatrix().matrix() << std::endl;
+    //std::cout << "---" << std::endl;
 
 }
 
@@ -1501,19 +1514,17 @@ void GLWidget::wheelEvent ( QWheelEvent *event )
 	{
 		zoom_angle_ += event->delta ( ) / 120.0;
 
-		if ( orthoZoom > event->delta ( ) / 1200.0)
-			trackball_->increaseZoom(1.05);
+        if ( event->delta ( ) < 0.0)
+            trackball_->increaseZoom(1.05);
 		else
 			trackball_->decreaseZoom(1.05);
 
 		orthoZoom += event->delta ( ) / 1200.0;
 
-		modelMatrix_[0][0] = orthoZoom;
-		modelMatrix_[1][1] = orthoZoom;
-		modelMatrix_[2][2] = orthoZoom;
+        //modelMatrix_[0][0] = orthoZoom;
+        //modelMatrix_[1][1] = orthoZoom;
+        //modelMatrix_[2][2] = orthoZoom;
 
-
-		qDebug ( ) << orthoZoom;
 	}
 	else
 	{

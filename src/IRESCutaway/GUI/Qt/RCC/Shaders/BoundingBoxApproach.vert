@@ -18,9 +18,7 @@ uniform mat4 ModelMatrix;
 uniform mat4 ViewMatrix;
 uniform mat4 ProjectionMatrix;
 
-uniform vec3 new_x;
-uniform vec3 new_y;
-uniform vec3 new_z;
+uniform vec3 camera_center;
 
 uniform float x;
 uniform float y;
@@ -33,13 +31,18 @@ vec4 v[8];
 
 void main(void)
 {
-	mat3 normalMatrix = inverse(transpose(mat3(ViewMatrix)));
+        vec3 center_of_mass = cutVolumes.center_points[gl_VertexID].xyz;
 
-        ext_x = new_x*0.1;
-        ext_y = new_y*0.1;
-        ext_z = new_z*0.1;
+        mat4 invView = inverse(ViewMatrix);
 
-	vec3 center_of_mass = cutVolumes.center_points[gl_VertexID].xyz;
+
+        vec3 camera_up = normalize((invView * vec4(0.0, 1.0, 0.0, 0.0)).xyz);
+        vec3 camera_dir = normalize( camera_center - center_of_mass );
+        vec3 camera_right = normalize( cross(camera_dir.xyz, camera_up.xyz) );
+
+        ext_x = camera_right*0.1;
+        ext_y = camera_up*0.1;
+        ext_z = camera_dir*0.1;
 
         float zfactor = 50.0;
         v[0] = vec4(center_of_mass + ext_x + ext_y + zfactor*ext_z + x*ext_x + y*ext_y,1.0);
@@ -51,6 +54,9 @@ void main(void)
         v[5] = vec4(center_of_mass - ext_x - ext_y + zfactor*ext_z - x*ext_x - y*ext_y,1.0);
 	v[6] = vec4(center_of_mass - ext_x - ext_y - ext_z,1.0);
 	v[7] = vec4(center_of_mass + ext_x - ext_y - ext_z,1.0);
+
+
+        mat3 normalMatrix = (inverse(transpose(mat3(ViewMatrix))));
 
 	// Top Face
 	vec3 normal_top = normalize (cross ( (v[3] - v[0]).xyz, (v[1] - v[0]).xyz ) );
