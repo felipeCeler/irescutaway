@@ -38,7 +38,6 @@ void main(void)
             discard;
         }
 
-
         // make sure we are at the center of the pixel to make the right texture access
         vec2 pixel_pos = vec2(floor(gl_FragCoord.x), floor(gl_FragCoord.y)) + vec2(0.5);
         vec4 cutaway = texelFetch( normals, ivec2(pixel_pos), 0 ).rgba;
@@ -48,10 +47,7 @@ void main(void)
             discard;
         }
 
-
-
-
-        int size = 4;
+        int size = 8;
         {
             // check the neighbors, we are only interested in border pixels (neighbors to discarded pixels)
             float zsurface = 0;
@@ -79,9 +75,7 @@ void main(void)
                     I=1;
                 }
             }
-
         }
-
 
 	vec3 toLight = normalize ( -newVert.xyz );
 

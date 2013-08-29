@@ -265,6 +265,9 @@ private:
 	// Fixed view
 	bool freezeView_;
 
+    // Stores the freezed camera (view matrix)
+    Eigen::Matrix4f freeze_viewmatrix_;
+
 	// Aperture
 	float volume_width;
 	float volume_height;

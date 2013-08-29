@@ -16,9 +16,13 @@ out CubeData
 
 uniform mat4 ModelMatrix;
 uniform mat4 ViewMatrix;
+uniform mat4 FreezeViewMatrix;
 uniform mat4 ProjectionMatrix;
 
-uniform vec3 camera_center;
+// freeze camera matrix
+uniform int freeze;
+
+//uniform vec3 camera_center;
 
 uniform float x;
 uniform float y;
@@ -33,9 +37,15 @@ void main(void)
 {
         vec3 center_of_mass = cutVolumes.center_points[gl_VertexID].xyz;
 
-        mat4 invView = inverse(ViewMatrix);
+        mat4 invView;
+        if (freeze == 0)
+            invView = inverse(ViewMatrix);
+        else
+            invView = inverse(FreezeViewMatrix);
 
+        vec3 camera_center = (invView * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
 
+        // coordinate system for the cutaway frustum
         vec3 camera_up = normalize((invView * vec4(0.0, 1.0, 0.0, 0.0)).xyz);
         vec3 camera_dir = normalize( camera_center - center_of_mass );
         vec3 camera_right = normalize( cross(camera_dir.xyz, camera_up.xyz) );

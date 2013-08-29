@@ -749,10 +749,13 @@ void GLWidget::resizeGL ( int width , int height )
 
 
 	camera_.setAspectRatio ( width  , height  );
-	camera_.setPerspectiveProjectionMatrix ( 0 , camera_.aspectRatio ( ) , 0.1 , 500 );
-    camera_.setOrthographicProjectionMatrix( -1.0f, 1.0 , -1.0f, 1.0, 0.0, 500.0 );
+//	camera_.setPerspectiveProjectionMatrix ( 0 , camera_.aspectRatio ( ) , 0.1 , 500 );
+//    camera_.setOrthographicProjectionMatrix( -1.0f, 1.0 , -1.0f, 1.0, 0.0, 500.0 );
 
-    std::cout << camera_.orthographicProjectionMatrix();
+    trackball_->useOrthographicMatrix(-1.0f, 1.0 , -1.0f, 1.0, 0.0, 500.0);
+
+    std::cout << "ortho camera : "  << camera_.orthographicProjectionMatrix();
+    std::cout << "ortho trackball : " << trackball_->getProjectionMatrix() << endl;
 
 	centerX_ = static_cast<float> ( width * 0.5 );
 	centerY_ = static_cast<float> ( height * 0.5 );
@@ -821,29 +824,29 @@ void GLWidget::paintGL ( )
 //
 //			lookatCamera = Celer::Matrix4x4<float>(new_x, new_y, new_z);
 
-			Eigen::Matrix4f inverseView = trackball_->getViewMatrix().matrix();
+//			Eigen::Matrix4f inverseView = trackball_->getViewMatrix().matrix();
 
-           // std::cout << inverseView.inverse().col(3).transpose() << std::endl;
+//           // std::cout << inverseView.inverse().col(3).transpose() << std::endl;
 
-            Eigen::Vector4f camera_position = inverseView.inverse().col(3).transpose();
-			Eigen::Vector4f camera_up = trackball_->getRotationMatrix() * Eigen::Vector4f(0.0,1.0,0.0,1.0);
+//            Eigen::Vector4f camera_position = inverseView.inverse().col(3).transpose();
+//			Eigen::Vector4f camera_up = trackball_->getRotationMatrix() * Eigen::Vector4f(0.0,1.0,0.0,1.0);
 
-			Celer::Vector3<float> celer_position (camera_position[0],camera_position[1],camera_position[2]);
-			Celer::Vector3<float> celer_up 	     (camera_up[0],camera_up[1],camera_up[2]);
+//			Celer::Vector3<float> celer_position (camera_position[0],camera_position[1],camera_position[2]);
+//			Celer::Vector3<float> celer_up 	     (camera_up[0],camera_up[1],camera_up[2]);
 
-            //std::cout << celer_up;
+//            //std::cout << celer_up;
 
-			new_z = celer_position - cutVolumes[cluster].center();
+//			new_z = celer_position - cutVolumes[cluster].center();
 
-			new_z.normalize();
+//			new_z.normalize();
 
-			new_x = new_z ^ celer_up;
+//			new_x = new_z ^ celer_up;
 
-			new_x.normalize();
+//			new_x.normalize();
 
-			new_y = new_z ^ new_x;
+//			new_y = new_z ^ new_x;
 
-			new_y.normalize();
+//			new_y.normalize();
             //cout << cutVolumes[cluster].center();
            // cout << "new : " << new_z << endl;
 
@@ -907,8 +910,12 @@ void GLWidget::NoCutaway ( )
 
                 glUniform2f ( primary.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
 
-                glUniformMatrix4fv ( primary.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-                glUniformMatrix4fv ( primary.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+                //glUniformMatrix4fv ( primary.uniforms_["ModelMatrix"].location , 1 , GL_FALSE , trackball_->getModelMatrix().data() );
+                glUniformMatrix4fv ( primary.uniforms_["ViewMatrix"].location , 1 , GL_FALSE , trackball_->getViewMatrix().data() );
+                glUniformMatrix4fv ( primary.uniforms_["ProjectionMatrix"].location , 1 , GL_FALSE , trackball_->getProjectionMatrix().data() );
+
+                //glUniformMatrix4fv ( primary.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+                //glUniformMatrix4fv ( primary.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
 
                 glBindVertexArray ( vertexArray_cube_interleaved );
                 glDrawArrays ( GL_POINTS , 0 , cube_interleaved.size() );
@@ -940,19 +947,14 @@ void GLWidget::RawCutaway ( int cluster )
 
 			BoundingBoxInitialization.active ( );
 
-            Eigen::Vector3f center = trackball_->getCenter();
-
-            //Eigen::Vector3f center = trackball_->getViewMatrix().linear() * trackball_->getViewMatrix().translation();
-
             glUniform1f ( BoundingBoxInitialization.uniforms_["x"].location , volume_width );
             glUniform1f ( BoundingBoxInitialization.uniforms_["y"].location , volume_height );
-            glUniform3fv ( BoundingBoxInitialization.uniforms_["camera_center"].location , 1 , center.data() );
-            //glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ModelMatrix"].location , 1 , GL_TRUE , modelMatrix_ );
             glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ModelMatrix"].location , 1 , GL_FALSE , trackball_->getModelMatrix().data() );
-			//glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );			
             glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ViewMatrix"].location , 1 , GL_FALSE , trackball_->getViewMatrix().data() );
-			//glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
-			glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.orthographicProjectionMatrix() );
+            glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ProjectionMatrix"].location , 1 , GL_FALSE , trackball_->getProjectionMatrix().data() );
+
+            glUniform1i ( BoundingBoxInitialization.uniforms_["freeze"].location , freezeView_ );
+            glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["FreezeViewMatrix"].location , 1 , GL_FALSE , freeze_viewmatrix_.data() );
 
 			//VAO
 			glBindVertexArray ( vertexArray_box );
@@ -987,12 +989,9 @@ void GLWidget::RawCutaway ( int cluster )
 
 			glUniform2f ( BoundingBoxCutaway.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
 
-            //glUniformMatrix4fv ( BoundingBoxCutaway.uniforms_["ModelMatrix"].location , 1 , GL_TRUE , modelMatrix_ );
             glUniformMatrix4fv ( BoundingBoxCutaway.uniforms_["ModelMatrix"].location , 1 , GL_FALSE , trackball_->getModelMatrix().data() );
-			//glUniformMatrix4fv ( BoundingBoxCutaway.uniforms_["ViewMatrix"].location , 1 , GL_TREU , camera_.viewMatrix( ) );
 			glUniformMatrix4fv ( BoundingBoxCutaway.uniforms_["ViewMatrix"].location , 1 , GL_FALSE , trackball_->getViewMatrix().data() );
-			//glUniformMatrix4fv ( BoundingBoxCutaway.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
-			glUniformMatrix4fv ( BoundingBoxCutaway.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.orthographicProjectionMatrix() );
+            glUniformMatrix4fv ( BoundingBoxCutaway.uniforms_["ProjectionMatrix"].location , 1 , GL_FALSE , trackball_->getProjectionMatrix().data() );
 
 			glBindVertexArray ( vertexArray_cube_interleaved );
 			glDrawArrays ( GL_POINTS , 0 , cube_interleaved.size() );
@@ -1033,16 +1032,13 @@ void GLWidget::RawCutaway ( int cluster )
 
  			primary.active ( );
 
- 			glUniform3fv ( primary.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
+            glUniform3fv ( primary.uniforms_["lightDirection"].location , 0 , trackball_->getCenter().data() );
 
 			glUniform2f ( primary.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
 
-            //glUniformMatrix4fv ( primary.uniforms_["ModelMatrix"].location , 1 , GL_TRUE , modelMatrix_ );
             glUniformMatrix4fv ( primary.uniforms_["ModelMatrix"].location , 1 , GL_FALSE , trackball_->getModelMatrix().data() );
-			//glUniformMatrix4fv ( primary.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
 			glUniformMatrix4fv ( primary.uniforms_["ViewMatrix"].location , 1 , GL_FALSE , trackball_->getViewMatrix().data() );
-            //glUniformMatrix4fv ( primary.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
-            glUniformMatrix4fv ( primary.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.orthographicProjectionMatrix ( ) );
+            glUniformMatrix4fv ( primary.uniforms_["ProjectionMatrix"].location , 1 , GL_FALSE , trackball_->getProjectionMatrix().data() );
 
 			glBindVertexArray ( vertexArray_cube_interleaved );
 			glDrawArrays ( GL_POINTS , 0 , cube_interleaved.size() );
@@ -1083,9 +1079,13 @@ void GLWidget::IRESCutaway ( )
                                 glUniform3fv ( BoundingBoxInitialization.uniforms_["new_x"].location , 1 , new_x );
                                 glUniform3fv ( BoundingBoxInitialization.uniforms_["new_y"].location , 1 , new_y );
                                 glUniform3fv ( BoundingBoxInitialization.uniforms_["new_z"].location , 1 , new_z );
-                                glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ModelMatrix"].location , 1 , GL_TRUE , lookatCamera );
-                                glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-                                glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+                                glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ModelMatrix"].location , 1 , GL_FALSE , trackball_->getModelMatrix().data() );
+                                glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ViewMatrix"].location , 1 , GL_FALSE , trackball_->getViewMatrix().data() );
+                                glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ProjectionMatrix"].location , 1 , GL_FALSE , trackball_->getProjectionMatrix().data() );
+
+                                //glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ModelMatrix"].location , 1 , GL_TRUE , lookatCamera );
+                                //glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+                                //glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
                                 //VAO
                                 glBindVertexArray ( vertexArray_box );
                                 glDrawArrays ( GL_POINTS , 0 , cutVolume_.size.x);
@@ -1137,7 +1137,8 @@ void GLWidget::IRESCutaway ( )
 
                                 cutawayVolumes.active ( );
 
-                                glUniform3fv ( cutawayVolumes.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
+                                //glUniform3fv ( cutawayVolumes.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
+                                glUniform3fv ( cutawayVolumes.uniforms_["lightDirection"].location , 0 , trackball_->getCenter().data( ) );
                                 glUniform3i  ( cutawayVolumes.uniforms_["min_IJK"].location , min_I_, min_J_, min_K_ );
                                 glUniform3i  ( cutawayVolumes.uniforms_["max_IJK"].location , max_I_, max_J_, max_K_ );
                                 glUniform2f  ( cutawayVolumes.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
@@ -1162,8 +1163,12 @@ void GLWidget::IRESCutaway ( )
 
                         glUniform2f ( primary.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
 
-                        glUniformMatrix4fv ( primary.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-                        glUniformMatrix4fv ( primary.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+                        //glUniformMatrix4fv ( primary.uniforms_["ModelMatrix"].location , 1 , GL_FALSE , trackball_->getModelMatrix().data() );
+                        glUniformMatrix4fv ( primary.uniforms_["ViewMatrix"].location , 1 , GL_FALSE , trackball_->getViewMatrix().data() );
+                        glUniformMatrix4fv ( primary.uniforms_["ProjectionMatrix"].location , 1 , GL_FALSE , trackball_->getProjectionMatrix().data() );
+
+                        //glUniformMatrix4fv ( primary.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+                        //glUniformMatrix4fv ( primary.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
 
                         glBindVertexArray ( vertexArray_cube_interleaved );
                         glDrawArrays ( GL_POINTS , 0 , cube_interleaved.size() );
@@ -1615,5 +1620,9 @@ void GLWidget::CameraFly()
 void GLWidget::freezeView( )
 {
 	freezeView_ = !freezeView_;
+    if (freezeView_) {
+        freeze_viewmatrix_ = trackball_->getViewMatrix().matrix();
+        cout << freeze_viewmatrix_ << endl << endl;
+    }
 
 }
