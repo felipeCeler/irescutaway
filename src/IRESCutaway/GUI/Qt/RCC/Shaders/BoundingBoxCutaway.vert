@@ -14,7 +14,7 @@ layout(location = 9)  in vec4 IJK;
 layout(location = 10) in vec4 focus;
 layout(location = 11) in vec4 center;
 
-/// FIXME - Do research and understand the best away to alignment data on Shader.
+/// FIXME - Do research and understand the best away to align data on Shader.
 out CubeData
 {
 		vec4 v[8];
@@ -22,7 +22,6 @@ out CubeData
 		vec4 color;
 } cube;
 
-// For while, all transformations come from the Celer::Camera.
 uniform mat4 ModelMatrix;
 uniform mat4 ViewMatrix;
 uniform mat4 ProjectionMatrix;
@@ -41,24 +40,49 @@ void main(void)
 		cube.v[1] = v1;
 		cube.v[2] = v2;
 
-		if ( IJK.w == 1 )
-		{
-			cube.color = vec4(0.0,0.0,1.0,1.0);
-		}
 		cube.color    = color;
 
-		mat3 normalMatrix = inverse(transpose(mat3(ViewMatrix)));
+                mat3 normalMatrix = mat3(inverse(transpose((ModelMatrix*ViewMatrix))));
+                vec4 norm_alt;
 
-		cube.n[0] = vec4 ( normalize( normalMatrix * cross( (cube.v[5]-cube.v[4]).xyz , (cube.v[7]-cube.v[4]).xyz )),0.0);
-		cube.n[1] = vec4 ( normalize( normalMatrix * cross( (cube.v[3]-cube.v[0]).xyz , (cube.v[1]-cube.v[0]).xyz )),0.0);
+                // for each quad, keeprs the normal (from each triangle pair) that has higher z (avoids bad
+                // backface classification in frag shader)
 
-		cube.n[2] = vec4 ( normalize( normalMatrix * cross( (cube.v[1]-cube.v[0]).xyz , (cube.v[4]-cube.v[0]).xyz )),0.0);
-		cube.n[3] = vec4 ( normalize( normalMatrix * cross( (cube.v[3]-cube.v[2]).xyz , (cube.v[6]-cube.v[2]).xyz )),0.0);
+                // top
+                cube.n[0] = vec4 ( normalize( normalMatrix * cross( (cube.v[5]-cube.v[4]).xyz , (cube.v[7]-cube.v[4]).xyz )),0.0);
+                norm_alt  = vec4 ( normalize( normalMatrix * cross( (cube.v[7]-cube.v[6]).xyz , (cube.v[5]-cube.v[6]).xyz )),0.0);
+                if (norm_alt.z > cube.n[0].z)
+                    cube.n[0] = norm_alt;
 
-		cube.n[4] = vec4 ( normalize( normalMatrix * cross( (cube.v[2]-cube.v[1]).xyz , (cube.v[5]-cube.v[1]).xyz )),0.0);
-		cube.n[5] = vec4 ( normalize( normalMatrix * cross( (cube.v[4]-cube.v[0]).xyz , (cube.v[3]-cube.v[0]).xyz )),0.0);
+                // bottom
+                cube.n[1] = vec4 ( normalize( normalMatrix * cross( (cube.v[1]-cube.v[2]).xyz , (cube.v[3]-cube.v[2]).xyz )),0.0);
+                norm_alt  = vec4 ( normalize( normalMatrix * cross( (cube.v[3]-cube.v[0]).xyz , (cube.v[1]-cube.v[0]).xyz )),0.0);
+                if (norm_alt.z > cube.n[1].z)
+                    cube.n[1] = norm_alt;
+
+                // front
+                cube.n[2] = vec4 ( normalize( normalMatrix * cross( (cube.v[1]-cube.v[0]).xyz , (cube.v[4]-cube.v[0]).xyz )),0.0);
+                norm_alt  = vec4 ( normalize( normalMatrix * cross( (cube.v[4]-cube.v[5]).xyz , (cube.v[1]-cube.v[5]).xyz )),0.0);
+                if (norm_alt.z > cube.n[2].z)
+                    cube.n[2] = norm_alt;
+
+                // back
+                cube.n[3] = vec4 ( normalize( normalMatrix * cross( (cube.v[3]-cube.v[2]).xyz , (cube.v[6]-cube.v[2]).xyz )),0.0);
+                norm_alt  = vec4 ( normalize( normalMatrix * cross( (cube.v[6]-cube.v[7]).xyz , (cube.v[3]-cube.v[7]).xyz )),0.0);
+                if (norm_alt.z > cube.n[3].z)
+                    cube.n[3] = norm_alt;
+
+                // left
+                cube.n[4] = vec4 ( normalize( normalMatrix * cross( (cube.v[2]-cube.v[1]).xyz , (cube.v[5]-cube.v[1]).xyz )),0.0);
+                norm_alt  = vec4 ( normalize( normalMatrix * cross( (cube.v[5]-cube.v[6]).xyz , (cube.v[2]-cube.v[6]).xyz )),0.0);
+                if (norm_alt.z > cube.n[4].z)
+                    cube.n[4] = norm_alt;
+
+                // right
+                cube.n[5] = vec4 ( normalize( normalMatrix * cross( (cube.v[4]-cube.v[0]).xyz , (cube.v[3]-cube.v[0]).xyz )),0.0);
+                norm_alt  = vec4 ( normalize( normalMatrix * cross( (cube.v[3]-cube.v[7]).xyz , (cube.v[4]-cube.v[7]).xyz )),0.0);
+                if (norm_alt.z > cube.n[5].z)
+                    cube.n[5] = norm_alt;
 
 		gl_Position =  center;
-
-
 }

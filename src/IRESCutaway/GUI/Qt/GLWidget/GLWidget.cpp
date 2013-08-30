@@ -885,7 +885,7 @@ void GLWidget::RawCutaway ( int cluster )
 
 			fboStep[0]->bind ( );
 
-			glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
+            glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
 			glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
 			BoundingBoxInitialization.active ( );
@@ -935,6 +935,9 @@ void GLWidget::RawCutaway ( int cluster )
             glUniformMatrix4fv ( BoundingBoxCutaway.uniforms_["ModelMatrix"].location , 1 , GL_FALSE , trackball_->getModelMatrix().data() );
 			glUniformMatrix4fv ( BoundingBoxCutaway.uniforms_["ViewMatrix"].location , 1 , GL_FALSE , trackball_->getViewMatrix().data() );
             glUniformMatrix4fv ( BoundingBoxCutaway.uniforms_["ProjectionMatrix"].location , 1 , GL_FALSE , trackball_->getProjectionMatrix().data() );
+
+            glUniform1f ( BoundingBoxCutaway.uniforms_["zoom"].location , trackball_->getZoom() );
+
 
 			glBindVertexArray ( vertexArray_cube_interleaved );
 			glDrawArrays ( GL_POINTS , 0 , cube_interleaved.size() );
@@ -1158,7 +1161,7 @@ void GLWidget::gameLooping ( )
 void GLWidget::fpsCounter ( )
 {
 
-	//std::cout << "fps :" << fps  << std::endl;
+    std::cout << "fps :" << fps  << std::endl;
 
 	fps = 0;
 
