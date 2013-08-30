@@ -705,10 +705,6 @@ void GLWidget::openIRESCharles( const std::string& filename )
 
         //trackball_->translateModelMatrix( Eigen::Vector3f(reservoir_model_.box_v2.center ( ).x,reservoir_model_.box_v2.center ( ).y,reservoir_model_.box_v2.center ( ).z));
 
-
-
-		std::cout << camera_.position ( );
-
 		camera_.setBehavior ( Celer::Camera<float>::REVOLVE_AROUND_MODE );
 
 		cameraStep_ = 0.001f;
@@ -753,9 +749,6 @@ void GLWidget::resizeGL ( int width , int height )
 //    camera_.setOrthographicProjectionMatrix( -1.0f, 1.0 , -1.0f, 1.0, 0.0, 500.0 );
 
     trackball_->useOrthographicMatrix(-1.0f, 1.0 , -1.0f, 1.0, 0.0, 500.0);
-
-    std::cout << "ortho camera : "  << camera_.orthographicProjectionMatrix();
-    std::cout << "ortho trackball : " << trackball_->getProjectionMatrix() << endl;
 
 	centerX_ = static_cast<float> ( width * 0.5 );
 	centerY_ = static_cast<float> ( height * 0.5 );
@@ -804,55 +797,6 @@ void GLWidget::paintGL ( )
 	transformationMatrices_.ProjectionMatrix = ~camera_.orthographicProjectionMatrix( );
 
 	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(this->transformationMatrices_), &this->transformationMatrices_ );
-
-	if(!freezeView_)
-	{
-		if (cutVolumes.size() > 0)
-		{
-//
-//			new_z = camera_.position() - cutVolumes[cluster].center();
-//
-//			new_z.normalize();
-//
-//			new_x = new_z ^ camera_.UpVector();
-//
-//			new_x.normalize();
-//
-//			new_y = new_z ^ new_x;
-//
-//			new_y.normalize();
-//
-//			lookatCamera = Celer::Matrix4x4<float>(new_x, new_y, new_z);
-
-//			Eigen::Matrix4f inverseView = trackball_->getViewMatrix().matrix();
-
-//           // std::cout << inverseView.inverse().col(3).transpose() << std::endl;
-
-//            Eigen::Vector4f camera_position = inverseView.inverse().col(3).transpose();
-//			Eigen::Vector4f camera_up = trackball_->getRotationMatrix() * Eigen::Vector4f(0.0,1.0,0.0,1.0);
-
-//			Celer::Vector3<float> celer_position (camera_position[0],camera_position[1],camera_position[2]);
-//			Celer::Vector3<float> celer_up 	     (camera_up[0],camera_up[1],camera_up[2]);
-
-//            //std::cout << celer_up;
-
-//			new_z = celer_position - cutVolumes[cluster].center();
-
-//			new_z.normalize();
-
-//			new_x = new_z ^ celer_up;
-
-//			new_x.normalize();
-
-//			new_y = new_z ^ new_x;
-
-//			new_y.normalize();
-            //cout << cutVolumes[cluster].center();
-           // cout << "new : " << new_z << endl;
-
-
-		}
-	}
 
 	if ( isRawApproach )
 	{
@@ -1381,7 +1325,6 @@ void GLWidget::keyPressEvent ( QKeyEvent * event )
 	if ( event->key() == Qt::Key_F5 )
 	{
 		loadShaders();
-		qDebug() << " Hello ";
 	}
 }
 
@@ -1416,7 +1359,6 @@ void GLWidget::mousePressEvent ( QMouseEvent *event )
 		lastPos = event->pos ( );
 		trackball_->setInitialTranslationPosition(positionInTrackballSystem[0],positionInTrackballSystem[1]);
 		trackball_->beginTranslation();
-		qDebug() << " Translate ";
 	}
 }
 
@@ -1433,7 +1375,6 @@ void GLWidget::mouseReleaseEvent ( QMouseEvent *event )
 	else if ( event->button ( ) == Qt::RightButton )
 	{
 		trackball_->endTranslation();
-		qDebug() << " Translate R";
 	}
 
 }
@@ -1441,7 +1382,6 @@ void GLWidget::mouseReleaseEvent ( QMouseEvent *event )
 void GLWidget::mouseMoveEvent ( QMouseEvent *event )
 {
 
-    //std::cout << trackball_->isTranslating() << " - " <<  Qt::RightButton  << std::endl;
 
 	if ( event->buttons ( )  )
 	{
@@ -1495,10 +1435,6 @@ void GLWidget::mouseMoveEvent ( QMouseEvent *event )
 	}
 
 
-
-    //std::cout << trackball_->getViewMatrix().matrix() << std::endl;
-    //std::cout << "---" << std::endl;
-
 }
 
 Eigen::Vector2f GLWidget::convertToNormalizedDeviceCoordinates(Eigen::Vector2i position) {
@@ -1535,7 +1471,6 @@ void GLWidget::wheelEvent ( QWheelEvent *event )
 	{
 		scrollStep_ += event->delta ( ) / 120.0;
 		angle = static_cast<float> ( 1.0 / std::tan ( scrollStep_ * Celer::Math::kDeg2Rad ) );
-		qDebug ( ) << scrollStep_;
 	}
 
 
@@ -1550,7 +1485,6 @@ void GLWidget::dragEnterEvent(QDragEnterEvent *event)
 
 	emit changed(event->mimeData());
 
-	qDebug() << "Entrou";
 }
 /// Then, we invoke acceptProposedAction() on event, setting the drop action to the one proposed.
 /// Lastly, we emit the changed() signal, with the data that was dropped and its MIME type information as a parameter.
@@ -1622,7 +1556,6 @@ void GLWidget::freezeView( )
 	freezeView_ = !freezeView_;
     if (freezeView_) {
         freeze_viewmatrix_ = trackball_->getViewMatrix().matrix();
-        cout << freeze_viewmatrix_ << endl << endl;
     }
 
 }

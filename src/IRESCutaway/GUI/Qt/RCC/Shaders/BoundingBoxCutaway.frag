@@ -29,14 +29,30 @@ void main(void)
         vec3 newVert = VertexIn.vertice.xyz;
         vec4 color_t = VertexIn.color;
 
-        //float d = min(dist[0], min(dist[1], min(dist[2], dist[3])));
-        //float I = exp2(-2.0 * d * d);
-        float I = 0;
+        float d = min(dist[0], min(dist[1], min(dist[2], dist[3])));
+        float I = exp2(-2.0 * d * d);
+        //float I = 0;
 
-        // backface culling
-        if (dot ( newNormal.xyz, vec3(0.0,0.0,-1.0)) < 0.0) {
-            discard;
+        bool backface = false;
+        int linesize = 1;
+        int linesizediag = 1;
+
+        // push frontface back, so for double faces we see the interior of the cube (backface)
+        if (dot ( newNormal.xyz, vec3(0.0,0.0,-1.0)) < 0.0) {            
+            gl_FragDepth = gl_FragCoord.z + 0.0000001;
+            linesize++;
+            linesizediag++;
+            //discard;
         }
+        else {
+            I = 0;
+            backface = true;
+            gl_FragDepth = gl_FragCoord.z;
+        }
+
+        vec2 dist_neighbor[8] = {vec2(linesize,0), vec2(-linesize,0), vec2(0,linesize), vec2(0,-linesize),
+                                vec2(-linesizediag,-linesizediag), vec2(-linesizediag,linesizediag), vec2(linesize,-linesize), vec2(linesizediag,-linesizediag)};
+
 
         // make sure we are at the center of the pixel to make the right texture access
         vec2 pixel_pos = vec2(floor(gl_FragCoord.x), floor(gl_FragCoord.y)) + vec2(0.5);
@@ -89,5 +105,13 @@ void main(void)
 	vec4 ld = color_t * 0.9 * max ( 0.0 , dot ( newNormal , light_dir ) );
 	vec4 ls = color_t * 0.4 * pow ( max ( 0.0 , dot ( eye_dir , ref ) ) , 5.0 );
 
-	outputColor = I * vec4(0.0, 0.0, 0.0, 1.0) + (1.0 - I) * ( VertexIn.color );
+        // interior cutaway lines (back face intersection with cutaway)
+        if (backface && I == 1)
+            outputColor = I * vec4(vec3(0.0), 1.0) + (1.0 - I) * ( VertexIn.color );
+        // cutaway border lines (front face intersection with cutaway)
+        else if (I == 1)
+            outputColor = I * vec4(vec3(1.0,0.2,0.2), 1.0) + (1.0 - I) * ( VertexIn.color );
+        // lines outside cutaway (remaining front faces)
+        else
+            outputColor = I * vec4(vec3(0.8), 1.0) + (1.0 - I) * ( VertexIn.color );
 }
