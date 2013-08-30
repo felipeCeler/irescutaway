@@ -113,5 +113,5 @@ void main(void)
             outputColor = I * vec4(vec3(1.0,0.2,0.2), 1.0) + (1.0 - I) * ( VertexIn.color );
         // lines outside cutaway (remaining front faces)
         else
-            outputColor = I * vec4(vec3(0.8), 1.0) + (1.0 - I) * ( VertexIn.color );
+            outputColor = I * vec4(vec3(0.7), 1.0) + (1.0 - I) * ( VertexIn.color );
 }

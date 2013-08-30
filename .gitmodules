@@ -7,4 +7,4 @@
 	url = git@bitbucket.org:celer/iresv2.git
 [submodule "libs/LCG"]
 	path = libs/LCG
-	url = git://git.lcg.ufrj.br/vitorandrade/shader-lib.git
+	url = git@git.lcg.ufrj.br:vitorandrade/shader-lib.git

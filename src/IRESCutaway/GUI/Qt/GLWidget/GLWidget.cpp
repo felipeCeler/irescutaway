@@ -638,7 +638,6 @@ void GLWidget::openIRESCharles( const std::string& filename )
 				J = reservoir_model_.header_v2_.numJ;
 				K = reservoir_model_.header_v2_.numK;
 
-
 				cube_temp.vertices[4] = reservoir_model_.blocks[i].vertices[0];
 				cube_temp.vertices[5] = reservoir_model_.blocks[i].vertices[1];
 				cube_temp.vertices[7] = reservoir_model_.blocks[i].vertices[2];
