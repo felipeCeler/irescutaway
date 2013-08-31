@@ -14,6 +14,9 @@ noperspective in vec4 dist;
 
 out vec4 outputColor;
 
+uniform int num_lights;
+uniform vec3 lights[4];
+
 void main(void)
 {
 
@@ -30,7 +33,8 @@ void main(void)
 
         // push frontface back, so for double faces we see the interior of the cube (backface)
         if (newNormal.z > 0.0) {
-            gl_FragDepth = gl_FragCoord.z + 0.0000001;
+            //gl_FragDepth = gl_FragCoord.z + 0.000001;
+            gl_FragDepth = gl_FragCoord.z + gl_FragCoord.z*0.00001;
             linesize++;
             linesizediag++;
             //discard;
@@ -70,8 +74,6 @@ void main(void)
                 // depth of cutaway surface at neighbor pixel
                 zsurface = texelFetch( normals, ivec2(pixel_pos + dist_neighbor[i]), 0 ).w;
 
-                if (newNormal.z == 0.0) continue;
-
                 // invert the orthographic projection (considering ortho planes are in range [-1,1]
                 vec2 pixel = neighbor*2.0 - vec2(1.0);
 
@@ -86,29 +88,36 @@ void main(void)
             }
         }
 
-        vec3 light_dir = normalize(vec3 ( 0.0 , 1.0 , 1.0 ));
-	vec3 eye_dir = normalize ( -newVert.xyz );
-
         // for back faces use the normal of the cutaway surface (simulate a cut inside the cells)
-        if (backface)
-            newNormal = -cutaway.xyz;
+        if (backface) newNormal = -cutaway.xyz;
+        //vec3 eye_dir = normalize ( -newVert.xyz );
 
-        vec3 ref = normalize ( -reflect ( light_dir , newNormal ) );
-        vec4 la = vec4 ( 0.3 );
-        vec4 ld = color_t * 0.9 * max ( 0.0 , abs(dot ( newNormal , light_dir ) ));
-        vec4 ls = color_t * 0.0 * pow ( max ( 0.0 , dot ( eye_dir , ref ) ) , 5.0 );
+        vec4 la = vec4(0.0);
+        vec4 ld = vec4(0.0);
+        vec4 ls = vec4(0.0);
+
+        // compute illumination for each light
+        for (int i = 0; i < num_lights; ++i) {
+            vec3 light_dir = normalize(lights[i]);
+            vec3 ref = normalize ( -reflect ( light_dir , newNormal ) );
+            la += vec4 ( 0.3 / float(num_lights) );
+            ld += color_t * (1.0 / float(num_lights)) * max ( 0.0 , abs(dot ( newNormal , light_dir ) ));
+            //ls += color_t * 0.0 * pow ( max ( 0.0 , dot ( eye_dir , ref ) ) , 5.0 );
+        }
 
         vec4 color = la + ld + ls;
         color.a = 1.0;
 
         // uncomment to turn off illumination
-        color = color_t;
+        //color = color_t;
+
 
         // interior cutaway lines (back face intersection with cutaway)
         if (backface && I == 1)
             outputColor = I * vec4(vec3(0.1), 1.0) + (1.0 - I) * ( color );
         // cutaway border lines (front face intersection with cutaway)
         else if (I == 1)
+            //outputColor = I * vec4(vec3(0.1), 1.0) + (1.0 - I) * ( color );
             outputColor = I * vec4(vec3(1.0,0.2,0.2), 1.0) + (1.0 - I) * ( color );
         // lines outside cutaway (remaining front faces)
         else

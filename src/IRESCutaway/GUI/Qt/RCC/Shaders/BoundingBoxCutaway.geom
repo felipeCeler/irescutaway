@@ -15,7 +15,7 @@ noperspective out vec4 dist;
 in CubeData
 {
 	vec4 v[8];
-	vec4 n[6];
+        vec4 n[12];
 	vec4 color;
 
 } cube[1];
@@ -68,7 +68,7 @@ void renderCube( in vec4 color )
 		float area4 = abs(v2.x * v5.y - v2.y * v5.x);
 
 
-		VertexOut.normal = cube[0].n[i];
+                VertexOut.normal = cube[0].n[i];
 		VertexOut.color = color;
 
                 //face
@@ -84,6 +84,8 @@ void renderCube( in vec4 color )
                 VertexOut.vertice  = ViewMatrix * (cube[0].v[faces[i].vertices[2]]);
 		gl_Position = vp[2];
 		EmitVertex();
+
+                VertexOut.normal = cube[0].n[i+6];
 		dist = vec4(0, 0, area3/length(v0), area4/length(v2));
                 VertexOut.vertice  = ViewMatrix * (cube[0].v[faces[i].vertices[3]]);
 		gl_Position = vp[3];
