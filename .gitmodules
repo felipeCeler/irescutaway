@@ -4,7 +4,7 @@
 	url = git@github.com:felipeCeler/celer-sources.git
 [submodule "libs/Ires"]
 	path = libs/Ires
-	url = git@bitbucket.org:celer/iresv2.git
+	url = git@bitbucket.org:evitalbrazil/iresv2.git
 [submodule "libs/LCG"]
 	path = libs/LCG
 	url = git@git.lcg.ufrj.br:vitorandrade/shader-lib.git
