@@ -149,6 +149,7 @@ void MainWindow::updateDoubleSpinMin( int property_index )
 
 	ui->doubleSpinMin->setValue(static_cast<double> (min));
 
+
 }
 
 void MainWindow::updateDoubleSpinMax( int property_index )

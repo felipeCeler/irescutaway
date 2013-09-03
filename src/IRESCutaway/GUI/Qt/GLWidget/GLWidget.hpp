@@ -288,13 +288,8 @@ private:
 	QElapsedTimer delta_time;
 	int fps;
 
-
-	// View dependent parameters
-	Celer::Vector3<float> new_z;
-
-	Celer::Vector3<float> new_x;
-
-	Celer::Vector3<float> new_y;
+    // lights
+    vector < Eigen::Vector3f > lights;
 
 	Celer::Matrix4x4<float> lookatCamera;
 

@@ -43,8 +43,6 @@ void GLWidget::initializeGL ( )
 	setAutoFillBackground ( false );
 	setAcceptDrops(true);
 
-
-
 	isIRESOpen_ = 0;
 
 	scrollStep_ = 45.0f;
@@ -57,6 +55,12 @@ void GLWidget::initializeGL ( )
 					         0.0f,0.0f,0.0f,1.0);
 
 	angle = static_cast<float>(1.0/std::tan(scrollStep_ * Celer::Math::kDeg2Rad));
+
+
+    lights.push_back( Eigen::Vector3f( 0.5 , 0.5 , 1.0 ) );
+    lights.push_back( Eigen::Vector3f(-0.5 , 0.5 , 1.0 ) );
+    lights.push_back( Eigen::Vector3f( 0.0 , 0.0 , 1.0 ) );
+    lights.push_back( Eigen::Vector3f( 0.0 , 1.0 , 0.0 ) );
 
 
 	QGLFramebufferObjectFormat format;
@@ -361,6 +365,8 @@ void GLWidget::changePropertyRange ( const double& minRange, const double& maxRa
 	glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer_cube_interleaved);
 	glBufferData ( GL_ARRAY_BUFFER , cube_interleaved.size( ) * sizeof(cube_interleaved[0]) , &cube_interleaved[0] , GL_STATIC_DRAW );
 	glBindBuffer( GL_ARRAY_BUFFER, 0);
+
+    updateGL();
 
 }
 
@@ -1003,7 +1009,8 @@ void GLWidget::NoCutaway ( )
 
 //		glDisable(GL_BLEND);
 
-
+//                glUniformMatrix4fv ( primary.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+                //glUniformMatrix4fv ( primary.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
         }
 
         if ( draw_primary && (cube_interleaved.size() != 0)  )
@@ -1049,7 +1056,7 @@ void GLWidget::RawCutaway ( int cluster )
 
 			fboStep[0]->bind ( );
 
-			glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
+            glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
 			glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
 			BoundingBoxInitialization.active ( );
@@ -1079,17 +1086,23 @@ void GLWidget::RawCutaway ( int cluster )
 		glClearDepth(1.0f);
 		glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
+        GLfloat light_elements [lights.size()*3];
+        for (int i = 0; i < lights.size(); ++i) {
+            for (int j = 0; j < 3; ++j) {
+                light_elements[i*3 + j] = lights[i][j];
+            }
+        }
+
 		if ( draw_secondary )
 		{
-
-			BoundingBoxCutaway.active ( );
- 			glActiveTexture ( GL_TEXTURE0 );
-
- 			glBindTexture ( GL_TEXTURE_2D , fboStep[0]->texture ( ) );
+            BoundingBoxCutaway.active ( );
+            glActiveTexture ( GL_TEXTURE0 );
+            glBindTexture ( GL_TEXTURE_2D , fboStep[0]->texture ( ) );
 
  			glUniform1i ( BoundingBoxCutaway.uniforms_["normals"].location , 0 );
 
- 			glUniform3fv ( BoundingBoxCutaway.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
+            glUniform1i ( BoundingBoxCutaway.uniforms_["num_lights"].location , lights.size());
+            glUniform3fv ( BoundingBoxCutaway.uniforms_["lights[0]"].location, lights.size(), light_elements );
 
  			glUniform3i ( BoundingBoxCutaway.uniforms_["min_IJK"].location , min_I_, min_J_, min_K_ );
  			glUniform3i ( BoundingBoxCutaway.uniforms_["max_IJK"].location , max_I_, max_J_, max_K_ );
@@ -1139,7 +1152,10 @@ void GLWidget::RawCutaway ( int cluster )
 
  			primary.active ( );
 
-            glUniform3fv ( primary.uniforms_["lightDirection"].location , 0 , trackball_->getCenter().data() );
+            //glUniform3fv ( primary.uniforms_["lightDirection"].location , 0 , trackball_->getCenter().data() );
+
+            glUniform1i ( primary.uniforms_["num_lights"].location , lights.size());
+            glUniform3fv ( primary.uniforms_["lights[0]"].location, lights.size(), light_elements );
 
 			glUniform2f ( primary.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
 
@@ -1183,9 +1199,9 @@ void GLWidget::IRESCutaway ( )
 
                                 glUniform1f ( BoundingBoxInitialization.uniforms_["x"].location , volume_width );
                                 glUniform1f ( BoundingBoxInitialization.uniforms_["y"].location , volume_height );
-                                glUniform3fv ( BoundingBoxInitialization.uniforms_["new_x"].location , 1 , new_x );
-                                glUniform3fv ( BoundingBoxInitialization.uniforms_["new_y"].location , 1 , new_y );
-                                glUniform3fv ( BoundingBoxInitialization.uniforms_["new_z"].location , 1 , new_z );
+//                                glUniform3fv ( BoundingBoxInitialization.uniforms_["new_x"].location , 1 , new_x );
+//                                glUniform3fv ( BoundingBoxInitialization.uniforms_["new_y"].location , 1 , new_y );
+//                                glUniform3fv ( BoundingBoxInitialization.uniforms_["new_z"].location , 1 , new_z );
                                 glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ModelMatrix"].location , 1 , GL_FALSE , trackball_->getModelMatrix().data() );
                                 glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ViewMatrix"].location , 1 , GL_FALSE , trackball_->getViewMatrix().data() );
                                 glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ProjectionMatrix"].location , 1 , GL_FALSE , trackball_->getProjectionMatrix().data() );
@@ -1220,9 +1236,9 @@ void GLWidget::IRESCutaway ( )
                                 glUniform1f ( cutawayVolumes.uniforms_["x"].location , volume_width );
                                 glUniform1f ( cutawayVolumes.uniforms_["y"].location , volume_height );
 
-                                glUniform3fv ( cutawayVolumes.uniforms_["new_x"].location , 1 ,  new_x );
-                                glUniform3fv ( cutawayVolumes.uniforms_["new_y"].location , 1 ,  new_y );
-                                glUniform3fv ( cutawayVolumes.uniforms_["new_z"].location , 1 ,  new_z );
+//                                glUniform3fv ( cutawayVolumes.uniforms_["new_x"].location , 1 ,  new_x );
+//                                glUniform3fv ( cutawayVolumes.uniforms_["new_y"].location , 1 ,  new_y );
+//                                glUniform3fv ( cutawayVolumes.uniforms_["new_z"].location , 1 ,  new_z );
 
                                 glUniform2f ( cutawayVolumes.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
 
@@ -1314,15 +1330,18 @@ void GLWidget::gameLooping ( )
 
 	//std::cout << "fps :" << v  << std::endl;
 
-	updateGL();
+     //updateGL();
 
-	fps++;
+    //    fps++;
+
+
+
 }
 
 void GLWidget::fpsCounter ( )
 {
 
-	//std::cout << "fps :" << fps  << std::endl;
+    //std::cout << "fps :" << fps  << std::endl;
 
 	fps = 0;
 
@@ -1405,6 +1424,7 @@ void GLWidget::loadShaders ( )
 /// KeyInput
 void GLWidget::processMultiKeys ( )
 {
+
 	foreach( int key , keysPresseds_)
 	{
 
@@ -1481,11 +1501,12 @@ void GLWidget::processMultiKeys ( )
 		}
 
 
-	}
+	}    
 }
 
 void GLWidget::keyPressEvent ( QKeyEvent * event )
 {
+
 	buttonRelease_ = true;
 	keysPresseds_ += event->key ( );
 
@@ -1493,16 +1514,20 @@ void GLWidget::keyPressEvent ( QKeyEvent * event )
 	{
 		loadShaders();
 	}
+    updateGL();
 }
 
 void GLWidget::keyReleaseEvent ( QKeyEvent * event )
 {
+
 	buttonRelease_ = false;
 	keysPresseds_ -= event->key ( );
+    updateGL();
 }
 /// MouseInput
 void GLWidget::mousePressEvent ( QMouseEvent *event )
 {
+
 	event->accept ( );
 
 	Eigen::Vector2i pos(event->x ( ),event->y ( ));
@@ -1527,10 +1552,12 @@ void GLWidget::mousePressEvent ( QMouseEvent *event )
 		trackball_->setInitialTranslationPosition(positionInTrackballSystem[0],positionInTrackballSystem[1]);
 		trackball_->beginTranslation();
 	}
+    updateGL();
 }
 
 void GLWidget::mouseReleaseEvent ( QMouseEvent *event )
 {
+
 	event->accept ( );
 
 	if ( event->button ( ) == Qt::LeftButton )
@@ -1543,7 +1570,7 @@ void GLWidget::mouseReleaseEvent ( QMouseEvent *event )
 	{
 		trackball_->endTranslation();
 	}
-
+    updateGL();
 }
 
 void GLWidget::mouseMoveEvent ( QMouseEvent *event )
@@ -1600,7 +1627,7 @@ void GLWidget::mouseMoveEvent ( QMouseEvent *event )
 			}
 		}
 	}
-
+    updateGL();
 
 }
 
@@ -1639,6 +1666,8 @@ void GLWidget::wheelEvent ( QWheelEvent *event )
 		scrollStep_ += event->delta ( ) / 120.0;
 		angle = static_cast<float> ( 1.0 / std::tan ( scrollStep_ * Celer::Math::kDeg2Rad ) );
 	}
+
+    updateGL();
 
 
 }
@@ -1679,9 +1708,6 @@ void GLWidget::dropEvent(QDropEvent *event)
 
 		QImage image 			= QImage(text);
 		QImage imageOpenGL = QGLWidget::convertToGLFormat( image );
-
-
-		qDebug() << "Soltou";
 
 	}
 
