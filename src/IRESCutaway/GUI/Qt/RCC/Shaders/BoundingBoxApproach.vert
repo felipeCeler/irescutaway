@@ -1,5 +1,11 @@
 #version 430 core
 
+layout ( location = 0 ) in vec4 center_box;
+layout ( location = 1 ) in vec4 axis_x;
+layout ( location = 2 ) in vec4 axis_y;
+layout ( location = 3 ) in vec4 axis_z;
+layout ( location = 4 ) in vec4 extends;
+layout ( location = 5 ) in vec4 aperture;
 
 layout(std140) uniform CutVolumes
 {
@@ -35,7 +41,8 @@ vec4 v[8];
 
 void main(void)
 {
-        vec3 center_of_mass = cutVolumes.center_points[gl_VertexID].xyz;
+        //vec3 center_of_mass = cutVolumes.center_points[gl_VertexID].xyz;
+	vec3 center_of_mass = center_box.xyz;
 
         mat4 invView;
         if (freeze == 0)
@@ -50,20 +57,34 @@ void main(void)
         vec3 camera_dir = normalize( camera_center - center_of_mass );
         vec3 camera_right = normalize( cross(camera_dir.xyz, camera_up.xyz) );
 
-        ext_x = camera_right*0.1;
-        ext_y = camera_up*0.1;
-        ext_z = camera_dir*0.1;
+//        ext_x = camera_right*0.1;
+//        ext_y = camera_up*0.1;
+//        ext_z = camera_dir*0.1;
+
+//        float zfactor = 50.0;
+//        v[0] = vec4(center_of_mass + ext_x + ext_y + zfactor*ext_z + x*ext_x + y*ext_y,1.0);
+//	v[1] = vec4(center_of_mass + ext_x + ext_y - ext_z,1.0);
+//	v[2] = vec4(center_of_mass - ext_x + ext_y - ext_z,1.0);
+//        v[3] = vec4(center_of_mass - ext_x + ext_y + zfactor*ext_z - x*ext_x + y*ext_y,1.0);
+//
+//        v[4] = vec4(center_of_mass + ext_x - ext_y + zfactor*ext_z + x*ext_x - y*ext_y,1.0);
+//        v[5] = vec4(center_of_mass - ext_x - ext_y + zfactor*ext_z - x*ext_x - y*ext_y,1.0);
+//	v[6] = vec4(center_of_mass - ext_x - ext_y - ext_z,1.0);
+//	v[7] = vec4(center_of_mass + ext_x - ext_y - ext_z,1.0);
+
+        ext_x = (camera_right) * extends.x;
+        ext_y = (camera_up   ) * extends.y;
+        ext_z = (camera_dir  ) * extends.z;
 
         float zfactor = 50.0;
         v[0] = vec4(center_of_mass + ext_x + ext_y + zfactor*ext_z + x*ext_x + y*ext_y,1.0);
-	v[1] = vec4(center_of_mass + ext_x + ext_y - ext_z,1.0);
-	v[2] = vec4(center_of_mass - ext_x + ext_y - ext_z,1.0);
+        v[1] = vec4(center_of_mass + ext_x + ext_y - ext_z,1.0);
+        v[2] = vec4(center_of_mass - ext_x + ext_y - ext_z,1.0);
         v[3] = vec4(center_of_mass - ext_x + ext_y + zfactor*ext_z - x*ext_x + y*ext_y,1.0);
-
         v[4] = vec4(center_of_mass + ext_x - ext_y + zfactor*ext_z + x*ext_x - y*ext_y,1.0);
         v[5] = vec4(center_of_mass - ext_x - ext_y + zfactor*ext_z - x*ext_x - y*ext_y,1.0);
-	v[6] = vec4(center_of_mass - ext_x - ext_y - ext_z,1.0);
-	v[7] = vec4(center_of_mass + ext_x - ext_y - ext_z,1.0);
+        v[6] = vec4(center_of_mass - ext_x - ext_y - ext_z,1.0);
+        v[7] = vec4(center_of_mass + ext_x - ext_y - ext_z,1.0);
 
 
         mat3 normalMatrix = (inverse(transpose(mat3(ViewMatrix))));

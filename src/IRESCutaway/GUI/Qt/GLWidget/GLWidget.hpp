@@ -244,6 +244,19 @@ private:
 	GLuint vertexArray_box;
 	GLuint vertexBuffer_box;
 
+	struct CutBox
+	{
+		Celer::Vector4<float> center;
+		Celer::Vector4<float> axis[3];
+		Celer::Vector4<float> extent;
+		Celer::Vector4<float> aperture;
+	};
+
+	std::vector<CutBox> cutBoxs;
+
+	GLuint vertexArray_cutBox;
+	GLuint vertexBuffer_cutBox;
+
 	QGLFramebufferObject*   fboStep[2];
 
 	// BoundingBox Visualization

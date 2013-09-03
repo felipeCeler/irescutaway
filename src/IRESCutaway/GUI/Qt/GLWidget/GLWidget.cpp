@@ -76,6 +76,10 @@ void GLWidget::initializeGL ( )
 	fboStep[1] 	  = new  QGLFramebufferObject ( width() , height() , format );
 
 
+	// FIXME cutBox
+	glGenVertexArrays ( 1, &vertexArray_cutBox );
+		glGenBuffers ( 1,&vertexBuffer_cutBox );
+
 	// FIXME Shell
 	glGenVertexArrays (1 , &vertexArray_shell );
 		glGenBuffers ( 1, &vertexBuffer_shell_vertex_a );
@@ -181,6 +185,8 @@ void GLWidget::cutVolumeGenerator( )
 	cutVolumes.clear();
 	box_vertices.clear();
 
+	cutBoxs.clear();
+
 	std::cout << " number of boxes initial " << boxes.size() << std::endl;
 
 	while ( boxes.size ( ) != 0 )
@@ -217,6 +223,8 @@ void GLWidget::cutVolumeGenerator( )
 	int cont = 0;
 	int cutVolumeIndex = 0;
 
+	cutBoxs.resize( cutVolumes.size( ) );
+
 	for ( std::vector<Celer::BoundingBox3<GLfloat> >::iterator it = cutVolumes.begin(); it != cutVolumes.end();++it)
 	{
 
@@ -229,7 +237,6 @@ void GLWidget::cutVolumeGenerator( )
 		Celer::Vector3<GLfloat> v5 ( it->box_min ( ).x , it->box_min ( ).y , it->box_max ( ).z );
 		Celer::Vector3<GLfloat> v6 ( it->box_min ( ).x , it->box_min ( ).y , it->box_min ( ).z );
 		Celer::Vector3<GLfloat> v7 ( it->box_max ( ).x , it->box_min ( ).y , it->box_min ( ).z );
-
 
 		Celer::Vector3<GLfloat> topNormal 	= ((v0 - v1) ^ (v0 - v3)).norm();
 		//std::cout << topNormal    << std::endl;
@@ -264,16 +271,46 @@ void GLWidget::cutVolumeGenerator( )
 
 		box_vertices[cont] = it->center( );
 
+		cutBoxs[cont].center  =  it->center( );
+		cutBoxs[cont].axis[0] =  Celer::Vector4<float>(1.0f,0.0f,0.0f,1.0f);
+		cutBoxs[cont].axis[1] =  Celer::Vector4<float>(0.0f,1.0f,0.0f,1.0f);
+		cutBoxs[cont].axis[2] =  Celer::Vector4<float>(0.0f,0.0f,1.0f,1.0f);
+		cutBoxs[cont].extent  =  Celer::Vector4<float>(abs(it->box_max().x-it->box_min().x),
+                                                               abs(it->box_max().y-it->box_min().y),
+		                                               abs(it->box_max().z-it->box_min().z),1.0f);
+		cutBoxs[cont].aperture = Celer::Vector4<float>(1.0f,1.0f,1.0f,1.0f);
+
 		if ( cont < 63 )
 		{
+
 		        cutVolume_.center_points[cutVolumeIndex] = Celer::Vector4<float>(it->center( ),1.0);
-                cout << cont << "  " << cutVolume_.center_points[cutVolumeIndex] << endl;
+		        cout << cont << "  " << cutVolume_.center_points[cutVolumeIndex] << endl;
 		        cutVolumeIndex++;
+
 		}
 		cont++;
 	}
 
 	cutVolume_.size = Celer::Vector4<int> (cutVolumeIndex,0,0,0);
+
+
+
+	glBindVertexArray ( vertexArray_cutBox );
+
+                glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer_cutBox );
+                glBufferData ( GL_ARRAY_BUFFER , cutBoxs.size( ) * sizeof(cutBoxs[0]) , &cutBoxs[0] , GL_STATIC_DRAW );
+
+                int size_of_vertice = sizeof(Celer::Vector4<float>);
+                int size_of_struct  =  sizeof(CutBox);
+
+                //http://www.opengl.org/wiki/Vertex_Specification
+                for ( int location = 0 ; location < 6 ; location++)
+                {
+                        glEnableVertexAttribArray(location);
+                        glVertexAttribPointer(location, 4, GL_FLOAT, GL_FALSE, size_of_struct , reinterpret_cast<void*>(size_of_vertice * location));
+                }
+
+        glBindVertexArray(0);
 
 
 	glBindVertexArray ( vertexArray_box );
@@ -414,21 +451,23 @@ void GLWidget::changeProperty ( int property_index )
 			cube_interleaved[index].color = color;
 			index++;
 
-			for ( int shell_index = 0; shell_index < reservoir_model_.list_of_block_id.size() ; shell_index++ )
-			{
-				if ( i == reservoir_model_.list_of_block_id[shell_index] )
-				{
-					reservoir_model_.list_of_vertex_color[shell_index*3] = color.x;
-					reservoir_model_.list_of_vertex_color[shell_index*3+1] = color.y;
-					reservoir_model_.list_of_vertex_color[shell_index*3+2] = color.z;
-				}
-			}
 
 		}
 		else
 		{
 			continue;
 		}
+	}
+
+	Celer::Vector4<GLfloat> shell_color;
+	for ( int shell_index = 0; shell_index < reservoir_model_.list_of_block_id.size() ; shell_index++ )
+	{
+		shell_color = cube_interleaved[reservoir_model_.list_of_block_id[shell_index]].color;
+			{
+				reservoir_model_.list_of_vertex_color[shell_index*3] = shell_color.x;
+				reservoir_model_.list_of_vertex_color[shell_index*3+1] = shell_color.y;
+				reservoir_model_.list_of_vertex_color[shell_index*3+2] = shell_color.z;
+			}
 	}
 
 	glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer_cube_interleaved);
@@ -1039,7 +1078,6 @@ void GLWidget::NoCutaway ( )
         }
 }
 
-
 void GLWidget::RawCutaway ( int cluster )
 {
 
@@ -1071,9 +1109,13 @@ void GLWidget::RawCutaway ( int cluster )
             glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["FreezeViewMatrix"].location , 1 , GL_FALSE , freeze_viewmatrix_.data() );
 
 			//VAO
-			glBindVertexArray ( vertexArray_box );
-			glDrawArrays ( GL_POINTS , 0 , cutVolume_.size.x);
-			glBindVertexArray ( 0 );
+//			glBindVertexArray ( vertexArray_box );
+//			glDrawArrays ( GL_POINTS , 0 , cutVolume_.size.x);
+//			glBindVertexArray ( 0 );
+
+            	    	glBindVertexArray ( vertexArray_cutBox );
+            	    	glDrawArrays ( GL_POINTS , 0 , cutBoxs.size());
+            		glBindVertexArray ( 0 );
 
 			BoundingBoxInitialization.deactive ( );
 
@@ -1358,8 +1400,8 @@ void GLWidget::loadShaders ( )
 	QString shaderDirectory ("D:\\Workspace\\IRESCutaway\\src\\IRESCutaway\\GUI\\Qt\\RCC\\Shaders\\");
 	#elif defined(__linux__)               // Linux Directory Style
 	/* Do linux stuff */
-    //QString shaderDirectory ("/home/ricardomarroquim/devel/irescutaway/src/IRESCutaway/GUI/Qt/RCC/Shaders/");
-    QString shaderDirectory ("/media/d/Workspace/IRESCutaway/src/IRESCutaway/GUI/Qt/RCC/Shaders/");
+    QString shaderDirectory ("/home/ricardomarroquim/devel/irescutaway/src/IRESCutaway/GUI/Qt/RCC/Shaders/");
+    //QString shaderDirectory ("/media/d/Workspace/IRESCutaway/src/IRESCutaway/GUI/Qt/RCC/Shaders/");
 	#else
 	/* Error, both can't be defined or undefined same time */
 	#endif
