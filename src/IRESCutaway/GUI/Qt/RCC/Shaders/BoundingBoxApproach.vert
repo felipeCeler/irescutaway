@@ -72,9 +72,14 @@ void main(void)
 //	v[6] = vec4(center_of_mass - ext_x - ext_y - ext_z,1.0);
 //	v[7] = vec4(center_of_mass + ext_x - ext_y - ext_z,1.0);
 
-        ext_x = (camera_right) * extends.x;
-        ext_y = (camera_up   ) * extends.y;
-        ext_z = (camera_dir  ) * extends.z;
+        float ex = max (max (abs(dot(camera_right, axis_x.xyz*extends.x)), abs(dot(camera_right, axis_y.xyz*extends.y)) ), abs(dot(camera_right, axis_z.xyz*extends.z)) );
+        float ey = max (max (abs(dot(camera_up, axis_x.xyz*extends.x)), abs(dot(camera_up, axis_y.xyz*extends.y)) ), abs(dot(camera_up, axis_z.xyz*extends.z)) );
+        float ez = max (max (abs(dot(camera_dir, axis_x.xyz*extends.x)), abs(dot(camera_dir, axis_y.xyz*extends.y)) ), abs(dot(camera_dir, axis_z.xyz*extends.z)) );
+
+
+        ext_x = (camera_right) * ex;
+        ext_y = (camera_up   ) * ey;
+        ext_z = (camera_dir  ) * ez;
 
         float zfactor = 50.0;
         v[0] = vec4(center_of_mass + ext_x + ext_y + zfactor*ext_z + x*ext_x + y*ext_y,1.0);

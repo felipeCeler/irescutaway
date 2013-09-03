@@ -51,7 +51,7 @@ void main(void)
 	VertexOut.eye[2] =  ViewMatrix * vec4(vc,1.0);
 	VertexOut.eye[3] =  ViewMatrix * vec4(vd,1.0);
 
-	if ( isShell == 1)
+        if ( isShell == 1)
 	{
 		VertexOut.color  = vec4(color,1.0 );
 		VertexOut.v[0] =  ProjectionMatrix * ViewMatrix * vec4(va,1.0);
