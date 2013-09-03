@@ -192,7 +192,19 @@ namespace IRES
 			Celer::BoundingBox3<double> box;
 			Celer::BoundingBox3<float>  box_v2;
 
+			std::vector<ires::U32> list_of_vertex_indice;
+			std::vector<ires::F32> list_of_vertex_geometry_a;
+			std::vector<ires::F32> list_of_vertex_geometry_b;
+			std::vector<ires::F32> list_of_vertex_geometry_c;
+			std::vector<ires::F32> list_of_vertex_geometry_d;
+			std::vector<ires::F32> list_of_vertex_color;
+			std::vector<ires::U32> list_of_block_id;
+			std::vector<ires::U32> list_of_block_flag;
+
 			ires::IresHeader header_v2_;
+
+			std::vector<ires::F32> list_of_vertex_geometry_charles;
+
 
 		public:
 

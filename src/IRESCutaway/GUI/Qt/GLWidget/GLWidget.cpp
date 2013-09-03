@@ -72,20 +72,36 @@ void GLWidget::initializeGL ( )
 	fboStep[1] 	  = new  QGLFramebufferObject ( width() , height() , format );
 
 
+	// FIXME Shell
+	glGenVertexArrays (1 , &vertexArray_shell );
+		glGenBuffers ( 1, &vertexBuffer_shell_vertex_a );
+		glGenBuffers ( 1, &vertexBuffer_shell_vertex_b );
+		glGenBuffers ( 1, &vertexBuffer_shell_vertex_c );
+		glGenBuffers ( 1, &vertexBuffer_shell_vertex_d );
+		glGenBuffers ( 1, &vertexBuffer_shell_color);
+		glGenBuffers ( 1, &vertexBuffer_shell_flags );
+		glGenBuffers ( 1, &vertexBuffer_shell_Charles );
+
+
 	// Cube in Interleaved
 	glGenVertexArrays ( 1, &vertexArray_cube_interleaved );
 		glGenBuffers  ( 1, &vertexBuffer_cube_interleaved );
 
+	// Face in Interleaved
+	glGenVertexArrays ( 1, &vertexArray_face_interleaved );
+	// 1 Vertex Buffer
+		glGenBuffers ( 1, &vertexBuffer_face_interleaved);
+
         int size_of_vertice = sizeof(Celer::Vector4<float>);
         int size_of_struct  =  sizeof(CubeData);
 
-        ///http://www.opengl.org/wiki/Vertex_Specification
-        for ( int location = 0 ; location < 12 ; location++)
-        {
-                glEnableVertexAttribArray(location);
-                glVertexAttribPointer(location, 4, GL_FLOAT, GL_FALSE, size_of_struct , reinterpret_cast<void*>(size_of_vertice * location));
-        }
-	/// ---
+//        ///http://www.opengl.org/wiki/Vertex_Specification
+//        for ( int location = 0 ; location < 12 ; location++)
+//        {
+//                glEnableVertexAttribArray(location);
+//                glVertexAttribPointer(location, 4, GL_FLOAT, GL_FALSE, size_of_struct , reinterpret_cast<void*>(size_of_vertice * location));
+//        }
+//	/// ---
 
 	// Uniform Buffer Global Matrix
 
@@ -392,6 +408,16 @@ void GLWidget::changeProperty ( int property_index )
 			cube_interleaved[index].color = color;
 			index++;
 
+			for ( int shell_index = 0; shell_index < reservoir_model_.list_of_block_id.size() ; shell_index++ )
+			{
+				if ( i == reservoir_model_.list_of_block_id[shell_index] )
+				{
+					reservoir_model_.list_of_vertex_color[shell_index*3] = color.x;
+					reservoir_model_.list_of_vertex_color[shell_index*3+1] = color.y;
+					reservoir_model_.list_of_vertex_color[shell_index*3+2] = color.z;
+				}
+			}
+
 		}
 		else
 		{
@@ -401,6 +427,10 @@ void GLWidget::changeProperty ( int property_index )
 
 	glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer_cube_interleaved);
 	glBufferData ( GL_ARRAY_BUFFER , cube_interleaved.size( ) * sizeof(cube_interleaved[0]) , &cube_interleaved[0] , GL_STATIC_DRAW );
+	glBindBuffer( GL_ARRAY_BUFFER, 0);
+
+	glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer_shell_color );
+	glBufferData ( GL_ARRAY_BUFFER , reservoir_model_.list_of_vertex_color.size( ) * sizeof(reservoir_model_.list_of_vertex_color[0]) , &reservoir_model_.list_of_vertex_color[0] , GL_STATIC_DRAW );
 	glBindBuffer( GL_ARRAY_BUFFER, 0);
 
 }
@@ -619,7 +649,43 @@ void GLWidget::openIRESCharles( const std::string& filename )
 
 		cube_interleaved.clear();
 
+		face_interleaved.clear();
+
 		CubeData cube_temp;
+
+		FaceData face_temp;
+
+		face_interleaved.resize(reservoir_model_.list_of_block_id.size());
+
+		for ( std::size_t i = 0; i < reservoir_model_.list_of_block_id.size( ) ; i++)
+		{
+			face_temp.vertices[0] = Celer::Vector4<float>( reservoir_model_.list_of_vertex_geometry_a[i*3],
+								       reservoir_model_.list_of_vertex_geometry_a[i*3+1],
+								       reservoir_model_.list_of_vertex_geometry_a[i*3+2],1.0);
+
+			face_temp.vertices[1] = Celer::Vector4<float>( reservoir_model_.list_of_vertex_geometry_b[i*3],
+								       reservoir_model_.list_of_vertex_geometry_b[i*3+1],
+								       reservoir_model_.list_of_vertex_geometry_b[i*3+2],1.0);
+
+			face_temp.vertices[2] = Celer::Vector4<float>( reservoir_model_.list_of_vertex_geometry_c[i*3],
+								       reservoir_model_.list_of_vertex_geometry_c[i*3+1],
+								       reservoir_model_.list_of_vertex_geometry_c[i*3+2],1.0);
+
+			face_temp.vertices[3] = Celer::Vector4<float>( reservoir_model_.list_of_vertex_geometry_d[i*3],
+								       reservoir_model_.list_of_vertex_geometry_d[i*3+1],
+								       reservoir_model_.list_of_vertex_geometry_d[i*3+2],1.0);
+
+			face_temp.color = Celer::Vector4<float> (1.0,0.0,0.0,1.0);
+			face_temp.IJK = Celer::Vector4<float> (1.0,0.0,0.0,1.0);
+			face_temp.focus = Celer::Vector4<float> (1.0,0.0,0.0,1.0);
+			face_temp.centroid = Celer::Vector4<float> (1.0,0.0,0.0,1.0);
+
+
+			face_interleaved[i] = face_temp;
+		}
+
+
+		std::cout << " Face Interleaved = " << reservoir_model_.list_of_block_id.size() << std::endl;
 
 		cube_interleaved.resize(reservoir_model_.blocks.size( ));
 
@@ -725,8 +791,81 @@ void GLWidget::openIRESCharles( const std::string& filename )
 
                 glBindVertexArray(0);
 
+//                for ( int i = 0; i < 24 ; i++)
+//                {
+//                	std::cout << " Geo = " << reservoir_model_.list_of_vertex_geometry[i] << std::endl;
+//                }
 
 
+		glBindVertexArray ( vertexArray_face_interleaved );
+
+                        glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer_face_interleaved);
+                        glBufferData ( GL_ARRAY_BUFFER , face_interleaved.size( ) * sizeof(face_interleaved[0]) , &face_interleaved[0] , GL_STATIC_DRAW );
+
+                        int size_of_vertice_face = sizeof(Celer::Vector4<float>);
+                        int size_of_struct_face  =  sizeof(FaceData);
+
+                        //http://www.opengl.org/wiki/Vertex_Specification
+                        for ( int location = 0 ; location < 8 ; location++)
+                        {
+                                glEnableVertexAttribArray(location);
+                                glVertexAttribPointer(location, 4, GL_FLOAT, GL_FALSE, size_of_struct_face , reinterpret_cast<void*>(size_of_vertice_face * location));
+                        }
+
+                glBindVertexArray(0);
+
+                glBindVertexArray ( vertexArray_shell );
+                	glBindBuffer ( GL_ARRAY_BUFFER, vertexBuffer_shell_vertex_a );
+                	glBufferData ( GL_ARRAY_BUFFER, reservoir_model_.list_of_vertex_geometry_a.size() * sizeof (reservoir_model_.list_of_vertex_geometry_a[0]),
+                			        &reservoir_model_.list_of_vertex_geometry_a[0],GL_STATIC_DRAW);
+
+                	glEnableVertexAttribArray(0);
+                	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0 ,0);
+
+                	glBindBuffer ( GL_ARRAY_BUFFER, vertexBuffer_shell_vertex_b );
+                	glBufferData ( GL_ARRAY_BUFFER, reservoir_model_.list_of_vertex_geometry_b.size() * sizeof (reservoir_model_.list_of_vertex_geometry_b[0]),
+                			        &reservoir_model_.list_of_vertex_geometry_b[0],GL_STATIC_DRAW);
+
+                	glEnableVertexAttribArray(1);
+                	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+                	glBindBuffer ( GL_ARRAY_BUFFER, vertexBuffer_shell_vertex_c );
+                	glBufferData ( GL_ARRAY_BUFFER, reservoir_model_.list_of_vertex_geometry_c.size() * sizeof (reservoir_model_.list_of_vertex_geometry_c[0]),
+                			        &reservoir_model_.list_of_vertex_geometry_c[0],GL_STATIC_DRAW);
+
+                	glEnableVertexAttribArray(2);
+                	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+                	glBindBuffer ( GL_ARRAY_BUFFER, vertexBuffer_shell_vertex_d );
+                	glBufferData ( GL_ARRAY_BUFFER, reservoir_model_.list_of_vertex_geometry_d.size() * sizeof (reservoir_model_.list_of_vertex_geometry_d[0]),
+                			        &reservoir_model_.list_of_vertex_geometry_d[0],GL_STATIC_DRAW);
+
+                	glEnableVertexAttribArray(3);
+                	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+
+                	glBindBuffer ( GL_ARRAY_BUFFER, vertexBuffer_shell_flags );
+                	glBufferData ( GL_ARRAY_BUFFER, reservoir_model_.list_of_block_flag.size() * sizeof (reservoir_model_.list_of_block_flag[0]),
+                			        &reservoir_model_.list_of_block_flag[0],GL_STATIC_DRAW);
+
+                	glEnableVertexAttribArray(4);
+                	glVertexAttribIPointer(4, 1, GL_INT, GL_FALSE, 0 );
+
+
+                	glBindBuffer ( GL_ARRAY_BUFFER, vertexBuffer_shell_color );
+                	glBufferData ( GL_ARRAY_BUFFER, reservoir_model_.list_of_vertex_color.size() * sizeof (reservoir_model_.list_of_vertex_color[0]),
+                			        &reservoir_model_.list_of_vertex_color[0],GL_STATIC_DRAW);
+
+                	glEnableVertexAttribArray(5);
+                	glVertexAttribPointer(5, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+                	glBindBuffer ( GL_ARRAY_BUFFER, vertexBuffer_shell_Charles );
+                	glBufferData ( GL_ARRAY_BUFFER, reservoir_model_.list_of_vertex_geometry_charles.size() * sizeof (reservoir_model_.list_of_vertex_geometry_charles[0]),
+                			        &reservoir_model_.list_of_vertex_geometry_charles[0],GL_STATIC_DRAW);
+
+                	glEnableVertexAttribArray(6);
+                	glVertexAttribPointer(6, 3, GL_FLOAT, GL_FALSE, 0 ,0);
+                glBindVertexArray (0);
 
 		isIRESOpen_ = 1;
 	}
@@ -744,7 +883,7 @@ void GLWidget::resizeGL ( int width , int height )
 
 
 	camera_.setAspectRatio ( width  , height  );
-//	camera_.setPerspectiveProjectionMatrix ( 0 , camera_.aspectRatio ( ) , 0.1 , 500 );
+	camera_.setPerspectiveProjectionMatrix ( 0 , camera_.aspectRatio ( ) , 0.1 , 500 );
 //    camera_.setOrthographicProjectionMatrix( -1.0f, 1.0 , -1.0f, 1.0, 0.0, 500.0 );
 
     trackball_->useOrthographicMatrix(-1.0f, 1.0 , -1.0f, 1.0, 0.0, 500.0);
@@ -793,7 +932,7 @@ void GLWidget::paintGL ( )
 
 	transformationMatrices_.ModelMatrix      = ~camera_.viewMatrix ( );
 	transformationMatrices_.ViewMatrix       = ~camera_.viewMatrix ( );
-	transformationMatrices_.ProjectionMatrix = ~camera_.orthographicProjectionMatrix( );
+	transformationMatrices_.ProjectionMatrix = ~camera_.perspectiveProjectionMatrix();
 
 	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(this->transformationMatrices_), &this->transformationMatrices_ );
 
@@ -831,40 +970,65 @@ void GLWidget::NoCutaway ( )
 
         if ( draw_secondary && (cube_interleaved.size() != 0) )
         {
-                secondary.active ( );
+//                secondary.active ( );
+//
+//                glUniform3fv ( secondary.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
+//                glUniform3f  ( secondary.uniforms_["min_IJK"].location , (float)min_I_,(float)min_J_,(float)min_K_ );
+//                glUniform3f  ( secondary.uniforms_["max_IJK"].location , (float)max_I_, (float)max_J_, (float)max_K_ );
+//                glUniform2f  ( secondary.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
+//
+//                glBindVertexArray ( vertexArray_cube_interleaved );
+//                glDrawArrays ( GL_POINTS , 0 , cube_interleaved.size() );
+//                glBindVertexArray ( 0 );
+//
+//                secondary.deactive ( );
+//
+//        	glEnable(GL_BLEND);
+//        	glBlendFunc(GL_ONE , GL_ONE);
 
-                glUniform3fv ( secondary.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
-                glUniform3f  ( secondary.uniforms_["min_IJK"].location , (float)min_I_,(float)min_J_,(float)min_K_ );
-                glUniform3f  ( secondary.uniforms_["max_IJK"].location , (float)max_I_, (float)max_J_, (float)max_K_ );
-                glUniform2f  ( secondary.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
+		shell.active ( );
 
-                glBindVertexArray ( vertexArray_cube_interleaved );
-                glDrawArrays ( GL_POINTS , 0 , cube_interleaved.size() );
-                glBindVertexArray ( 0 );
+		glUniform3fv ( shell.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
 
-                secondary.deactive ( );
+		glUniform2f ( shell.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
+
+		glUniformMatrix4fv ( shell.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+		glUniformMatrix4fv ( shell.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+
+		glBindVertexArray ( vertexArray_shell );
+		glDrawArrays ( GL_POINTS , 0 ,reservoir_model_.list_of_vertex_geometry_d.size());
+		glBindVertexArray ( 0 );
+
+		shell.deactive ( );
+
+//		glDisable(GL_BLEND);
+
+
         }
 
         if ( draw_primary && (cube_interleaved.size() != 0)  )
         {
-                primary.active ( );
+//                primary.active ( );
+//
+//                glUniform3fv ( primary.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
+//
+//                glUniform2f ( primary.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
+//
+//                //glUniformMatrix4fv ( primary.uniforms_["ModelMatrix"].location , 1 , GL_FALSE , trackball_->getModelMatrix().data() );
+//                glUniformMatrix4fv ( primary.uniforms_["ViewMatrix"].location , 1 , GL_FALSE , trackball_->getViewMatrix().data() );
+//                glUniformMatrix4fv ( primary.uniforms_["ProjectionMatrix"].location , 1 , GL_FALSE , trackball_->getProjectionMatrix().data() );
+//
+//                //glUniformMatrix4fv ( primary.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
+//                //glUniformMatrix4fv ( primary.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+//
+//                glBindVertexArray ( vertexArray_cube_interleaved );
+//                glDrawArrays ( GL_POINTS , 0 , cube_interleaved.size() );
+//                glBindVertexArray ( 0 );
+//
+//                primary.deactive ( );
 
-                glUniform3fv ( primary.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
+                // shell
 
-                glUniform2f ( primary.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
-
-                //glUniformMatrix4fv ( primary.uniforms_["ModelMatrix"].location , 1 , GL_FALSE , trackball_->getModelMatrix().data() );
-                glUniformMatrix4fv ( primary.uniforms_["ViewMatrix"].location , 1 , GL_FALSE , trackball_->getViewMatrix().data() );
-                glUniformMatrix4fv ( primary.uniforms_["ProjectionMatrix"].location , 1 , GL_FALSE , trackball_->getProjectionMatrix().data() );
-
-                //glUniformMatrix4fv ( primary.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-                //glUniformMatrix4fv ( primary.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
-
-                glBindVertexArray ( vertexArray_cube_interleaved );
-                glDrawArrays ( GL_POINTS , 0 , cube_interleaved.size() );
-                glBindVertexArray ( 0 );
-
-                primary.deactive ( );
         }
 }
 
@@ -1175,8 +1339,8 @@ void GLWidget::loadShaders ( )
 	QString shaderDirectory ("D:\\Workspace\\IRESCutaway\\src\\IRESCutaway\\GUI\\Qt\\RCC\\Shaders\\");
 	#elif defined(__linux__)               // Linux Directory Style
 	/* Do linux stuff */
-    QString shaderDirectory ("/home/ricardomarroquim/devel/irescutaway/src/IRESCutaway/GUI/Qt/RCC/Shaders/");
-    //QString shaderDirectory ("/media/d/Workspace/IRESCutaway/src/IRESCutaway/GUI/Qt/RCC/Shaders/");
+    //QString shaderDirectory ("/home/ricardomarroquim/devel/irescutaway/src/IRESCutaway/GUI/Qt/RCC/Shaders/");
+    QString shaderDirectory ("/media/d/Workspace/IRESCutaway/src/IRESCutaway/GUI/Qt/RCC/Shaders/");
 	#else
 	/* Error, both can't be defined or undefined same time */
 	#endif
@@ -1220,6 +1384,10 @@ void GLWidget::loadShaders ( )
 	cutawayVolumes.create("cutawayVolumes", (shaderDirectory + "cutawayVolumes.vert").toStdString(),
 			     (shaderDirectory   + "cutawayVolumes.geom").toStdString(),
 			     (shaderDirectory   + "cutawayVolumes.frag").toStdString());
+
+	shell.create("Shell", (shaderDirectory + "Shell.vert").toStdString(),
+			      (shaderDirectory + "Shell.geom").toStdString(),
+			      (shaderDirectory + "Shell.frag").toStdString());
 
 
 	// Uniform Buffer Usage @link http://www.arcsynthesis.org/gltut/Positioning/Tut07%20Shared%20Uniforms.html

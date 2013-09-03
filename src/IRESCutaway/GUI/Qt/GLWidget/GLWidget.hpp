@@ -128,6 +128,17 @@ class GLWidget: public QGLWidget
 
 private:
 
+        // FIXME Shell
+        GLuint vertexArray_shell;
+        GLuint vertexBuffer_shell_vertex_a;
+        GLuint vertexBuffer_shell_vertex_b;
+        GLuint vertexBuffer_shell_vertex_c;
+        GLuint vertexBuffer_shell_vertex_d;
+        GLuint vertexBuffer_shell_color;
+        GLuint vertexBuffer_shell_flags;
+        GLuint vertexBuffer_shell_Charles;
+
+        std::vector<Celer::Vector4<float> > shell_color;
 
         Eigen::Vector2f convertToNormalizedDeviceCoordinates(Eigen::Vector2i position);
 	// About Scene
@@ -183,6 +194,29 @@ private:
 	std::vector<CubeData>           cube_interleaved;
 	Celer::OpenGL::ShaderManager    cube_interleaved_shader;
 
+	/// For 4 Vertex
+
+	// Cube in Interleaved VertexBuffer
+	// Use same layout location as vertexArray
+
+	// 1 Vertex Array
+	GLuint vertexArray_face_interleaved;
+	// 1 Vertex Buffer
+	GLuint vertexBuffer_face_interleaved;
+
+	struct FaceData
+	{
+		Celer::Vector4<float> vertices[4];
+		Celer::Vector4<float> color;
+		Celer::Vector4<float> IJK;
+		Celer::Vector4<float> focus;
+		Celer::Vector4<float> centroid;
+	};
+
+	std::vector<FaceData>           face_interleaved;
+	Celer::OpenGL::ShaderManager    face_interleaved_shader;
+
+
 	// Hong Kong Cutaway
 	Celer::OpenGL::ShaderManager    cutawayVolumes;
 
@@ -222,6 +256,8 @@ private:
 	Celer::OpenGL::ShaderManager	secondary;
 
 	Celer::OpenGL::ShaderManager	debugNormal;
+
+	Celer::OpenGL::ShaderManager shell;
 
 	QImage fbo;
 	float  angle;

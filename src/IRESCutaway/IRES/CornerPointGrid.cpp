@@ -90,6 +90,38 @@ namespace IRES
                 new_block.IJK.resize(24);
                 new_block.focus.resize(24);
 
+        	list_of_vertex_indice.clear( );
+        	list_of_vertex_geometry_a.clear( );
+        	list_of_vertex_geometry_b.clear( );
+        	list_of_vertex_geometry_c.clear( );
+        	list_of_vertex_geometry_d.clear( );
+        	list_of_vertex_color.clear( );
+
+        	list_of_block_id.clear( );
+        	list_of_block_flag.clear( );
+
+
+		reservoir_file.generateFaceList( list_of_vertex_indice ,
+		                                 list_of_vertex_geometry_a,
+		                                 list_of_vertex_geometry_b,
+		                                 list_of_vertex_geometry_c,
+		                                 list_of_vertex_geometry_d,
+		                                 list_of_vertex_color,
+		                                 list_of_block_id ,
+		                                 list_of_block_flag );
+
+		reservoir_file.generateTriangleList(list_of_vertex_geometry_charles,0,false,false,true );
+
+
+//		for ( int i = 0 ; i < 1000 ; i++)
+//		{
+//			std::cout << list_of_vertex_indice[i] <<  " - ";;
+//		}
+//
+//		std::cout << "Size of Blocks Ids " << *std::max_element(list_of_block_id.begin(),list_of_block_id.end()) << std::endl;
+//
+//		std::cout << "Size of Blocks Ids IRES " << header_.number_of_Blocks << std::endl;
+
 		for ( int i = 0; i < header_.number_of_Blocks; i++)
 		{
 			new_block.setIdentification ( i );
