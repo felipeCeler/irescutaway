@@ -40,8 +40,10 @@ void main(void)
         if ( newVert.z > cutaway.w ) {
             if (newNormal.z > 0.0)
             {
-                    discard;
+        	  //if (dot(newNormal.xyz,cutaway.xyz)> 0)
+        		  discard;
             }
+        	//discard;
         }
        //else
 //        {
@@ -50,6 +52,8 @@ void main(void)
         	 }
 //
 //        }
+
+
 
         vec2 dist_neighbor[8] = {vec2(linesize,0), vec2(-linesize,0), vec2(0,linesize), vec2(0,-linesize),
                                 vec2(-linesizediag,-linesizediag), vec2(-linesizediag,linesizediag), vec2(linesize,-linesize), vec2(linesizediag,-linesizediag)};
@@ -114,10 +118,10 @@ void main(void)
         }
 
         vec4 color = la + ld + ls;
-        color.a = 1.0;
+        //color.a = 1.0;
 
         // uncomment to turn off illumination
-        color = color_t;
+        //color = color_t;
 
 
         // interior cutaway lines (back face intersection with cutaway)

@@ -32,18 +32,13 @@ void main(void)
         int linesizediag = 1;
 
         // push frontface back, so for double faces we see the interior of the cube (backface)
-        if (newNormal.z > 0.0) {
-//            //gl_FragDepth = gl_FragCoord.z + 0.000001;
-//            gl_FragDepth = gl_FragCoord.z + gl_FragCoord.z*0.00001;
-//            linesize++;
-//            linesizediag++;
+        if (newNormal.z > 0.0)
+        {
             discard;
         }
-        else {
-            I = 0;
-            backface = true;
-            gl_FragDepth = gl_FragCoord.z;
-        }
+
+        I = 0;
+
 
         vec2 dist_neighbor[8] = {vec2(linesize,0), vec2(-linesize,0), vec2(0,linesize), vec2(0,-linesize),
                                 vec2(-linesizediag,-linesizediag), vec2(-linesizediag,linesizediag), vec2(linesize,-linesize), vec2(linesizediag,-linesizediag)};
@@ -89,7 +84,7 @@ void main(void)
         }
 
         // for back faces use the normal of the cutaway surface (simulate a cut inside the cells)
-        if (backface) newNormal = -cutaway.xyz;
+        newNormal = -cutaway.xyz;
         //vec3 eye_dir = normalize ( -newVert.xyz );
 
         vec4 la = vec4(0.0);
@@ -113,12 +108,9 @@ void main(void)
 
 
         // interior cutaway lines (back face intersection with cutaway)
-        if (backface && I == 1)
+        if ( I == 1)
             outputColor = I * vec4(vec3(0.1), 1.0) + (1.0 - I) * ( color );
         // cutaway border lines (front face intersection with cutaway)
-        else if (I == 1)
-            //outputColor = I * vec4(vec3(0.1), 1.0) + (1.0 - I) * ( color );
-            outputColor = I * vec4(vec3(1.0,0.2,0.2), 1.0) + (1.0 - I) * ( color );
         // lines outside cutaway (remaining front faces)
         else
             outputColor = I * vec4(vec3(0.7), 1.0) + (1.0 - I) * ( color );

@@ -38,8 +38,8 @@ void main(void)
 //	VertexOut.v[3] =  ProjectionMatrix * ViewMatrix * vec4(vd,1.0);
 
 
-	VertexOut.n[0] = vec4(normalize(cross(vb-va, vc-va)),0.0);
-	VertexOut.n[1] = vec4(normalize(cross(vd-vc, va-vc)),0.0);
+	VertexOut.n[0] = vec4(normalize(cross(vb-va, vd-va)),0.0);
+	VertexOut.n[1] = vec4(normalize(cross(vc-vb, vd-vb)),0.0);
 
 	mat3 normalMatrix = mat3(inverse(transpose((ModelMatrix*ViewMatrix))));
 

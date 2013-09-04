@@ -43,7 +43,6 @@ void main(void)
 		cube.color    = color;
 
                 mat3 normalMatrix = mat3(inverse(transpose((ModelMatrix*ViewMatrix))));
-                vec4 norm_alt;
 
                 // for each quad, keeprs the normal (from each triangle pair) that has higher z (avoids bad
                 // backface classification in frag shader)
