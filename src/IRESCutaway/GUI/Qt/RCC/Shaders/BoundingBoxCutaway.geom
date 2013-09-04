@@ -5,9 +5,9 @@ layout ( triangle_strip, max_vertices=24 ) out;
 
 out VertexData
 {
-                vec4 vertice;
-                flat vec4 normal;
-		vec4 color;
+     vec4 vertice;
+flat vec4 normal;
+     vec4 color;
 } VertexOut;
 
 noperspective out vec4 dist;

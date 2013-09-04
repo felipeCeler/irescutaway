@@ -33,11 +33,11 @@ void main(void)
 
         // push frontface back, so for double faces we see the interior of the cube (backface)
         if (newNormal.z > 0.0) {
-            //gl_FragDepth = gl_FragCoord.z + 0.000001;
-            gl_FragDepth = gl_FragCoord.z + gl_FragCoord.z*0.00001;
-            linesize++;
-            linesizediag++;
-            //discard;
+//            //gl_FragDepth = gl_FragCoord.z + 0.000001;
+//            gl_FragDepth = gl_FragCoord.z + gl_FragCoord.z*0.00001;
+//            linesize++;
+//            linesizediag++;
+            discard;
         }
         else {
             I = 0;
