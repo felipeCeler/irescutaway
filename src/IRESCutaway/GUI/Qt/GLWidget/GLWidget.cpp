@@ -959,6 +959,103 @@ void GLWidget::resizeGL ( int width , int height )
 /// The clear() function sets the text in DropArea to "<drop content>" and sets the backgroundRole to
 /// QPalette::Dark. Lastly, it emits the changed() signal.
 /// Real Looping
+
+void GLWidget::drawPrimary( )
+{
+
+	GLfloat light_elements[lights.size ( ) * 3];
+	for ( int i = 0; i < lights.size ( ); ++i )
+	{
+		for ( int j = 0; j < 3; ++j )
+		{
+			light_elements[i * 3 + j] = lights[i][j];
+		}
+	}
+
+	primary.active ( );
+
+	glUniform1i ( primary.uniforms_["num_lights"].location , lights.size ( ) );
+	glUniform3fv ( primary.uniforms_["lights[0]"].location , lights.size ( ) , light_elements );
+
+	glUniform2f ( primary.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
+
+	glUniformMatrix4fv ( primary.uniforms_["ModelMatrix"].location , 1 , GL_FALSE , trackball_->getModelMatrix ( ).data ( ) );
+	glUniformMatrix4fv ( primary.uniforms_["ViewMatrix"].location , 1 , GL_FALSE , trackball_->getViewMatrix ( ).data ( ) );
+	glUniformMatrix4fv ( primary.uniforms_["ProjectionMatrix"].location , 1 , GL_FALSE , trackball_->getProjectionMatrix ( ).data ( ) );
+
+	glBindVertexArray ( vertexArray_cube_interleaved );
+	glDrawArrays ( GL_POINTS , 0 , cube_interleaved.size ( ) );
+	glBindVertexArray ( 0 );
+
+	primary.deactive ( );
+}
+
+void GLWidget::drawSecundary ( )
+{
+	if ( enable_blend_ )
+	{
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_DST_COLOR, GL_ONE_MINUS_SRC_ALPHA);
+	}
+
+	GLfloat light_elements[lights.size ( ) * 3];
+	for ( int i = 0; i < lights.size ( ); ++i )
+	{
+		for ( int j = 0; j < 3; ++j )
+		{
+			light_elements[i * 3 + j] = lights[i][j];
+		}
+	}
+
+	shell.active ( );
+
+	glUniform1i ( shell.uniforms_["normals"].location , 0 );
+
+	glUniform1i ( shell.uniforms_["num_lights"].location , lights.size ( ) );
+	glUniform3fv ( shell.uniforms_["lights[0]"].location , lights.size ( ) , light_elements );
+
+	glUniform2f ( shell.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
+
+	glUniformMatrix4fv ( shell.uniforms_["ModelMatrix"].location , 1 , GL_FALSE , trackball_->getModelMatrix ( ).data ( ) );
+	glUniformMatrix4fv ( shell.uniforms_["ViewMatrix"].location , 1 , GL_FALSE , trackball_->getViewMatrix ( ).data ( ) );
+	glUniformMatrix4fv ( shell.uniforms_["ProjectionMatrix"].location , 1 , GL_FALSE , trackball_->getProjectionMatrix ( ).data ( ) );
+
+	glBindVertexArray ( vertexArray_shell );
+	glDrawArrays ( GL_POINTS , 0 , reservoir_model_.list_of_vertex_geometry_d.size ( ) );
+	glBindVertexArray ( 0 );
+
+	shell.deactive ( );
+
+	if ( enable_blend_ )
+	{
+		glDisable(GL_BLEND);
+	}
+
+
+	BoundingBoxCutaway.active ( );
+	glActiveTexture ( GL_TEXTURE0 );
+	glBindTexture ( GL_TEXTURE_2D , fboStep[0]->texture ( ) );
+
+	glUniform1i ( BoundingBoxCutaway.uniforms_["normals"].location , 0 );
+
+	glUniform1i ( BoundingBoxCutaway.uniforms_["num_lights"].location , lights.size ( ) );
+	glUniform3fv ( BoundingBoxCutaway.uniforms_["lights[0]"].location , lights.size ( ) , light_elements );
+
+	glUniform3i ( BoundingBoxCutaway.uniforms_["min_IJK"].location , min_I_ , min_J_ , min_K_ );
+	glUniform3i ( BoundingBoxCutaway.uniforms_["max_IJK"].location , max_I_ , max_J_ , max_K_ );
+
+	glUniform2f ( BoundingBoxCutaway.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
+
+	glUniformMatrix4fv ( BoundingBoxCutaway.uniforms_["ModelMatrix"].location , 1 , GL_FALSE , trackball_->getModelMatrix ( ).data ( ) );
+	glUniformMatrix4fv ( BoundingBoxCutaway.uniforms_["ViewMatrix"].location , 1 , GL_FALSE , trackball_->getViewMatrix ( ).data ( ) );
+	glUniformMatrix4fv ( BoundingBoxCutaway.uniforms_["ProjectionMatrix"].location , 1 , GL_FALSE , trackball_->getProjectionMatrix ( ).data ( ) );
+
+	glBindVertexArray ( vertexArray_cube_interleaved );
+	glDrawArrays ( GL_POINTS , 0 , cube_interleaved.size ( ) );
+	glBindVertexArray ( 0 );
+
+	BoundingBoxCutaway.deactive ( );
+}
 void GLWidget::paintGL ( )
 {
 
@@ -1086,155 +1183,64 @@ void GLWidget::RawCutaway ( int cluster )
  	if ( isIRESOpen_ )
 	{
 
- 		if ( cutVolumes.size( ) > 0)
- 		{
+		if ( cutVolumes.size ( ) > 0 )
+		{
 
-            glDepthFunc ( GL_GREATER);
-            glClearDepth ( 0.0 );
+			glDepthFunc ( GL_GREATER );
+			glClearDepth ( 0.0 );
 
 			fboStep[0]->bind ( );
 
-            glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
+			glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
 			glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
 			BoundingBoxInitialization.active ( );
 
-            glUniform1f ( BoundingBoxInitialization.uniforms_["x"].location , volume_width );
-            glUniform1f ( BoundingBoxInitialization.uniforms_["y"].location , volume_height );
-            glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ModelMatrix"].location , 1 , GL_FALSE , trackball_->getModelMatrix().data() );
-            glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ViewMatrix"].location , 1 , GL_FALSE , trackball_->getViewMatrix().data() );
-            glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ProjectionMatrix"].location , 1 , GL_FALSE , trackball_->getProjectionMatrix().data() );
+			glUniform1f ( BoundingBoxInitialization.uniforms_["x"].location , volume_width );
+			glUniform1f ( BoundingBoxInitialization.uniforms_["y"].location , volume_height );
+			glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ModelMatrix"].location , 1 , GL_FALSE , trackball_->getModelMatrix ( ).data ( ) );
+			glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ViewMatrix"].location , 1 , GL_FALSE , trackball_->getViewMatrix ( ).data ( ) );
+			glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ProjectionMatrix"].location , 1 , GL_FALSE , trackball_->getProjectionMatrix ( ).data ( ) );
 
-            glUniform1i ( BoundingBoxInitialization.uniforms_["freeze"].location , freezeView_ );
-            glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["FreezeViewMatrix"].location , 1 , GL_FALSE , freeze_viewmatrix_.data() );
+			glUniform1i ( BoundingBoxInitialization.uniforms_["freeze"].location , freezeView_ );
+			glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["FreezeViewMatrix"].location , 1 , GL_FALSE , freeze_viewmatrix_.data ( ) );
 
 			//VAO
 //			glBindVertexArray ( vertexArray_box );
 //			glDrawArrays ( GL_POINTS , 0 , cutVolume_.size.x);
 //			glBindVertexArray ( 0 );
 
-            	    	glBindVertexArray ( vertexArray_cutBox );
-            	    	glDrawArrays ( GL_POINTS , 0 , cutBoxs.size());
-            		glBindVertexArray ( 0 );
+			glBindVertexArray ( vertexArray_cutBox );
+			glDrawArrays ( GL_POINTS , 0 , cutBoxs.size ( ) );
+			glBindVertexArray ( 0 );
 
 			BoundingBoxInitialization.deactive ( );
 
 			fboStep[0]->release ( );
 
- 		}
+		}
 
 		glClearColor ( 1.0 , 1.0 , 1.0 , 1.0 );
 		glDepthFunc(GL_LESS);
 		glClearDepth(1.0f);
 		glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-        GLfloat light_elements [lights.size()*3];
-        for (int i = 0; i < lights.size(); ++i) {
-            for (int j = 0; j < 3; ++j) {
-                light_elements[i*3 + j] = lights[i][j];
-            }
-        }
+		GLfloat light_elements[lights.size ( ) * 3];
+		for ( int i = 0; i < lights.size ( ); ++i )
+		{
+			for ( int j = 0; j < 3; ++j )
+			{
+				light_elements[i * 3 + j] = lights[i][j];
+			}
+		}
 
 		if ( draw_secondary )
 		{
-
-//			glEnable(GL_BLEND);
-//			glBlendFunc(GL_DST_COLOR, GL_ONE_MINUS_SRC_ALPHA);
-
-		shell.active ( );
-
-		glUniform1i ( shell.uniforms_["normals"].location , 0 );
-
-		glUniform1i ( shell.uniforms_["num_lights"].location , lights.size());
-		glUniform3fv ( shell.uniforms_["lights[0]"].location, lights.size(), light_elements );
-
-		glUniform2f ( shell.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
-
-		glUniformMatrix4fv ( shell.uniforms_["ModelMatrix"].location , 1 , GL_FALSE , trackball_->getModelMatrix().data() );
-		glUniformMatrix4fv ( shell.uniforms_["ViewMatrix"].location , 1 , GL_FALSE , trackball_->getViewMatrix().data() );
-		glUniformMatrix4fv ( shell.uniforms_["ProjectionMatrix"].location , 1 , GL_FALSE , trackball_->getProjectionMatrix().data() );
-
-		glBindVertexArray ( vertexArray_shell );
-		glDrawArrays ( GL_POINTS , 0 ,reservoir_model_.list_of_vertex_geometry_d.size());
-		glBindVertexArray ( 0 );
-
-		shell.deactive ( );
-
-//			glDisable(GL_BLEND);
-
-
-            BoundingBoxCutaway.active ( );
-            glActiveTexture ( GL_TEXTURE0 );
-            glBindTexture ( GL_TEXTURE_2D , fboStep[0]->texture ( ) );
-
- 			glUniform1i ( BoundingBoxCutaway.uniforms_["normals"].location , 0 );
-
-            glUniform1i ( BoundingBoxCutaway.uniforms_["num_lights"].location , lights.size());
-            glUniform3fv ( BoundingBoxCutaway.uniforms_["lights[0]"].location, lights.size(), light_elements );
-
- 			glUniform3i ( BoundingBoxCutaway.uniforms_["min_IJK"].location , min_I_, min_J_, min_K_ );
- 			glUniform3i ( BoundingBoxCutaway.uniforms_["max_IJK"].location , max_I_, max_J_, max_K_ );
-
-			glUniform2f ( BoundingBoxCutaway.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
-
-            glUniformMatrix4fv ( BoundingBoxCutaway.uniforms_["ModelMatrix"].location , 1 , GL_FALSE , trackball_->getModelMatrix().data() );
-			glUniformMatrix4fv ( BoundingBoxCutaway.uniforms_["ViewMatrix"].location , 1 , GL_FALSE , trackball_->getViewMatrix().data() );
-            glUniformMatrix4fv ( BoundingBoxCutaway.uniforms_["ProjectionMatrix"].location , 1 , GL_FALSE , trackball_->getProjectionMatrix().data() );
-
-			glBindVertexArray ( vertexArray_cube_interleaved );
-			glDrawArrays ( GL_POINTS , 0 , cube_interleaved.size() );
-			glBindVertexArray ( 0 );
-
-			BoundingBoxCutaway.deactive ( );
-
+			drawSecundary( );
 		}
 		if ( draw_primary )
 		{
-
-//            if ( cutVolumes.size ( ) > 0 )
-//            {
-
-//                BoundingBoxDebug.active ( );
-//                glActiveTexture ( GL_TEXTURE0 );
-//                glBindTexture ( GL_TEXTURE_2D , fboStep[1]->texture ( ) );
-//                // FIXME Throw an Exception when std::map doesnt find A VARIABLE !!!
-//                glUniform1i ( BoundingBoxDebug.uniforms_["normals"].location , 0 );
-
-//                                glUniform1f ( BoundingBoxDebug.uniforms_["x"].location , volume_width );
-//                                glUniform1f ( BoundingBoxDebug.uniforms_["y"].location , volume_height );
-
-//                glUniform3fv ( BoundingBoxDebug.uniforms_["new_x"].location , 1 , new_x );
-//                glUniform3fv ( BoundingBoxDebug.uniforms_["new_y"].location , 1 , new_y );
-//                glUniform3fv ( BoundingBoxDebug.uniforms_["new_z"].location , 1 , new_z );
-//                glUniformMatrix4fv ( BoundingBoxDebug.uniforms_["ModelMatrix"].location , 1 , GL_TRUE , lookatCamera );
-//                glUniformMatrix4fv ( BoundingBoxDebug.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-//                glUniformMatrix4fv ( BoundingBoxDebug.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
-//                //VAO
-//                glBindVertexArray ( vertexArray_box );
-//                glDrawArrays ( GL_POINTS , 0 , cutVolume_.size.x );
-//                glBindVertexArray ( 0 );
-//                BoundingBoxDebug.deactive ( );
-//            }
-
-
- 			primary.active ( );
-
-            //glUniform3fv ( primary.uniforms_["lightDirection"].location , 0 , trackball_->getCenter().data() );
-
-            glUniform1i ( primary.uniforms_["num_lights"].location , lights.size());
-            glUniform3fv ( primary.uniforms_["lights[0]"].location, lights.size(), light_elements );
-
-			glUniform2f ( primary.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
-
-            glUniformMatrix4fv ( primary.uniforms_["ModelMatrix"].location , 1 , GL_FALSE , trackball_->getModelMatrix().data() );
-			glUniformMatrix4fv ( primary.uniforms_["ViewMatrix"].location , 1 , GL_FALSE , trackball_->getViewMatrix().data() );
-            glUniformMatrix4fv ( primary.uniforms_["ProjectionMatrix"].location , 1 , GL_FALSE , trackball_->getProjectionMatrix().data() );
-
-			glBindVertexArray ( vertexArray_cube_interleaved );
-			glDrawArrays ( GL_POINTS , 0 , cube_interleaved.size() );
-			glBindVertexArray ( 0 );
-
-            primary.deactive ( );
+			drawPrimary( );
 
 		}
 	}
@@ -1425,8 +1431,8 @@ void GLWidget::loadShaders ( )
 	QString shaderDirectory ("D:\\Workspace\\IRESCutaway\\src\\IRESCutaway\\GUI\\Qt\\RCC\\Shaders\\");
 	#elif defined(__linux__)               // Linux Directory Style
 	/* Do linux stuff */
-    //QString shaderDirectory ("/home/ricardomarroquim/devel/irescutaway/src/IRESCutaway/GUI/Qt/RCC/Shaders/");
-    QString shaderDirectory ("/media/d/Workspace/IRESCutaway/src/IRESCutaway/GUI/Qt/RCC/Shaders/");
+    QString shaderDirectory ("/home/ricardomarroquim/devel/irescutaway/src/IRESCutaway/GUI/Qt/RCC/Shaders/");
+    //QString shaderDirectory ("/media/d/Workspace/IRESCutaway/src/IRESCutaway/GUI/Qt/RCC/Shaders/");
 	#else
 	/* Error, both can't be defined or undefined same time */
 	#endif
@@ -1529,7 +1535,7 @@ void GLWidget::processMultiKeys ( )
 		}
 		if ( key == Qt::Key_R )
 		{
-
+			trackball_->reset();
 			camera_.reset ( );
 
 		}
@@ -1566,9 +1572,7 @@ void GLWidget::processMultiKeys ( )
 			if ( volume_height  > 0.0 )
 				volume_height--;
 		}
-
-
-	}    
+	}
 }
 
 void GLWidget::keyPressEvent ( QKeyEvent * event )

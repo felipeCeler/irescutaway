@@ -68,7 +68,7 @@ void main(void)
         vec4 ld = vec4(0.0);
         vec4 ls = vec4(0.0);
 
-        vec4 color_t = vec4(0.5, 1.0, 0.0, 1.0);
+        vec4 color_t = VertexIn.color;//vec4(0.5, 1.0, 0.0, 1.0);
 
         // compute illumination for each light
         for (int i = 0; i < num_lights; ++i) {

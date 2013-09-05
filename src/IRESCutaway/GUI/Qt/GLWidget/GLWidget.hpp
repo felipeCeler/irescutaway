@@ -100,6 +100,11 @@ class GLWidget: public QGLWidget
 		void setPrimaryVisibility ( bool );
 		void setSecondaryVisibility ( bool );
 
+		// Draw Functions
+
+		//void drawCutawaySurface ( );
+		void drawSecundary ( );
+		void drawPrimary   ( );
 
 		void NoCutaway          ( );
 		void RawCutaway         ( int cluster );
@@ -128,6 +133,8 @@ class GLWidget: public QGLWidget
 
 private:
 
+
+        bool enable_blend_;
         // FIXME Shell
         GLuint vertexArray_shell;
         GLuint vertexBuffer_shell_vertex_a;

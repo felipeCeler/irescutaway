@@ -128,7 +128,6 @@ void main(void)
         // uncomment to turn off illumination
         //color = color_t;
 
-discard;
         // interior cutaway lines (back face intersection with cutaway)
 //        if (backface && I == 1)
 //        {
