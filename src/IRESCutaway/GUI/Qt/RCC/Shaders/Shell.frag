@@ -36,22 +36,27 @@ void main(void)
         vec4 cutaway = texelFetch( normals, ivec2(pixel_pos), 0 ).rgba;
 
 
+        if ( newNormal.z <= 0.0)
+                backface = true;
+//        else
+//        	discard;
+
         // discard point in front of the cutaway surface
         if ( newVert.z > cutaway.w ) {
-            if (newNormal.z > 0.0)
+            if (newNormal.z >= 0.0 )
             {
         	  //if (dot(newNormal.xyz,cutaway.xyz)> 0)
         		  discard;
             }
-        	//discard;
         }
-       //else
-//        {
-        	if ( newNormal.z < 0.0) {
-        		backface = true;
+       else
+        {
+        	if ( newNormal.z < 0.0)
+        	{
+        		 discard;//	backface = true;
         	 }
 //
-//        }
+        }
 
 
 
@@ -123,7 +128,7 @@ void main(void)
         // uncomment to turn off illumination
         //color = color_t;
 
-
+discard;
         // interior cutaway lines (back face intersection with cutaway)
 //        if (backface && I == 1)
 //        {
@@ -138,6 +143,7 @@ void main(void)
         // lines outside cutaway (remaining front faces)
         else
         {
+
         	if (backface)
         		color.rgb += vec3(0.5);
             outputColor = I * vec4(vec3(0.0), 1.0) + (1.0 - I) * ( color );

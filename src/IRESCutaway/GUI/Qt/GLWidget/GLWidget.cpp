@@ -1138,6 +1138,30 @@ void GLWidget::RawCutaway ( int cluster )
 		if ( draw_secondary )
 		{
 
+//			glEnable(GL_BLEND);
+//			glBlendFunc(GL_DST_COLOR, GL_ONE_MINUS_SRC_ALPHA);
+
+		shell.active ( );
+
+		glUniform1i ( shell.uniforms_["normals"].location , 0 );
+
+		glUniform1i ( shell.uniforms_["num_lights"].location , lights.size());
+		glUniform3fv ( shell.uniforms_["lights[0]"].location, lights.size(), light_elements );
+
+		glUniform2f ( shell.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
+
+		glUniformMatrix4fv ( shell.uniforms_["ModelMatrix"].location , 1 , GL_FALSE , trackball_->getModelMatrix().data() );
+		glUniformMatrix4fv ( shell.uniforms_["ViewMatrix"].location , 1 , GL_FALSE , trackball_->getViewMatrix().data() );
+		glUniformMatrix4fv ( shell.uniforms_["ProjectionMatrix"].location , 1 , GL_FALSE , trackball_->getProjectionMatrix().data() );
+
+		glBindVertexArray ( vertexArray_shell );
+		glDrawArrays ( GL_POINTS , 0 ,reservoir_model_.list_of_vertex_geometry_d.size());
+		glBindVertexArray ( 0 );
+
+		shell.deactive ( );
+
+//			glDisable(GL_BLEND);
+
 
             BoundingBoxCutaway.active ( );
             glActiveTexture ( GL_TEXTURE0 );
@@ -1163,29 +1187,6 @@ void GLWidget::RawCutaway ( int cluster )
 
 			BoundingBoxCutaway.deactive ( );
 
-//			glEnable(GL_BLEND);
-//			glBlendFunc(GL_DST_COLOR, GL_ONE_MINUS_SRC_ALPHA);
-
-			shell.active ( );
-
-			glUniform1i ( shell.uniforms_["normals"].location , 0 );
-
-			glUniform1i ( shell.uniforms_["num_lights"].location , lights.size());
-			glUniform3fv ( shell.uniforms_["lights[0]"].location, lights.size(), light_elements );
-
-			glUniform2f ( shell.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
-
-		        glUniformMatrix4fv ( shell.uniforms_["ModelMatrix"].location , 1 , GL_FALSE , trackball_->getModelMatrix().data() );
-		        glUniformMatrix4fv ( shell.uniforms_["ViewMatrix"].location , 1 , GL_FALSE , trackball_->getViewMatrix().data() );
-		        glUniformMatrix4fv ( shell.uniforms_["ProjectionMatrix"].location , 1 , GL_FALSE , trackball_->getProjectionMatrix().data() );
-
-			glBindVertexArray ( vertexArray_shell );
-			glDrawArrays ( GL_POINTS , 0 ,reservoir_model_.list_of_vertex_geometry_d.size());
-			glBindVertexArray ( 0 );
-
-			shell.deactive ( );
-
-//			glDisable(GL_BLEND);
 		}
 		if ( draw_primary )
 		{
