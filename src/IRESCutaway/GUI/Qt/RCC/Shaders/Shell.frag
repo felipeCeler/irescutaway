@@ -1,6 +1,7 @@
 #version 430 core
 
 layout(location = 0) uniform sampler2D normals;
+layout(location = 1) uniform sampler2D primaryBuffer;
 
 in VertexData
 {
@@ -35,6 +36,11 @@ void main(void)
         // cutaway normal = rgb, and cutaway depth in camera space = w
         vec4 cutaway = texelFetch( normals, ivec2(pixel_pos), 0 ).rgba;
 
+        vec4 primary = texelFetch( primaryBuffer, ivec2(pixel_pos), 0 ).rgba;
+
+
+//        if ( newVert.z > primary.w )
+//        	discard;
 
         if ( newNormal.z <= 0.0)
                 backface = true;

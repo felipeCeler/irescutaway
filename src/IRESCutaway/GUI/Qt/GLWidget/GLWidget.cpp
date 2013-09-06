@@ -23,6 +23,8 @@ void GLWidget::initializeGL ( )
 
 	buttonRelease_ = false;
 
+	dynamic_ = false;
+
 	/// OpenGL Stuffs
 	glEnable ( GL_DEPTH_TEST );
 	glDepthMask(GL_TRUE);
@@ -168,7 +170,16 @@ void GLWidget::initializeGL ( )
 
 	trackball_->initializeBuffers();
 
+	enable_blend_ = 0;
+
+	depthFBO = new Framebuffer( width() , height(), 2 );
+
+	meanFilter = new MeanFilter( "Guassian blur");
+	meanFilter->resize(width(), height());
+
 	loadShaders ( );
+
+
 
 }
 
@@ -196,24 +207,24 @@ void GLWidget::cutVolumeGenerator( )
 
 		boxes.pop_front( );
 
-		std::list<Celer::BoundingBox3<GLfloat> >::iterator box_iterator = boxes.begin ( );
-
-		int cont = 0;
-
-		while ( ( box_iterator != boxes.end ( ) )  )
-		{
-
-			if ( box.intersect( *box_iterator ) )
-			{
-				box 	     = box + (*box_iterator);
-				box_iterator = boxes.erase ( box_iterator );
-				cont++;
-			}
-			else
-			{
-				++box_iterator;
-			}
-		}
+//		std::list<Celer::BoundingBox3<GLfloat> >::iterator box_iterator = boxes.begin ( );
+//
+//		int cont = 0;
+//
+//		while ( ( box_iterator != boxes.end ( ) )  )
+//		{
+//
+//			if ( box.intersect( *box_iterator ) )
+//			{
+//				box 	     = box + (*box_iterator);
+//				box_iterator = boxes.erase ( box_iterator );
+//				cont++;
+//			}
+//			else
+//			{
+//				++box_iterator;
+//			}
+//		}
 
 		cutVolumes.push_back( box );
 	}
@@ -330,8 +341,9 @@ void GLWidget::cutVolumeGenerator( )
 void GLWidget::changePropertyRange ( const double& minRange, const double& maxRange, int property_index )
 {
 
-    boxes.clear ( );
+	boxes.clear ( );
 
+	dynamic_ = true;
 //	std::cout << "Changing the property to : " << reservoir_model_.static_porperties[property_index].name << std::endl;
 
 	float min = *std::min_element ( reservoir_model_.static_porperties[property_index].values_.begin ( ) , reservoir_model_.static_porperties[property_index].values_.end ( ) );
@@ -923,6 +935,7 @@ void GLWidget::openIRESCharles( const std::string& filename )
 
 void GLWidget::resizeGL ( int width , int height )
 {
+	makeCurrent();
 	glViewport ( 0 , 0 , width , height );
 	camera_.setWindowSize ( width , height );
 
@@ -942,6 +955,16 @@ void GLWidget::resizeGL ( int width , int height )
 	if ( fboStep[1] )
 		delete fboStep[1];
 
+
+	if (depthFBO)
+		delete depthFBO;
+
+	std::cout << " FBO Resize " << width << " : "<<  height;
+
+	depthFBO = new Framebuffer( width , height, 2 );
+
+	meanFilter->resize(width, height);
+
 	QGLFramebufferObjectFormat format;
 	format.setAttachment(QGLFramebufferObject::Depth);
 
@@ -959,6 +982,149 @@ void GLWidget::resizeGL ( int width , int height )
 /// The clear() function sets the text in DropArea to "<drop content>" and sets the backgroundRole to
 /// QPalette::Dark. Lastly, it emits the changed() signal.
 /// Real Looping
+
+void GLWidget::drawCutawaySurface ( )
+{
+	if ( cutVolumes.size ( ) > 0 )
+	{
+
+		glDepthFunc ( GL_GREATER );
+		glClearDepth ( 0.0 );
+
+		//fboStep[0]->bind ( );
+		depthFBO->bind( );
+
+		glDrawBuffer(GL_COLOR_ATTACHMENT0);
+
+		glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
+		glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
+
+		BoundingBoxInitialization.active ( );
+
+		glUniform1f ( BoundingBoxInitialization.uniforms_["x"].location , volume_width );
+		glUniform1f ( BoundingBoxInitialization.uniforms_["y"].location , volume_height );
+		glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ModelMatrix"].location , 1 , GL_FALSE , trackball_->getModelMatrix ( ).data ( ) );
+		glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ViewMatrix"].location , 1 , GL_FALSE , trackball_->getViewMatrix ( ).data ( ) );
+		glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ProjectionMatrix"].location , 1 , GL_FALSE , trackball_->getProjectionMatrix ( ).data ( ) );
+
+		glUniform1i ( BoundingBoxInitialization.uniforms_["freeze"].location , freezeView_ );
+		glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["FreezeViewMatrix"].location , 1 , GL_FALSE , freeze_viewmatrix_.data ( ) );
+
+		glBindVertexArray ( vertexArray_cutBox );
+		glDrawArrays ( GL_POINTS , 0 , cutBoxs.size ( ) );
+		glBindVertexArray ( 0 );
+
+		BoundingBoxInitialization.deactive ( );
+
+		errorCheckFunc(__FILE__, __LINE__);
+		//fboStep[0]->release ( );
+		glDrawBuffer(GL_COLOR_ATTACHMENT0+1);
+
+		meanFilter->renderTexture( depthFBO->bindAttachment(0));
+
+		depthFBO->unbindAll();
+		//fboStep[1]->bind ( );
+
+//		glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
+//		glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+//
+//		BoundingBoxInitialization.active ( );
+//
+//		glUniform1f ( BoundingBoxInitialization.uniforms_["x"].location , 0 );
+//		glUniform1f ( BoundingBoxInitialization.uniforms_["y"].location , 0 );
+//		glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ModelMatrix"].location , 1 , GL_FALSE , trackball_->getModelMatrix ( ).data ( ) );
+//		glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ViewMatrix"].location , 1 , GL_FALSE , trackball_->getViewMatrix ( ).data ( ) );
+//		glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ProjectionMatrix"].location , 1 , GL_FALSE , trackball_->getProjectionMatrix ( ).data ( ) );
+//
+//		glUniform1i ( BoundingBoxInitialization.uniforms_["freeze"].location , freezeView_ );
+//		glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["FreezeViewMatrix"].location , 1 , GL_FALSE , freeze_viewmatrix_.data ( ) );
+//
+//		glBindVertexArray ( vertexArray_cutBox );
+//		glDrawArrays ( GL_POINTS , 0 , cutBoxs.size ( ) );
+//		glBindVertexArray ( 0 );
+//
+//		BoundingBoxInitialization.deactive ( );
+
+		//fboStep[1]->release ( );
+
+
+		glDrawBuffer(GL_BACK);
+
+
+
+
+	}
+
+}
+void GLWidget::drawSecundary ( )
+{
+	if ( enable_blend_ )
+	{
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_DST_COLOR, GL_ONE_MINUS_SRC_ALPHA);
+	}
+
+	GLfloat light_elements[lights.size ( ) * 3];
+	for ( int i = 0; i < lights.size ( ); ++i )
+	{
+		for ( int j = 0; j < 3; ++j )
+		{
+			light_elements[i * 3 + j] = lights[i][j];
+		}
+	}
+
+	shell.active ( );
+
+	glUniform1i ( shell.uniforms_["normals"].location , depthFBO->bindAttachment(1) );
+	//glUniform1i ( shell.uniforms_["primaryBuffer"].location , depthFBO->bindAttachment(1) );
+
+	glUniform1i ( shell.uniforms_["num_lights"].location , lights.size ( ) );
+	glUniform3fv ( shell.uniforms_["lights[0]"].location , lights.size ( ) , light_elements );
+
+	glUniform2f ( shell.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
+
+	glUniformMatrix4fv ( shell.uniforms_["ModelMatrix"].location , 1 , GL_FALSE , trackball_->getModelMatrix ( ).data ( ) );
+	glUniformMatrix4fv ( shell.uniforms_["ViewMatrix"].location , 1 , GL_FALSE , trackball_->getViewMatrix ( ).data ( ) );
+	glUniformMatrix4fv ( shell.uniforms_["ProjectionMatrix"].location , 1 , GL_FALSE , trackball_->getProjectionMatrix ( ).data ( ) );
+
+	glBindVertexArray ( vertexArray_shell );
+	glDrawArrays ( GL_POINTS , 0 , reservoir_model_.list_of_vertex_geometry_d.size ( ) );
+	glBindVertexArray ( 0 );
+
+	shell.deactive ( );
+
+	if ( enable_blend_ )
+	{
+		glDisable(GL_BLEND);
+	}
+
+	depthFBO->unbindAttachments();
+
+	BoundingBoxCutaway.active ( );
+
+	glUniform1i ( BoundingBoxCutaway.uniforms_["normals"].location , depthFBO->bindAttachment(1) );
+
+	glUniform1i ( BoundingBoxCutaway.uniforms_["num_lights"].location , lights.size ( ) );
+	glUniform3fv ( BoundingBoxCutaway.uniforms_["lights[0]"].location , lights.size ( ) , light_elements );
+
+	glUniform3i ( BoundingBoxCutaway.uniforms_["min_IJK"].location , min_I_ , min_J_ , min_K_ );
+	glUniform3i ( BoundingBoxCutaway.uniforms_["max_IJK"].location , max_I_ , max_J_ , max_K_ );
+
+	glUniform2f ( BoundingBoxCutaway.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
+
+	glUniformMatrix4fv ( BoundingBoxCutaway.uniforms_["ModelMatrix"].location , 1 , GL_FALSE , trackball_->getModelMatrix ( ).data ( ) );
+	glUniformMatrix4fv ( BoundingBoxCutaway.uniforms_["ViewMatrix"].location , 1 , GL_FALSE , trackball_->getViewMatrix ( ).data ( ) );
+	glUniformMatrix4fv ( BoundingBoxCutaway.uniforms_["ProjectionMatrix"].location , 1 , GL_FALSE , trackball_->getProjectionMatrix ( ).data ( ) );
+
+	glBindVertexArray ( vertexArray_cube_interleaved );
+	glDrawArrays ( GL_POINTS , 0 , cube_interleaved.size ( ) );
+	glBindVertexArray ( 0 );
+
+	BoundingBoxCutaway.deactive ( );
+
+	depthFBO->unbindAttachments();
+}
 
 void GLWidget::drawPrimary( )
 {
@@ -990,72 +1156,6 @@ void GLWidget::drawPrimary( )
 	primary.deactive ( );
 }
 
-void GLWidget::drawSecundary ( )
-{
-	if ( enable_blend_ )
-	{
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_DST_COLOR, GL_ONE_MINUS_SRC_ALPHA);
-	}
-
-	GLfloat light_elements[lights.size ( ) * 3];
-	for ( int i = 0; i < lights.size ( ); ++i )
-	{
-		for ( int j = 0; j < 3; ++j )
-		{
-			light_elements[i * 3 + j] = lights[i][j];
-		}
-	}
-
-	shell.active ( );
-
-	glUniform1i ( shell.uniforms_["normals"].location , 0 );
-
-	glUniform1i ( shell.uniforms_["num_lights"].location , lights.size ( ) );
-	glUniform3fv ( shell.uniforms_["lights[0]"].location , lights.size ( ) , light_elements );
-
-	glUniform2f ( shell.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
-
-	glUniformMatrix4fv ( shell.uniforms_["ModelMatrix"].location , 1 , GL_FALSE , trackball_->getModelMatrix ( ).data ( ) );
-	glUniformMatrix4fv ( shell.uniforms_["ViewMatrix"].location , 1 , GL_FALSE , trackball_->getViewMatrix ( ).data ( ) );
-	glUniformMatrix4fv ( shell.uniforms_["ProjectionMatrix"].location , 1 , GL_FALSE , trackball_->getProjectionMatrix ( ).data ( ) );
-
-	glBindVertexArray ( vertexArray_shell );
-	glDrawArrays ( GL_POINTS , 0 , reservoir_model_.list_of_vertex_geometry_d.size ( ) );
-	glBindVertexArray ( 0 );
-
-	shell.deactive ( );
-
-	if ( enable_blend_ )
-	{
-		glDisable(GL_BLEND);
-	}
-
-
-	BoundingBoxCutaway.active ( );
-	glActiveTexture ( GL_TEXTURE0 );
-	glBindTexture ( GL_TEXTURE_2D , fboStep[0]->texture ( ) );
-
-	glUniform1i ( BoundingBoxCutaway.uniforms_["normals"].location , 0 );
-
-	glUniform1i ( BoundingBoxCutaway.uniforms_["num_lights"].location , lights.size ( ) );
-	glUniform3fv ( BoundingBoxCutaway.uniforms_["lights[0]"].location , lights.size ( ) , light_elements );
-
-	glUniform3i ( BoundingBoxCutaway.uniforms_["min_IJK"].location , min_I_ , min_J_ , min_K_ );
-	glUniform3i ( BoundingBoxCutaway.uniforms_["max_IJK"].location , max_I_ , max_J_ , max_K_ );
-
-	glUniform2f ( BoundingBoxCutaway.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
-
-	glUniformMatrix4fv ( BoundingBoxCutaway.uniforms_["ModelMatrix"].location , 1 , GL_FALSE , trackball_->getModelMatrix ( ).data ( ) );
-	glUniformMatrix4fv ( BoundingBoxCutaway.uniforms_["ViewMatrix"].location , 1 , GL_FALSE , trackball_->getViewMatrix ( ).data ( ) );
-	glUniformMatrix4fv ( BoundingBoxCutaway.uniforms_["ProjectionMatrix"].location , 1 , GL_FALSE , trackball_->getProjectionMatrix ( ).data ( ) );
-
-	glBindVertexArray ( vertexArray_cube_interleaved );
-	glDrawArrays ( GL_POINTS , 0 , cube_interleaved.size ( ) );
-	glBindVertexArray ( 0 );
-
-	BoundingBoxCutaway.deactive ( );
-}
 void GLWidget::paintGL ( )
 {
 
@@ -1183,42 +1283,7 @@ void GLWidget::RawCutaway ( int cluster )
  	if ( isIRESOpen_ )
 	{
 
-		if ( cutVolumes.size ( ) > 0 )
-		{
-
-			glDepthFunc ( GL_GREATER );
-			glClearDepth ( 0.0 );
-
-			fboStep[0]->bind ( );
-
-			glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
-			glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-
-			BoundingBoxInitialization.active ( );
-
-			glUniform1f ( BoundingBoxInitialization.uniforms_["x"].location , volume_width );
-			glUniform1f ( BoundingBoxInitialization.uniforms_["y"].location , volume_height );
-			glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ModelMatrix"].location , 1 , GL_FALSE , trackball_->getModelMatrix ( ).data ( ) );
-			glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ViewMatrix"].location , 1 , GL_FALSE , trackball_->getViewMatrix ( ).data ( ) );
-			glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ProjectionMatrix"].location , 1 , GL_FALSE , trackball_->getProjectionMatrix ( ).data ( ) );
-
-			glUniform1i ( BoundingBoxInitialization.uniforms_["freeze"].location , freezeView_ );
-			glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["FreezeViewMatrix"].location , 1 , GL_FALSE , freeze_viewmatrix_.data ( ) );
-
-			//VAO
-//			glBindVertexArray ( vertexArray_box );
-//			glDrawArrays ( GL_POINTS , 0 , cutVolume_.size.x);
-//			glBindVertexArray ( 0 );
-
-			glBindVertexArray ( vertexArray_cutBox );
-			glDrawArrays ( GL_POINTS , 0 , cutBoxs.size ( ) );
-			glBindVertexArray ( 0 );
-
-			BoundingBoxInitialization.deactive ( );
-
-			fboStep[0]->release ( );
-
-		}
+ 		drawCutawaySurface( );
 
 		glClearColor ( 1.0 , 1.0 , 1.0 , 1.0 );
 		glDepthFunc(GL_LESS);
@@ -1431,8 +1496,8 @@ void GLWidget::loadShaders ( )
 	QString shaderDirectory ("D:\\Workspace\\IRESCutaway\\src\\IRESCutaway\\GUI\\Qt\\RCC\\Shaders\\");
 	#elif defined(__linux__)               // Linux Directory Style
 	/* Do linux stuff */
-    QString shaderDirectory ("/home/ricardomarroquim/devel/irescutaway/src/IRESCutaway/GUI/Qt/RCC/Shaders/");
-    //QString shaderDirectory ("/media/d/Workspace/IRESCutaway/src/IRESCutaway/GUI/Qt/RCC/Shaders/");
+    //QString shaderDirectory ("/home/ricardomarroquim/devel/irescutaway/src/IRESCutaway/GUI/Qt/RCC/Shaders/");
+    QString shaderDirectory ("/media/d/Workspace/IRESCutaway/src/IRESCutaway/GUI/Qt/RCC/Shaders/");
 	#else
 	/* Error, both can't be defined or undefined same time */
 	#endif
@@ -1440,6 +1505,11 @@ void GLWidget::loadShaders ( )
 	qDebug () << "Directory " << shadersDir.path ();
 	shadersDir.cdUp ();
 	qDebug () << "Directory " << shadersDir.path ();
+
+
+	meanFilter->setShadersDir( shaderDirectory.toStdString() );
+
+	meanFilter->initialize( );
 
 
     //trackball_->setShaders( (shaderDirectory + "trackballShader.vert").toStdString(),(shaderDirectory + "trackballShader.farg").toStdString());

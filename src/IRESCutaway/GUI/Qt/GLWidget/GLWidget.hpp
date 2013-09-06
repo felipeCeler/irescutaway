@@ -21,6 +21,8 @@
 #include <Celer/Scene/Camera.hpp>
 	///
 #include <shaderlib/trackball.hpp>
+#include <shaderlib/framebuffer.hpp>
+#include <samples/imgproc/meanfilter.hpp>
 #include <QtOpenGL/QGLWidget>
 #include <QtOpenGL/QGLFramebufferObject>
 
@@ -102,9 +104,11 @@ class GLWidget: public QGLWidget
 
 		// Draw Functions
 
-		//void drawCutawaySurface ( );
+		void drawCutawaySurface ( );
 		void drawSecundary ( );
 		void drawPrimary   ( );
+
+		bool dynamic() { return dynamic_; }
 
 		void NoCutaway          ( );
 		void RawCutaway         ( int cluster );
@@ -328,6 +332,14 @@ private:
 
 	// trackball
 	Trackball * trackball_;
+
+	bool dynamic_;
+
+	/// normal x y z + vertice .z
+	Framebuffer * depthFBO;
+
+	/// Smooth
+	MeanFilter * meanFilter;
 
 };
 

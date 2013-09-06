@@ -270,3 +270,32 @@ void MainWindow::on_action_Freeze_View_triggered()
 {
 	glWidget->freezeView();
 }
+
+void MainWindow::on_doubleSpinMin_valueChanged  ( double i)
+{
+	if ( glWidget->isIRESOpen( ) && glWidget->dynamic( ))
+	{
+		ui->doubleSpinMax->setValue( i + 3000);
+
+		glWidget->changePropertyRange( ui->doubleSpinMin->value(), ui->doubleSpinMax->value(), ui->comboBox_choose_an_property_->currentIndex() );
+		std::cout << "Mudou" << std::endl;
+	}else
+	{
+		//msgBox.setText("First of all. Open a file my friend !!  ");
+	}
+
+
+}
+void MainWindow::on_doubleSpinMax_valueChanged  ( double i)
+{
+
+	if ( glWidget->isIRESOpen( ) && glWidget->dynamic( ) )
+	{
+		glWidget->changePropertyRange( ui->doubleSpinMin->value(), ui->doubleSpinMax->value(), ui->comboBox_choose_an_property_->currentIndex() );
+		std::cout << "doubleSpinMax ::::::::::::: " << ui->doubleSpinMin->value() << std::endl;
+	}else
+	{
+		//msgBox.setText("First of all. Open a file my friend !!  ");
+	}
+
+}

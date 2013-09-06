@@ -52,7 +52,10 @@ set( ${PROJECT_NAME}_SOURCES App/main.cpp
     						 IRES/CornerPointGrid.cpp
     						 IRES/Block.cpp
     						 ${CMAKE_SOURCE_DIR}/libs/LCG/shaderlib/trackball.cpp
+    						 ${CMAKE_SOURCE_DIR}/libs/LCG/shaderlib/framebuffer.cpp
     						 ${CMAKE_SOURCE_DIR}/libs/LCG/shaderlib/shader.cpp
+    						 ${CMAKE_SOURCE_DIR}/libs/LCG/shaderlib/mesh.cpp
+    						 ${CMAKE_SOURCE_DIR}/libs/LCG/samples/imgproc/meanfilter.cpp
     						 )
 	
 set( ${PROJECT_NAME}_HEADERS GUI/Qt/MainWindow/MainWindow.hpp
@@ -62,7 +65,10 @@ set( ${PROJECT_NAME}_HEADERS GUI/Qt/MainWindow/MainWindow.hpp
                              IRES/CornerPointGrid.hpp
                              IRES/Block.hpp
                              ${CMAKE_SOURCE_DIR}/libs/LCG/shaderlib/trackball.hpp
+                             ${CMAKE_SOURCE_DIR}/libs/LCG/shaderlib/framebuffer.hpp
                              ${CMAKE_SOURCE_DIR}/libs/LCG/shaderlib/shader.hpp
+                             ${CMAKE_SOURCE_DIR}/libs/LCG/shaderlib/mesh.hpp
+                             ${CMAKE_SOURCE_DIR}/libs/LCG/samples/imgproc/meanfilter.hpp
                              )	
 
 set( MOC_HEADERS GUI/Qt/MainWindow/MainWindow.hpp
