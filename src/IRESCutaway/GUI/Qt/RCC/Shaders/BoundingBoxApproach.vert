@@ -7,11 +7,6 @@ layout ( location = 3 ) in vec4 axis_z;
 layout ( location = 4 ) in vec4 extends;
 layout ( location = 5 ) in vec4 aperture;
 
-layout(std140) uniform CutVolumes
-{
-        vec4   center_points[63];
-        ivec4  size;
-}cutVolumes;
 
 out CubeData
 {
@@ -136,5 +131,5 @@ void main(void)
 	cube.n[4] = normal_right;
 	cube.n[5] = normal_left;
 
-	gl_Position = vec4(cutVolumes.center_points[gl_VertexID].xyz,1.0);
+	gl_Position = vec4(v[0]);
 }

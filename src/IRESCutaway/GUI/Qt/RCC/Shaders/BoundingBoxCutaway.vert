@@ -11,8 +11,6 @@ layout(location = 7) in vec4 v7;
 
 layout(location = 8)  in vec4 color;
 layout(location = 9)  in vec4 IJK;
-layout(location = 10) in vec4 focus;
-layout(location = 11) in vec4 center;
 
 /// FIXME - Do research and understand the best away to align data on Shader.
 out CubeData
@@ -71,5 +69,5 @@ void main(void)
                 cube.n[5] = vec4 ( normalize( normalMatrix * cross( (cube.v[4]-cube.v[0]).xyz , (cube.v[3]-cube.v[0]).xyz )),0.0);
                 cube.n[11]  = vec4 ( normalize( normalMatrix * cross( (cube.v[3]-cube.v[7]).xyz , (cube.v[4]-cube.v[7]).xyz )),0.0);
 
-		gl_Position =  center;
+		gl_Position =  v0;
 }

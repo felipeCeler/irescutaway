@@ -1,6 +1,5 @@
-#ifndef MYGLFRAME_H
-#define MYGLFRAME_H
-
+#ifndef GLWIDGET_H
+#define GLWIDGET_H
 
 ///
 #include "Cube.hpp"
@@ -14,19 +13,16 @@
 #include <Celer/OpenGL/Shader.hpp>
 #include <Celer/OpenGL/ShaderManager.hpp>
 	/// Math
-
 #include <Celer/Core/Geometry/Math/Vector3.hpp>
 #include <Celer/Core/Geometry/Math/Vector4.hpp>
 	/// Scene
 #include <Celer/Scene/Camera.hpp>
-	///
+/// LCG Libary
 #include <shaderlib/trackball.hpp>
 #include <shaderlib/framebuffer.hpp>
 #include <samples/imgproc/meanfilter.hpp>
-#include <QtOpenGL/QGLWidget>
-#include <QtOpenGL/QGLFramebufferObject>
 
-// Standard Library
+/// C++ Standard Library
 #include <limits>
 #include <stdio.h>
 #include <stdlib.h>
@@ -36,7 +32,8 @@
 #include <vector>
 #include <functional>
 
-
+/// Qt 4.8
+#include <QtOpenGL/QGLWidget>
 #include <QtGui/QMdiSubWindow>
 #include <QtCore/QTimer>
 #include <QtCore/QTimeLine>
@@ -77,7 +74,7 @@ class GLWidget: public QGLWidget
 
 	public slots:
 
-		// TODO Physics
+		/// TODO Physics
 		void gameLooping ( );
 		void fpsCounter ( );
 
@@ -137,40 +134,6 @@ class GLWidget: public QGLWidget
 
 private:
 
-
-        bool enable_blend_;
-        // FIXME Shell
-        GLuint vertexArray_shell;
-        GLuint vertexBuffer_shell_vertex_a;
-        GLuint vertexBuffer_shell_vertex_b;
-        GLuint vertexBuffer_shell_vertex_c;
-        GLuint vertexBuffer_shell_vertex_d;
-        GLuint vertexBuffer_shell_color;
-        GLuint vertexBuffer_shell_flags;
-        GLuint vertexBuffer_shell_Charles;
-
-        std::vector<Celer::Vector4<float> > shell_color;
-
-        Eigen::Vector2f convertToNormalizedDeviceCoordinates(Eigen::Vector2i position);
-	// About Scene
-	Celer::Camera<float> camera_;
-	float cameraStep_;
-	float scrollStep_;
-	float centerX_;
-	float centerY_;
-
-	// Uniform Buffers
-	GLuint  uniformBuffer_globalMatrices_;
-
-	struct Transformation
-	{
-			Celer::Matrix4x4<float> ModelMatrix;
-			Celer::Matrix4x4<float> ViewMatrix;
-			Celer::Matrix4x4<float> ProjectionMatrix;
- 	};
-
-	Transformation transformationMatrices_;
-
 	bool getVertices(unsigned int , float * vertices );
 
 
@@ -179,73 +142,8 @@ private:
 	QSet<int> keysPresseds_;
 	bool 	  buttonRelease_;
 
-	GLuint vertexArrayScreen;
-	GLuint screen_buffer;
-	GLuint texture_buffer;
-
 	bool isIRESOpen_;
 
-	// Cube in Interleaved VertexBuffer
-	// Use same layout location as vertexArray
-
-	// 1 Vertex Array
-	GLuint vertexArray_cube_interleaved;
-	// 1 Vertex Buffer
-	GLuint vertexBuffer_cube_interleaved;
-
-	struct CubeData
-	{
-		Celer::Vector4<float> vertices[8];
-		Celer::Vector4<float> color;
-		Celer::Vector4<float> IJK;
-		Celer::Vector4<float> focus;
-		Celer::Vector4<float> centroid;
-	};
-
-	std::vector<CubeData>           cube_interleaved;
-	Celer::OpenGL::ShaderManager    cube_interleaved_shader;
-
-	/// For 4 Vertex
-
-	// Cube in Interleaved VertexBuffer
-	// Use same layout location as vertexArray
-
-	// 1 Vertex Array
-	GLuint vertexArray_face_interleaved;
-	// 1 Vertex Buffer
-	GLuint vertexBuffer_face_interleaved;
-
-	struct FaceData
-	{
-		Celer::Vector4<float> vertices[4];
-		Celer::Vector4<float> color;
-		Celer::Vector4<float> IJK;
-		Celer::Vector4<float> focus;
-		Celer::Vector4<float> centroid;
-	};
-
-	std::vector<FaceData>           face_interleaved;
-	Celer::OpenGL::ShaderManager    face_interleaved_shader;
-
-
-	// Hong Kong Cutaway
-	Celer::OpenGL::ShaderManager    cutawayVolumes;
-
-
-	// Cut Volume Stuffs
-	GLuint                          uniformBuffer_cutVolumes_;
-
-
-	// Vector4<int> to mach std140 on shader. I'm still confusing.
-	// @link http://www.gamedev.net/topic/577950-glsl-uniform-block-std140-layout-question/
-	// @link http://stackoverflow.com/questions/15750788/glsl-layout-std140-padding-dilemma
-	struct CutVolume
-	{
-		Celer::Vector4<float> center_points[63];
-		Celer::Vector4<int>   size;
-	};
-
-	CutVolume cutVolume_;
 
 	Celer::BoundingBox3<float> 		   box;
 	std::list  <Celer::BoundingBox3<GLfloat> > boxes;
@@ -268,8 +166,6 @@ private:
 	GLuint vertexArray_cutBox;
 	GLuint vertexBuffer_cutBox;
 
-	QGLFramebufferObject*   fboStep[2];
-
 	// BoundingBox Visualization
 	Celer::OpenGL::ShaderManager    BoundingBoxInitialization;
 	Celer::OpenGL::ShaderManager    BoundingBoxDebug;
@@ -288,8 +184,14 @@ private:
 	float  zoom_angle_;
 	int    cluster;
 
+	/// -- ANIMATION  Stuffs ----------------------------------------------
+	// Celer Gaming Looping 0.1 -> For animation
+	QTimer fpsTimer_;
+	QTimer updateTimer_;
+	QElapsedTimer delta_time;
+	int fps;
 
-	// Controls over the rendering
+	/// -- RENDERING Stuffs  ----------------------------------------------
 	bool  isNoCutaway;
 	bool  isRawApproach;
 	bool  isIRESApproach;
@@ -297,7 +199,8 @@ private:
 	bool draw_secondary;
 	bool draw_primary;
 
-	int cont;
+	// Used in ires v1 to ires v2 conversion.
+	int blockIndex_;
 
 	int max_I_;
 	int min_I_;
@@ -306,40 +209,108 @@ private:
 	int max_K_;
 	int min_K_;
 
-	// Celer Gaming Looping 0.1 -> For animation
-	QTimer fpsTimer_;
-	QTimer updateTimer_;
-	QElapsedTimer delta_time;
-	int fps;
-
-    // lights
-    vector < Eigen::Vector3f > lights;
-
-	Celer::Matrix4x4<float> lookatCamera;
-
-	// Fixed view
-	bool freezeView_;
-
-    // Stores the freezed camera (view matrix)
-    Eigen::Matrix4f freeze_viewmatrix_;
-
-	// Aperture
-	float volume_width;
-	float volume_height;
-
-	float orthoZoom;
-	Celer::Matrix4x4<float> modelMatrix_;
-
-	// trackball
-	Trackball * trackball_;
-
-	bool dynamic_;
+	// lights
+	std::vector < Eigen::Vector3f > lights;
 
 	/// normal x y z + vertice .z
 	Framebuffer * depthFBO;
 
 	/// Smooth
 	MeanFilter * meanFilter;
+
+	// Cube in Interleaved VertexBuffer
+	// Use same layout location as vertexArray
+
+	// 1 Vertex Array
+	GLuint vertexArray_cuboid;
+	// 1 Vertex Buffer with 8 vertex which define a Cuboid
+	GLuint vertexBuffer_cuboid;
+
+	struct Cuboid
+	{
+		Celer::Vector4<float> vertices[8];
+	};
+
+	std::vector<Cuboid>           cuboids;
+
+	std::vector<Celer::Vector4<float> > cubeColor;
+	/// vec4 (R, G, B , 0 );
+		GLuint vertexBuffer_cube_color;
+	std::vector<Celer::Vector4<float> > cubeIJK;
+	/// vec4 (I, J, K , 0 );
+		GLuint vertexBuffer_cube_IJK;
+	std::vector<Celer::Vector4<float> > cubeFocus;
+	/// vec4 (Primary/Secundary , Actived  ,0.0 , 0.0);
+		GLuint vertexBuffer_cube_Focus;
+
+	/// -- Shell / Fracture Geometry
+
+	// Face in Interleaved VertexBuffer
+	// Use same layout location as vertexArray
+
+	// 1 Vertex Array
+	GLuint vertexArray_faceFeature;
+	// 1 Vertex Buffer
+	GLuint vertexBuffer_faceFeature;
+
+	struct FaceFeature
+	{
+		Celer::Vector4<float> vertices[4];
+	};
+
+	std::vector<Celer::Vector4<float> > facesFeatureColors;
+	/// vec4 (R, G, B , 0 );
+		GLuint vertexBuffer_faceColor;
+	std::vector<Celer::Vector4<float> > facesFeatureIJK;
+	/// vec4 (R, G, B , 0 );
+		GLuint vertexBuffer_faceIJK;
+	std::vector<Celer::Vector4<float> > facesFeatureType;
+	/// vec4 ( isShell, isFault, 0.0 , 0.0 );
+		GLuint vertexBuffer_faceType;
+
+	std::vector<FaceFeature>        facesFeature;
+
+        bool enable_blend_;
+
+	/// -- SCENE Stuffs ---------------------------------------------------
+
+	/// -- Aperture of Cutaway
+	float volume_width;
+	float volume_height;
+
+	// Stores the freezed camera (view matrix)
+	Eigen::Matrix4f freeze_viewmatrix_;
+	bool freezeView_;
+
+	// trackball
+	Trackball * trackball_;
+
+	float orthoZoom;
+	Celer::Matrix4x4<float> modelMatrix_;
+
+	// Uniform Buffers
+	GLuint  uniformBuffer_globalMatrices_;
+
+	struct Transformation
+	{
+			Celer::Matrix4x4<float> ModelMatrix;
+			Celer::Matrix4x4<float> ViewMatrix;
+			Celer::Matrix4x4<float> ProjectionMatrix;
+ 	};
+
+	Transformation transformationMatrices_;
+
+	bool dynamic_;
+
+	// LCG procudure
+        Eigen::Vector2f convertToNormalizedDeviceCoordinates(Eigen::Vector2i position);
+
+        // Old Celer Setup
+	Celer::Camera<float> camera_;
+	float cameraStep_;
+	float scrollStep_;
+	float centerX_;
+	float centerY_;
 
 };
 

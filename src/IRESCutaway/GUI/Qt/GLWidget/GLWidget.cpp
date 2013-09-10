@@ -59,59 +59,27 @@ void GLWidget::initializeGL ( )
 	angle = static_cast<float>(1.0/std::tan(scrollStep_ * Celer::Math::kDeg2Rad));
 
 
-    lights.push_back( Eigen::Vector3f( 0.5 , 0.5 , 1.0 ) );
-    lights.push_back( Eigen::Vector3f(-0.5 , 0.5 , 1.0 ) );
-    lights.push_back( Eigen::Vector3f( 0.0 , 0.0 , 1.0 ) );
-    lights.push_back( Eigen::Vector3f( 0.0 , 1.0 , 0.0 ) );
-
-
-	QGLFramebufferObjectFormat format;
-	format.setSamples(4);
-
-	format.setAttachment(QGLFramebufferObject::Depth);
-	format.setInternalTextureFormat ( GL_RGBA32F );
-
-	format.setTextureTarget ( GL_TEXTURE_2D );
-
-
-	fboStep[0] 	  = new  QGLFramebufferObject ( width() , height() , format );
-	fboStep[1] 	  = new  QGLFramebufferObject ( width() , height() , format );
-
+	lights.push_back ( Eigen::Vector3f ( 0.5 , 0.5 , 1.0 ) );
+	lights.push_back ( Eigen::Vector3f ( -0.5 , 0.5 , 1.0 ) );
+	lights.push_back ( Eigen::Vector3f ( 0.0 , 0.0 , 1.0 ) );
+	lights.push_back ( Eigen::Vector3f ( 0.0 , 1.0 , 0.0 ) );
 
 	// FIXME cutBox
 	glGenVertexArrays ( 1, &vertexArray_cutBox );
 		glGenBuffers ( 1,&vertexBuffer_cutBox );
 
-	// FIXME Shell
-	glGenVertexArrays (1 , &vertexArray_shell );
-		glGenBuffers ( 1, &vertexBuffer_shell_vertex_a );
-		glGenBuffers ( 1, &vertexBuffer_shell_vertex_b );
-		glGenBuffers ( 1, &vertexBuffer_shell_vertex_c );
-		glGenBuffers ( 1, &vertexBuffer_shell_vertex_d );
-		glGenBuffers ( 1, &vertexBuffer_shell_color);
-		glGenBuffers ( 1, &vertexBuffer_shell_flags );
-		glGenBuffers ( 1, &vertexBuffer_shell_Charles );
+	// Cuboid
+	glGenVertexArrays ( 1, &vertexArray_cuboid );
+		glGenBuffers  ( 1, &vertexBuffer_cuboid ); 	// Geometry
+		glGenBuffers  ( 1, &vertexBuffer_cube_color  ); // Property Color
+		glGenBuffers  ( 1, &vertexBuffer_cube_IJK  );   // Cube IJK
 
+	// Face Features
+	glGenVertexArrays ( 1, &vertexArray_faceFeature );
+		glGenBuffers ( 1, &vertexBuffer_faceFeature ); // Geometry
+		glGenBuffers ( 1, &vertexBuffer_faceColor );   // Property Color
+		glGenBuffers ( 1, &vertexBuffer_faceIJK );     // Face IJK
 
-	// Cube in Interleaved
-	glGenVertexArrays ( 1, &vertexArray_cube_interleaved );
-		glGenBuffers  ( 1, &vertexBuffer_cube_interleaved );
-
-	// Face in Interleaved
-	glGenVertexArrays ( 1, &vertexArray_face_interleaved );
-	// 1 Vertex Buffer
-		glGenBuffers ( 1, &vertexBuffer_face_interleaved);
-
-        int size_of_vertice = sizeof(Celer::Vector4<float>);
-        int size_of_struct  =  sizeof(CubeData);
-
-//        ///http://www.opengl.org/wiki/Vertex_Specification
-//        for ( int location = 0 ; location < 12 ; location++)
-//        {
-//                glEnableVertexAttribArray(location);
-//                glVertexAttribPointer(location, 4, GL_FLOAT, GL_FALSE, size_of_struct , reinterpret_cast<void*>(size_of_vertice * location));
-//        }
-//	/// ---
 
 	// Uniform Buffer Global Matrix
 
@@ -126,13 +94,6 @@ void GLWidget::initializeGL ( )
 	// @link http://www.opengl.org/discussion_boards/showthread.php/175577-Uniform-Buffer-confusion
 	glBindBufferBase(GL_UNIFORM_BUFFER, 0, uniformBuffer_globalMatrices_);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
-
-	// Uniform CutVolumes
-        glGenBuffers(1, &uniformBuffer_cutVolumes_);
-        glBindBuffer(GL_UNIFORM_BUFFER, uniformBuffer_cutVolumes_);
-        glBufferData(GL_UNIFORM_BUFFER, sizeof(cutVolume_), 0, GL_STREAM_DRAW);
-        glBindBufferBase(GL_UNIFORM_BUFFER, 1, uniformBuffer_cutVolumes_);
-        glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
 	draw_secondary = 1;
 	draw_primary = 0;
@@ -179,8 +140,6 @@ void GLWidget::initializeGL ( )
 
 	loadShaders ( );
 
-
-
 }
 
 bool GLWidget::isIRESOpen ( ) const
@@ -200,6 +159,8 @@ void GLWidget::cutVolumeGenerator( )
 
 	std::cout << " number of boxes initial " << boxes.size() << std::endl;
 
+	// For while we are not considering cluster, just individual cells.
+	// Clusters are just the union cell's bounding boxes.
 	while ( boxes.size ( ) != 0 )
 	{
 
@@ -232,7 +193,6 @@ void GLWidget::cutVolumeGenerator( )
 
 	box_vertices.resize( cutVolumes.size( ) );
 	int cont = 0;
-	int cutVolumeIndex = 0;
 
 	cutBoxs.resize( cutVolumes.size( ) );
 
@@ -291,20 +251,8 @@ void GLWidget::cutVolumeGenerator( )
 		                                               abs(it->box_max().z-it->box_min().z),1.0f);
 		cutBoxs[cont].aperture = Celer::Vector4<float>(1.0f,1.0f,1.0f,1.0f);
 
-		if ( cont < 63 )
-		{
-
-		        cutVolume_.center_points[cutVolumeIndex] = Celer::Vector4<float>(it->center( ),1.0);
-		        cout << cont << "  " << cutVolume_.center_points[cutVolumeIndex] << endl;
-		        cutVolumeIndex++;
-
-		}
 		cont++;
 	}
-
-	cutVolume_.size = Celer::Vector4<int> (cutVolumeIndex,0,0,0);
-
-
 
 	glBindVertexArray ( vertexArray_cutBox );
 
@@ -332,15 +280,10 @@ void GLWidget::cutVolumeGenerator( )
 		glVertexAttribPointer ( 0 , 3 , GL_FLOAT , GL_FALSE , 0 , 0 );
 	glBindVertexArray ( 0 );
 
-	glBindBuffer ( GL_UNIFORM_BUFFER , uniformBuffer_cutVolumes_);
-	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(this->cutVolume_), &this->cutVolume_ );
-	glBindBuffer ( GL_UNIFORM_BUFFER , 0);
-
 }
 
 void GLWidget::changePropertyRange ( const double& minRange, const double& maxRange, int property_index )
 {
-
 	boxes.clear ( );
 
 	dynamic_ = true;
@@ -348,9 +291,6 @@ void GLWidget::changePropertyRange ( const double& minRange, const double& maxRa
 
 	float min = *std::min_element ( reservoir_model_.static_porperties[property_index].values_.begin ( ) , reservoir_model_.static_porperties[property_index].values_.end ( ) );
 	float max = *std::max_element ( reservoir_model_.static_porperties[property_index].values_.begin ( ) , reservoir_model_.static_porperties[property_index].values_.end ( ) );
-
-	std::vector<Celer::Vector4<GLfloat> > colors ( 24 );
-	std::vector<Celer::Vector4<GLfloat> > renderFlags ( 24 );
 
 	Celer::Vector4<GLfloat> color;
 
@@ -378,12 +318,10 @@ void GLWidget::changePropertyRange ( const double& minRange, const double& maxRa
 
 			color = Celer::Vector4<GLfloat> ( red , green , blue , 1.0f );
 //
-			colors = std::vector<Celer::Vector4<GLfloat> > ( 24 , color );
 
 			if ( ( regularValue >= minRange ) && ( regularValue <= maxRange ) )
 			{
 				focus = Celer::Vector4<GLfloat> ( 0.0f , 1.0f , 0.0f , 1.0f );
-				renderFlags = std::vector<Celer::Vector4<GLfloat> > ( 24 , Celer::Vector4<GLfloat> ( 0.0f , 1.0f , 0.0f , 1.0f ) );
 				box.reset();
 				box.fromPointCloud ( reservoir_model_.blocks[i].vertices.begin ( ) , reservoir_model_.blocks[i].vertices.end ( ) );
 				boxes.push_back( box );
@@ -392,12 +330,15 @@ void GLWidget::changePropertyRange ( const double& minRange, const double& maxRa
 			else
 			{
 				focus = Celer::Vector4<GLfloat> ( 1.0f , 1.0f , 0.0f , 1.0f );
-				renderFlags = std::vector<Celer::Vector4<GLfloat> > ( 24 , Celer::Vector4<GLfloat> ( 1.0f , 1.0f , 0.0f , 1.0f ) );
 			}
 
-			cube_interleaved[index].color = color;
-			cube_interleaved[index].focus = focus;
-			index++;
+			// Cuboid
+			cubeColor[index] = color;
+			cubeFocus[index] = focus;
+			// Face Feature
+			facesFeatureColors[index] = color;
+
+ 			index++;
 		}
 		else
 		{
@@ -405,15 +346,31 @@ void GLWidget::changePropertyRange ( const double& minRange, const double& maxRa
 		}
 	}
 
+	for ( int shell_index = 0; shell_index < reservoir_model_.list_of_block_id.size() ; shell_index++ )
+	{
+		facesFeatureColors[shell_index] = cubeColor[reservoir_model_.list_of_block_id[shell_index]];
+	}
+
 	// Loop over the boxes
 	cutVolumeGenerator();
 
-	std::cout << " number of boxes " << cutVolume_.size << std::endl;
-
-	// Cube Interleaved
-	glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer_cube_interleaved);
-	glBufferData ( GL_ARRAY_BUFFER , cube_interleaved.size( ) * sizeof(cube_interleaved[0]) , &cube_interleaved[0] , GL_STATIC_DRAW );
+	// Cuboid
+	glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer_cube_color);
+	glBufferData ( GL_ARRAY_BUFFER , cubeColor.size( ) * sizeof(cubeColor[0]) , &cubeColor[0] , GL_STATIC_DRAW );
 	glBindBuffer( GL_ARRAY_BUFFER, 0);
+
+	glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer_cube_IJK);
+	glBufferData ( GL_ARRAY_BUFFER , cubeIJK.size( ) * sizeof(cubeIJK[0]) , &cubeIJK[0] , GL_STATIC_DRAW );
+	glBindBuffer( GL_ARRAY_BUFFER, 0);
+
+        glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer_cube_Focus);
+        glBufferData ( GL_ARRAY_BUFFER , cubeFocus.size( ) * sizeof(cubeFocus[0]) , &cubeFocus[0] , GL_STATIC_DRAW );
+        glBindBuffer( GL_ARRAY_BUFFER, 0);
+
+        // Face Features
+        glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer_faceColor);
+        glBufferData ( GL_ARRAY_BUFFER , facesFeatureColors.size( ) * sizeof(facesFeatureColors[0]) , &facesFeatureColors[0] , GL_STATIC_DRAW );
+        glBindBuffer( GL_ARRAY_BUFFER, 0);
 
     updateGL();
 
@@ -421,7 +378,6 @@ void GLWidget::changePropertyRange ( const double& minRange, const double& maxRa
 
 void GLWidget::changeProperty ( int property_index )
 {
-
 
 	std::cout << "Changing the property to : " << reservoir_model_.static_porperties[property_index].name << std::endl;
 
@@ -460,9 +416,8 @@ void GLWidget::changeProperty ( int property_index )
 
 			colors = std::vector<Celer::Vector4<GLfloat> > ( 24 , color );
 
-			cube_interleaved[index].color = color;
+			cubeColor[index] = color;
 			index++;
-
 
 		}
 		else
@@ -471,23 +426,19 @@ void GLWidget::changeProperty ( int property_index )
 		}
 	}
 
-	Celer::Vector4<GLfloat> shell_color;
 	for ( int shell_index = 0; shell_index < reservoir_model_.list_of_block_id.size() ; shell_index++ )
 	{
-		shell_color = cube_interleaved[reservoir_model_.list_of_block_id[shell_index]].color;
-			{
-				reservoir_model_.list_of_vertex_color[shell_index*3] = shell_color.x;
-				reservoir_model_.list_of_vertex_color[shell_index*3+1] = shell_color.y;
-				reservoir_model_.list_of_vertex_color[shell_index*3+2] = shell_color.z;
-			}
+		facesFeatureColors[shell_index] = cubeColor[reservoir_model_.list_of_block_id[shell_index]];
 	}
 
-	glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer_cube_interleaved);
-	glBufferData ( GL_ARRAY_BUFFER , cube_interleaved.size( ) * sizeof(cube_interleaved[0]) , &cube_interleaved[0] , GL_STATIC_DRAW );
+	// Cuboid
+	glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer_cube_color);
+	glBufferData ( GL_ARRAY_BUFFER , cubeColor.size( ) * sizeof(cubeColor[0]) , &cubeColor[0] , GL_STATIC_DRAW );
 	glBindBuffer( GL_ARRAY_BUFFER, 0);
 
-	glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer_shell_color );
-	glBufferData ( GL_ARRAY_BUFFER , reservoir_model_.list_of_vertex_color.size( ) * sizeof(reservoir_model_.list_of_vertex_color[0]) , &reservoir_model_.list_of_vertex_color[0] , GL_STATIC_DRAW );
+	// FaceFeature
+	glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer_faceColor );
+	glBufferData ( GL_ARRAY_BUFFER , facesFeatureColors.size( ) * sizeof(facesFeatureColors[0]) , &facesFeatureColors[0] , GL_STATIC_DRAW );
 	glBindBuffer( GL_ARRAY_BUFFER, 0);
 
 }
@@ -602,7 +553,7 @@ bool GLWidget::getVertices( unsigned int blockIndex, float * vertices )
 			vertices[22] = reservoir_model_.blocks[blockIndex].vertices[1].y;
 			vertices[23] = reservoir_model_.blocks[blockIndex].vertices[1].z;
 
-			cont = blockIndex;
+			blockIndex_ = blockIndex;
 
 			return true;
 
@@ -627,7 +578,7 @@ void GLWidget::IRESv1_to_IRESv2( const std::string& filename )
 
 	std::function<bool (unsigned int , float * )> fn = std::bind(&GLWidget::getVertices, this, std::placeholders::_1, std::placeholders::_2);
 
-	cont = 0;
+	blockIndex_ = 0;
 
 	new_reservoir_file_.buildVertexBlockLists(reservoir_model_.header_.number_of_Blocks_in_I_Direction,
 						  reservoir_model_.header_.number_of_Blocks_in_J_Direction,
@@ -646,7 +597,7 @@ void GLWidget::IRESv1_to_IRESv2( const std::string& filename )
 
 	new_reservoir_file_.setStaticProps(names,values);
 
-	std::cout << " Block Index " << cont  << std::endl;
+	std::cout << " Block Index " << blockIndex_  << std::endl;
 
 	new_reservoir_file_.setHeaderData("sapphire-208000", ires::Date(ires::Date::Year(2013), ires::Date::Month(6), ires::Date::Day(10)), 0);
 
@@ -659,7 +610,7 @@ void GLWidget::IRESv1_to_IRESv2( const std::string& filename )
 		new_reservoir_file_.readFile( "sapphire-208000.ires2.ires" );
 	}
 
-	std::size_t i = cont;
+	std::size_t i = blockIndex_;
 
 	std::vector<std::string > new_names;
 	std::vector<float> new_values;
@@ -685,8 +636,8 @@ void GLWidget::IRESv1_to_IRESv2( const std::string& filename )
 		for  ( std::size_t j = 0 ; j <  reservoir_model_.static_porperties.size() ; j++)
 		{
 			new_reservoir_file_.getStaticPropertyValues(j , new_values );
-			std::cout << " Ires 1.0 " << reservoir_model_.static_porperties[j].name << " : " << reservoir_model_.static_porperties[j].values_[cont] << std::endl;
-			std::cout << " Ires 2.0 " << new_names[j] <<  " : " << new_values[cont] << std::endl;
+			std::cout << " Ires 1.0 " << reservoir_model_.static_porperties[j].name << " : " << reservoir_model_.static_porperties[j].values_[blockIndex_] << std::endl;
+			std::cout << " Ires 2.0 " << new_names[j] <<  " : " << new_values[blockIndex_] << std::endl;
 
 		}
 
@@ -696,7 +647,6 @@ void GLWidget::IRESv1_to_IRESv2( const std::string& filename )
 
 void GLWidget::openIRESCharles( const std::string& filename )
 {
-
 	//reservoir_model_.openIRES( filename );
 
 	reservoir_model_.openIRES_Version_2( filename );
@@ -704,47 +654,53 @@ void GLWidget::openIRESCharles( const std::string& filename )
 	if ( reservoir_model_.blocks.size( ) > 0 )
 	{
 
-		cube_interleaved.clear();
+		cuboids.clear();
+		cubeColor.clear( );
+		cubeIJK.clear( );
+		cubeFocus.clear( );
 
-		face_interleaved.clear();
+		facesFeature.clear();
 
-		CubeData cube_temp;
+		facesFeature.resize ( reservoir_model_.list_of_block_id.size ( ) );
+		facesFeatureColors.resize ( reservoir_model_.list_of_block_id.size ( ) );
 
-		FaceData face_temp;
+		facesFeatureIJK.resize ( reservoir_model_.list_of_block_id.size ( ) );
+		facesFeatureType.resize ( reservoir_model_.list_of_block_id.size ( ) );
 
-		face_interleaved.resize(reservoir_model_.list_of_block_id.size());
 
 		for ( std::size_t i = 0; i < reservoir_model_.list_of_block_id.size( ) ; i++)
 		{
-			face_temp.vertices[0] = Celer::Vector4<float>( reservoir_model_.list_of_vertex_geometry_a[i*3],
+			facesFeature[i].vertices[0] = Celer::Vector4<float>( reservoir_model_.list_of_vertex_geometry_a[i*3],
 								       reservoir_model_.list_of_vertex_geometry_a[i*3+1],
 								       reservoir_model_.list_of_vertex_geometry_a[i*3+2],1.0);
 
-			face_temp.vertices[1] = Celer::Vector4<float>( reservoir_model_.list_of_vertex_geometry_b[i*3],
+			facesFeature[i].vertices[1] = Celer::Vector4<float>( reservoir_model_.list_of_vertex_geometry_b[i*3],
 								       reservoir_model_.list_of_vertex_geometry_b[i*3+1],
 								       reservoir_model_.list_of_vertex_geometry_b[i*3+2],1.0);
 
-			face_temp.vertices[2] = Celer::Vector4<float>( reservoir_model_.list_of_vertex_geometry_c[i*3],
+			facesFeature[i].vertices[2] = Celer::Vector4<float>( reservoir_model_.list_of_vertex_geometry_c[i*3],
 								       reservoir_model_.list_of_vertex_geometry_c[i*3+1],
 								       reservoir_model_.list_of_vertex_geometry_c[i*3+2],1.0);
 
-			face_temp.vertices[3] = Celer::Vector4<float>( reservoir_model_.list_of_vertex_geometry_d[i*3],
+			facesFeature[i].vertices[3] = Celer::Vector4<float>( reservoir_model_.list_of_vertex_geometry_d[i*3],
 								       reservoir_model_.list_of_vertex_geometry_d[i*3+1],
 								       reservoir_model_.list_of_vertex_geometry_d[i*3+2],1.0);
 
-			face_temp.color = Celer::Vector4<float> (1.0,0.0,0.0,1.0);
-			face_temp.IJK = Celer::Vector4<float> (1.0,0.0,0.0,1.0);
-			face_temp.focus = Celer::Vector4<float> (1.0,0.0,0.0,1.0);
-			face_temp.centroid = Celer::Vector4<float> (1.0,0.0,0.0,1.0);
+			facesFeatureColors[i] = Celer::Vector4<float> (1.0,0.0,0.0,1.0);
 
+			facesFeatureIJK[i] = Celer::Vector4<float> (1.0,0.0,0.0,1.0);
+			facesFeatureType[i] = Celer::Vector4<float> ( reservoir_model_.list_of_block_flag[i],
+							              reservoir_model_.list_of_block_flag[i],
+							              reservoir_model_.list_of_block_flag[i], 1.0f);
 
-			face_interleaved[i] = face_temp;
 		}
-
 
 		std::cout << " Face Interleaved = " << reservoir_model_.list_of_block_id.size() << std::endl;
 
-		cube_interleaved.resize(reservoir_model_.blocks.size( ));
+		cuboids.resize(reservoir_model_.blocks.size( ));
+		cubeColor.resize( reservoir_model_.blocks.size( ) );
+		cubeIJK.resize( reservoir_model_.blocks.size( ));
+		cubeFocus.resize( reservoir_model_.blocks.size( ));
 
 		int index = 0;
 		int I = 0;
@@ -761,43 +717,21 @@ void GLWidget::openIRESCharles( const std::string& filename )
 				J = reservoir_model_.header_v2_.numJ;
 				K = reservoir_model_.header_v2_.numK;
 
-				cube_temp.vertices[4] = reservoir_model_.blocks[i].vertices[0];
-				cube_temp.vertices[5] = reservoir_model_.blocks[i].vertices[1];
-				cube_temp.vertices[7] = reservoir_model_.blocks[i].vertices[2];
-				cube_temp.vertices[6] = reservoir_model_.blocks[i].vertices[3];
+				cuboids[index].vertices[4] = reservoir_model_.blocks[i].vertices[0];
+				cuboids[index].vertices[5] = reservoir_model_.blocks[i].vertices[1];
+				cuboids[index].vertices[7] = reservoir_model_.blocks[i].vertices[2];
+				cuboids[index].vertices[6] = reservoir_model_.blocks[i].vertices[3];
 
-				cube_temp.vertices[0] = reservoir_model_.blocks[i].vertices[4];
-				cube_temp.vertices[3] = reservoir_model_.blocks[i].vertices[5];
-				cube_temp.vertices[1] = reservoir_model_.blocks[i].vertices[6];
-				cube_temp.vertices[2] = reservoir_model_.blocks[i].vertices[7];
+				cuboids[index].vertices[0] = reservoir_model_.blocks[i].vertices[4];
+				cuboids[index].vertices[3] = reservoir_model_.blocks[i].vertices[5];
+				cuboids[index].vertices[1] = reservoir_model_.blocks[i].vertices[6];
+				cuboids[index].vertices[2] = reservoir_model_.blocks[i].vertices[7];
 
-				cube_temp.color  = Celer::Vector4<float> (1.0,0.0,0.0,1.0);
+				cubeColor[index]  = Celer::Vector4<float> (1.0,0.0,0.0,1.0);
 
-				if ( ((reservoir_model_.blocks[i].IJK[0].x > 0 ) && (reservoir_model_.blocks[i].IJK[0].x < I )) ||
-				     ((reservoir_model_.blocks[i].IJK[0].y > 0 ) && (reservoir_model_.blocks[i].IJK[0].y < J )) ||
-				     ((reservoir_model_.blocks[i].IJK[0].z > 0 ) && (reservoir_model_.blocks[i].IJK[0].z < K )) )
-				{
-					// Internal Cell;
-					cube_temp.IJK    = Celer::Vector4<float> ( reservoir_model_.blocks[i].IJK[0].x , reservoir_model_.blocks[i].IJK[0].y , reservoir_model_.blocks[i].IJK[0].z , 0.0f );
+				cubeIJK[index] = Celer::Vector4<float> ( reservoir_model_.blocks[i].IJK[0].x , reservoir_model_.blocks[i].IJK[0].y , reservoir_model_.blocks[i].IJK[0].z , 1.0f );
 
-				}else
-				{
-					// Surface  Cell;
-					cube_temp.IJK    = Celer::Vector4<float> ( reservoir_model_.blocks[i].IJK[0].x , reservoir_model_.blocks[i].IJK[0].y , reservoir_model_.blocks[i].IJK[0].z , 1.0f );
-
-				}
-
-				cube_temp.focus  = Celer::Vector4<float> ( 1.0f, 1.0f ,0.0f ,1.0f );
-
-				cube_temp.centroid = ( cube_temp.vertices[0] + cube_temp.vertices[1] +
-						       cube_temp.vertices[2] + cube_temp.vertices[3] +
-						       cube_temp.vertices[4] + cube_temp.vertices[5] +
-						       cube_temp.vertices[6] + cube_temp.vertices[7]
-						       ) ;
-				// 1/8 = 0.125
-				cube_temp.centroid *=  0.125 ;
-
-				cube_interleaved[index] = cube_temp;
+				cubeFocus[index] = Celer::Vector4<float> (1.0 ,0.0, 0.0 ,1.0 );
 
 				index++;
 
@@ -808,7 +742,7 @@ void GLWidget::openIRESCharles( const std::string& filename )
 			}
 		}
 
-		cube_interleaved.resize(  index  );
+		cuboids.resize(  index  );
 
 		changeProperty(0);
 
@@ -819,110 +753,89 @@ void GLWidget::openIRESCharles( const std::string& filename )
 		max_K_ = 0;
 		min_K_ = 0;
 
-
 		camera_.setPosition ( reservoir_model_.box_v2.center ( ) );
 		camera_.setTarget ( reservoir_model_.box_v2.center ( ) );
 		std::cout << reservoir_model_.box_v2.diagonal ( );
 		camera_.setOffset ( 3.0 * reservoir_model_.box_v2.diagonal ( ) );
 
-        //trackball_->translateModelMatrix( Eigen::Vector3f(reservoir_model_.box_v2.center ( ).x,reservoir_model_.box_v2.center ( ).y,reservoir_model_.box_v2.center ( ).z));
+		// trackball_->translateModelMatrix( Eigen::Vector3f(reservoir_model_.box_v2.center ( ).x,reservoir_model_.box_v2.center ( ).y,reservoir_model_.box_v2.center ( ).z));
 
 		camera_.setBehavior ( Celer::Camera<float>::REVOLVE_AROUND_MODE );
 
 		cameraStep_ = 0.001f;
 
-		glBindVertexArray ( vertexArray_cube_interleaved );
+		glBindVertexArray ( vertexArray_cuboid );
 
-                        glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer_cube_interleaved);
-                        glBufferData ( GL_ARRAY_BUFFER , cube_interleaved.size( ) * sizeof(cube_interleaved[0]) , &cube_interleaved[0] , GL_STATIC_DRAW );
+                        glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer_cuboid );
+                        glBufferData ( GL_ARRAY_BUFFER , cuboids.size( ) * sizeof(cuboids[0]) , &cuboids[0] , GL_STATIC_DRAW );
 
                         int size_of_vertice = sizeof(Celer::Vector4<float>);
-                        int size_of_struct  =  sizeof(CubeData);
-
-                        //http://www.opengl.org/wiki/Vertex_Specification
-                        for ( int location = 0 ; location < 12 ; location++)
-                        {
-                                glEnableVertexAttribArray(location);
-                                glVertexAttribPointer(location, 4, GL_FLOAT, GL_FALSE, size_of_struct , reinterpret_cast<void*>(size_of_vertice * location));
-                        }
-
-                glBindVertexArray(0);
-
-//                for ( int i = 0; i < 24 ; i++)
-//                {
-//                	std::cout << " Geo = " << reservoir_model_.list_of_vertex_geometry[i] << std::endl;
-//                }
-
-
-		glBindVertexArray ( vertexArray_face_interleaved );
-
-                        glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer_face_interleaved);
-                        glBufferData ( GL_ARRAY_BUFFER , face_interleaved.size( ) * sizeof(face_interleaved[0]) , &face_interleaved[0] , GL_STATIC_DRAW );
-
-                        int size_of_vertice_face = sizeof(Celer::Vector4<float>);
-                        int size_of_struct_face  =  sizeof(FaceData);
+                        int size_of_struct  =  sizeof(Cuboid);
 
                         //http://www.opengl.org/wiki/Vertex_Specification
                         for ( int location = 0 ; location < 8 ; location++)
                         {
                                 glEnableVertexAttribArray(location);
-                                glVertexAttribPointer(location, 4, GL_FLOAT, GL_FALSE, size_of_struct_face , reinterpret_cast<void*>(size_of_vertice_face * location));
+                                glVertexAttribPointer(location, 4, GL_FLOAT, GL_FALSE, size_of_struct , reinterpret_cast<void*>(size_of_vertice * location));
                         }
+
+                        glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer_cube_color);
+                        glBufferData ( GL_ARRAY_BUFFER , cubeColor.size( ) * sizeof(cubeColor[0]) , &cubeColor[0] , GL_STATIC_DRAW );
+
+                        glEnableVertexAttribArray(8);
+                        glVertexAttribPointer(8, 4, GL_FLOAT, GL_FALSE, 0, 0);
+
+                        glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer_cube_IJK);
+                        glBufferData ( GL_ARRAY_BUFFER , cubeIJK.size( ) * sizeof(cubeIJK[0]) , &cubeIJK[0] , GL_STATIC_DRAW );
+
+                        glEnableVertexAttribArray(9);
+                        glVertexAttribPointer(9, 4, GL_FLOAT, GL_FALSE, 0, 0);
+
+                        glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer_cube_Focus);
+                        glBufferData ( GL_ARRAY_BUFFER , cubeFocus.size( ) * sizeof(cubeFocus[0]) , &cubeFocus[0] , GL_STATIC_DRAW );
+
+                        glEnableVertexAttribArray(10);
+                        glVertexAttribPointer(10, 4, GL_FLOAT, GL_FALSE, 0, 0);
+
 
                 glBindVertexArray(0);
 
-                glBindVertexArray ( vertexArray_shell );
-                	glBindBuffer ( GL_ARRAY_BUFFER, vertexBuffer_shell_vertex_a );
-                	glBufferData ( GL_ARRAY_BUFFER, reservoir_model_.list_of_vertex_geometry_a.size() * sizeof (reservoir_model_.list_of_vertex_geometry_a[0]),
-                			        &reservoir_model_.list_of_vertex_geometry_a[0],GL_STATIC_DRAW);
+                /// FacesFeatures
 
-                	glEnableVertexAttribArray(0);
-                	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0 ,0);
+		glBindVertexArray ( vertexArray_faceFeature );
 
-                	glBindBuffer ( GL_ARRAY_BUFFER, vertexBuffer_shell_vertex_b );
-                	glBufferData ( GL_ARRAY_BUFFER, reservoir_model_.list_of_vertex_geometry_b.size() * sizeof (reservoir_model_.list_of_vertex_geometry_b[0]),
-                			        &reservoir_model_.list_of_vertex_geometry_b[0],GL_STATIC_DRAW);
+                        glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer_faceFeature );
+                        glBufferData ( GL_ARRAY_BUFFER , facesFeature.size( ) * sizeof(facesFeature[0]) , &facesFeature[0] , GL_STATIC_DRAW );
 
-                	glEnableVertexAttribArray(1);
-                	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
+                        int size_of_vertice_face = sizeof(Celer::Vector4<float>);
+                        int size_of_struct_face  =  sizeof(FaceFeature);
 
-                	glBindBuffer ( GL_ARRAY_BUFFER, vertexBuffer_shell_vertex_c );
-                	glBufferData ( GL_ARRAY_BUFFER, reservoir_model_.list_of_vertex_geometry_c.size() * sizeof (reservoir_model_.list_of_vertex_geometry_c[0]),
-                			        &reservoir_model_.list_of_vertex_geometry_c[0],GL_STATIC_DRAW);
+                        //http://www.opengl.org/wiki/Vertex_Specification
+                        for ( int location = 0 ; location < 4 ; location++)
+                        {
+                                glEnableVertexAttribArray(location);
+                                glVertexAttribPointer(location, 4, GL_FLOAT, GL_FALSE, size_of_struct_face , reinterpret_cast<void*>(size_of_vertice_face * location));
+                        }
 
-                	glEnableVertexAttribArray(2);
-                	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, 0);
+                        glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer_faceType);
+                        glBufferData ( GL_ARRAY_BUFFER , facesFeatureType.size( ) * sizeof(facesFeatureType[0]) , &facesFeatureType[0] , GL_STATIC_DRAW );
 
-                	glBindBuffer ( GL_ARRAY_BUFFER, vertexBuffer_shell_vertex_d );
-                	glBufferData ( GL_ARRAY_BUFFER, reservoir_model_.list_of_vertex_geometry_d.size() * sizeof (reservoir_model_.list_of_vertex_geometry_d[0]),
-                			        &reservoir_model_.list_of_vertex_geometry_d[0],GL_STATIC_DRAW);
+                        glEnableVertexAttribArray(4);
+                        glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
-                	glEnableVertexAttribArray(3);
-                	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 0, 0);
+                        glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer_faceColor);
+                        glBufferData ( GL_ARRAY_BUFFER , facesFeatureColors.size( ) * sizeof(facesFeatureColors[0]) , &facesFeatureColors[0] , GL_STATIC_DRAW );
 
+                        glEnableVertexAttribArray(5);
+                        glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
-                	glBindBuffer ( GL_ARRAY_BUFFER, vertexBuffer_shell_flags );
-                	glBufferData ( GL_ARRAY_BUFFER, reservoir_model_.list_of_block_flag.size() * sizeof (reservoir_model_.list_of_block_flag[0]),
-                			        &reservoir_model_.list_of_block_flag[0],GL_STATIC_DRAW);
+                        glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer_faceIJK);
+                        glBufferData ( GL_ARRAY_BUFFER , facesFeatureIJK.size( ) * sizeof(facesFeatureIJK[0]) , &facesFeatureIJK[0] , GL_STATIC_DRAW );
 
-                	glEnableVertexAttribArray(4);
-                	glVertexAttribIPointer(4, 1, GL_INT, GL_FALSE, 0 );
+                        glEnableVertexAttribArray(6);
+                        glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
-
-                	glBindBuffer ( GL_ARRAY_BUFFER, vertexBuffer_shell_color );
-                	glBufferData ( GL_ARRAY_BUFFER, reservoir_model_.list_of_vertex_color.size() * sizeof (reservoir_model_.list_of_vertex_color[0]),
-                			        &reservoir_model_.list_of_vertex_color[0],GL_STATIC_DRAW);
-
-                	glEnableVertexAttribArray(5);
-                	glVertexAttribPointer(5, 3, GL_FLOAT, GL_FALSE, 0, 0);
-
-                	glBindBuffer ( GL_ARRAY_BUFFER, vertexBuffer_shell_Charles );
-                	glBufferData ( GL_ARRAY_BUFFER, reservoir_model_.list_of_vertex_geometry_charles.size() * sizeof (reservoir_model_.list_of_vertex_geometry_charles[0]),
-                			        &reservoir_model_.list_of_vertex_geometry_charles[0],GL_STATIC_DRAW);
-
-                	glEnableVertexAttribArray(6);
-                	glVertexAttribPointer(6, 3, GL_FLOAT, GL_FALSE, 0 ,0);
-                glBindVertexArray (0);
+                glBindVertexArray(0);
 
 		isIRESOpen_ = 1;
 	}
@@ -935,7 +848,6 @@ void GLWidget::openIRESCharles( const std::string& filename )
 
 void GLWidget::resizeGL ( int width , int height )
 {
-	makeCurrent();
 	glViewport ( 0 , 0 , width , height );
 	camera_.setWindowSize ( width , height );
 
@@ -949,12 +861,6 @@ void GLWidget::resizeGL ( int width , int height )
 	centerX_ = static_cast<float> ( width * 0.5 );
 	centerY_ = static_cast<float> ( height * 0.5 );
 
-	if ( fboStep[0] )
-		delete fboStep[0];
-
-	if ( fboStep[1] )
-		delete fboStep[1];
-
 
 	if (depthFBO)
 		delete depthFBO;
@@ -964,17 +870,6 @@ void GLWidget::resizeGL ( int width , int height )
 	depthFBO = new Framebuffer( width , height, 2 );
 
 	meanFilter->resize(width, height);
-
-	QGLFramebufferObjectFormat format;
-	format.setAttachment(QGLFramebufferObject::Depth);
-
-	format.setTextureTarget ( GL_TEXTURE_2D );
-
-	format.setInternalTextureFormat ( GL_RGBA32F );
-
-	fboStep[0] = new QGLFramebufferObject ( width , height , format );
-	fboStep[1] = new QGLFramebufferObject ( width , height , format );
-
 
 
 }
@@ -1017,7 +912,6 @@ void GLWidget::drawCutawaySurface ( )
 
 		BoundingBoxInitialization.deactive ( );
 
-		errorCheckFunc(__FILE__, __LINE__);
 		//fboStep[0]->release ( );
 		glDrawBuffer(GL_COLOR_ATTACHMENT0+1);
 
@@ -1057,6 +951,7 @@ void GLWidget::drawCutawaySurface ( )
 	}
 
 }
+
 void GLWidget::drawSecundary ( )
 {
 	if ( enable_blend_ )
@@ -1088,8 +983,8 @@ void GLWidget::drawSecundary ( )
 	glUniformMatrix4fv ( shell.uniforms_["ViewMatrix"].location , 1 , GL_FALSE , trackball_->getViewMatrix ( ).data ( ) );
 	glUniformMatrix4fv ( shell.uniforms_["ProjectionMatrix"].location , 1 , GL_FALSE , trackball_->getProjectionMatrix ( ).data ( ) );
 
-	glBindVertexArray ( vertexArray_shell );
-	glDrawArrays ( GL_POINTS , 0 , reservoir_model_.list_of_vertex_geometry_d.size ( ) );
+	glBindVertexArray ( vertexArray_faceFeature );
+	glDrawArrays ( GL_POINTS , 0 , facesFeature.size ( ) );
 	glBindVertexArray ( 0 );
 
 	shell.deactive ( );
@@ -1117,8 +1012,8 @@ void GLWidget::drawSecundary ( )
 	glUniformMatrix4fv ( BoundingBoxCutaway.uniforms_["ViewMatrix"].location , 1 , GL_FALSE , trackball_->getViewMatrix ( ).data ( ) );
 	glUniformMatrix4fv ( BoundingBoxCutaway.uniforms_["ProjectionMatrix"].location , 1 , GL_FALSE , trackball_->getProjectionMatrix ( ).data ( ) );
 
-	glBindVertexArray ( vertexArray_cube_interleaved );
-	glDrawArrays ( GL_POINTS , 0 , cube_interleaved.size ( ) );
+	glBindVertexArray ( vertexArray_cuboid );
+	glDrawArrays ( GL_POINTS , 0 , cuboids.size ( ) );
 	glBindVertexArray ( 0 );
 
 	BoundingBoxCutaway.deactive ( );
@@ -1149,8 +1044,8 @@ void GLWidget::drawPrimary( )
 	glUniformMatrix4fv ( primary.uniforms_["ViewMatrix"].location , 1 , GL_FALSE , trackball_->getViewMatrix ( ).data ( ) );
 	glUniformMatrix4fv ( primary.uniforms_["ProjectionMatrix"].location , 1 , GL_FALSE , trackball_->getProjectionMatrix ( ).data ( ) );
 
-	glBindVertexArray ( vertexArray_cube_interleaved );
-	glDrawArrays ( GL_POINTS , 0 , cube_interleaved.size ( ) );
+	glBindVertexArray ( vertexArray_cuboid );
+	glDrawArrays ( GL_POINTS , 0 , cuboids.size ( ) );
 	glBindVertexArray ( 0 );
 
 	primary.deactive ( );
@@ -1210,7 +1105,7 @@ void GLWidget::NoCutaway ( )
         glClearColor ( 1.0 , 1.0 , 1.0 , 1.0 );
         glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-        if ( draw_secondary && (cube_interleaved.size() != 0) )
+        if ( draw_secondary && (cuboids.size() != 0) )
         {
 //                secondary.active ( );
 //
@@ -1237,8 +1132,8 @@ void GLWidget::NoCutaway ( )
 		glUniformMatrix4fv ( shell.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
 		glUniformMatrix4fv ( shell.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
 
-		glBindVertexArray ( vertexArray_shell );
-		glDrawArrays ( GL_POINTS , 0 ,reservoir_model_.list_of_vertex_geometry_d.size());
+		glBindVertexArray ( vertexArray_faceFeature );
+		glDrawArrays ( GL_POINTS , 0 ,facesFeature.size());
 		glBindVertexArray ( 0 );
 
 		shell.deactive ( );
@@ -1249,7 +1144,7 @@ void GLWidget::NoCutaway ( )
                 //glUniformMatrix4fv ( primary.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
         }
 
-        if ( draw_primary && (cube_interleaved.size() != 0)  )
+        if ( draw_primary && (cuboids.size() != 0)  )
         {
 //                primary.active ( );
 //
@@ -1318,149 +1213,6 @@ void GLWidget::IRESCutaway ( )
 //
         glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
         glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-
-        if ( isIRESOpen_ )
-        {
-                if ( draw_secondary )
-                {
-                        if ( cutVolumes.size ( ) > 0 )
-                        {
-                                glDepthFunc ( GL_GREATER);
-                                glClearDepth ( 0.0 );
-
-                                fboStep[0]->bind ( );
-
-                                glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
-                                glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-
-                                BoundingBoxInitialization.active ( );
-
-                                glUniform1f ( BoundingBoxInitialization.uniforms_["x"].location , volume_width );
-                                glUniform1f ( BoundingBoxInitialization.uniforms_["y"].location , volume_height );
-//                                glUniform3fv ( BoundingBoxInitialization.uniforms_["new_x"].location , 1 , new_x );
-//                                glUniform3fv ( BoundingBoxInitialization.uniforms_["new_y"].location , 1 , new_y );
-//                                glUniform3fv ( BoundingBoxInitialization.uniforms_["new_z"].location , 1 , new_z );
-                                glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ModelMatrix"].location , 1 , GL_FALSE , trackball_->getModelMatrix().data() );
-                                glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ViewMatrix"].location , 1 , GL_FALSE , trackball_->getViewMatrix().data() );
-                                glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ProjectionMatrix"].location , 1 , GL_FALSE , trackball_->getProjectionMatrix().data() );
-
-                                //glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ModelMatrix"].location , 1 , GL_TRUE , lookatCamera );
-                                //glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-                                //glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
-                                //VAO
-                                glBindVertexArray ( vertexArray_box );
-                                glDrawArrays ( GL_POINTS , 0 , cutVolume_.size.x);
-                                glBindVertexArray ( 0 );
-
-                                BoundingBoxInitialization.deactive ( );
-
-                                fboStep[0]->release ( );
-
-
-                                glDepthFunc(GL_LESS);
-                                glClearDepth( 1.0f );
-
-                                glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
-                                glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-//
-                                cutawayVolumes.active();
-
-                                glActiveTexture ( GL_TEXTURE0 );
-                                glBindTexture ( GL_TEXTURE_2D , fboStep[0]->texture ( ) );
-
-                                glUniform1i ( cutawayVolumes.uniforms_["depthBuffer"].location , 0 );
-                                glUniform1i ( cutawayVolumes.uniforms_["verticeBuffer"].location , 1 );
-
-                                glUniform1f ( cutawayVolumes.uniforms_["x"].location , volume_width );
-                                glUniform1f ( cutawayVolumes.uniforms_["y"].location , volume_height );
-
-//                                glUniform3fv ( cutawayVolumes.uniforms_["new_x"].location , 1 ,  new_x );
-//                                glUniform3fv ( cutawayVolumes.uniforms_["new_y"].location , 1 ,  new_y );
-//                                glUniform3fv ( cutawayVolumes.uniforms_["new_z"].location , 1 ,  new_z );
-
-                                glUniform2f ( cutawayVolumes.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
-
-                                glBindVertexArray ( vertexArray_cube_interleaved );
-                                glDrawArrays ( GL_POINTS , 0 , cube_interleaved.size() );
-                                glBindVertexArray ( 0 );
-
-                                cutawayVolumes.deactive();
-
-                        }
-                        else
-                        {
-
-                                glDepthFunc(GL_LESS);
-                                glClearDepth( 1.0f );
-
-                                glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
-                                glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-
-                                cutawayVolumes.active ( );
-
-                                //glUniform3fv ( cutawayVolumes.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
-                                glUniform3fv ( cutawayVolumes.uniforms_["lightDirection"].location , 0 , trackball_->getCenter().data( ) );
-                                glUniform3i  ( cutawayVolumes.uniforms_["min_IJK"].location , min_I_, min_J_, min_K_ );
-                                glUniform3i  ( cutawayVolumes.uniforms_["max_IJK"].location , max_I_, max_J_, max_K_ );
-                                glUniform2f  ( cutawayVolumes.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
-
-                                glBindVertexArray ( vertexArray_cube_interleaved );
-                                glDrawArrays ( GL_POINTS , 0 , cube_interleaved.size() );
-                                glBindVertexArray ( 0 );
-
-                                cutawayVolumes.deactive ( );
-
-
-                        }
-
-
-                }
-                if ( draw_primary )
-                {
-
-                        primary.active ( );
-
-                        glUniform3fv ( primary.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
-
-                        glUniform2f ( primary.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
-
-                        //glUniformMatrix4fv ( primary.uniforms_["ModelMatrix"].location , 1 , GL_FALSE , trackball_->getModelMatrix().data() );
-                        glUniformMatrix4fv ( primary.uniforms_["ViewMatrix"].location , 1 , GL_FALSE , trackball_->getViewMatrix().data() );
-                        glUniformMatrix4fv ( primary.uniforms_["ProjectionMatrix"].location , 1 , GL_FALSE , trackball_->getProjectionMatrix().data() );
-
-                        //glUniformMatrix4fv ( primary.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-                        //glUniformMatrix4fv ( primary.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
-
-                        glBindVertexArray ( vertexArray_cube_interleaved );
-                        glDrawArrays ( GL_POINTS , 0 , cube_interleaved.size() );
-                        glBindVertexArray ( 0 );
-
-                        primary.deactive ( );
-
-//                      glEnable ( GL_BLEND );
-//                      glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
-//
-//                      cutVolume.active ( );
-//
-//                      glUniform3fv ( cutVolume.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
-//
-//                      glUniform2f ( cutVolume.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
-//
-//                      glUniformMatrix4fv ( cutVolume.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-//                      glUniformMatrix4fv ( cutVolume.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
-//
-//                      glBindVertexArray ( vertexArray_box );
-//                      glDrawArrays ( GL_LINES_ADJACENCY , 0 , box_vertices.size() );
-//                      glBindVertexArray ( 0 );
-//
-//                      cutVolume.deactive ( );
-//                      glDisable ( GL_BLEND );
-
-
-                }
-
-        }
-
 }
 
 void GLWidget::gameLooping ( )
@@ -1497,7 +1249,7 @@ void GLWidget::loadShaders ( )
 	#elif defined(__linux__)               // Linux Directory Style
 	/* Do linux stuff */
     //QString shaderDirectory ("/home/ricardomarroquim/devel/irescutaway/src/IRESCutaway/GUI/Qt/RCC/Shaders/");
-    QString shaderDirectory ("/media/d/Workspace/IRESCutaway/src/IRESCutaway/GUI/Qt/RCC/Shaders/");
+	QString shaderDirectory ("/media/d/Workspace/IRESCutaway/src/IRESCutaway/GUI/Qt/RCC/Shaders/");
 	#else
 	/* Error, both can't be defined or undefined same time */
 	#endif
@@ -1543,10 +1295,6 @@ void GLWidget::loadShaders ( )
 			   (shaderDirectory + "DebugNormal.frag").toStdString());
 
 
-	cutawayVolumes.create("cutawayVolumes", (shaderDirectory + "cutawayVolumes.vert").toStdString(),
-			     (shaderDirectory   + "cutawayVolumes.geom").toStdString(),
-			     (shaderDirectory   + "cutawayVolumes.frag").toStdString());
-
 	shell.create("Shell", (shaderDirectory + "Shell.vert").toStdString(),
 			      (shaderDirectory + "Shell.geom").toStdString(),
 			      (shaderDirectory + "Shell.frag").toStdString());
@@ -1556,12 +1304,6 @@ void GLWidget::loadShaders ( )
 	// For earch program where the uniform is defined, build a link to the Uniform Block bind.
 
 	glUniformBlockBinding(secondary.id( ), secondary.uniform_blocks_["GlobalMatrices"].index, 0);
-	glUniformBlockBinding(cutawayVolumes.id( ), cutawayVolumes.uniform_blocks_["GlobalMatrices"].index, 0);
-	// CutVolume Uniform Binds
-
-	glUniformBlockBinding(cutawayVolumes.id( ), cutawayVolumes.uniform_blocks_["CutVolumes"].index, 1);
-	glUniformBlockBinding(BoundingBoxInitialization.id( ), BoundingBoxInitialization.uniform_blocks_["CutVolumes"].index, 1);
-	glUniformBlockBinding(BoundingBoxDebug.id( ), BoundingBoxDebug.uniform_blocks_["CutVolumes"].index, 1);
 
 }
 /// KeyInput
@@ -1862,14 +1604,14 @@ void GLWidget::dragLeaveEvent(QDragLeaveEvent *event)
 
 void GLWidget::setPrimaryVisibility( bool visibility )
 {
-	if ( cube_interleaved.size() > 0 )
+	if ( cuboids.size() > 0 )
 		draw_primary = visibility;
 	updateGL();
 }
 
 void GLWidget::setSecondaryVisibility( bool visibility )
 {
-	if ( cube_interleaved.size() > 0 )
+	if ( cuboids.size() > 0 )
 		draw_secondary = visibility;
 	updateGL();
 }
