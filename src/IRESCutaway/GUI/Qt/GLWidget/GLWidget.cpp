@@ -47,17 +47,8 @@ void GLWidget::initializeGL ( )
 
 	isIRESOpen_ = 0;
 
-	scrollStep_ = 45.0f;
 	zoom_angle_ = 45.0f;
 	orthoZoom   = 1.0f;
-
-	modelMatrix_ = Celer::Matrix4x4<float> ( 1.0f,0.0f,0.0f,0.0,
-					         0.0f,1.0f,0.0f,0.0,
-					         0.0f,0.0f,1.0f,0.0,
-					         0.0f,0.0f,0.0f,1.0);
-
-	angle = static_cast<float>(1.0/std::tan(scrollStep_ * Celer::Math::kDeg2Rad));
-
 
 	lights.push_back ( Eigen::Vector3f ( 0.5 , 0.5 , 1.0 ) );
 	lights.push_back ( Eigen::Vector3f ( -0.5 , 0.5 , 1.0 ) );
@@ -79,21 +70,6 @@ void GLWidget::initializeGL ( )
 		glGenBuffers ( 1, &vertexBuffer_faceFeature ); // Geometry
 		glGenBuffers ( 1, &vertexBuffer_faceColor );   // Property Color
 		glGenBuffers ( 1, &vertexBuffer_faceIJK );     // Face IJK
-
-
-	// Uniform Buffer Global Matrix
-
-	glGenBuffers(1, &uniformBuffer_globalMatrices_);
-	glBindBuffer(GL_UNIFORM_BUFFER, uniformBuffer_globalMatrices_);
-	glBufferData(GL_UNIFORM_BUFFER, sizeof(transformationMatrices_), 0, GL_STREAM_DRAW);
-	// Like glActiveTexture + glBindTexture() combo, we need a slot in the opengl
-	// context to share the uniform buffer information. The same value need to be
-	// bind to the glsl program. In this case slot Zero.
-	// The glUniformBlockBinding() is like the glUniform1i() for textures.
-	// The glBindBufferBase is like the glBindTexture() for textures.
-	// @link http://www.opengl.org/discussion_boards/showthread.php/175577-Uniform-Buffer-confusion
-	glBindBufferBase(GL_UNIFORM_BUFFER, 0, uniformBuffer_globalMatrices_);
-	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
 	draw_secondary = 1;
 	draw_primary = 0;
@@ -242,14 +218,14 @@ void GLWidget::cutVolumeGenerator( )
 
 		box_vertices[cont] = it->center( );
 
-		cutBoxs[cont].center  =  it->center( );
-		cutBoxs[cont].axis[0] =  Celer::Vector4<float>(1.0f,0.0f,0.0f,1.0f);
-		cutBoxs[cont].axis[1] =  Celer::Vector4<float>(0.0f,1.0f,0.0f,1.0f);
-		cutBoxs[cont].axis[2] =  Celer::Vector4<float>(0.0f,0.0f,1.0f,1.0f);
-		cutBoxs[cont].extent  =  Celer::Vector4<float>(abs(it->box_max().x-it->box_min().x),
+		cutBoxs[cont].center  =  Eigen::Vector4f(it->center( ).x,it->center( ).y,it->center( ).z,1.0f);
+		cutBoxs[cont].axis[0] =  Eigen::Vector4f(1.0f,0.0f,0.0f,1.0f);
+		cutBoxs[cont].axis[1] =  Eigen::Vector4f(0.0f,1.0f,0.0f,1.0f);
+		cutBoxs[cont].axis[2] =  Eigen::Vector4f(0.0f,0.0f,1.0f,1.0f);
+		cutBoxs[cont].extent  =  Eigen::Vector4f(abs(it->box_max().x-it->box_min().x),
                                                                abs(it->box_max().y-it->box_min().y),
 		                                               abs(it->box_max().z-it->box_min().z),1.0f);
-		cutBoxs[cont].aperture = Celer::Vector4<float>(1.0f,1.0f,1.0f,1.0f);
+		cutBoxs[cont].aperture = Eigen::Vector4f(1.0f,1.0f,1.0f,1.0f);
 
 		cont++;
 	}
@@ -259,7 +235,7 @@ void GLWidget::cutVolumeGenerator( )
                 glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer_cutBox );
                 glBufferData ( GL_ARRAY_BUFFER , cutBoxs.size( ) * sizeof(cutBoxs[0]) , &cutBoxs[0] , GL_STATIC_DRAW );
 
-                int size_of_vertice = sizeof(Celer::Vector4<float>);
+                int size_of_vertice = sizeof(Eigen::Vector4f);
                 int size_of_struct  =  sizeof(CutBox);
 
                 //http://www.opengl.org/wiki/Vertex_Specification
@@ -333,10 +309,10 @@ void GLWidget::changePropertyRange ( const double& minRange, const double& maxRa
 			}
 
 			// Cuboid
-			cubeColor[index] = color;
-			cubeFocus[index] = focus;
+			cubeColor[index] = Eigen::Vector4f(color.x,color.y,color.z,color.w);
+			cubeFocus[index] = Eigen::Vector4f(focus.x,focus.y,focus.z,focus.w);
 			// Face Feature
-			facesFeatureColors[index] = color;
+			facesFeatureColors[index] = Eigen::Vector4f(color.x,color.y,color.z,color.w);
 
  			index++;
 		}
@@ -416,7 +392,7 @@ void GLWidget::changeProperty ( int property_index )
 
 			colors = std::vector<Celer::Vector4<GLfloat> > ( 24 , color );
 
-			cubeColor[index] = color;
+			cubeColor[index] = Eigen::Vector4f( color.x,color.y,color.z,color.w );
 			index++;
 
 		}
@@ -670,26 +646,26 @@ void GLWidget::openIRESCharles( const std::string& filename )
 
 		for ( std::size_t i = 0; i < reservoir_model_.list_of_block_id.size( ) ; i++)
 		{
-			facesFeature[i].vertices[0] = Celer::Vector4<float>( reservoir_model_.list_of_vertex_geometry_a[i*3],
+			facesFeature[i].vertices[0] = Eigen::Vector4f( reservoir_model_.list_of_vertex_geometry_a[i*3],
 								       reservoir_model_.list_of_vertex_geometry_a[i*3+1],
 								       reservoir_model_.list_of_vertex_geometry_a[i*3+2],1.0);
 
-			facesFeature[i].vertices[1] = Celer::Vector4<float>( reservoir_model_.list_of_vertex_geometry_b[i*3],
+			facesFeature[i].vertices[1] = Eigen::Vector4f( reservoir_model_.list_of_vertex_geometry_b[i*3],
 								       reservoir_model_.list_of_vertex_geometry_b[i*3+1],
 								       reservoir_model_.list_of_vertex_geometry_b[i*3+2],1.0);
 
-			facesFeature[i].vertices[2] = Celer::Vector4<float>( reservoir_model_.list_of_vertex_geometry_c[i*3],
+			facesFeature[i].vertices[2] = Eigen::Vector4f( reservoir_model_.list_of_vertex_geometry_c[i*3],
 								       reservoir_model_.list_of_vertex_geometry_c[i*3+1],
 								       reservoir_model_.list_of_vertex_geometry_c[i*3+2],1.0);
 
-			facesFeature[i].vertices[3] = Celer::Vector4<float>( reservoir_model_.list_of_vertex_geometry_d[i*3],
+			facesFeature[i].vertices[3] = Eigen::Vector4f( reservoir_model_.list_of_vertex_geometry_d[i*3],
 								       reservoir_model_.list_of_vertex_geometry_d[i*3+1],
 								       reservoir_model_.list_of_vertex_geometry_d[i*3+2],1.0);
 
-			facesFeatureColors[i] = Celer::Vector4<float> (1.0,0.0,0.0,1.0);
+			facesFeatureColors[i] = Eigen::Vector4f (1.0,0.0,0.0,1.0);
 
-			facesFeatureIJK[i] = Celer::Vector4<float> (1.0,0.0,0.0,1.0);
-			facesFeatureType[i] = Celer::Vector4<float> ( reservoir_model_.list_of_block_flag[i],
+			facesFeatureIJK[i] = Eigen::Vector4f (1.0,0.0,0.0,1.0);
+			facesFeatureType[i] = Eigen::Vector4f ( reservoir_model_.list_of_block_flag[i],
 							              reservoir_model_.list_of_block_flag[i],
 							              reservoir_model_.list_of_block_flag[i], 1.0f);
 
@@ -717,21 +693,21 @@ void GLWidget::openIRESCharles( const std::string& filename )
 				J = reservoir_model_.header_v2_.numJ;
 				K = reservoir_model_.header_v2_.numK;
 
-				cuboids[index].vertices[4] = reservoir_model_.blocks[i].vertices[0];
-				cuboids[index].vertices[5] = reservoir_model_.blocks[i].vertices[1];
-				cuboids[index].vertices[7] = reservoir_model_.blocks[i].vertices[2];
-				cuboids[index].vertices[6] = reservoir_model_.blocks[i].vertices[3];
+				cuboids[index].vertices[4] = Eigen::Vector4f(reservoir_model_.blocks[i].vertices[0].x,reservoir_model_.blocks[i].vertices[0].y,reservoir_model_.blocks[i].vertices[0].z,1.0f);
+				cuboids[index].vertices[5] = Eigen::Vector4f(reservoir_model_.blocks[i].vertices[1].x,reservoir_model_.blocks[i].vertices[1].y,reservoir_model_.blocks[i].vertices[1].z,1.0f);
+				cuboids[index].vertices[7] = Eigen::Vector4f(reservoir_model_.blocks[i].vertices[2].x,reservoir_model_.blocks[i].vertices[2].y,reservoir_model_.blocks[i].vertices[2].z,1.0f);
+				cuboids[index].vertices[6] = Eigen::Vector4f(reservoir_model_.blocks[i].vertices[3].x,reservoir_model_.blocks[i].vertices[3].y,reservoir_model_.blocks[i].vertices[3].z,1.0f);
 
-				cuboids[index].vertices[0] = reservoir_model_.blocks[i].vertices[4];
-				cuboids[index].vertices[3] = reservoir_model_.blocks[i].vertices[5];
-				cuboids[index].vertices[1] = reservoir_model_.blocks[i].vertices[6];
-				cuboids[index].vertices[2] = reservoir_model_.blocks[i].vertices[7];
+				cuboids[index].vertices[0] = Eigen::Vector4f(reservoir_model_.blocks[i].vertices[4].x,reservoir_model_.blocks[i].vertices[4].y,reservoir_model_.blocks[i].vertices[4].z,1.0f);
+				cuboids[index].vertices[3] = Eigen::Vector4f(reservoir_model_.blocks[i].vertices[5].x,reservoir_model_.blocks[i].vertices[5].y,reservoir_model_.blocks[i].vertices[5].z,1.0f);
+				cuboids[index].vertices[1] = Eigen::Vector4f(reservoir_model_.blocks[i].vertices[6].x,reservoir_model_.blocks[i].vertices[6].y,reservoir_model_.blocks[i].vertices[6].z,1.0f);
+				cuboids[index].vertices[2] = Eigen::Vector4f(reservoir_model_.blocks[i].vertices[7].x,reservoir_model_.blocks[i].vertices[7].y,reservoir_model_.blocks[i].vertices[7].z,1.0f);
 
-				cubeColor[index]  = Celer::Vector4<float> (1.0,0.0,0.0,1.0);
+				cubeColor[index]  = Eigen::Vector4f(1.0,0.0,0.0,1.0);
 
-				cubeIJK[index] = Celer::Vector4<float> ( reservoir_model_.blocks[i].IJK[0].x , reservoir_model_.blocks[i].IJK[0].y , reservoir_model_.blocks[i].IJK[0].z , 1.0f );
+				cubeIJK[index] = Eigen::Vector4f ( reservoir_model_.blocks[i].IJK[0].x , reservoir_model_.blocks[i].IJK[0].y , reservoir_model_.blocks[i].IJK[0].z , 1.0f );
 
-				cubeFocus[index] = Celer::Vector4<float> (1.0 ,0.0, 0.0 ,1.0 );
+				cubeFocus[index] = Eigen::Vector4f (1.0 ,0.0, 0.0 ,1.0 );
 
 				index++;
 
@@ -753,23 +729,15 @@ void GLWidget::openIRESCharles( const std::string& filename )
 		max_K_ = 0;
 		min_K_ = 0;
 
-		camera_.setPosition ( reservoir_model_.box_v2.center ( ) );
-		camera_.setTarget ( reservoir_model_.box_v2.center ( ) );
-		std::cout << reservoir_model_.box_v2.diagonal ( );
-		camera_.setOffset ( 3.0 * reservoir_model_.box_v2.diagonal ( ) );
 
 		// trackball_->translateModelMatrix( Eigen::Vector3f(reservoir_model_.box_v2.center ( ).x,reservoir_model_.box_v2.center ( ).y,reservoir_model_.box_v2.center ( ).z));
-
-		camera_.setBehavior ( Celer::Camera<float>::REVOLVE_AROUND_MODE );
-
-		cameraStep_ = 0.001f;
 
 		glBindVertexArray ( vertexArray_cuboid );
 
                         glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer_cuboid );
                         glBufferData ( GL_ARRAY_BUFFER , cuboids.size( ) * sizeof(cuboids[0]) , &cuboids[0] , GL_STATIC_DRAW );
 
-                        int size_of_vertice = sizeof(Celer::Vector4<float>);
+                        int size_of_vertice = sizeof(Eigen::Vector4f);
                         int size_of_struct  =  sizeof(Cuboid);
 
                         //http://www.opengl.org/wiki/Vertex_Specification
@@ -807,7 +775,7 @@ void GLWidget::openIRESCharles( const std::string& filename )
                         glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer_faceFeature );
                         glBufferData ( GL_ARRAY_BUFFER , facesFeature.size( ) * sizeof(facesFeature[0]) , &facesFeature[0] , GL_STATIC_DRAW );
 
-                        int size_of_vertice_face = sizeof(Celer::Vector4<float>);
+                        int size_of_vertice_face = sizeof(Eigen::Vector4f);
                         int size_of_struct_face  =  sizeof(FaceFeature);
 
                         //http://www.opengl.org/wiki/Vertex_Specification
@@ -849,18 +817,8 @@ void GLWidget::openIRESCharles( const std::string& filename )
 void GLWidget::resizeGL ( int width , int height )
 {
 	glViewport ( 0 , 0 , width , height );
-	camera_.setWindowSize ( width , height );
-
-
-	camera_.setAspectRatio ( width  , height  );
-	camera_.setPerspectiveProjectionMatrix ( 0 , camera_.aspectRatio ( ) , 0.1 , 500 );
-//    camera_.setOrthographicProjectionMatrix( -1.0f, 1.0 , -1.0f, 1.0, 0.0, 500.0 );
 
         trackball_->useOrthographicMatrix(-1.0f, 1.0 , -1.0f, 1.0, 0.0, 500.0);
-
-	centerX_ = static_cast<float> ( width * 0.5 );
-	centerY_ = static_cast<float> ( height * 0.5 );
-
 
 	if (depthFBO)
 		delete depthFBO;
@@ -886,7 +844,6 @@ void GLWidget::drawCutawaySurface ( )
 		glDepthFunc ( GL_GREATER );
 		glClearDepth ( 0.0 );
 
-		//fboStep[0]->bind ( );
 		depthFBO->bind( );
 
 		glDrawBuffer(GL_COLOR_ATTACHMENT0);
@@ -895,58 +852,32 @@ void GLWidget::drawCutawaySurface ( )
 		glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
 
-		BoundingBoxInitialization.active ( );
+		BoundingBoxInitializationLCG->enable( );
 
-		glUniform1f ( BoundingBoxInitialization.uniforms_["x"].location , volume_width );
-		glUniform1f ( BoundingBoxInitialization.uniforms_["y"].location , volume_height );
-		glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ModelMatrix"].location , 1 , GL_FALSE , trackball_->getModelMatrix ( ).data ( ) );
-		glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ViewMatrix"].location , 1 , GL_FALSE , trackball_->getViewMatrix ( ).data ( ) );
-		glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ProjectionMatrix"].location , 1 , GL_FALSE , trackball_->getProjectionMatrix ( ).data ( ) );
+		BoundingBoxInitializationLCG->setUniform( "x" , volume_width );
+		BoundingBoxInitializationLCG->setUniform( "y" , volume_height );
+		BoundingBoxInitializationLCG->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
+		BoundingBoxInitializationLCG->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
+		BoundingBoxInitializationLCG->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
 
-		glUniform1i ( BoundingBoxInitialization.uniforms_["freeze"].location , freezeView_ );
-		glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["FreezeViewMatrix"].location , 1 , GL_FALSE , freeze_viewmatrix_.data ( ) );
+		BoundingBoxInitializationLCG->setUniform ("freeze", freezeView_ );
+		BoundingBoxInitializationLCG->setUniform ("FreezeViewMatrix",freeze_viewmatrix_.data ( ),4, GL_FALSE, 1 );
 
 		glBindVertexArray ( vertexArray_cutBox );
 		glDrawArrays ( GL_POINTS , 0 , cutBoxs.size ( ) );
 		glBindVertexArray ( 0 );
 
-		BoundingBoxInitialization.deactive ( );
+		BoundingBoxInitializationLCG->disable( );
 
-		//fboStep[0]->release ( );
+
 		glDrawBuffer(GL_COLOR_ATTACHMENT0+1);
 
 		meanFilter->renderTexture( depthFBO->bindAttachment(0));
 
 		depthFBO->unbindAll();
-		//fboStep[1]->bind ( );
-
-//		glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
-//		glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-//
-//		BoundingBoxInitialization.active ( );
-//
-//		glUniform1f ( BoundingBoxInitialization.uniforms_["x"].location , 0 );
-//		glUniform1f ( BoundingBoxInitialization.uniforms_["y"].location , 0 );
-//		glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ModelMatrix"].location , 1 , GL_FALSE , trackball_->getModelMatrix ( ).data ( ) );
-//		glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ViewMatrix"].location , 1 , GL_FALSE , trackball_->getViewMatrix ( ).data ( ) );
-//		glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["ProjectionMatrix"].location , 1 , GL_FALSE , trackball_->getProjectionMatrix ( ).data ( ) );
-//
-//		glUniform1i ( BoundingBoxInitialization.uniforms_["freeze"].location , freezeView_ );
-//		glUniformMatrix4fv ( BoundingBoxInitialization.uniforms_["FreezeViewMatrix"].location , 1 , GL_FALSE , freeze_viewmatrix_.data ( ) );
-//
-//		glBindVertexArray ( vertexArray_cutBox );
-//		glDrawArrays ( GL_POINTS , 0 , cutBoxs.size ( ) );
-//		glBindVertexArray ( 0 );
-//
-//		BoundingBoxInitialization.deactive ( );
-
-		//fboStep[1]->release ( );
 
 
 		glDrawBuffer(GL_BACK);
-
-
-
 
 	}
 
@@ -969,25 +900,23 @@ void GLWidget::drawSecundary ( )
 		}
 	}
 
-	shell.active ( );
+	shellLCG->enable( );
 
-	glUniform1i ( shell.uniforms_["normals"].location , depthFBO->bindAttachment(1) );
-	//glUniform1i ( shell.uniforms_["primaryBuffer"].location , depthFBO->bindAttachment(1) );
+	shellLCG->setUniform ( "normals" , depthFBO->bindAttachment(1) );
 
-	glUniform1i ( shell.uniforms_["num_lights"].location , lights.size ( ) );
-	glUniform3fv ( shell.uniforms_["lights[0]"].location , lights.size ( ) , light_elements );
+	shellLCG->setUniform("num_lights", (GLint) lights.size ( )  );
+	shellLCG->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
+	shellLCG->setUniform("WIN_SCALE", (float) width ( ) , (float) height ( ) );
 
-	glUniform2f ( shell.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
-
-	glUniformMatrix4fv ( shell.uniforms_["ModelMatrix"].location , 1 , GL_FALSE , trackball_->getModelMatrix ( ).data ( ) );
-	glUniformMatrix4fv ( shell.uniforms_["ViewMatrix"].location , 1 , GL_FALSE , trackball_->getViewMatrix ( ).data ( ) );
-	glUniformMatrix4fv ( shell.uniforms_["ProjectionMatrix"].location , 1 , GL_FALSE , trackball_->getProjectionMatrix ( ).data ( ) );
+	shellLCG->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
+	shellLCG->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
+	shellLCG->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
 
 	glBindVertexArray ( vertexArray_faceFeature );
 	glDrawArrays ( GL_POINTS , 0 , facesFeature.size ( ) );
 	glBindVertexArray ( 0 );
 
-	shell.deactive ( );
+	shellLCG->disable( );
 
 	if ( enable_blend_ )
 	{
@@ -996,27 +925,26 @@ void GLWidget::drawSecundary ( )
 
 	depthFBO->unbindAttachments();
 
-	BoundingBoxCutaway.active ( );
+	BoundingBoxCutawayLCG->enable( );
 
-	glUniform1i ( BoundingBoxCutaway.uniforms_["normals"].location , depthFBO->bindAttachment(1) );
+	BoundingBoxCutawayLCG->setUniform( "normals" , depthFBO->bindAttachment(1) );
 
-	glUniform1i ( BoundingBoxCutaway.uniforms_["num_lights"].location , lights.size ( ) );
-	glUniform3fv ( BoundingBoxCutaway.uniforms_["lights[0]"].location , lights.size ( ) , light_elements );
+	BoundingBoxCutawayLCG->setUniform("num_lights", (GLint) lights.size ( )  );
+	BoundingBoxCutawayLCG->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
+	BoundingBoxCutawayLCG->setUniform("WIN_SCALE", (float) width ( ) , (float) height ( ) );
 
-	glUniform3i ( BoundingBoxCutaway.uniforms_["min_IJK"].location , min_I_ , min_J_ , min_K_ );
-	glUniform3i ( BoundingBoxCutaway.uniforms_["max_IJK"].location , max_I_ , max_J_ , max_K_ );
+	BoundingBoxCutawayLCG->setUniform( "min_IJK" , min_I_ , min_J_ , min_K_ );
+	BoundingBoxCutawayLCG->setUniform( "max_IJK" , max_I_ , max_J_ , max_K_ );
 
-	glUniform2f ( BoundingBoxCutaway.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
-
-	glUniformMatrix4fv ( BoundingBoxCutaway.uniforms_["ModelMatrix"].location , 1 , GL_FALSE , trackball_->getModelMatrix ( ).data ( ) );
-	glUniformMatrix4fv ( BoundingBoxCutaway.uniforms_["ViewMatrix"].location , 1 , GL_FALSE , trackball_->getViewMatrix ( ).data ( ) );
-	glUniformMatrix4fv ( BoundingBoxCutaway.uniforms_["ProjectionMatrix"].location , 1 , GL_FALSE , trackball_->getProjectionMatrix ( ).data ( ) );
+	BoundingBoxCutawayLCG->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
+	BoundingBoxCutawayLCG->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
+	BoundingBoxCutawayLCG->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
 
 	glBindVertexArray ( vertexArray_cuboid );
 	glDrawArrays ( GL_POINTS , 0 , cuboids.size ( ) );
 	glBindVertexArray ( 0 );
 
-	BoundingBoxCutaway.deactive ( );
+	BoundingBoxCutawayLCG->enable( );
 
 	depthFBO->unbindAttachments();
 }
@@ -1033,46 +961,35 @@ void GLWidget::drawPrimary( )
 		}
 	}
 
-	primary.active ( );
+	primaryLCG->enable( );
 
-	glUniform1i ( primary.uniforms_["num_lights"].location , lights.size ( ) );
-	glUniform3fv ( primary.uniforms_["lights[0]"].location , lights.size ( ) , light_elements );
+	primaryLCG->setUniform("num_lights", (GLint) lights.size ( )  );
+	primaryLCG->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
+	primaryLCG->setUniform("WIN_SCALE", (float) width ( ) , (float) height ( ) );
 
-	glUniform2f ( primary.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
-
-	glUniformMatrix4fv ( primary.uniforms_["ModelMatrix"].location , 1 , GL_FALSE , trackball_->getModelMatrix ( ).data ( ) );
-	glUniformMatrix4fv ( primary.uniforms_["ViewMatrix"].location , 1 , GL_FALSE , trackball_->getViewMatrix ( ).data ( ) );
-	glUniformMatrix4fv ( primary.uniforms_["ProjectionMatrix"].location , 1 , GL_FALSE , trackball_->getProjectionMatrix ( ).data ( ) );
+	primaryLCG->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
+	primaryLCG->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
+	primaryLCG->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
 
 	glBindVertexArray ( vertexArray_cuboid );
 	glDrawArrays ( GL_POINTS , 0 , cuboids.size ( ) );
 	glBindVertexArray ( 0 );
 
-	primary.deactive ( );
+
+	primaryLCG->disable( );
+
 
 }
 
 void GLWidget::paintGL ( )
 {
 
-	camera_.setViewByMouse ( );
 
 	if ( buttonRelease_ )
 	{
 		processMultiKeys ( );
 	}
 
-	camera_.computerViewMatrix( );
-
-	camera_.setPerspectiveProjectionMatrix ( zoom_angle_ , camera_.aspectRatio ( ) , 0.1 , 500 );
-
-	glBindBuffer(GL_UNIFORM_BUFFER, this->uniformBuffer_globalMatrices_);
-
-	transformationMatrices_.ModelMatrix      = ~camera_.viewMatrix ( );
-	transformationMatrices_.ViewMatrix       = ~camera_.viewMatrix ( );
-	transformationMatrices_.ProjectionMatrix = ~camera_.perspectiveProjectionMatrix();
-
-	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(this->transformationMatrices_), &this->transformationMatrices_ );
 
 	if ( isRawApproach )
 	{
@@ -1108,41 +1025,34 @@ void GLWidget::NoCutaway ( )
 
         if ( draw_secondary && (cuboids.size() != 0) )
         {
-//                secondary.active ( );
-//
-//                glUniform3fv ( secondary.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
-//                glUniform3f  ( secondary.uniforms_["min_IJK"].location , (float)min_I_,(float)min_J_,(float)min_K_ );
-//                glUniform3f  ( secondary.uniforms_["max_IJK"].location , (float)max_I_, (float)max_J_, (float)max_K_ );
-//                glUniform2f  ( secondary.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
-//
-//                glBindVertexArray ( vertexArray_cube_interleaved );
-//                glDrawArrays ( GL_POINTS , 0 , cube_interleaved.size() );
-//                glBindVertexArray ( 0 );
-//
-//                secondary.deactive ( );
-//
-//        	glEnable(GL_BLEND);
-//        	glBlendFunc(GL_ONE , GL_ONE);
 
-		shell.active ( );
+        	GLfloat light_elements[lights.size ( ) * 3];
+        	for ( int i = 0; i < lights.size ( ); ++i )
+        	{
+        		for ( int j = 0; j < 3; ++j )
+        		{
+        			light_elements[i * 3 + j] = lights[i][j];
+        		}
+        	}
 
-		glUniform3fv ( shell.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
 
-		glUniform2f ( shell.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
+        	shellLCG->enable( );
 
-		glUniformMatrix4fv ( shell.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-		glUniformMatrix4fv ( shell.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+        	shellLCG->setUniform("num_lights", (GLint) lights.size ( )  );
+        	shellLCG->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
+        	shellLCG->setUniform("WIN_SCALE", (float) width ( ) , (float) height ( ) );
 
-		glBindVertexArray ( vertexArray_faceFeature );
-		glDrawArrays ( GL_POINTS , 0 ,facesFeature.size());
-		glBindVertexArray ( 0 );
+        	shellLCG->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
+        	shellLCG->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
+        	shellLCG->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
 
-		shell.deactive ( );
+        	glBindVertexArray ( vertexArray_faceFeature );
+        	glDrawArrays ( GL_POINTS , 0 , facesFeature.size ( ) );
+        	glBindVertexArray ( 0 );
 
-//		glDisable(GL_BLEND);
 
-//                glUniformMatrix4fv ( primary.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-                //glUniformMatrix4fv ( primary.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
+        	shellLCG->disable( );
+
         }
 
         if ( draw_primary && (cuboids.size() != 0)  )
@@ -1302,35 +1212,6 @@ void GLWidget::loadShaders ( )
 
 	// Celer
 
-        secondary.create("secondary",(shaderDirectory + "Secondary.vert").toStdString(),
-                                     (shaderDirectory + "Secondary.geom").toStdString(),
-                                     (shaderDirectory + "Secondary.frag").toStdString());
-
-        primary.create("primary",(shaderDirectory + "Primary.vert").toStdString(),
-                                 (shaderDirectory + "Primary.geom").toStdString(),
-                                 (shaderDirectory + "Primary.frag").toStdString());
-
-	BoundingBoxInitialization.create ("BoundingBoxApproach",(shaderDirectory + "BoundingBoxApproach.vert").toStdString(),
-								(shaderDirectory + "BoundingBoxApproach.geom").toStdString(),
-								(shaderDirectory + "BoundingBoxApproach.frag").toStdString());
-
-	BoundingBoxDebug.create ("BoundingBoxApproach Debug",(shaderDirectory + "BoundingBoxApproach.vert").toStdString(),
-							     (shaderDirectory + "BoundingBoxApproach.geom").toStdString(),
-							     (shaderDirectory + "BoundingBoxApproachDebug.frag").toStdString());
-
-	BoundingBoxCutaway.create ("BoundingBoxCutaway",(shaderDirectory + "BoundingBoxCutaway.vert").toStdString(),
-							(shaderDirectory + "BoundingBoxCutaway.geom").toStdString(),
-							(shaderDirectory + "BoundingBoxCutaway.frag").toStdString());
-
-        shell.create("Shell", (shaderDirectory + "Shell.vert").toStdString(),
-                              (shaderDirectory + "Shell.geom").toStdString(),
-                              (shaderDirectory + "Shell.frag").toStdString());
-
-
-	// Uniform Buffer Usage @link http://www.arcsynthesis.org/gltut/Positioning/Tut07%20Shared%20Uniforms.html
-	// For earch program where the uniform is defined, build a link to the Uniform Block bind.
-
-	glUniformBlockBinding(secondary.id( ), secondary.uniform_blocks_["GlobalMatrices"].index, 0);
 
 }
 /// KeyInput
@@ -1342,54 +1223,9 @@ void GLWidget::processMultiKeys ( )
 
 		//std::cout  << camera_.position();
 
-		if ( key == Qt::Key_Q )
-		{
-			camera_.moveUpward ( cameraStep_ );
-
-		}
-		if ( key == Qt::Key_E )
-		{
-			camera_.moveUpward ( -cameraStep_ );
-
-		}
-		else if ( key == Qt::Key_W )
-		{
-			camera_.moveForward ( cameraStep_ );
-
-		}
-		if ( key == Qt::Key_S )
-		{
-			camera_.moveForward ( -cameraStep_ );
-
-		}
-		if ( key == Qt::Key_A )
-		{
-			camera_.strafeRight ( -cameraStep_ );
-
-		}
-		if ( key == Qt::Key_D )
-		{
-			camera_.strafeRight ( cameraStep_ );
-
-		}
 		if ( key == Qt::Key_R )
 		{
 			trackball_->reset();
-			camera_.reset ( );
-
-		}
-		if ( key == Qt::Key_Plus )
-		{
-
-			if ( cameraStep_ < 2.0 )
-			cameraStep_ += 0.0001;
-
-		}
-		if ( key == Qt::Key_Minus )
-		{
-
-			if ( cameraStep_ > 0.0 )
-			cameraStep_ -= 0.0001;
 		}
 		if( key == Qt::Key_Left)
 		{
@@ -1448,10 +1284,6 @@ void GLWidget::mousePressEvent ( QMouseEvent *event )
 
 	if ( event->button ( ) == Qt::LeftButton )
 	{
-		camera_.lockMouse ( true );
-		centerX_ = static_cast<float> ( event->x ( ) );
-		centerY_ = static_cast<float> ( event->y ( ) );
-
 		trackball_->setInitialRotationPosition(positionInTrackballSystem[0],positionInTrackballSystem[1]);
 		trackball_->beginRotation();
 	}
@@ -1472,7 +1304,7 @@ void GLWidget::mouseReleaseEvent ( QMouseEvent *event )
 
 	if ( event->button ( ) == Qt::LeftButton )
 	{
-		camera_.lockMouse ( false );
+
 		trackball_->endRotation();
 
 	}
@@ -1489,26 +1321,6 @@ void GLWidget::mouseMoveEvent ( QMouseEvent *event )
 
 	if ( event->buttons ( )  )
 	{
-		//camera_.SetMouseInfo(event->x(),event->y());
-		float heading = 0.0f;
-		float pitch = 0.0f;
-		float roll = 0.0f;
-
-		pitch = - ( static_cast<float> ( event->x ( ) ) - centerX_ ) * 0.2;
-		heading = - ( static_cast<float> ( event->y ( ) ) - centerY_ ) * 0.2;
-
-		camera_.rotate ( pitch , heading , roll );
-
-		/*! Tr�s coisas :
-		 *  - event->pos() retorna coordenadas x e y relativa a widget que recebeu o evento.
-		 *  - mapToGlobla mapei as coordenadas da widget para coordenada global da tela.
-		 *  - QCurso::setPos() posiciona o mouse em coordenada global.
-		 *
-		 *  Tudo o que eu queria para implementar a First Person Camera !
-		 */
-//		/QCursor::setPos ( mapToGlobal ( QPoint ( static_cast<int> ( centerX_ ) , static_cast<int> ( centerY_ ) ) ) );
-
-
 		//Position vector in [0,viewportWidth] domain:
 		Eigen::Vector2i pos(event->x ( ),event->y ( ));
 
@@ -1559,22 +1371,20 @@ void GLWidget::wheelEvent ( QWheelEvent *event )
 	{
 		zoom_angle_ += event->delta ( ) / 120.0;
 
-        if ( event->delta ( ) < 0.0)
-            trackball_->increaseZoom(1.05);
+		if ( event->delta ( ) < 0.0 )
+		{
+			trackball_->increaseZoom ( 1.05 );
+		}
 		else
-			trackball_->decreaseZoom(1.05);
+		{
+			trackball_->decreaseZoom ( 1.05 );
+		}
 
 		orthoZoom += event->delta ( ) / 1200.0;
-
-        //modelMatrix_[0][0] = orthoZoom;
-        //modelMatrix_[1][1] = orthoZoom;
-        //modelMatrix_[2][2] = orthoZoom;
-
 	}
 	else
 	{
-		scrollStep_ += event->delta ( ) / 120.0;
-		angle = static_cast<float> ( 1.0 / std::tan ( scrollStep_ * Celer::Math::kDeg2Rad ) );
+
 	}
 
     updateGL();
@@ -1641,17 +1451,6 @@ void GLWidget::setSecondaryVisibility( bool visibility )
 	if ( cuboids.size() > 0 )
 		draw_secondary = visibility;
 	updateGL();
-}
-
-
-void GLWidget::CameraTrackball()
-{
-	camera_.setBehavior( Celer::Camera<float>::REVOLVE_AROUND_MODE);
-}
-
-void GLWidget::CameraFly()
-{
-	camera_.setBehavior( Celer::Camera<float>::FIRST_PERSON );
 }
 
 void GLWidget::freezeView( )

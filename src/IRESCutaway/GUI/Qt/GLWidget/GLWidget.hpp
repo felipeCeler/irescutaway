@@ -15,8 +15,7 @@
 	/// Math
 #include <Celer/Core/Geometry/Math/Vector3.hpp>
 #include <Celer/Core/Geometry/Math/Vector4.hpp>
-	/// Scene
-#include <Celer/Scene/Camera.hpp>
+
 /// LCG Libary
 #include <shaderlib/trackball.hpp>
 #include <shaderlib/framebuffer.hpp>
@@ -118,8 +117,6 @@ class GLWidget: public QGLWidget
 
 		void IRESv1_to_IRESv2 ( const std::string& filename );
 
-		void CameraTrackball ( );
-		void CameraFly ( );
 		void freezeView ( );
 
 	protected:
@@ -155,27 +152,16 @@ private:
 
 	struct CutBox
 	{
-		Celer::Vector4<float> center;
-		Celer::Vector4<float> axis[3];
-		Celer::Vector4<float> extent;
-		Celer::Vector4<float> aperture;
+		Eigen::Vector4f center;
+		Eigen::Vector4f axis[3];
+		Eigen::Vector4f extent;
+		Eigen::Vector4f aperture;
 	};
 
 	std::vector<CutBox> cutBoxs;
 
 	GLuint vertexArray_cutBox;
 	GLuint vertexBuffer_cutBox;
-
-	// BoundingBox Visualization
-	Celer::OpenGL::ShaderManager    BoundingBoxInitialization;
-	Celer::OpenGL::ShaderManager    BoundingBoxDebug;
-	Celer::OpenGL::ShaderManager    BoundingBoxCutaway;
-
-	// No cutaway Visualization
-	Celer::OpenGL::ShaderManager	primary;
-	Celer::OpenGL::ShaderManager	secondary;
-
-	Celer::OpenGL::ShaderManager    shell;
 
         Shader*                         BoundingBoxInitializationLCG;
         Shader*                         BoundingBoxDebugLCG;
@@ -237,18 +223,18 @@ private:
 
 	struct Cuboid
 	{
-		Celer::Vector4<float> vertices[8];
+		Eigen::Vector4f vertices[8];
 	};
 
 	std::vector<Cuboid>           cuboids;
 
-	std::vector<Celer::Vector4<float> > cubeColor;
+	std::vector<Eigen::Vector4f> cubeColor;
 	/// vec4 (R, G, B , 0 );
 		GLuint vertexBuffer_cube_color;
-	std::vector<Celer::Vector4<float> > cubeIJK;
+	std::vector<Eigen::Vector4f > cubeIJK;
 	/// vec4 (I, J, K , 0 );
 		GLuint vertexBuffer_cube_IJK;
-	std::vector<Celer::Vector4<float> > cubeFocus;
+	std::vector<Eigen::Vector4f > cubeFocus;
 	/// vec4 (Primary/Secundary , Actived  ,0.0 , 0.0);
 		GLuint vertexBuffer_cube_Focus;
 
@@ -264,16 +250,16 @@ private:
 
 	struct FaceFeature
 	{
-		Celer::Vector4<float> vertices[4];
+		Eigen::Vector4f vertices[4];
 	};
 
-	std::vector<Celer::Vector4<float> > facesFeatureColors;
+	std::vector<Eigen::Vector4f > facesFeatureColors;
 	/// vec4 (R, G, B , 0 );
 		GLuint vertexBuffer_faceColor;
-	std::vector<Celer::Vector4<float> > facesFeatureIJK;
+	std::vector<Eigen::Vector4f > facesFeatureIJK;
 	/// vec4 (R, G, B , 0 );
 		GLuint vertexBuffer_faceIJK;
-	std::vector<Celer::Vector4<float> > facesFeatureType;
+	std::vector<Eigen::Vector4f > facesFeatureType;
 	/// vec4 ( isShell, isFault, 0.0 , 0.0 );
 		GLuint vertexBuffer_faceType;
 
@@ -295,31 +281,12 @@ private:
 	Trackball * trackball_;
 
 	float orthoZoom;
-	Celer::Matrix4x4<float> modelMatrix_;
-
-	// Uniform Buffers
-	GLuint  uniformBuffer_globalMatrices_;
-
-	struct Transformation
-	{
-			Celer::Matrix4x4<float> ModelMatrix;
-			Celer::Matrix4x4<float> ViewMatrix;
-			Celer::Matrix4x4<float> ProjectionMatrix;
- 	};
-
-	Transformation transformationMatrices_;
 
 	bool dynamic_;
 
 	// LCG procudure
         Eigen::Vector2f convertToNormalizedDeviceCoordinates(Eigen::Vector2i position);
 
-        // Old Celer Setup
-	Celer::Camera<float> camera_;
-	float cameraStep_;
-	float scrollStep_;
-	float centerX_;
-	float centerY_;
 
 };
 
