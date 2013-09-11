@@ -1,7 +1,7 @@
 
 [submodule "libs/Celer"]
 	path = libs/Celer
-	url = git@github.com:felipeCeler/celer-sources.git
+	url = https://github.com/felipeCeler/celer-sources.git
 [submodule "libs/Ires"]
 	path = libs/Ires
 	url = git@bitbucket.org:evitalbrazil/iresv2.git

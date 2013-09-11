@@ -856,7 +856,7 @@ void GLWidget::resizeGL ( int width , int height )
 	camera_.setPerspectiveProjectionMatrix ( 0 , camera_.aspectRatio ( ) , 0.1 , 500 );
 //    camera_.setOrthographicProjectionMatrix( -1.0f, 1.0 , -1.0f, 1.0, 0.0, 500.0 );
 
-    trackball_->useOrthographicMatrix(-1.0f, 1.0 , -1.0f, 1.0, 0.0, 500.0);
+        trackball_->useOrthographicMatrix(-1.0f, 1.0 , -1.0f, 1.0, 0.0, 500.0);
 
 	centerX_ = static_cast<float> ( width * 0.5 );
 	centerY_ = static_cast<float> ( height * 0.5 );
@@ -1049,6 +1049,7 @@ void GLWidget::drawPrimary( )
 	glBindVertexArray ( 0 );
 
 	primary.deactive ( );
+
 }
 
 void GLWidget::paintGL ( )
@@ -1240,7 +1241,6 @@ void GLWidget::fpsCounter ( )
 
 void GLWidget::loadShaders ( )
 {
-	qDebug ( ) << "ATIM !!";
 	QDir shadersDir = QDir ( qApp->applicationDirPath ( ) );
 
 	#if defined(_WIN32) || defined(_WIN64) // Windows Directory Style
@@ -1263,20 +1263,53 @@ void GLWidget::loadShaders ( )
 
 	meanFilter->initialize( );
 
+	// LCG
+	primaryLCG =  new Shader( "Primary",(shaderDirectory + "Primary.vert").toStdString(),
+	                                    (shaderDirectory + "Primary.frag").toStdString(),
+                                            (shaderDirectory + "Primary.geom").toStdString(),1);
 
-    //trackball_->setShaders( (shaderDirectory + "trackballShader.vert").toStdString(),(shaderDirectory + "trackballShader.farg").toStdString());
+	primaryLCG->initialize();
 
-    //trackball_->loadShader( );
 
-	primary.create("primary",(shaderDirectory + "Primary.vert").toStdString(),
-				 (shaderDirectory + "Primary.geom").toStdString(),
-				 (shaderDirectory + "Primary.frag").toStdString());
+        secondaryLCG = new Shader("Secondary",(shaderDirectory + "Secondary.vert").toStdString(),
+                                              (shaderDirectory + "Secondary.frag").toStdString(),
+                                              (shaderDirectory + "Secondary.geom").toStdString(),1);
 
-	secondary.create("secondary",(shaderDirectory + "Secondary.vert").toStdString(),
-			             (shaderDirectory + "Secondary.geom").toStdString(),
-				     (shaderDirectory + "Secondary.frag").toStdString());
+        secondaryLCG->initialize( );
 
-	// BoudingBox Approach
+
+        BoundingBoxInitializationLCG = new Shader ("BoundingBoxApproach",(shaderDirectory + "BoundingBoxApproach.vert").toStdString(),
+                                                                (shaderDirectory + "BoundingBoxApproach.frag").toStdString(),
+                                                                (shaderDirectory + "BoundingBoxApproach.geom").toStdString(),1);
+        BoundingBoxInitializationLCG->initialize( );
+
+        BoundingBoxDebugLCG = new Shader ("BoundingBoxApproach Debug",(shaderDirectory + "BoundingBoxApproach.vert").toStdString(),
+                                                             (shaderDirectory + "BoundingBoxApproach.frag").toStdString(),
+                                                             (shaderDirectory + "BoundingBoxApproachDebug.geom").toStdString(),1);
+
+        BoundingBoxDebugLCG->initialize();
+
+        BoundingBoxCutawayLCG = new Shader ("BoundingBoxCutaway",(shaderDirectory + "BoundingBoxCutaway.vert").toStdString(),
+                                                        (shaderDirectory + "BoundingBoxCutaway.frag").toStdString(),
+                                                        (shaderDirectory + "BoundingBoxCutaway.geom").toStdString(),1);
+
+        BoundingBoxCutawayLCG->initialize();
+
+        shellLCG = new Shader ("Shell", (shaderDirectory + "Shell.vert").toStdString(),
+                              (shaderDirectory + "Shell.frag").toStdString(),
+                              (shaderDirectory + "Shell.geom").toStdString(),1);
+        shellLCG->initialize();
+
+	// Celer
+
+        secondary.create("secondary",(shaderDirectory + "Secondary.vert").toStdString(),
+                                     (shaderDirectory + "Secondary.geom").toStdString(),
+                                     (shaderDirectory + "Secondary.frag").toStdString());
+
+        primary.create("primary",(shaderDirectory + "Primary.vert").toStdString(),
+                                 (shaderDirectory + "Primary.geom").toStdString(),
+                                 (shaderDirectory + "Primary.frag").toStdString());
+
 	BoundingBoxInitialization.create ("BoundingBoxApproach",(shaderDirectory + "BoundingBoxApproach.vert").toStdString(),
 								(shaderDirectory + "BoundingBoxApproach.geom").toStdString(),
 								(shaderDirectory + "BoundingBoxApproach.frag").toStdString());
@@ -1289,15 +1322,9 @@ void GLWidget::loadShaders ( )
 							(shaderDirectory + "BoundingBoxCutaway.geom").toStdString(),
 							(shaderDirectory + "BoundingBoxCutaway.frag").toStdString());
 
-
-	debugNormal.create ("DebugNormal",  (shaderDirectory + "DebugNormal.vert").toStdString(),
-			   (shaderDirectory + "DebugNormal.geom").toStdString(),
-			   (shaderDirectory + "DebugNormal.frag").toStdString());
-
-
-	shell.create("Shell", (shaderDirectory + "Shell.vert").toStdString(),
-			      (shaderDirectory + "Shell.geom").toStdString(),
-			      (shaderDirectory + "Shell.frag").toStdString());
+        shell.create("Shell", (shaderDirectory + "Shell.vert").toStdString(),
+                              (shaderDirectory + "Shell.geom").toStdString(),
+                              (shaderDirectory + "Shell.frag").toStdString());
 
 
 	// Uniform Buffer Usage @link http://www.arcsynthesis.org/gltut/Positioning/Tut07%20Shared%20Uniforms.html

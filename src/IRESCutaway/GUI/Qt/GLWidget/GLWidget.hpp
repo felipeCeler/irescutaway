@@ -175,9 +175,18 @@ private:
 	Celer::OpenGL::ShaderManager	primary;
 	Celer::OpenGL::ShaderManager	secondary;
 
-	Celer::OpenGL::ShaderManager	debugNormal;
+	Celer::OpenGL::ShaderManager    shell;
 
-	Celer::OpenGL::ShaderManager shell;
+        Shader*                         BoundingBoxInitializationLCG;
+        Shader*                         BoundingBoxDebugLCG;
+        Shader*                         BoundingBoxCutawayLCG;
+
+        Shader*                         secondaryLCG;
+
+        Shader*                         primaryLCG;
+        Shader*                         shellLCG;
+
+        void createShaders              ();
 
 	QImage fbo;
 	float  angle;
