@@ -10,6 +10,7 @@
 
 
 // Learning ifstream
+#include <iostream>
 #include <fstream>
 #include <iterator>
 #include <sstream>
