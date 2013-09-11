@@ -1,20 +1,11 @@
 #ifndef GLWIDGET_H
 #define GLWIDGET_H
 
-///
-#include "Cube.hpp"
-
 /// Ires Library
 #include <ires/ires.h>
 /// Celer::Libraries
 	/// OpenGL
-#include <Celer/OpenGL/OpenGLContext.hpp>
-#include <Celer/OpenGL/Texture.hpp>
-#include <Celer/OpenGL/Shader.hpp>
-#include <Celer/OpenGL/ShaderManager.hpp>
-	/// Math
-#include <Celer/Core/Geometry/Math/Vector3.hpp>
-#include <Celer/Core/Geometry/Math/Vector4.hpp>
+#include <GL/glew.h>
 
 /// LCG Libary
 #include <shaderlib/trackball.hpp>
@@ -43,6 +34,7 @@
 #include <QtCore/QElapsedTimer>
 
 #include <IRES/CornerPointGrid.hpp>
+#include <IRES/BoundingBox.hpp>
 
 
 class GLWidget: public QGLWidget
@@ -142,13 +134,9 @@ private:
 	bool isIRESOpen_;
 
 
-	Celer::BoundingBox3<float> 		   box;
-	std::list  <Celer::BoundingBox3<GLfloat> > boxes;
-	std::vector<Celer::BoundingBox3<GLfloat> > cutVolumes;
-	std::vector<Celer::Vector3<GLfloat> >      box_vertices;
-
-	GLuint vertexArray_box;
-	GLuint vertexBuffer_box;
+	IRES::BoundingBox 		   box;
+	std::list  <IRES::BoundingBox > boxes;
+	std::vector<IRES::BoundingBox > cutVolumes;
 
 	struct CutBox
 	{

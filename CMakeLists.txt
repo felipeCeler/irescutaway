@@ -25,7 +25,6 @@ set(CMAKE_BUILD_TYPE Debug)
 add_definitions(${QT_DEFINITIONS} -Wall)
 
 ## - Libraris
-add_subdirectory(libs/Celer/src)
 add_subdirectory(libs)
 ## - Project Sources
 add_subdirectory(src/${PROJECT_NAME})

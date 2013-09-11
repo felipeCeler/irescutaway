@@ -11,9 +11,13 @@
 #include <vector>
 #include <string>
 
-// Celer Framework
-#include <Celer/Core/Geometry/Math/Vector3.hpp>
-#include <Celer/Core/Physics/BoundingBox3.hpp>
+#ifdef _WIN32
+#include "Eigen\Eigen"  // For math-related stuff.
+#else
+#include "Eigen/Eigen"
+#endif
+
+#include <IRES/BoundingBox.hpp>
 
 namespace IRES
 {
@@ -55,21 +59,21 @@ namespace IRES
 			Block ( const Block& new_block );
 
 			// 24 vertices of the cuboid. Set to use One Pass Wireframe Rendering (@Jonatas Shaders)
-			std::vector< Celer::Vector4<float> > vertices;
+			std::vector< Eigen::Vector4f > vertices;
 			// 24 normals for each vertex
-			std::vector< Celer::Vector4<float> > normals;
+			std::vector< Eigen::Vector4f > normals;
 			// 24 colors per vertex
-			std::vector< Celer::Vector4<float> > colors;
+			std::vector< Eigen::Vector4f > colors;
 			// Primary and Secondary approach
-			std::vector< Celer::Vector4<float> > focus;
+			std::vector< Eigen::Vector4f > focus;
 			// To draw using glDrawElements*
 			std::vector<int>	 	     indices;
 			// FIXME Crazy structure on Corner Point
-			std::vector< Celer::Vector4<int> >   IJK;
+			std::vector< Eigen::Vector4f >   IJK;
 
 			bool 				     valid;
 
-			Celer::BoundingBox3<float> 	     AABB;
+			IRES::BoundingBox	 	     AABB;
 
 			std::vector<Block::Dynamic_Property> 	     dynamic_properties;
 			std::vector<Block::Static_Property> 	     static_porperties;

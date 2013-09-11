@@ -17,9 +17,17 @@ GLWidget::GLWidget (  QWidget* parent , const QGLWidget* shareWidget , Qt::Windo
 /// OpenGL
 void GLWidget::initializeGL ( )
 {
-	/// Celer OpenGL
-	Celer::OpenGL::OpenGLContext::instance ( )->glewInitialize ( "File GLWidget.cpp method initializeGL ( )" );
-	/// Celer OpenGL
+	/// GLEW OpenGL
+	//Glew Initialization:
+
+	GLenum glewInitResult = glewInit();
+
+	//Check Glew Initialization:
+	if (GLEW_OK != glewInitResult) {
+		cerr << "Error: " << glewGetErrorString(glewInitResult) << endl;
+		exit(EXIT_FAILURE);
+	}
+	/// GLEW OpenGL
 
 	buttonRelease_ = false;
 
@@ -79,9 +87,6 @@ void GLWidget::initializeGL ( )
 
 	cluster = 0;
 
-	glGenVertexArrays ( 1, &vertexArray_box);
-		glGenBuffers  ( 1, &vertexBuffer_box);
-
 	//Timer Animation
 
 	fps = 0;
@@ -126,10 +131,10 @@ bool GLWidget::isIRESOpen ( ) const
 void GLWidget::cutVolumeGenerator( )
 {
 
-	Celer::BoundingBox3<GLfloat> box;
+	IRES::BoundingBox box;
 
 	cutVolumes.clear();
-	box_vertices.clear();
+
 
 	cutBoxs.clear();
 
@@ -166,65 +171,20 @@ void GLWidget::cutVolumeGenerator( )
 		cutVolumes.push_back( box );
 	}
 
-
-	box_vertices.resize( cutVolumes.size( ) );
 	int cont = 0;
 
 	cutBoxs.resize( cutVolumes.size( ) );
 
-	for ( std::vector<Celer::BoundingBox3<GLfloat> >::iterator it = cutVolumes.begin(); it != cutVolumes.end();++it)
+	for ( std::vector<IRES::BoundingBox >::iterator it = cutVolumes.begin(); it != cutVolumes.end();++it)
 	{
 
-		Celer::Vector3<GLfloat> v0 ( it->box_max ( ).x , it->box_max ( ).y , it->box_max ( ).z );
-		Celer::Vector3<GLfloat> v1 ( it->box_max ( ).x , it->box_max ( ).y , it->box_min ( ).z );
-		Celer::Vector3<GLfloat> v2 ( it->box_min ( ).x , it->box_max ( ).y , it->box_min ( ).z );
-		Celer::Vector3<GLfloat> v3 ( it->box_min ( ).x , it->box_max ( ).y , it->box_max ( ).z );
-
-		Celer::Vector3<GLfloat> v4 ( it->box_max ( ).x , it->box_min ( ).y , it->box_max ( ).z );
-		Celer::Vector3<GLfloat> v5 ( it->box_min ( ).x , it->box_min ( ).y , it->box_max ( ).z );
-		Celer::Vector3<GLfloat> v6 ( it->box_min ( ).x , it->box_min ( ).y , it->box_min ( ).z );
-		Celer::Vector3<GLfloat> v7 ( it->box_max ( ).x , it->box_min ( ).y , it->box_min ( ).z );
-
-		Celer::Vector3<GLfloat> topNormal 	= ((v0 - v1) ^ (v0 - v3)).norm();
-		//std::cout << topNormal    << std::endl;
-		Celer::Vector3<GLfloat> bottomNormal 	= ((v4 - v5) ^ (v4 - v7)).norm();
-		//std::cout << bottomNormal << std::endl;
-		Celer::Vector3<GLfloat> frontNormal 	= ((v0 - v3) ^ (v0 - v4)).norm();
-		//std::cout << frontNormal  << std::endl;
-		Celer::Vector3<GLfloat> backmNormal 	= ((v1 - v7) ^ (v1 - v2)).norm();
-		//std::cout << backmNormal  << std::endl;
-		Celer::Vector3<GLfloat> rightNormal 	= ((v0 - v4) ^ (v0 - v1)).norm();
-		//std::cout << rightNormal  << std::endl;
-		Celer::Vector3<GLfloat> leftNormal 	= ((v2 - v6) ^ (v2 - v3)).norm();
-		//std::cout << leftNormal   << std::endl;
-
-		// Care about the type: GL_DOUBLE or GL_FLOAT
-		Celer::Vector4<GLfloat> vertices[] =
-		{
-                        // X Y Z
-			//  Top Face
-			v0,v1,v3,v2,
-			// Bottom Face
-			v4,v5,v7,v6,
-			// Front Face
-			v0,v3,v4,v5,
-			// Back Face
-			v2,v1,v6,v7,
-			// Right Face
-			v0,v4,v1,v7,
-			// Left Face
-			v2,v6,v3,v5
-		};
-
-		box_vertices[cont] = it->center( );
-
-		cutBoxs[cont].center  =  Eigen::Vector4f(it->center( ).x,it->center( ).y,it->center( ).z,1.0f);
+		cutBoxs[cont].center  =  it->center( );
 		cutBoxs[cont].axis[0] =  Eigen::Vector4f(1.0f,0.0f,0.0f,1.0f);
 		cutBoxs[cont].axis[1] =  Eigen::Vector4f(0.0f,1.0f,0.0f,1.0f);
 		cutBoxs[cont].axis[2] =  Eigen::Vector4f(0.0f,0.0f,1.0f,1.0f);
-		cutBoxs[cont].extent  =  Eigen::Vector4f(abs(it->box_max().x-it->box_min().x),
-                                                               abs(it->box_max().y-it->box_min().y),
-		                                               abs(it->box_max().z-it->box_min().z),1.0f);
+		cutBoxs[cont].extent  =  Eigen::Vector4f(abs(it->box_max()[0]-it->box_min()[0]),
+                                                         abs(it->box_max()[1]-it->box_min()[1]),
+		                                         abs(it->box_max()[2]-it->box_min()[2]),1.0f);
 		cutBoxs[cont].aperture = Eigen::Vector4f(1.0f,1.0f,1.0f,1.0f);
 
 		cont++;
@@ -248,14 +208,6 @@ void GLWidget::cutVolumeGenerator( )
         glBindVertexArray(0);
 
 
-	glBindVertexArray ( vertexArray_box );
-		glBindBuffer ( GL_ARRAY_BUFFER , vertexBuffer_box );
-		glBufferData ( GL_ARRAY_BUFFER , box_vertices.size( ) * sizeof ( box_vertices[0] ) , &box_vertices[0] , GL_STATIC_DRAW );
-		// Set up generic attributes pointers
-		glEnableVertexAttribArray ( 0 );
-		glVertexAttribPointer ( 0 , 3 , GL_FLOAT , GL_FALSE , 0 , 0 );
-	glBindVertexArray ( 0 );
-
 }
 
 void GLWidget::changePropertyRange ( const double& minRange, const double& maxRange, int property_index )
@@ -268,7 +220,7 @@ void GLWidget::changePropertyRange ( const double& minRange, const double& maxRa
 	float min = *std::min_element ( reservoir_model_.static_porperties[property_index].values_.begin ( ) , reservoir_model_.static_porperties[property_index].values_.end ( ) );
 	float max = *std::max_element ( reservoir_model_.static_porperties[property_index].values_.begin ( ) , reservoir_model_.static_porperties[property_index].values_.end ( ) );
 
-	Celer::Vector4<GLfloat> color;
+	Eigen::Vector4f color;
 
 	int index = 0;
 	for ( int i = 0; i < reservoir_model_.header_.number_of_Blocks; i++)
@@ -280,8 +232,8 @@ void GLWidget::changePropertyRange ( const double& minRange, const double& maxRa
 
 			float regularValue = ( reservoir_model_.blocks[i].static_porperties[property_index].value_ );
 
-			Celer::Vector4<GLfloat> color (1.0,1.0,1.0,1.0);
-			Celer::Vector4<GLfloat> focus (1.0,1.0,0.0,0.0);
+			Eigen::Vector4f color (1.0,1.0,1.0,1.0);
+			Eigen::Vector4f focus (1.0,1.0,0.0,0.0);
 
 			float fourValue = 4 * normalized_color;
 			float red   = (std::min)(fourValue - 1.5, -fourValue + 4.5);
@@ -292,12 +244,12 @@ void GLWidget::changePropertyRange ( const double& minRange, const double& maxRa
 			green 	= (std::max)(0.0f, (std::min)(green, 1.0f));
 			blue 	= (std::max)(0.0f, (std::min)(blue, 1.0f));
 
-			color = Celer::Vector4<GLfloat> ( red , green , blue , 1.0f );
+			color = Eigen::Vector4f ( red , green , blue , 1.0f );
 //
 
 			if ( ( regularValue >= minRange ) && ( regularValue <= maxRange ) )
 			{
-				focus = Celer::Vector4<GLfloat> ( 0.0f , 1.0f , 0.0f , 1.0f );
+				focus = Eigen::Vector4f ( 0.0f , 1.0f , 0.0f , 1.0f );
 				box.reset();
 				box.fromPointCloud ( reservoir_model_.blocks[i].vertices.begin ( ) , reservoir_model_.blocks[i].vertices.end ( ) );
 				boxes.push_back( box );
@@ -305,14 +257,14 @@ void GLWidget::changePropertyRange ( const double& minRange, const double& maxRa
 			}
 			else
 			{
-				focus = Celer::Vector4<GLfloat> ( 1.0f , 1.0f , 0.0f , 1.0f );
+				focus = Eigen::Vector4f ( 1.0f , 1.0f , 0.0f , 1.0f );
 			}
 
 			// Cuboid
-			cubeColor[index] = Eigen::Vector4f(color.x,color.y,color.z,color.w);
-			cubeFocus[index] = Eigen::Vector4f(focus.x,focus.y,focus.z,focus.w);
+			cubeColor[index] = color;
+			cubeFocus[index] = focus;
 			// Face Feature
-			facesFeatureColors[index] = Eigen::Vector4f(color.x,color.y,color.z,color.w);
+			facesFeatureColors[index] = color;
 
  			index++;
 		}
@@ -363,7 +315,7 @@ void GLWidget::changeProperty ( int property_index )
 	std::cout << "Property Max : " << min << std::endl;
 	std::cout << "Property Min : " << max << std::endl;
 
-	std::vector<Celer::Vector4<GLfloat> > colors;
+	std::vector<Eigen::Vector4f > colors;
 
 	int index = 0;
 
@@ -374,7 +326,7 @@ void GLWidget::changeProperty ( int property_index )
 
 			float normalized_color = ( reservoir_model_.blocks[i].static_porperties[property_index].value_ - min ) / ( max - min );
 
-			Celer::Vector4<GLfloat> color(1.0,1.0,1.0,1.0);
+			Eigen::Vector4f color(1.0,1.0,1.0,1.0);
 
 			// @see Implementing a Continuous "Jet" Colormap Function in GLSL - @link http://www.metastine.com/?p=7
 
@@ -387,12 +339,12 @@ void GLWidget::changeProperty ( int property_index )
 			green 	= (std::max)(0.0f, (std::min)(green, 1.0f));
 			blue 	= (std::max)(0.0f, (std::min)(blue, 1.0f));
 
-			color = Celer::Vector4<GLfloat> ( red , green , blue , 1.0f );
+			color = Eigen::Vector4f ( red , green , blue , 1.0f );
 
 
-			colors = std::vector<Celer::Vector4<GLfloat> > ( 24 , color );
+			colors = std::vector<Eigen::Vector4f > ( 24 , color );
 
-			cubeColor[index] = Eigen::Vector4f( color.x,color.y,color.z,color.w );
+			cubeColor[index] =  color;
 			index++;
 
 		}
@@ -497,37 +449,37 @@ bool GLWidget::getVertices( unsigned int blockIndex, float * vertices )
 
 		if ( reservoir_model_.blocks[blockIndex].valid  )
 		{
-			vertices[0] = reservoir_model_.blocks[blockIndex].vertices[5].x;
-			vertices[1] = reservoir_model_.blocks[blockIndex].vertices[5].y;
-			vertices[2] = reservoir_model_.blocks[blockIndex].vertices[5].z;
+			vertices[0] = reservoir_model_.blocks[blockIndex].vertices[5][0];
+			vertices[1] = reservoir_model_.blocks[blockIndex].vertices[5][1];
+			vertices[2] = reservoir_model_.blocks[blockIndex].vertices[5][2];
 
-			vertices[3] = reservoir_model_.blocks[blockIndex].vertices[4].x;
-			vertices[4] = reservoir_model_.blocks[blockIndex].vertices[4].y;
-			vertices[5] = reservoir_model_.blocks[blockIndex].vertices[4].z;
+			vertices[3] = reservoir_model_.blocks[blockIndex].vertices[4][0];
+			vertices[4] = reservoir_model_.blocks[blockIndex].vertices[4][1];
+			vertices[5] = reservoir_model_.blocks[blockIndex].vertices[4][2];
 
-			vertices[6] = reservoir_model_.blocks[blockIndex].vertices[6].x;
-			vertices[7] = reservoir_model_.blocks[blockIndex].vertices[6].y;
-			vertices[8] = reservoir_model_.blocks[blockIndex].vertices[6].z;
+			vertices[6] = reservoir_model_.blocks[blockIndex].vertices[6][0];
+			vertices[7] = reservoir_model_.blocks[blockIndex].vertices[6][1];
+			vertices[8] = reservoir_model_.blocks[blockIndex].vertices[6][2];
 
-			vertices[9]  = reservoir_model_.blocks[blockIndex].vertices[7].x;
-			vertices[10] = reservoir_model_.blocks[blockIndex].vertices[7].y;
-			vertices[11] = reservoir_model_.blocks[blockIndex].vertices[7].z;
+			vertices[9]  = reservoir_model_.blocks[blockIndex].vertices[7][0];
+			vertices[10] = reservoir_model_.blocks[blockIndex].vertices[7][1];
+			vertices[11] = reservoir_model_.blocks[blockIndex].vertices[7][2];
 
-			vertices[12] = reservoir_model_.blocks[blockIndex].vertices[0].x;
-			vertices[13] = reservoir_model_.blocks[blockIndex].vertices[0].y;
-			vertices[14] = reservoir_model_.blocks[blockIndex].vertices[0].z;
+			vertices[12] = reservoir_model_.blocks[blockIndex].vertices[0][0];
+			vertices[13] = reservoir_model_.blocks[blockIndex].vertices[0][1];
+			vertices[14] = reservoir_model_.blocks[blockIndex].vertices[0][2];
 
-			vertices[15] = reservoir_model_.blocks[blockIndex].vertices[2].x;
-			vertices[16] = reservoir_model_.blocks[blockIndex].vertices[2].y;
-			vertices[17] = reservoir_model_.blocks[blockIndex].vertices[2].z;
+			vertices[15] = reservoir_model_.blocks[blockIndex].vertices[2][0];
+			vertices[16] = reservoir_model_.blocks[blockIndex].vertices[2][1];
+			vertices[17] = reservoir_model_.blocks[blockIndex].vertices[2][2];
 
-			vertices[18] = reservoir_model_.blocks[blockIndex].vertices[3].x;
-			vertices[19] = reservoir_model_.blocks[blockIndex].vertices[3].y;
-			vertices[20] = reservoir_model_.blocks[blockIndex].vertices[3].z;
+			vertices[18] = reservoir_model_.blocks[blockIndex].vertices[3][0];
+			vertices[19] = reservoir_model_.blocks[blockIndex].vertices[3][1];
+			vertices[20] = reservoir_model_.blocks[blockIndex].vertices[3][2];
 
-			vertices[21] = reservoir_model_.blocks[blockIndex].vertices[1].x;
-			vertices[22] = reservoir_model_.blocks[blockIndex].vertices[1].y;
-			vertices[23] = reservoir_model_.blocks[blockIndex].vertices[1].z;
+			vertices[21] = reservoir_model_.blocks[blockIndex].vertices[1][0];
+			vertices[22] = reservoir_model_.blocks[blockIndex].vertices[1][1];
+			vertices[23] = reservoir_model_.blocks[blockIndex].vertices[1][2];
 
 			blockIndex_ = blockIndex;
 
@@ -693,19 +645,19 @@ void GLWidget::openIRESCharles( const std::string& filename )
 				J = reservoir_model_.header_v2_.numJ;
 				K = reservoir_model_.header_v2_.numK;
 
-				cuboids[index].vertices[4] = Eigen::Vector4f(reservoir_model_.blocks[i].vertices[0].x,reservoir_model_.blocks[i].vertices[0].y,reservoir_model_.blocks[i].vertices[0].z,1.0f);
-				cuboids[index].vertices[5] = Eigen::Vector4f(reservoir_model_.blocks[i].vertices[1].x,reservoir_model_.blocks[i].vertices[1].y,reservoir_model_.blocks[i].vertices[1].z,1.0f);
-				cuboids[index].vertices[7] = Eigen::Vector4f(reservoir_model_.blocks[i].vertices[2].x,reservoir_model_.blocks[i].vertices[2].y,reservoir_model_.blocks[i].vertices[2].z,1.0f);
-				cuboids[index].vertices[6] = Eigen::Vector4f(reservoir_model_.blocks[i].vertices[3].x,reservoir_model_.blocks[i].vertices[3].y,reservoir_model_.blocks[i].vertices[3].z,1.0f);
+				cuboids[index].vertices[4] = reservoir_model_.blocks[i].vertices[0];
+				cuboids[index].vertices[5] = reservoir_model_.blocks[i].vertices[1];
+				cuboids[index].vertices[7] = reservoir_model_.blocks[i].vertices[2];
+				cuboids[index].vertices[6] = reservoir_model_.blocks[i].vertices[3];
 
-				cuboids[index].vertices[0] = Eigen::Vector4f(reservoir_model_.blocks[i].vertices[4].x,reservoir_model_.blocks[i].vertices[4].y,reservoir_model_.blocks[i].vertices[4].z,1.0f);
-				cuboids[index].vertices[3] = Eigen::Vector4f(reservoir_model_.blocks[i].vertices[5].x,reservoir_model_.blocks[i].vertices[5].y,reservoir_model_.blocks[i].vertices[5].z,1.0f);
-				cuboids[index].vertices[1] = Eigen::Vector4f(reservoir_model_.blocks[i].vertices[6].x,reservoir_model_.blocks[i].vertices[6].y,reservoir_model_.blocks[i].vertices[6].z,1.0f);
-				cuboids[index].vertices[2] = Eigen::Vector4f(reservoir_model_.blocks[i].vertices[7].x,reservoir_model_.blocks[i].vertices[7].y,reservoir_model_.blocks[i].vertices[7].z,1.0f);
+				cuboids[index].vertices[0] = reservoir_model_.blocks[i].vertices[4];
+				cuboids[index].vertices[3] = reservoir_model_.blocks[i].vertices[5];
+				cuboids[index].vertices[1] = reservoir_model_.blocks[i].vertices[6];
+				cuboids[index].vertices[2] = reservoir_model_.blocks[i].vertices[7];
 
 				cubeColor[index]  = Eigen::Vector4f(1.0,0.0,0.0,1.0);
 
-				cubeIJK[index] = Eigen::Vector4f ( reservoir_model_.blocks[i].IJK[0].x , reservoir_model_.blocks[i].IJK[0].y , reservoir_model_.blocks[i].IJK[0].z , 1.0f );
+				cubeIJK[index] =  Eigen::Vector4f (reservoir_model_.blocks[i].IJK[0][0] , reservoir_model_.blocks[i].IJK[0][1] , reservoir_model_.blocks[i].IJK[0][2] , 1.0f );
 
 				cubeFocus[index] = Eigen::Vector4f (1.0 ,0.0, 0.0 ,1.0 );
 

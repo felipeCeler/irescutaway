@@ -16,8 +16,6 @@ INCLUDE(${QT_USE_FILE})
 
 
 include_directories(
-		##- Celer Library
-		${CMAKE_SOURCE_DIR}/libs/Celer/src
 		##- Ires Library
 		${CMAKE_SOURCE_DIR}/libs/Ires
 		## - LCG/shaderlib
@@ -50,6 +48,7 @@ set( ${PROJECT_NAME}_SOURCES App/main.cpp
     						 GUI/Qt/GLWidget/GLWidget.cpp
     						 GUI/Qt/GLWidget/Cube.cpp
     						 IRES/CornerPointGrid.cpp
+    						 IRES/BoundingBox.cpp
     						 IRES/Block.cpp
     						 ${CMAKE_SOURCE_DIR}/libs/LCG/shaderlib/trackball.cpp
     						 ${CMAKE_SOURCE_DIR}/libs/LCG/shaderlib/framebuffer.cpp
@@ -63,6 +62,7 @@ set( ${PROJECT_NAME}_HEADERS GUI/Qt/MainWindow/MainWindow.hpp
                              GUI/Qt/GLWidget/GLWidget.hpp
                              GUI/Qt/GLWidget/Cube.hpp
                              IRES/CornerPointGrid.hpp
+                             IRES/BoundingBox.hpp
                              IRES/Block.hpp
                              ${CMAKE_SOURCE_DIR}/libs/LCG/shaderlib/trackball.hpp
                              ${CMAKE_SOURCE_DIR}/libs/LCG/shaderlib/framebuffer.hpp
@@ -89,7 +89,7 @@ ELSE(WIN32)
 	ADD_EXECUTABLE(${CMAKE_PROJECT_NAME} ${${PROJECT_NAME}_SOURCES} ${${PROJECT_NAME}_HEADERS} ${MOC_SOURCES} ${UI_HEADERS} ${RCC_HEADERS})	
 ENDIF(WIN32)
               
-TARGET_LINK_LIBRARIES(${CMAKE_PROJECT_NAME} ${QT_LIBRARIES} ${QT_QTMAIN_LIBRARY} ${OPENGL_LIBRARIES} CelerMath CelerScene CelerOpenGL IresReader)
+TARGET_LINK_LIBRARIES(${CMAKE_PROJECT_NAME} ${QT_LIBRARIES} ${QT_QTMAIN_LIBRARY} ${OPENGL_LIBRARIES}  ${GLEW_LIBRARY} IresReader)
 
 # Do a better solution. This one is Ungly !!!
 SET (SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/GUI/Qt/RCC/Shaders")

@@ -22,12 +22,10 @@
 #include <cctype>
 #include <ctime>
 
-// Celer Framework
-#include <Celer/Core/Geometry/Math/Vector3.hpp>
-#include <Celer/Core/Physics/BoundingBox3.hpp>
 
 // IRES Classes
 #include <IRES/Block.hpp>
+#include <IRES/BoundingBox.hpp>
 
 /// Ires Library
 #include <ires/ires.h>
@@ -153,7 +151,7 @@ namespace IRES
 					int number_of_Perforated_Blocks_;
 
 					// Control points of the Well. ( index of the block and 3D point )
-					std::vector<std::pair<int,Celer::Vector3<double> >  > tractory_;
+					std::vector<std::pair<int,Eigen::Vector3d >  > tractory_;
 
 					// For each well, property and on a specific time, get the data.
 					// FIXME That data comes from a perforated block.
@@ -183,14 +181,14 @@ namespace IRES
 
 			std::vector<Well_Data> 			wells;
 
-			std::vector<Celer::Vector3<double> > 	vertices;
+			std::vector<Eigen::Vector3d > 		vertices;
 
 			std::vector<int> 			block_indices;
 
 			std::vector<IRES::Block>                blocks;
 
-			Celer::BoundingBox3<double> box;
-			Celer::BoundingBox3<float>  box_v2;
+			IRES::BoundingBox box;
+			IRES::BoundingBox box_v2;
 
 			std::vector<ires::U32> list_of_vertex_indice;
 			std::vector<ires::F32> list_of_vertex_geometry_a;
