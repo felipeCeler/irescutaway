@@ -47,7 +47,7 @@ class GLWidget: public QGLWidget
 		//	   widget with data form another one.
 
 		IRES::CornerPointGrid reservoir_model_;
-		ires::Ires	      reservoir_model_eclipse;
+
 		// From QGLWidget
 		explicit GLWidget ( const QGLFormat& format , QWidget* parent = 0 , const QGLWidget* shareWidget = 0 , Qt::WindowFlags f = 0 );
 		explicit GLWidget ( QWidget* parent = 0 , const QGLWidget* shareWidget = 0 , Qt::WindowFlags f = 0 );
@@ -267,7 +267,6 @@ private:
 
 	// LCG procudure
         Eigen::Vector2f convertToNormalizedDeviceCoordinates(Eigen::Vector2i position);
-
 
 };
 
