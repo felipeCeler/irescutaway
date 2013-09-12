@@ -116,7 +116,7 @@ void GLWidget::initializeGL ( )
 
 	depthFBO = new Framebuffer( width() , height(), 2 );
 
-	meanFilter = new MeanFilter( "Guassian blur");
+	meanFilter = new MeanFilter( "Gaussian blur");
 	meanFilter->resize(width(), height());
 
 	loadShaders ( );
@@ -131,60 +131,28 @@ bool GLWidget::isIRESOpen ( ) const
 void GLWidget::cutVolumeGenerator( )
 {
 
-	IRES::BoundingBox box;
-
-	cutVolumes.clear();
-
 
 	cutBoxs.clear();
 
-	std::cout << " number of boxes initial " << boxes.size() << std::endl;
+	std::cout << " number of boxes initial " << cutVolumes.size() << std::endl;
 
 	// For while we are not considering cluster, just individual cells.
 	// Clusters are just the union cell's bounding boxes.
-	while ( boxes.size ( ) != 0 )
-	{
-
-		box = boxes.front( );
-
-		boxes.pop_front( );
-
-//		std::list<Celer::BoundingBox3<GLfloat> >::iterator box_iterator = boxes.begin ( );
-//
-//		int cont = 0;
-//
-//		while ( ( box_iterator != boxes.end ( ) )  )
-//		{
-//
-//			if ( box.intersect( *box_iterator ) )
-//			{
-//				box 	     = box + (*box_iterator);
-//				box_iterator = boxes.erase ( box_iterator );
-//				cont++;
-//			}
-//			else
-//			{
-//				++box_iterator;
-//			}
-//		}
-
-		cutVolumes.push_back( box );
-	}
 
 	int cont = 0;
 
 	cutBoxs.resize( cutVolumes.size( ) );
 
-	for ( std::vector<IRES::BoundingBox >::iterator it = cutVolumes.begin(); it != cutVolumes.end();++it)
+	for ( std::vector<IRES::BoundingBox >::iterator it = cutVolumes.begin(); it != cutVolumes.end(); it++ )
 	{
 
 		cutBoxs[cont].center  =  it->center( );
 		cutBoxs[cont].axis[0] =  Eigen::Vector4f(1.0f,0.0f,0.0f,1.0f);
 		cutBoxs[cont].axis[1] =  Eigen::Vector4f(0.0f,1.0f,0.0f,1.0f);
 		cutBoxs[cont].axis[2] =  Eigen::Vector4f(0.0f,0.0f,1.0f,1.0f);
-		cutBoxs[cont].extent  =  Eigen::Vector4f(abs(it->box_max()[0]-it->box_min()[0]),
-                                                         abs(it->box_max()[1]-it->box_min()[1]),
-		                                         abs(it->box_max()[2]-it->box_min()[2]),1.0f);
+		cutBoxs[cont].extent  =  Eigen::Vector4f(std::abs(it->box_max()[0]-it->box_min()[0]),
+                                                         std::abs(it->box_max()[1]-it->box_min()[1]),
+		                                         std::abs(it->box_max()[2]-it->box_min()[2]),1.0f);
 		cutBoxs[cont].aperture = Eigen::Vector4f(1.0f,1.0f,1.0f,1.0f);
 
 		cont++;
@@ -212,7 +180,9 @@ void GLWidget::cutVolumeGenerator( )
 
 void GLWidget::changePropertyRange ( const double& minRange, const double& maxRange, int property_index )
 {
-	boxes.clear ( );
+	cutVolumes.clear ( );
+
+	IRES::BoundingBox box;
 
 	dynamic_ = true;
 //	std::cout << "Changing the property to : " << reservoir_model_.static_porperties[property_index].name << std::endl;
@@ -252,7 +222,7 @@ void GLWidget::changePropertyRange ( const double& minRange, const double& maxRa
 				focus = Eigen::Vector4f ( 0.0f , 1.0f , 0.0f , 1.0f );
 				box.reset();
 				box.fromPointCloud ( reservoir_model_.blocks[i].vertices.begin ( ) , reservoir_model_.blocks[i].vertices.end ( ) );
-				boxes.push_back( box );
+				cutVolumes.push_back( box );
 
 			}
 			else
@@ -274,7 +244,7 @@ void GLWidget::changePropertyRange ( const double& minRange, const double& maxRa
 		}
 	}
 
-	for ( int shell_index = 0; shell_index < reservoir_model_.list_of_block_id.size() ; shell_index++ )
+	for ( std::size_t shell_index = 0; shell_index < reservoir_model_.list_of_block_id.size() ; shell_index++ )
 	{
 		facesFeatureColors[shell_index] = cubeColor[reservoir_model_.list_of_block_id[shell_index]];
 	}
@@ -354,7 +324,7 @@ void GLWidget::changeProperty ( int property_index )
 		}
 	}
 
-	for ( int shell_index = 0; shell_index < reservoir_model_.list_of_block_id.size() ; shell_index++ )
+	for ( std::size_t shell_index = 0; shell_index < reservoir_model_.list_of_block_id.size() ; shell_index++ )
 	{
 		facesFeatureColors[shell_index] = cubeColor[reservoir_model_.list_of_block_id[shell_index]];
 	}
@@ -439,143 +409,8 @@ void GLWidget::changeMinK ( const int& value )
 	updateGL();
 }
 
-bool GLWidget::getVertices( unsigned int blockIndex, float * vertices )
-{
-
-	if ( (blockIndex >= 0) && ( blockIndex < reservoir_model_.blocks.size())  )
-	{
-		// TODO View CubeRendering_and_Orientation.svg
-		//      Tying to translate from Charles Ires 2 Version to CelerSystem
-
-		if ( reservoir_model_.blocks[blockIndex].valid  )
-		{
-			vertices[0] = reservoir_model_.blocks[blockIndex].vertices[5][0];
-			vertices[1] = reservoir_model_.blocks[blockIndex].vertices[5][1];
-			vertices[2] = reservoir_model_.blocks[blockIndex].vertices[5][2];
-
-			vertices[3] = reservoir_model_.blocks[blockIndex].vertices[4][0];
-			vertices[4] = reservoir_model_.blocks[blockIndex].vertices[4][1];
-			vertices[5] = reservoir_model_.blocks[blockIndex].vertices[4][2];
-
-			vertices[6] = reservoir_model_.blocks[blockIndex].vertices[6][0];
-			vertices[7] = reservoir_model_.blocks[blockIndex].vertices[6][1];
-			vertices[8] = reservoir_model_.blocks[blockIndex].vertices[6][2];
-
-			vertices[9]  = reservoir_model_.blocks[blockIndex].vertices[7][0];
-			vertices[10] = reservoir_model_.blocks[blockIndex].vertices[7][1];
-			vertices[11] = reservoir_model_.blocks[blockIndex].vertices[7][2];
-
-			vertices[12] = reservoir_model_.blocks[blockIndex].vertices[0][0];
-			vertices[13] = reservoir_model_.blocks[blockIndex].vertices[0][1];
-			vertices[14] = reservoir_model_.blocks[blockIndex].vertices[0][2];
-
-			vertices[15] = reservoir_model_.blocks[blockIndex].vertices[2][0];
-			vertices[16] = reservoir_model_.blocks[blockIndex].vertices[2][1];
-			vertices[17] = reservoir_model_.blocks[blockIndex].vertices[2][2];
-
-			vertices[18] = reservoir_model_.blocks[blockIndex].vertices[3][0];
-			vertices[19] = reservoir_model_.blocks[blockIndex].vertices[3][1];
-			vertices[20] = reservoir_model_.blocks[blockIndex].vertices[3][2];
-
-			vertices[21] = reservoir_model_.blocks[blockIndex].vertices[1][0];
-			vertices[22] = reservoir_model_.blocks[blockIndex].vertices[1][1];
-			vertices[23] = reservoir_model_.blocks[blockIndex].vertices[1][2];
-
-			blockIndex_ = blockIndex;
-
-			return true;
-
-		}else
-		{
-
-			return false;
-		}
-
-	}
-
-	return false;
-
-}
-
-void GLWidget::IRESv1_to_IRESv2( const std::string& filename )
-{
-
-	reservoir_model_.openIRES( filename );
-
-	ires::Ires new_reservoir_file_(true);
-
-	std::function<bool (unsigned int , float * )> fn = std::bind(&GLWidget::getVertices, this, std::placeholders::_1, std::placeholders::_2);
-
-	blockIndex_ = 0;
-
-	new_reservoir_file_.buildVertexBlockLists(reservoir_model_.header_.number_of_Blocks_in_I_Direction,
-						  reservoir_model_.header_.number_of_Blocks_in_J_Direction,
-						  reservoir_model_.header_.number_of_Blocks_in_K_Direction, fn);
-
-
-	std::vector<std::string> names;
-	names.resize(reservoir_model_.static_porperties.size( ));
-	std::vector<float> values;
-
-	for ( std::size_t i = 0 ; i < reservoir_model_.static_porperties.size( ) ; i++)
-	{
-		names[i] = reservoir_model_.static_porperties[i].name;
-		std::copy ( reservoir_model_.static_porperties[i].values_.begin() 	, reservoir_model_.static_porperties[i].values_.end() , std::back_inserter ( values  ) );
-	}
-
-	new_reservoir_file_.setStaticProps(names,values);
-
-	std::cout << " Block Index " << blockIndex_  << std::endl;
-
-	new_reservoir_file_.setHeaderData("sapphire-208000", ires::Date(ires::Date::Year(2013), ires::Date::Month(6), ires::Date::Day(10)), 0);
-
-	bool result = new_reservoir_file_.writeFile("sapphire-208000.ires2");
-
-	std::cout << "result" << result << std::endl;
-
-	if (result )
-	{
-		new_reservoir_file_.readFile( "sapphire-208000.ires2.ires" );
-	}
-
-	std::size_t i = blockIndex_;
-
-	std::vector<std::string > new_names;
-	std::vector<float> new_values;
-
-	if ( reservoir_model_.blocks[i].valid )
-	{
-
-		float v[24];
-		new_reservoir_file_.getBlockVertices(i, v);
-
-		new_reservoir_file_.getStaticPropertyNames(new_names);
-		new_reservoir_file_.getStaticPropertyValues(0 , new_values );
-
-		std::cout << " Static " <<  new_names.size() << std::endl;
-
-
-		for ( std::size_t i = 0 ; i < new_names.size( ); i++)
-		{
-			std::cout << " names " << new_names[i] << std::endl;
-		}
-
-
-		for  ( std::size_t j = 0 ; j <  reservoir_model_.static_porperties.size() ; j++)
-		{
-			new_reservoir_file_.getStaticPropertyValues(j , new_values );
-			std::cout << " Ires 1.0 " << reservoir_model_.static_porperties[j].name << " : " << reservoir_model_.static_porperties[j].values_[blockIndex_] << std::endl;
-			std::cout << " Ires 2.0 " << new_names[j] <<  " : " << new_values[blockIndex_] << std::endl;
-
-		}
-
-	}
-
-}
-
 void GLWidget::openIRESCharles( const std::string& filename )
 {
-	//reservoir_model_.openIRES( filename );
 
 	reservoir_model_.openIRES_Version_2( filename );
 
@@ -631,19 +466,12 @@ void GLWidget::openIRESCharles( const std::string& filename )
 		cubeFocus.resize( reservoir_model_.blocks.size( ));
 
 		int index = 0;
-		int I = 0;
-		int J = 0;
-		int K = 0;
 
 		for ( std::size_t i = 0; i < reservoir_model_.blocks.size( ) ; i++)
 		{
 
 			if ( reservoir_model_.blocks[i].valid )
 			{
-
-				I = reservoir_model_.header_v2_.numI;
-				J = reservoir_model_.header_v2_.numJ;
-				K = reservoir_model_.header_v2_.numK;
 
 				cuboids[index].vertices[4] = reservoir_model_.blocks[i].vertices[0];
 				cuboids[index].vertices[5] = reservoir_model_.blocks[i].vertices[1];
@@ -775,7 +603,6 @@ void GLWidget::resizeGL ( int width , int height )
 	if (depthFBO)
 		delete depthFBO;
 
-	std::cout << " FBO Resize " << width << " : "<<  height;
 
 	depthFBO = new Framebuffer( width , height, 2 );
 
@@ -844,7 +671,7 @@ void GLWidget::drawSecundary ( )
 	}
 
 	GLfloat light_elements[lights.size ( ) * 3];
-	for ( int i = 0; i < lights.size ( ); ++i )
+	for ( std::size_t i = 0; i < lights.size ( ); ++i )
 	{
 		for ( int j = 0; j < 3; ++j )
 		{
@@ -979,7 +806,7 @@ void GLWidget::NoCutaway ( )
         {
 
         	GLfloat light_elements[lights.size ( ) * 3];
-        	for ( int i = 0; i < lights.size ( ); ++i )
+        	for ( std::size_t i = 0; i < lights.size ( ); ++i )
         	{
         		for ( int j = 0; j < 3; ++j )
         		{
@@ -1126,6 +953,7 @@ void GLWidget::loadShaders ( )
 	meanFilter->initialize( );
 
 	// LCG
+	// When New is calling, does the destroyer function is also called ?
 	primaryLCG =  new Shader( "Primary",(shaderDirectory + "Primary.vert").toStdString(),
 	                                    (shaderDirectory + "Primary.frag").toStdString(),
                                             (shaderDirectory + "Primary.geom").toStdString(),1);
@@ -1161,9 +989,6 @@ void GLWidget::loadShaders ( )
                               (shaderDirectory + "Shell.frag").toStdString(),
                               (shaderDirectory + "Shell.geom").toStdString(),1);
         shellLCG->initialize();
-
-	// Celer
-
 
 }
 /// KeyInput

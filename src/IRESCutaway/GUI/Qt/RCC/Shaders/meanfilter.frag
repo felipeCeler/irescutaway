@@ -22,7 +22,6 @@ void main() {
       result += pixelColor.rgba;
     }
   }
-
   result /= float((2*kernelsizex+1) * (2*kernelsizex+1));
 
   out_Color = vec4(result);

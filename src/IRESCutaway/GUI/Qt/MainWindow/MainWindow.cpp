@@ -11,10 +11,6 @@ MainWindow::MainWindow ( QMainWindow *parent ) :
 
 	QGLFormat glFormat;
 	glFormat.setSwapInterval ( 0 ); // vsync
-//	glFormat.setVersion(3,3);
-//	glFormat.setProfile(QGLFormat::CompatibilityProfile);
-//	glFormat.setSampleBuffers(true);
-//	glFormat.setSamples(4);
 
 	ui = new Ui::MainWindow;
 	ui->setupUi( this );
@@ -28,7 +24,7 @@ MainWindow::MainWindow ( QMainWindow *parent ) :
 	ui->properties_tableWidget_->horizontalHeader()->setResizeMode(QHeaderView::Stretch);
 
 	QIcon icon;
-	icon.addFile ( ":/Icons/caju.png" , QSize ( ) , QIcon::Normal , QIcon::Off );
+	icon.addFile ( ":/Icons/celerSystemIcon.svg" , QSize ( ) , QIcon::Normal , QIcon::Off );
 	setWindowIcon ( icon );
 
 	showfullScreen_ = 0;

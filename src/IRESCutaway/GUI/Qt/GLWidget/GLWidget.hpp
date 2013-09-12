@@ -13,12 +13,13 @@
 #include <samples/imgproc/meanfilter.hpp>
 
 /// C++ Standard Library
+#include <cstdio>
+#include <cstdlib>
+#include <cmath>
+
 #include <limits>
-#include <stdio.h>
-#include <stdlib.h>
 #include <algorithm>
 #include <iterator>
-#include <list>
 #include <vector>
 #include <functional>
 
@@ -107,8 +108,6 @@ class GLWidget: public QGLWidget
 		void setRawCutawayVisibility    ( bool visibility ) { isRawApproach    = visibility; updateGL();}
 		void setIRESCutawayVisibility   ( bool visibility ) {   isIRESApproach = visibility; updateGL();}
 
-		void IRESv1_to_IRESv2 ( const std::string& filename );
-
 		void freezeView ( );
 
 	protected:
@@ -123,9 +122,6 @@ class GLWidget: public QGLWidget
 
 private:
 
-	bool getVertices(unsigned int , float * vertices );
-
-
 	QPoint lastPos;
 	/// Avoid camera_ movement issues
 	QSet<int> keysPresseds_;
@@ -133,9 +129,6 @@ private:
 
 	bool isIRESOpen_;
 
-
-	IRES::BoundingBox 		   box;
-	std::list  <IRES::BoundingBox > boxes;
 	std::vector<IRES::BoundingBox > cutVolumes;
 
 	struct CutBox

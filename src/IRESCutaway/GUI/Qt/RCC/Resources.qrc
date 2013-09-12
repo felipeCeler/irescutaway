@@ -4,5 +4,7 @@
     <file>Icons/celerGLnoFilter3.png</file>
     <file>Icons/caju.png</file>
     <file>Icons/CelerGLShadow.png</file>
+    <file>Icons/CelerSystemAllBlack100Icon.png</file>
+    <file>Icons/celerSystemIcon.svg</file>
   </qresource>
 </RCC>
