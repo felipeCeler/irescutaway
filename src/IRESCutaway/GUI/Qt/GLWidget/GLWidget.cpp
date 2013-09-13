@@ -4,13 +4,13 @@
 // Se quiser usar QPainter Ver exemplo no QT demo - Manda Qt em wave animation !!!
 
 GLWidget::GLWidget ( const QGLFormat& format , QWidget* parent , const QGLWidget* shareWidget , Qt::WindowFlags f ) :
-	QGLWidget ( format , parent , shareWidget , f ) , reservoir_model_eclipse(true)
+	QGLWidget ( format , parent , shareWidget , f )
 {
 
 }
 
 GLWidget::GLWidget (  QWidget* parent , const QGLWidget* shareWidget , Qt::WindowFlags f ) :
-	QGLWidget ( parent , shareWidget , f ) , reservoir_model_eclipse(true)
+	QGLWidget ( parent , shareWidget , f )
 {
 
 }
@@ -187,8 +187,8 @@ void GLWidget::changePropertyRange ( const double& minRange, const double& maxRa
 	dynamic_ = true;
 //	std::cout << "Changing the property to : " << reservoir_model_.static_porperties[property_index].name << std::endl;
 
-	float min = *std::min_element ( reservoir_model_.static_porperties[property_index].values_.begin ( ) , reservoir_model_.static_porperties[property_index].values_.end ( ) );
-	float max = *std::max_element ( reservoir_model_.static_porperties[property_index].values_.begin ( ) , reservoir_model_.static_porperties[property_index].values_.end ( ) );
+	float min = reservoir_model_.static_porperties[property_index].min_;
+	float max = reservoir_model_.static_porperties[property_index].max_;
 
 	Eigen::Vector4f color;
 
@@ -234,7 +234,7 @@ void GLWidget::changePropertyRange ( const double& minRange, const double& maxRa
 			cubeColor[index] = color;
 			cubeFocus[index] = focus;
 			// Face Feature
-			facesFeatureColors[index] = color;
+			//facesFeatureColors[index] = color;
 
  			index++;
 		}
@@ -257,10 +257,6 @@ void GLWidget::changePropertyRange ( const double& minRange, const double& maxRa
 	glBufferData ( GL_ARRAY_BUFFER , cubeColor.size( ) * sizeof(cubeColor[0]) , &cubeColor[0] , GL_STATIC_DRAW );
 	glBindBuffer( GL_ARRAY_BUFFER, 0);
 
-	glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer_cube_IJK);
-	glBufferData ( GL_ARRAY_BUFFER , cubeIJK.size( ) * sizeof(cubeIJK[0]) , &cubeIJK[0] , GL_STATIC_DRAW );
-	glBindBuffer( GL_ARRAY_BUFFER, 0);
-
         glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer_cube_Focus);
         glBufferData ( GL_ARRAY_BUFFER , cubeFocus.size( ) * sizeof(cubeFocus[0]) , &cubeFocus[0] , GL_STATIC_DRAW );
         glBindBuffer( GL_ARRAY_BUFFER, 0);
@@ -279,8 +275,8 @@ void GLWidget::changeProperty ( int property_index )
 
 	std::cout << "Changing the property to : " << reservoir_model_.static_porperties[property_index].name << std::endl;
 
-	float min = *std::min_element ( reservoir_model_.static_porperties[property_index].values_.begin ( ) , reservoir_model_.static_porperties[property_index].values_.end ( ) );
-	float max = *std::max_element ( reservoir_model_.static_porperties[property_index].values_.begin ( ) , reservoir_model_.static_porperties[property_index].values_.end ( ) );
+	float min = reservoir_model_.static_porperties[property_index].min_;
+	float max = reservoir_model_.static_porperties[property_index].max_;
 
 	std::cout << "Property Max : " << min << std::endl;
 	std::cout << "Property Min : " << max << std::endl;
@@ -732,7 +728,7 @@ void GLWidget::drawPrimary( )
 {
 
 	GLfloat light_elements[lights.size ( ) * 3];
-	for ( int i = 0; i < lights.size ( ); ++i )
+	for ( std::size_t i = 0; i < lights.size ( ); ++i )
 	{
 		for ( int j = 0; j < 3; ++j )
 		{
@@ -874,15 +870,6 @@ void GLWidget::RawCutaway ( int cluster )
 		glDepthFunc(GL_LESS);
 		glClearDepth(1.0f);
 		glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-
-		GLfloat light_elements[lights.size ( ) * 3];
-		for ( int i = 0; i < lights.size ( ); ++i )
-		{
-			for ( int j = 0; j < 3; ++j )
-			{
-				light_elements[i * 3 + j] = lights[i][j];
-			}
-		}
 
 		if ( draw_secondary )
 		{

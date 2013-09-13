@@ -89,6 +89,9 @@ namespace IRES
 					std::string variable_name;
 					std::string component;
 
+					float min_;
+					float max_;
+
 					// FIXME Just values of each property for each block.
 					std::vector<float> values_;
 			};

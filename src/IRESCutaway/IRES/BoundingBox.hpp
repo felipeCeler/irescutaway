@@ -71,8 +71,8 @@ namespace IRES
 			void reset ( )
 			{
 				// FIXME How to get the real limits of the bounding box using std::numeric_limits
-				this->min_ = Eigen::Vector4f (  std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), 1.0f );
-				this->max_ = Eigen::Vector4f ( -std::numeric_limits<float>::max(),-std::numeric_limits<float>::max(),-std::numeric_limits<float>::max(), 1.0f );
+				this->min_ = Eigen::Vector4f (  (std::numeric_limits<float>::max)(), (std::numeric_limits<float>::max)(), (std::numeric_limits<float>::max)(), 1.0f );
+				this->max_ = Eigen::Vector4f ( -(std::numeric_limits<float>::max)(),-(std::numeric_limits<float>::max)(),-(std::numeric_limits<float>::max)(), 1.0f );
 
 				basis_[0] = Eigen::Vector4f::UnitX();
 				basis_[0] = Eigen::Vector4f::UnitY();
@@ -84,18 +84,18 @@ namespace IRES
 
 			}
 
-			void fromPointCloud( typename std::vector<Eigen::Vector4f >::const_iterator new_point_begin, typename std::vector<Eigen::Vector4f >::const_iterator new_point_end)
+			void fromPointCloud(  std::vector<Eigen::Vector4f >::const_iterator new_point_begin,  std::vector<Eigen::Vector4f >::const_iterator new_point_end)
 			{
 
-				for ( typename std::vector<Eigen::Vector4f >::const_iterator new_point = new_point_begin; new_point != new_point_end; new_point++)
+				for (  std::vector<Eigen::Vector4f >::const_iterator new_point = new_point_begin; new_point != new_point_end; new_point++)
 				{
 
-					 BoundingBox box( std::min ( min_[0] , (*new_point)[0] ) ,
-								 std::min ( min_[1] , (*new_point)[1] ) ,
-								 std::min ( min_[2] , (*new_point)[2] ) ,
-								 std::max ( max_[0] , (*new_point)[0] ) ,
-								 std::max ( max_[1] , (*new_point)[1] ) ,
-								 std::max ( max_[2] , (*new_point)[2] ) );
+					 BoundingBox box( ((std::min)) ( min_[0] , (*new_point)[0] ) ,
+								 (std::min) ( min_[1] , (*new_point)[1] ) ,
+								 (std::min) ( min_[2] , (*new_point)[2] ) ,
+								 (std::max) ( max_[0] , (*new_point)[0] ) ,
+								 (std::max) ( max_[1] , (*new_point)[1] ) ,
+								 (std::max) ( max_[2] , (*new_point)[2] ) );
 
 //						std::cout << min( );
 //						std::cout << max( );
@@ -129,7 +129,7 @@ namespace IRES
 
 			inline bool operator== ( const BoundingBox& box ) const
 			{
-				return ( box_min ( ) == box.box_min ( ) and box_max ( ) == box.box_max ( ) );
+				return ( box_min ( ) == box.box_min ( ) && box_max ( ) == box.box_max ( ) );
 			}
 
 			inline bool operator!= ( const BoundingBox& box ) const
@@ -147,22 +147,22 @@ namespace IRES
 
 			inline BoundingBox operator+ ( const BoundingBox& box ) const
 			{
-				return BoundingBox (  std::min ( min_[0] , box.box_min ( )[0] ) ,
-							     std::min ( min_[1] , box.box_min ( )[1] ) ,
-							     std::min ( min_[2] , box.box_min ( )[2] ) ,
-							     std::max ( max_[0] , box.box_max ( )[0] ) ,
-							     std::max ( max_[1] , box.box_max ( )[1] ) ,
-							     std::max ( max_[2] , box.box_max ( )[2] ) );
+				return BoundingBox (  (std::min) ( min_[0] , box.box_min ( )[0] ) ,
+							     (std::min) ( min_[1] , box.box_min ( )[1] ) ,
+							     (std::min) ( min_[2] , box.box_min ( )[2] ) ,
+							     (std::max) ( max_[0] , box.box_max ( )[0] ) ,
+							     (std::max) ( max_[1] , box.box_max ( )[1] ) ,
+							     (std::max) ( max_[2] , box.box_max ( )[2] ) );
 			}
 
 			inline BoundingBox operator+ ( const Eigen::Vector4f& new_point ) const
 			{
-				return BoundingBox (  std::min ( min_[0] , new_point[0] ) ,
-							     std::min ( min_[1] , new_point[1] ) ,
-							     std::min ( min_[2] , new_point[2] ) ,
-							     std::max ( max_[0] , new_point[0] ) ,
-							     std::max ( max_[1] , new_point[1] ) ,
-							     std::max ( max_[2] , new_point[2] ) );
+				return BoundingBox (  (std::min) ( min_[0] , new_point[0] ) ,
+							     (std::min) ( min_[1] , new_point[1] ) ,
+							     (std::min) ( min_[2] , new_point[2] ) ,
+							     (std::max) ( max_[0] , new_point[0] ) ,
+							     (std::max) ( max_[1] , new_point[1] ) ,
+							     (std::max) ( max_[2] , new_point[2] ) );
 			}
 
 			bool intersect ( const Eigen::Vector4f& p ) const

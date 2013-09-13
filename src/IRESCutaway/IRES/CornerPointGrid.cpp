@@ -70,6 +70,9 @@ namespace IRES
 
 			reservoir_file.getStaticPropertyValues( i, static_porperties[i].values_ );
 
+			static_porperties[i].min_ = *std::min_element ( static_porperties[i].values_.begin ( ) , static_porperties[i].values_.end ( ) );
+			static_porperties[i].max_ = *std::max_element ( static_porperties[i].values_.begin ( ) , static_porperties[i].values_.end ( ) );
+
  		}
 
 		float 	  	v[24];
@@ -284,7 +287,6 @@ namespace IRES
 
 			for ( std::size_t property = 0;  property < static_porperties.size();  ++property )
 			{
-
 				new_block.static_porperties[property].name  	     = static_porperties[property].name;
 				new_block.static_porperties[property].unit  	     = static_porperties[property].unit;
 				new_block.static_porperties[property].variable_name  = static_porperties[property].variable_name;

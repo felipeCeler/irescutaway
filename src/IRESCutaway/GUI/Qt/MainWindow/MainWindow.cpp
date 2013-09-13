@@ -85,7 +85,7 @@ void MainWindow::open( QString pFilename,bool who ) {
 		ui->properties_tableWidget_->setRowCount(2*glWidget->reservoir_model_.static_porperties.size( ));
 		ui->comboBox_choose_an_property_->clear();
 
-		for ( int i = 0 ; i < glWidget->reservoir_model_.static_porperties.size( ); ++i )
+		for ( std::size_t i = 0 ; i < glWidget->reservoir_model_.static_porperties.size( ); ++i )
 		{
 
 			float min =  *std::min_element ( glWidget->reservoir_model_.static_porperties[i].values_.begin( ),glWidget->reservoir_model_.static_porperties[i].values_.end( ) );
@@ -269,7 +269,7 @@ void MainWindow::on_doubleSpinMin_valueChanged  ( double i)
 {
 	if ( glWidget->isIRESOpen( ) && glWidget->dynamic( ))
 	{
-		ui->doubleSpinMax->setValue( i + 3000);
+//		ui->doubleSpinMax->setValue( i);
 
 		glWidget->changePropertyRange( ui->doubleSpinMin->value(), ui->doubleSpinMax->value(), ui->comboBox_choose_an_property_->currentIndex() );
 		std::cout << "Mudou" << std::endl;
