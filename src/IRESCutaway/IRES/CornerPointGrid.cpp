@@ -42,7 +42,6 @@ namespace IRES
 		std::cout << std::setw(50) << std::left << "Number of Blocks in I direction :" << header_v2_.numI << std::endl;
 		std::cout << std::setw(50) << std::left << "Number of Blocks in J direction :" << header_v2_.numJ << std::endl;
 		std::cout << std::setw(50) << std::left << "Number of Blocks in K direction :" << header_v2_.numK << std::endl;
-		std::cout << std::setw(50) << std::left << "Number of Time Steps : " << header_v2_.numTimesteps << std::endl;
 		std::cout << std::setw(50) << std::left << "Number of Dynamic : " << header_v2_.numDynamicProps << std::endl;
 		std::cout << std::setw(50) << std::left << "Number of Static : " << header_v2_.numStaticProps << std::endl;
 
