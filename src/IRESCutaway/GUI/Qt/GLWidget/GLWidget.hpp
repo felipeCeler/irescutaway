@@ -48,6 +48,18 @@ class GLWidget: public QGLWidget
 
 		IRES::CornerPointGrid reservoir_model_;
 
+		// GPU load Properties
+
+		std::string properties_name[4];
+		std::size_t indices[4];
+		float min_value[4];
+		float max_value[4];
+
+		float min_range;
+		float max_range;
+
+		int current_property;
+
 		// From QGLWidget
 		explicit GLWidget ( const QGLFormat& format , QWidget* parent = 0 , const QGLWidget* shareWidget = 0 , Qt::WindowFlags f = 0 );
 		explicit GLWidget ( QWidget* parent = 0 , const QGLWidget* shareWidget = 0 , Qt::WindowFlags f = 0 );
@@ -74,7 +86,6 @@ class GLWidget: public QGLWidget
 		void openIRESCharles  ( const std::string& filename );
 		bool isIRESOpen () const;
 
-		void cutVolumeGenerator ( );
 		void changeProperty ( int property_index );
 		void changePropertyRange ( const double& min, const double& max, int property_index );
 
@@ -130,21 +141,6 @@ private:
 
 	bool isIRESOpen_;
 
-	std::vector<IRES::BoundingBox > cutVolumes;
-
-	struct CutBox
-	{
-		Eigen::Vector4f center;
-		Eigen::Vector4f axis[3];
-		Eigen::Vector4f extent;
-		Eigen::Vector4f aperture;
-	};
-
-	std::vector<CutBox> cutBoxs;
-
-	GLuint vertexArray_cutBox;
-	GLuint vertexBuffer_cutBox;
-
         Shader*                         BoundingBoxInitializationLCG;
         Shader*                         BoundingBoxDebugLCG;
         Shader*                         BoundingBoxCutawayLCG;
@@ -153,6 +149,7 @@ private:
 
         Shader*                         primaryLCG;
         Shader*                         shellLCG;
+        Shader*                         rawShellLCG;
 
 	QImage fbo;
 	float  angle;
@@ -258,16 +255,6 @@ private:
 			GLuint vertexBuffer_faceProperties;
 
 	std::vector<FaceFeature>      facesFeature;
-
-
-	// GPU load Properties
-
-	std::string properties_name[4];
-	std::size_t indices[4];
-	float min_value[4];
-	float max_value[4];
-
-	int current_property;
 
         bool enable_blend_;
 

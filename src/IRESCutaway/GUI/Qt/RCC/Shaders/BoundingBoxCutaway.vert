@@ -64,7 +64,7 @@ void main(void)
 		cube.v[1] = v1;
 		cube.v[2] = v2;
 
-		cube.color    =  propertyColor ( min_property, max_property, property_index );;
+		cube.color    =  propertyColor ( min_property, max_property, property_index );
 
                 mat3 normalMatrix = mat3(inverse(transpose((ModelMatrix*ViewMatrix))));
 

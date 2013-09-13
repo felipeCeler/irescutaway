@@ -76,30 +76,28 @@ void MainWindow::open( QString pFilename,bool who ) {
 	{
 		QString title ( reinterpret_cast<char*>(glWidget->reservoir_model_.header_v2_.title) );
 
-
-
 		ui->simulator_name_->setText (  title );
 
 		updateDoubleSpinMax( 0 );
 		updateDoubleSpinMin( 0 );
-		ui->properties_tableWidget_->setRowCount(2*glWidget->reservoir_model_.static_porperties.size( ));
+		ui->properties_tableWidget_->setRowCount(2*4);
 		ui->comboBox_choose_an_property_->clear();
 
-		for ( std::size_t i = 0 ; i < glWidget->reservoir_model_.static_porperties.size( ); ++i )
+		for ( std::size_t i = 0 ; i < 4; ++i )
 		{
 
-			float min =  *std::min_element ( glWidget->reservoir_model_.static_porperties[i].values_.begin( ),glWidget->reservoir_model_.static_porperties[i].values_.end( ) );
-			float max =  *std::max_element ( glWidget->reservoir_model_.static_porperties[i].values_.begin( ),glWidget->reservoir_model_.static_porperties[i].values_.end( ) );
+			float min =  glWidget->min_value[i];
+			float max =  glWidget->max_value[i];
 
 
-			ui->comboBox_choose_an_property_->addItem(  QString::fromStdString( glWidget->reservoir_model_.static_porperties[i].name ) );
+			ui->comboBox_choose_an_property_->addItem(  QString::fromStdString( glWidget->properties_name[i] ) );
 			ui->properties_tableWidget_->setSpan(i * 2, 0, 2, 1);
-			ui->properties_tableWidget_->setItem(i * 2, 0, new QTableWidgetItem(  QString::fromStdString( glWidget->reservoir_model_.static_porperties[i].name ) ) );
+			ui->properties_tableWidget_->setItem(i * 2, 0, new QTableWidgetItem(  QString::fromStdString( glWidget->properties_name[i] ) ) );
 
 			ui->properties_tableWidget_->setItem(i    , 1, new QTableWidgetItem(  QString::number( min )) );
 			ui->properties_tableWidget_->setItem(i * 2, 1, new QTableWidgetItem(  QString::number( max )) );
 
-			ui->properties_tableWidget_->setItem(i , 0, new QTableWidgetItem(  QString::fromStdString( glWidget->reservoir_model_.static_porperties[i].name ) ) );
+			ui->properties_tableWidget_->setItem(i , 0, new QTableWidgetItem(  QString::fromStdString( glWidget->properties_name[i] ) ) );
 			ui->properties_tableWidget_->setItem(i , 1, new QTableWidgetItem(  QString( QString::number( min )+" - "+QString::number( max )) ));
 			// ui->properties_tableWidget_->setItem(i * 2, 1, new QTableWidgetItem(  QString::number( max )) );
 
@@ -132,8 +130,8 @@ void MainWindow::open( QString pFilename,bool who ) {
 void MainWindow::updateDoubleSpinMin( int property_index )
 {
 
-	float min =  *std::min_element ( glWidget->reservoir_model_.static_porperties[property_index].values_.begin( ),glWidget->reservoir_model_.static_porperties[property_index].values_.end( ) );
-	float max =  *std::max_element ( glWidget->reservoir_model_.static_porperties[property_index].values_.begin( ),glWidget->reservoir_model_.static_porperties[property_index].values_.end( ) );
+	float min =  glWidget->min_value[property_index];
+	float max =  glWidget->max_value[property_index];
 
 	ui->doubleSpinMin->setMinimum ( static_cast<double> (min) );
 	ui->doubleSpinMin->setMaximum ( static_cast<double> (max));
@@ -152,8 +150,8 @@ void MainWindow::updateDoubleSpinMax( int property_index )
 {
 
 
-	float min =  *std::min_element ( glWidget->reservoir_model_.static_porperties[property_index].values_.begin( ),glWidget->reservoir_model_.static_porperties[property_index].values_.end( ) );
-	float max =  *std::max_element ( glWidget->reservoir_model_.static_porperties[property_index].values_.begin( ),glWidget->reservoir_model_.static_porperties[property_index].values_.end( ) );
+	float min =  glWidget->min_value[property_index];
+	float max =  glWidget->max_value[property_index];
 
 	ui->doubleSpinMin->setMinimum ( static_cast<double> (min) );
 	ui->doubleSpinMin->setMaximum ( static_cast<double> (max));

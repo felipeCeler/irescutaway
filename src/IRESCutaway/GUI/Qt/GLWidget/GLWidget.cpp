@@ -63,9 +63,6 @@ void GLWidget::initializeGL ( )
 	lights.push_back ( Eigen::Vector3f ( 0.0 , 0.0 , 1.0 ) );
 	lights.push_back ( Eigen::Vector3f ( 0.0 , 1.0 , 0.0 ) );
 
-	// FIXME cutBox
-	glGenVertexArrays ( 1, &vertexArray_cutBox );
-		glGenBuffers ( 1,&vertexBuffer_cutBox );
 
 	// Cuboid
 	glGenVertexArrays ( 1, &vertexArray_cuboid );
@@ -135,143 +132,18 @@ bool GLWidget::isIRESOpen ( ) const
 	return isIRESOpen_;
 }
 
-void GLWidget::cutVolumeGenerator( )
-{
-
-
-	cutBoxs.clear();
-
-	std::cout << " number of boxes initial " << cutVolumes.size() << std::endl;
-
-	// For while we are not considering cluster, just individual cells.
-	// Clusters are just the union cell's bounding boxes.
-
-	int cont = 0;
-
-	cutBoxs.resize( cutVolumes.size( ) );
-
-	for ( std::vector<IRES::BoundingBox >::iterator it = cutVolumes.begin(); it != cutVolumes.end(); it++ )
-	{
-
-		cutBoxs[cont].center  =  it->center( );
-		cutBoxs[cont].axis[0] =  Eigen::Vector4f(1.0f,0.0f,0.0f,1.0f);
-		cutBoxs[cont].axis[1] =  Eigen::Vector4f(0.0f,1.0f,0.0f,1.0f);
-		cutBoxs[cont].axis[2] =  Eigen::Vector4f(0.0f,0.0f,1.0f,1.0f);
-		cutBoxs[cont].extent  =  Eigen::Vector4f(std::abs(it->box_max()[0]-it->box_min()[0]),
-                                                         std::abs(it->box_max()[1]-it->box_min()[1]),
-		                                         std::abs(it->box_max()[2]-it->box_min()[2]),1.0f);
-		cutBoxs[cont].aperture = Eigen::Vector4f(1.0f,1.0f,1.0f,1.0f);
-
-		cont++;
-	}
-
-	glBindVertexArray ( vertexArray_cutBox );
-
-                glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer_cutBox );
-                glBufferData ( GL_ARRAY_BUFFER , cutBoxs.size( ) * sizeof(cutBoxs[0]) , &cutBoxs[0] , GL_STATIC_DRAW );
-
-                int size_of_vertice = sizeof(Eigen::Vector4f);
-                int size_of_struct  =  sizeof(CutBox);
-
-                //http://www.opengl.org/wiki/Vertex_Specification
-                for ( int location = 0 ; location < 6 ; location++)
-                {
-                        glEnableVertexAttribArray(location);
-                        glVertexAttribPointer(location, 4, GL_FLOAT, GL_FALSE, size_of_struct , reinterpret_cast<void*>(size_of_vertice * location));
-                }
-
-        glBindVertexArray(0);
-
-
-}
-
 void GLWidget::changePropertyRange ( const double& minRange, const double& maxRange, int property_index )
 {
-	cutVolumes.clear ( );
+
+	min_range = minRange;
+	max_range = maxRange;
 
 	IRES::BoundingBox box;
 
+	current_property = property_index;
+
 	dynamic_ = true;
-//	std::cout << "Changing the property to : " << reservoir_model_.static_porperties[property_index].name << std::endl;
 
-	float min = reservoir_model_.static_porperties[property_index].min_;
-	float max = reservoir_model_.static_porperties[property_index].max_;
-
-	Eigen::Vector4f color;
-
-	int index = 0;
-	for ( int i = 0; i < reservoir_model_.header_.number_of_Blocks; i++)
-	{
-		if ( reservoir_model_.blocks[i].valid )
-		{
-
-			float normalized_color = ( reservoir_model_.blocks[i].static_porperties[property_index].value_ - min ) / ( max - min );
-
-			float regularValue = ( reservoir_model_.blocks[i].static_porperties[property_index].value_ );
-
-			Eigen::Vector4f color (1.0,1.0,1.0,1.0);
-			Eigen::Vector4f focus (1.0,1.0,0.0,0.0);
-
-			float fourValue = 4 * normalized_color;
-			float red   = (std::min)(fourValue - 1.5, -fourValue + 4.5);
-			float green = (std::min)(fourValue - 0.5, -fourValue + 3.5);
-			float blue  = (std::min)(fourValue + 0.5, -fourValue + 2.5);
-
-			red 	= (std::max)(0.0f, (std::min)(red, 1.0f));
-			green 	= (std::max)(0.0f, (std::min)(green, 1.0f));
-			blue 	= (std::max)(0.0f, (std::min)(blue, 1.0f));
-
-			color = Eigen::Vector4f ( red , green , blue , 1.0f );
-//
-
-			if ( ( regularValue >= minRange ) && ( regularValue <= maxRange ) )
-			{
-				focus = Eigen::Vector4f ( 0.0f , 1.0f , 0.0f , 1.0f );
-				box.reset();
-				box.fromPointCloud ( reservoir_model_.blocks[i].vertices.begin ( ) , reservoir_model_.blocks[i].vertices.end ( ) );
-				cutVolumes.push_back( box );
-
-			}
-			else
-			{
-				focus = Eigen::Vector4f ( 1.0f , 1.0f , 0.0f , 1.0f );
-			}
-
-			// Cuboid
-			cubeColor[index] = color;
-			cubeFocus[index] = focus;
-			// Face Feature
-			//facesFeatureColors[index] = color;
-
- 			index++;
-		}
-		else
-		{
-			continue;
-		}
-	}
-
-	for ( std::size_t shell_index = 0; shell_index < reservoir_model_.list_of_block_id.size() ; shell_index++ )
-	{
-		facesFeatureColors[shell_index] = cubeColor[reservoir_model_.list_of_block_id[shell_index]];
-	}
-
-	// Loop over the boxes
-	cutVolumeGenerator();
-
-	// Cuboid
-	glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer_cube_color);
-	glBufferData ( GL_ARRAY_BUFFER , cubeColor.size( ) * sizeof(cubeColor[0]) , &cubeColor[0] , GL_STATIC_DRAW );
-	glBindBuffer( GL_ARRAY_BUFFER, 0);
-
-        glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer_cube_Focus);
-        glBufferData ( GL_ARRAY_BUFFER , cubeFocus.size( ) * sizeof(cubeFocus[0]) , &cubeFocus[0] , GL_STATIC_DRAW );
-        glBindBuffer( GL_ARRAY_BUFFER, 0);
-
-        // Face Features
-        glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer_faceColor);
-        glBufferData ( GL_ARRAY_BUFFER , facesFeatureColors.size( ) * sizeof(facesFeatureColors[0]) , &facesFeatureColors[0] , GL_STATIC_DRAW );
-        glBindBuffer( GL_ARRAY_BUFFER, 0);
 
     updateGL();
 
@@ -282,65 +154,13 @@ void GLWidget::changeProperty ( int property_index )
 
 	std::cout << "Changing the property to : " << reservoir_model_.static_porperties[property_index].name << std::endl;
 
-	float min = reservoir_model_.static_porperties[property_index].min_;
-	float max = reservoir_model_.static_porperties[property_index].max_;
+	float min = min_value[property_index];
+	float max = max_value[property_index];
 
 	std::cout << "Property Max : " << min << std::endl;
 	std::cout << "Property Min : " << max << std::endl;
 
-	std::vector<Eigen::Vector4f > colors;
-
-	int index = 0;
-
-	for ( int i = 0; i < reservoir_model_.header_.number_of_Blocks; i++)
-	{
-		if ( reservoir_model_.blocks[i].valid )
-		{
-
-			float normalized_color = ( reservoir_model_.blocks[i].static_porperties[property_index].value_ - min ) / ( max - min );
-
-			Eigen::Vector4f color(1.0,1.0,1.0,1.0);
-
-			// @see Implementing a Continuous "Jet" Colormap Function in GLSL - @link http://www.metastine.com/?p=7
-
-			float fourValue = 4 * normalized_color;
-			float red   = (std::min)(fourValue - 1.5, -fourValue + 4.5);
-			float green = (std::min)(fourValue - 0.5, -fourValue + 3.5);
-			float blue  = (std::min)(fourValue + 0.5, -fourValue + 2.5);
-
-			red 	= (std::max)(0.0f, (std::min)(red, 1.0f));
-			green 	= (std::max)(0.0f, (std::min)(green, 1.0f));
-			blue 	= (std::max)(0.0f, (std::min)(blue, 1.0f));
-
-			color = Eigen::Vector4f ( red , green , blue , 1.0f );
-
-
-			colors = std::vector<Eigen::Vector4f > ( 24 , color );
-
-			cubeColor[index] =  color;
-			index++;
-
-		}
-		else
-		{
-			continue;
-		}
-	}
-
-	for ( std::size_t shell_index = 0; shell_index < reservoir_model_.list_of_block_id.size() ; shell_index++ )
-	{
-		facesFeatureColors[shell_index] = cubeColor[reservoir_model_.list_of_block_id[shell_index]];
-	}
-
-	// Cuboid
-	glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer_cube_color);
-	glBufferData ( GL_ARRAY_BUFFER , cubeColor.size( ) * sizeof(cubeColor[0]) , &cubeColor[0] , GL_STATIC_DRAW );
-	glBindBuffer( GL_ARRAY_BUFFER, 0);
-
-	// FaceFeature
-	glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer_faceColor );
-	glBufferData ( GL_ARRAY_BUFFER , facesFeatureColors.size( ) * sizeof(facesFeatureColors[0]) , &facesFeatureColors[0] , GL_STATIC_DRAW );
-	glBindBuffer( GL_ARRAY_BUFFER, 0);
+	current_property = property_index;
 
 }
 
@@ -364,8 +184,8 @@ void GLWidget::loadProperties( )
 		if ( properties_name[1].compare( reservoir_model_.static_porperties[property_index].name ) == 0 )
 		{
 			std::cout << "Pressure -> " << reservoir_model_.static_porperties[property_index].name << std::endl;
-			min_value[2] =  reservoir_model_.static_porperties[property_index].min_;
-			max_value[2] =  reservoir_model_.static_porperties[property_index].max_;
+			min_value[1] =  reservoir_model_.static_porperties[property_index].min_;
+			max_value[1] =  reservoir_model_.static_porperties[property_index].max_;
 			indices[1] = property_index;
 		}
 		if ( properties_name[2].compare( reservoir_model_.static_porperties[property_index].name ) == 0 )
@@ -497,7 +317,6 @@ void GLWidget::openIRESCharles( const std::string& filename )
 
 	if ( reservoir_model_.blocks.size( ) > 0 )
 	{
-
 		cuboids.clear();
 		cubeColor.clear( );
 		cubeIJK.clear( );
@@ -711,8 +530,6 @@ void GLWidget::resizeGL ( int width , int height )
 
 void GLWidget::drawCutawaySurface ( )
 {
-	if ( cutVolumes.size ( ) > 0 )
-	{
 
 		glDepthFunc ( GL_GREATER );
 		glClearDepth ( 0.0 );
@@ -727,6 +544,12 @@ void GLWidget::drawCutawaySurface ( )
 
 		BoundingBoxInitializationLCG->enable( );
 
+		BoundingBoxInitializationLCG->setUniform("min_range", min_range  );
+		BoundingBoxInitializationLCG->setUniform("max_range", max_range  );
+		BoundingBoxInitializationLCG->setUniform("min_property", min_value[current_property]  );
+		BoundingBoxInitializationLCG->setUniform("max_property", max_value[current_property]  );
+		BoundingBoxInitializationLCG->setUniform("property_index", current_property );
+
 		BoundingBoxInitializationLCG->setUniform( "x" , volume_width );
 		BoundingBoxInitializationLCG->setUniform( "y" , volume_height );
 		BoundingBoxInitializationLCG->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
@@ -736,8 +559,8 @@ void GLWidget::drawCutawaySurface ( )
 		BoundingBoxInitializationLCG->setUniform ("freeze", freezeView_ );
 		BoundingBoxInitializationLCG->setUniform ("FreezeViewMatrix",freeze_viewmatrix_.data ( ),4, GL_FALSE, 1 );
 
-		glBindVertexArray ( vertexArray_cutBox );
-		glDrawArrays ( GL_POINTS , 0 , cutBoxs.size ( ) );
+		glBindVertexArray ( vertexArray_cuboid );
+		glDrawArrays ( GL_POINTS , 0 , cuboids.size ( ) );
 		glBindVertexArray ( 0 );
 
 		BoundingBoxInitializationLCG->disable( );
@@ -751,8 +574,6 @@ void GLWidget::drawCutawaySurface ( )
 
 
 		glDrawBuffer(GL_BACK);
-
-	}
 
 }
 
@@ -848,6 +669,12 @@ void GLWidget::drawPrimary( )
 	primaryLCG->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
 	primaryLCG->setUniform("WIN_SCALE", (float) width ( ) , (float) height ( ) );
 
+	primaryLCG->setUniform("min_range", min_range  );
+	primaryLCG->setUniform("max_range", max_range  );
+	primaryLCG->setUniform("min_property", min_value[current_property]  );
+	primaryLCG->setUniform("max_property", max_value[current_property]  );
+	primaryLCG->setUniform("property_index", current_property );
+
 	primaryLCG->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
 	primaryLCG->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
 	primaryLCG->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
@@ -916,52 +743,31 @@ void GLWidget::NoCutaway ( )
         		}
         	}
 
-        	shellLCG->enable( );
+        	rawShellLCG->enable( );
 
+        	rawShellLCG->setUniform("min_property", min_value[current_property]  );
+        	rawShellLCG->setUniform("max_property", max_value[current_property]  );
+        	rawShellLCG->setUniform("property_index", current_property );
 
-        	shellLCG->setUniform("min_property", min_value[current_property]  );
-        	shellLCG->setUniform("max_property", max_value[current_property]  );
-        	shellLCG->setUniform("property_index", current_property );
+        	rawShellLCG->setUniform("num_lights", (GLint) lights.size ( )  );
+        	rawShellLCG->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
+        	rawShellLCG->setUniform("WIN_SCALE", (float) width ( ) , (float) height ( ) );
 
-        	shellLCG->setUniform("num_lights", (GLint) lights.size ( )  );
-        	shellLCG->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
-        	shellLCG->setUniform("WIN_SCALE", (float) width ( ) , (float) height ( ) );
-
-        	shellLCG->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
-        	shellLCG->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
-        	shellLCG->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
+        	rawShellLCG->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
+        	rawShellLCG->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
+        	rawShellLCG->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
 
         	glBindVertexArray ( vertexArray_faceFeature );
         	glDrawArrays ( GL_POINTS , 0 , facesFeature.size ( ) );
         	glBindVertexArray ( 0 );
 
-        	shellLCG->disable( );
+        	rawShellLCG->disable( );
 
         }
 
         if ( draw_primary && (cuboids.size() != 0)  )
         {
-//                primary.active ( );
-//
-//                glUniform3fv ( primary.uniforms_["lightDirection"].location , 0 , camera_.position ( ) );
-//
-//                glUniform2f ( primary.uniforms_["WIN_SCALE"].location , (float) width ( ) , (float) height ( ) );
-//
-//                //glUniformMatrix4fv ( primary.uniforms_["ModelMatrix"].location , 1 , GL_FALSE , trackball_->getModelMatrix().data() );
-//                glUniformMatrix4fv ( primary.uniforms_["ViewMatrix"].location , 1 , GL_FALSE , trackball_->getViewMatrix().data() );
-//                glUniformMatrix4fv ( primary.uniforms_["ProjectionMatrix"].location , 1 , GL_FALSE , trackball_->getProjectionMatrix().data() );
-//
-//                //glUniformMatrix4fv ( primary.uniforms_["ViewMatrix"].location , 1 , GL_TRUE , camera_.viewMatrix ( ) );
-//                //glUniformMatrix4fv ( primary.uniforms_["ProjectionMatrix"].location , 1 , GL_TRUE , camera_.perspectiveProjectionMatrix ( ) );
-//
-//                glBindVertexArray ( vertexArray_cube_interleaved );
-//                glDrawArrays ( GL_POINTS , 0 , cube_interleaved.size() );
-//                glBindVertexArray ( 0 );
-//
-//                primary.deactive ( );
-
-                // shell
-
+        	drawPrimary();
         }
 }
 
@@ -1084,7 +890,14 @@ void GLWidget::loadShaders ( )
         shellLCG = new Shader ("Shell", (shaderDirectory + "Shell.vert").toStdString(),
                               (shaderDirectory + "Shell.frag").toStdString(),
                               (shaderDirectory + "Shell.geom").toStdString(),1);
+
         shellLCG->initialize();
+
+        rawShellLCG = new Shader ("Shell", (shaderDirectory + "RawShell.vert").toStdString(),
+                              (shaderDirectory + "RawShell.frag").toStdString(),
+                              (shaderDirectory + "RawShell.geom").toStdString(),1);
+
+        rawShellLCG->initialize( );
 
 }
 /// KeyInput
