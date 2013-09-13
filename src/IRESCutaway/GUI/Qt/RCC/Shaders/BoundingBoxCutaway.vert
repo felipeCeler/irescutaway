@@ -11,6 +11,7 @@ layout(location = 7) in vec4 v7;
 
 layout(location = 8)  in vec4 color;
 layout(location = 9)  in vec4 IJK;
+layout(location = 11) in vec4 properties;
 
 /// FIXME - Do research and understand the best away to align data on Shader.
 out CubeData
@@ -25,6 +26,31 @@ uniform mat4 ViewMatrix;
 uniform mat4 ProjectionMatrix;
 
 
+uniform float min_property;
+uniform float max_property;
+
+uniform int property_index;
+
+
+vec4 propertyColor ( in float min_range, in float max_range, in int index )
+{
+
+	float normalized_color = ( properties[index] - min_property ) / ( max_property - min_property );
+
+	float fourValue = 4 * normalized_color;
+	float red   = min(fourValue - 1.5, -fourValue + 4.5);
+	float green = min(fourValue - 0.5, -fourValue + 3.5);
+	float blue  = min(fourValue + 0.5, -fourValue + 2.5);
+
+	red 	= max(0.0f, min(red, 1.0f));
+	green 	= max(0.0f, min(green, 1.0f));
+	blue 	= max(0.0f, min(blue, 1.0f));
+
+	vec4 color = vec4 ( red , green , blue , 1.0f );
+
+	return color;
+}
+
 void main(void)
 {
 
@@ -38,7 +64,7 @@ void main(void)
 		cube.v[1] = v1;
 		cube.v[2] = v2;
 
-		cube.color    = color;
+		cube.color    =  propertyColor ( min_property, max_property, property_index );;
 
                 mat3 normalMatrix = mat3(inverse(transpose((ModelMatrix*ViewMatrix))));
 

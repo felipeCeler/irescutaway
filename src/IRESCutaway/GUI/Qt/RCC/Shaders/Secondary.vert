@@ -39,6 +39,7 @@ layout(std140) uniform GlobalMatrices
 uniform vec3 min_IJK;
 uniform vec3 max_IJK;
 
+
 void main(void)
 {
 

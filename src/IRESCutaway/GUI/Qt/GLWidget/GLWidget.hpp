@@ -218,7 +218,7 @@ private:
 	/// vec4 (Primary/Secondary , Active  ,0.0 , 0.0);
 		GLuint vertexBuffer_cube_Focus;
 
-	std::vector<Eigen::Vector4f > properties;
+	std::vector<Eigen::Vector4f > cubeProperties;
 	// Four property x = Bubble Point Pressure
 	//               y = Pressure
 	//	         z = Porosity
@@ -259,6 +259,15 @@ private:
 
 	std::vector<FaceFeature>      facesFeature;
 
+
+	// GPU load Properties
+
+	std::string properties_name[4];
+	std::size_t indices[4];
+	float min_value[4];
+	float max_value[4];
+
+	int current_property;
 
         bool enable_blend_;
 

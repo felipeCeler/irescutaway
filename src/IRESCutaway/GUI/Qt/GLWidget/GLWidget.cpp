@@ -121,6 +121,11 @@ void GLWidget::initializeGL ( )
 	meanFilter = new MeanFilter( "Gaussian blur");
 	meanFilter->resize(width(), height());
 
+	properties_name[0] = "Bubble Point Pressure";
+	properties_name[1] = "Pressure";
+	properties_name[2] = "Porosity";
+	properties_name[3] = "Modified Block Volume";
+
 	loadShaders ( );
 
 }
@@ -347,8 +352,73 @@ void GLWidget::loadProperties( )
 	//	         z = Porosity
 	//               w = Modified Block Volume
 
-	std::string properties[4] = {"Bubble Point Pressure", "Modified Block Volume", "Porosity", "Pressure" };
-	std::size_t indices[4];
+	for ( std::size_t property_index = 0; property_index < reservoir_model_.static_porperties.size( ); property_index++ )
+	{
+		if ( properties_name[0].compare( reservoir_model_.static_porperties[property_index].name ) == 0 )
+		{
+			std::cout << "Bubble -> " << reservoir_model_.static_porperties[property_index].name << std::endl;
+			min_value[0] =  reservoir_model_.static_porperties[property_index].min_;
+			max_value[0] =  reservoir_model_.static_porperties[property_index].max_;
+			indices[0] = property_index;
+		}
+		if ( properties_name[1].compare( reservoir_model_.static_porperties[property_index].name ) == 0 )
+		{
+			std::cout << "Pressure -> " << reservoir_model_.static_porperties[property_index].name << std::endl;
+			min_value[2] =  reservoir_model_.static_porperties[property_index].min_;
+			max_value[2] =  reservoir_model_.static_porperties[property_index].max_;
+			indices[1] = property_index;
+		}
+		if ( properties_name[2].compare( reservoir_model_.static_porperties[property_index].name ) == 0 )
+		{
+			std::cout << "Porosity -> " << reservoir_model_.static_porperties[property_index].name << std::endl;
+			min_value[2] =  reservoir_model_.static_porperties[property_index].min_;
+			max_value[2] =  reservoir_model_.static_porperties[property_index].max_;
+			indices[2] = property_index;
+		}
+		if ( properties_name[3].compare( reservoir_model_.static_porperties[property_index].name ) == 0 )
+		{
+			std::cout << "Volume -> " << reservoir_model_.static_porperties[property_index].name << std::endl;
+			min_value[3] =  reservoir_model_.static_porperties[property_index].min_;
+			max_value[3] =  reservoir_model_.static_porperties[property_index].max_;
+			indices[3] = property_index;
+		}
+	}
+
+	current_property = 0;
+
+	int index = 0;
+
+	for ( std::size_t i = 0; i < reservoir_model_.blocks.size( ); i++)
+	{
+		if ( reservoir_model_.blocks[i].valid )
+		{
+			cubeProperties[index][0] = reservoir_model_.blocks[i].static_porperties[indices[0]].value_;
+			cubeProperties[index][1] = reservoir_model_.blocks[i].static_porperties[indices[1]].value_;
+			cubeProperties[index][2] = reservoir_model_.blocks[i].static_porperties[indices[2]].value_;
+			cubeProperties[index][3] = reservoir_model_.blocks[i].static_porperties[indices[3]].value_;
+			index++;
+		}
+		else
+		{
+			continue;
+		}
+	}
+
+	for ( std::size_t shell_index = 0; shell_index < reservoir_model_.list_of_block_id.size() ; shell_index++ )
+	{
+		facesFeatureProperties[shell_index] = cubeProperties[reservoir_model_.list_of_block_id[shell_index]];
+	}
+
+	// Cuboid
+	glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer_cube_properties);
+	glBufferData ( GL_ARRAY_BUFFER , cubeProperties.size( ) * sizeof(cubeProperties[0]) , &cubeProperties[0] , GL_STATIC_DRAW );
+	glBindBuffer( GL_ARRAY_BUFFER, 0);
+
+	// FaceFeature
+	glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer_faceProperties );
+	glBufferData ( GL_ARRAY_BUFFER , facesFeatureProperties.size( ) * sizeof(facesFeatureProperties[0]) , &facesFeatureProperties[0] , GL_STATIC_DRAW );
+	glBindBuffer( GL_ARRAY_BUFFER, 0);
+
 
 }
 
@@ -440,7 +510,7 @@ void GLWidget::openIRESCharles( const std::string& filename )
 
 		facesFeatureIJK.resize ( reservoir_model_.list_of_block_id.size ( ) );
 		facesFeatureType.resize ( reservoir_model_.list_of_block_id.size ( ) );
-
+		facesFeatureProperties.resize ( reservoir_model_.list_of_block_id.size ( ) );
 
 		for ( std::size_t i = 0; i < reservoir_model_.list_of_block_id.size( ) ; i++)
 		{
@@ -475,6 +545,7 @@ void GLWidget::openIRESCharles( const std::string& filename )
 		cubeColor.resize( reservoir_model_.blocks.size( ) );
 		cubeIJK.resize( reservoir_model_.blocks.size( ));
 		cubeFocus.resize( reservoir_model_.blocks.size( ));
+		cubeProperties.resize ( reservoir_model_.blocks.size( ));
 
 		int index = 0;
 
@@ -556,6 +627,12 @@ void GLWidget::openIRESCharles( const std::string& filename )
                         glEnableVertexAttribArray(10);
                         glVertexAttribPointer(10, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
+                        glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer_cube_properties);
+                        glBufferData ( GL_ARRAY_BUFFER , cubeProperties.size( ) * sizeof(cubeProperties[0]) , &cubeProperties[0] , GL_STATIC_DRAW );
+
+                        glEnableVertexAttribArray(11);
+                        glVertexAttribPointer(11, 4, GL_FLOAT, GL_FALSE, 0, 0);
+
 
                 glBindVertexArray(0);
 
@@ -594,9 +671,17 @@ void GLWidget::openIRESCharles( const std::string& filename )
                         glEnableVertexAttribArray(6);
                         glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
+                        glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer_faceProperties);
+                        glBufferData ( GL_ARRAY_BUFFER , facesFeatureProperties.size( ) * sizeof(facesFeatureProperties[0]) , &facesFeatureProperties[0] , GL_STATIC_DRAW );
+
+                        glEnableVertexAttribArray(7);
+                        glVertexAttribPointer(7, 4, GL_FLOAT, GL_FALSE, 0, 0);
+
                 glBindVertexArray(0);
 
 		isIRESOpen_ = 1;
+
+		loadProperties();
 	}
 	else
 	{
@@ -692,6 +777,10 @@ void GLWidget::drawSecundary ( )
 
 	shellLCG->setUniform ( "normals" , depthFBO->bindAttachment(1) );
 
+	shellLCG->setUniform("min_property", min_value[current_property]  );
+	shellLCG->setUniform("max_property", max_value[current_property]  );
+	shellLCG->setUniform("property_index", current_property );
+
 	shellLCG->setUniform("num_lights", (GLint) lights.size ( )  );
 	shellLCG->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
 	shellLCG->setUniform("WIN_SCALE", (float) width ( ) , (float) height ( ) );
@@ -716,6 +805,10 @@ void GLWidget::drawSecundary ( )
 	BoundingBoxCutawayLCG->enable( );
 
 	BoundingBoxCutawayLCG->setUniform( "normals" , depthFBO->bindAttachment(1) );
+
+	BoundingBoxCutawayLCG->setUniform("min_property", min_value[current_property]  );
+	BoundingBoxCutawayLCG->setUniform("max_property", max_value[current_property]  );
+	BoundingBoxCutawayLCG->setUniform("property_index", current_property );
 
 	BoundingBoxCutawayLCG->setUniform("num_lights", (GLint) lights.size ( )  );
 	BoundingBoxCutawayLCG->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
@@ -823,8 +916,12 @@ void GLWidget::NoCutaway ( )
         		}
         	}
 
-
         	shellLCG->enable( );
+
+
+        	shellLCG->setUniform("min_property", min_value[current_property]  );
+        	shellLCG->setUniform("max_property", max_value[current_property]  );
+        	shellLCG->setUniform("property_index", current_property );
 
         	shellLCG->setUniform("num_lights", (GLint) lights.size ( )  );
         	shellLCG->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
@@ -837,7 +934,6 @@ void GLWidget::NoCutaway ( )
         	glBindVertexArray ( vertexArray_faceFeature );
         	glDrawArrays ( GL_POINTS , 0 , facesFeature.size ( ) );
         	glBindVertexArray ( 0 );
-
 
         	shellLCG->disable( );
 
