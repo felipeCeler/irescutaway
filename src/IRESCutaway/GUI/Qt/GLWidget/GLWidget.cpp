@@ -69,15 +69,17 @@ void GLWidget::initializeGL ( )
 
 	// Cuboid
 	glGenVertexArrays ( 1, &vertexArray_cuboid );
-		glGenBuffers  ( 1, &vertexBuffer_cuboid ); 	// Geometry
-		glGenBuffers  ( 1, &vertexBuffer_cube_color  ); // Property Color
-		glGenBuffers  ( 1, &vertexBuffer_cube_IJK  );   // Cube IJK
+		glGenBuffers  ( 1, &vertexBuffer_cuboid ); 	     // Geometry
+		glGenBuffers  ( 1, &vertexBuffer_cube_color  );      // Property Color
+		glGenBuffers  ( 1, &vertexBuffer_cube_IJK  );        // Cube IJK
+		glGenBuffers  ( 1, &vertexBuffer_cube_properties  ); // Cube Property
 
 	// Face Features
 	glGenVertexArrays ( 1, &vertexArray_faceFeature );
-		glGenBuffers ( 1, &vertexBuffer_faceFeature ); // Geometry
-		glGenBuffers ( 1, &vertexBuffer_faceColor );   // Property Color
-		glGenBuffers ( 1, &vertexBuffer_faceIJK );     // Face IJK
+		glGenBuffers ( 1, &vertexBuffer_faceFeature );    // Geometry
+		glGenBuffers ( 1, &vertexBuffer_faceColor );      // Property Color
+		glGenBuffers ( 1, &vertexBuffer_faceIJK );        // Face IJK
+		glGenBuffers ( 1, &vertexBuffer_faceProperties ); // Face Properties
 
 	draw_secondary = 1;
 	draw_primary = 0;
@@ -334,6 +336,19 @@ void GLWidget::changeProperty ( int property_index )
 	glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer_faceColor );
 	glBufferData ( GL_ARRAY_BUFFER , facesFeatureColors.size( ) * sizeof(facesFeatureColors[0]) , &facesFeatureColors[0] , GL_STATIC_DRAW );
 	glBindBuffer( GL_ARRAY_BUFFER, 0);
+
+}
+
+void GLWidget::loadProperties( )
+{
+
+	// Four property x = Bubble Point Pressure
+	//               y = Pressure
+	//	         z = Porosity
+	//               w = Modified Block Volume
+
+	std::string properties[4] = {"Bubble Point Pressure", "Modified Block Volume", "Porosity", "Pressure" };
+	std::size_t indices[4];
 
 }
 
@@ -603,8 +618,6 @@ void GLWidget::resizeGL ( int width , int height )
 	depthFBO = new Framebuffer( width , height, 2 );
 
 	meanFilter->resize(width, height);
-
-
 }
 /// For DropArea's implementation, we clear invoke clear() and then accept the proposed event.
 /// The clear() function sets the text in DropArea to "<drop content>" and sets the backgroundRole to

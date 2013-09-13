@@ -11,8 +11,12 @@ layout(location = 7) in vec4 v7;
 
 layout(location = 8)  in vec4 color;
 layout(location = 9)  in vec4 IJK;
-layout(location = 10)  in vec4 focus;
-
+layout(location = 10) in vec4 focus;
+// Four property x = Bubble Point Pressure
+//               y = Pressure
+//	         z = Porosity
+//               w = Modified Block Volume
+layout(location = 11) in vec4 properties;
 
 /// FIXME - Do research and understand the best away to alignment data on Shader.
 out CubeData

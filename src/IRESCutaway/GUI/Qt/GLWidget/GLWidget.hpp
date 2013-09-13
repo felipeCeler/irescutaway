@@ -102,6 +102,7 @@ class GLWidget: public QGLWidget
 		void NoCutaway          ( );
 		void RawCutaway         ( int cluster );
 		void IRESCutaway      	( );
+		void loadProperties     ( );
 		void updateCluster      ( int i ) { cluster = i; updateGL();}
 
 		void setNoCutawayVisibility     ( bool visibility ) { isNoCutaway      = visibility; updateGL();}
@@ -152,8 +153,6 @@ private:
 
         Shader*                         primaryLCG;
         Shader*                         shellLCG;
-
-        void createShaders              ();
 
 	QImage fbo;
 	float  angle;
@@ -216,8 +215,15 @@ private:
 	/// vec4 (I, J, K , 0 );
 		GLuint vertexBuffer_cube_IJK;
 	std::vector<Eigen::Vector4f > cubeFocus;
-	/// vec4 (Primary/Secundary , Actived  ,0.0 , 0.0);
+	/// vec4 (Primary/Secondary , Active  ,0.0 , 0.0);
 		GLuint vertexBuffer_cube_Focus;
+
+	std::vector<Eigen::Vector4f > properties;
+	// Four property x = Bubble Point Pressure
+	//               y = Pressure
+	//	         z = Porosity
+	//               w = Modified Block Volume
+		GLuint vertexBuffer_cube_properties;
 
 	/// -- Shell / Fracture Geometry
 
@@ -244,7 +250,15 @@ private:
 	/// vec4 ( isShell, isFault, 0.0 , 0.0 );
 		GLuint vertexBuffer_faceType;
 
-	std::vector<FaceFeature>        facesFeature;
+	std::vector<Eigen::Vector4f > facesFeatureProperties;
+	// Four property x = Bubble Point Pressure
+	//               y = Pressure
+	//	         z = Porosity
+	//               w = Modified Block Volume
+			GLuint vertexBuffer_faceProperties;
+
+	std::vector<FaceFeature>      facesFeature;
+
 
         bool enable_blend_;
 
