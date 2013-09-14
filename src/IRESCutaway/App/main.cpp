@@ -23,7 +23,7 @@ int main ( int argc , char *argv[] )
 	form->ui->doubleSpinMin->setValue( 7000.0 );
 	form->ui->doubleSpinMax->setValue( 7005.0 );
 
-	form->on_pushButton_changePropertyRange_clicked();
+	form->changeProperty();
 
 	return app.exec ( );
 }

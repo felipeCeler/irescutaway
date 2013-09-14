@@ -29,17 +29,15 @@ class MainWindow: public QMainWindow
 		void on_action_Load_Shaders_triggered ( );
 		// --
 		void on_action_Open_IRES_triggered ( );
-		void on_pushButton_changePropertyRange_clicked ( );
 		void on_pushButton_Reset_IJK_clicked( );
 
 		void updateDoubleSpinMax( int property_index );
 		void updateDoubleSpinMin( int property_index );
 
-		void on_spinBox_Cluster_Number_valueChanged  ( int i);
-
 		void on_doubleSpinMin_valueChanged  ( double i);
 		void on_doubleSpinMax_valueChanged  ( double i);
 
+		void changeProperty(  );
 
 	private:
 

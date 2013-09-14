@@ -165,19 +165,14 @@ void MainWindow::updateDoubleSpinMax( int property_index )
 
 }
 
-void MainWindow::on_pushButton_changePropertyRange_clicked()
+void MainWindow::changeProperty()
 {
 	QMessageBox msgBox;
 
 	if ( glWidget->isIRESOpen( ))
 	{
 		glWidget->changePropertyRange( ui->doubleSpinMin->value(), ui->doubleSpinMax->value(), ui->comboBox_choose_an_property_->currentIndex() );
-	}else
-	{
-		//msgBox.setText("First of all. Open a file my friend !!  ");
 	}
-	//msgBox.exec();
-
 }
 
 void MainWindow::on_action_Open_IRES_triggered()
@@ -243,11 +238,6 @@ void MainWindow::keyPressEvent(QKeyEvent *e)
 		e->accept();
 	}
 	else e->ignore();
-}
-
-void MainWindow::on_spinBox_Cluster_Number_valueChanged  ( int i)
-{
-	glWidget->updateCluster(i);
 }
 
 void MainWindow::on_action_Trackball_triggered  ( )

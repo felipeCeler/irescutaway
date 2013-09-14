@@ -171,6 +171,19 @@
    </attribute>
    <widget class="QWidget" name="dockWidgetContents">
     <layout class="QGridLayout" name="gridLayout">
+     <item row="4" column="1">
+      <spacer name="verticalSpacer">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>40</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
      <item row="0" column="1">
       <widget class="QGroupBox" name="groupBox_Details_">
        <property name="minimumSize">
@@ -217,19 +230,6 @@
         </item>
        </layout>
       </widget>
-     </item>
-     <item row="4" column="1">
-      <spacer name="verticalSpacer">
-       <property name="orientation">
-        <enum>Qt::Vertical</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>20</width>
-         <height>40</height>
-        </size>
-       </property>
-      </spacer>
      </item>
      <item row="1" column="1">
       <widget class="QGroupBox" name="groupBox_viewCells_">
@@ -310,19 +310,6 @@
           </property>
          </widget>
         </item>
-        <item row="3" column="1">
-         <widget class="QSpinBox" name="spinBox_Cluster_Number">
-          <property name="suffix">
-           <string/>
-          </property>
-          <property name="maximum">
-           <number>1000</number>
-          </property>
-          <property name="singleStep">
-           <number>3000</number>
-          </property>
-         </widget>
-        </item>
        </layout>
       </widget>
      </item>
@@ -338,6 +325,9 @@
         <string>IJK Viewer</string>
        </property>
        <layout class="QFormLayout" name="formLayout">
+        <property name="fieldGrowthPolicy">
+         <enum>QFormLayout::ExpandingFieldsGrow</enum>
+        </property>
         <item row="0" column="0">
          <widget class="QLabel" name="label_I">
           <property name="text">
@@ -361,10 +351,24 @@
           </property>
          </widget>
         </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="label_I_range">
+          <property name="text">
+           <string>[]</string>
+          </property>
+         </widget>
+        </item>
         <item row="1" column="1">
          <widget class="QSlider" name="horizontalslider_min_I">
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0">
+         <widget class="QLabel" name="label_J">
+          <property name="text">
+           <string>J Direction</string>
           </property>
          </widget>
         </item>
@@ -378,10 +382,10 @@
           </property>
          </widget>
         </item>
-        <item row="2" column="0">
-         <widget class="QLabel" name="label_J">
+        <item row="3" column="0">
+         <widget class="QLabel" name="label_J_range">
           <property name="text">
-           <string>J Direction</string>
+           <string>[]</string>
           </property>
          </widget>
         </item>
@@ -389,6 +393,13 @@
          <widget class="QSlider" name="horizontalslider_min_J">
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="0">
+         <widget class="QLabel" name="label_K">
+          <property name="text">
+           <string>K Direction</string>
           </property>
          </widget>
         </item>
@@ -402,10 +413,10 @@
           </property>
          </widget>
         </item>
-        <item row="4" column="0">
-         <widget class="QLabel" name="label_K">
+        <item row="5" column="0">
+         <widget class="QLabel" name="label_K_range">
           <property name="text">
-           <string>K Direction</string>
+           <string>[]</string>
           </property>
          </widget>
         </item>
@@ -423,36 +434,21 @@
           </property>
          </widget>
         </item>
-        <item row="1" column="0">
-         <widget class="QLabel" name="label_I_range">
-          <property name="text">
-           <string>[]</string>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="0">
-         <widget class="QLabel" name="label_J_range">
-          <property name="text">
-           <string>[]</string>
-          </property>
-         </widget>
-        </item>
-        <item row="5" column="0">
-         <widget class="QLabel" name="label_K_range">
-          <property name="text">
-           <string>[]</string>
-          </property>
-         </widget>
-        </item>
        </layout>
       </widget>
      </item>
      <item row="2" column="1">
-      <widget class="QPushButton" name="pushButton_changePropertyRange">
-       <property name="text">
-        <string>Change Property</string>
+      <spacer name="verticalSpacer_2">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
        </property>
-      </widget>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>40</height>
+        </size>
+       </property>
+      </spacer>
      </item>
     </layout>
    </widget>
