@@ -29,13 +29,10 @@ namespace IRES
 		id_ = id();
 
 		vertices = new_block.vertices;
-		normals  = new_block.normals;
-		colors   = new_block.colors;
-		focus 	 = new_block.focus;
 		indices  = new_block.indices;
 		IJK      = new_block.IJK;
 
-		AABB     = new_block.AABB;
+		
 		valid 	 = new_block.valid;
 
 		static_porperties = new_block.static_porperties;

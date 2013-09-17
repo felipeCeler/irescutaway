@@ -138,12 +138,9 @@ void GLWidget::changePropertyRange ( const double& minRange, const double& maxRa
 	min_range = minRange;
 	max_range = maxRange;
 
-	IRES::BoundingBox box;
-
 	current_property = property_index;
 
 	dynamic_ = true;
-
 
     updateGL();
 
@@ -212,11 +209,11 @@ void GLWidget::loadProperties( )
 	{
 		if ( reservoir_model_.blocks[i].valid )
 		{
-			cubeProperties[index][0] = reservoir_model_.blocks[i].static_porperties[indices[0]].value_;
-			cubeProperties[index][1] = reservoir_model_.blocks[i].static_porperties[indices[1]].value_;
-			cubeProperties[index][2] = reservoir_model_.blocks[i].static_porperties[indices[2]].value_;
-			cubeProperties[index][3] = reservoir_model_.blocks[i].static_porperties[indices[3]].value_;
-			index++;
+			cubeProperties[index]   = reservoir_model_.blocks[i].static_porperties[indices[0]].value_;
+			cubeProperties[index+1] = reservoir_model_.blocks[i].static_porperties[indices[1]].value_;
+			cubeProperties[index+2] = reservoir_model_.blocks[i].static_porperties[indices[2]].value_;
+			cubeProperties[index+3] = reservoir_model_.blocks[i].static_porperties[indices[3]].value_;
+			index += 4;
 		}
 		else
 		{
@@ -324,47 +321,59 @@ void GLWidget::openIRESCharles( const std::string& filename )
 
 		facesFeature.clear();
 
-		facesFeature.resize ( reservoir_model_.list_of_block_id.size ( ) );
-		facesFeatureColors.resize ( reservoir_model_.list_of_block_id.size ( ) );
-
-		facesFeatureIJK.resize ( reservoir_model_.list_of_block_id.size ( ) );
-		facesFeatureType.resize ( reservoir_model_.list_of_block_id.size ( ) );
-		facesFeatureProperties.resize ( reservoir_model_.list_of_block_id.size ( ) );
+		// Geometry
+		facesFeature.resize ( reservoir_model_.list_of_block_id.size ( ) * 16 );
+		// Attributes
+		facesFeatureColors.resize ( reservoir_model_.list_of_block_id.size ( ) * 4 );
+		facesFeatureIJK.resize ( reservoir_model_.list_of_block_id.size ( ) * 4 );
+		facesFeatureType.resize ( reservoir_model_.list_of_block_id.size ( ) * 4  );
+		facesFeatureProperties.resize ( reservoir_model_.list_of_block_id.size ( ) * 4 );
 
 		for ( std::size_t i = 0; i < reservoir_model_.list_of_block_id.size( ) ; i++)
 		{
-			facesFeature[i].vertices[0] = Eigen::Vector4f( reservoir_model_.list_of_vertex_geometry_a[i*3],
-								       reservoir_model_.list_of_vertex_geometry_a[i*3+1],
-								       reservoir_model_.list_of_vertex_geometry_a[i*3+2],1.0);
+			facesFeature[i] = reservoir_model_.list_of_vertex_geometry_a[i*3];
+			facesFeature[i+1] = reservoir_model_.list_of_vertex_geometry_a[i*3+1];
+			facesFeature[i+2] = reservoir_model_.list_of_vertex_geometry_a[i*3+2];
+			facesFeature[i+3] = 1.0f;
 
-			facesFeature[i].vertices[1] = Eigen::Vector4f( reservoir_model_.list_of_vertex_geometry_b[i*3],
-								       reservoir_model_.list_of_vertex_geometry_b[i*3+1],
-								       reservoir_model_.list_of_vertex_geometry_b[i*3+2],1.0);
+			facesFeature[i+4] = reservoir_model_.list_of_vertex_geometry_b[i*3];
+			facesFeature[i+5] = reservoir_model_.list_of_vertex_geometry_b[i*3+1];
+			facesFeature[i+6] = reservoir_model_.list_of_vertex_geometry_b[i*3+2];
+			facesFeature[i+7] = 1.0f;
 
-			facesFeature[i].vertices[2] = Eigen::Vector4f( reservoir_model_.list_of_vertex_geometry_c[i*3],
-								       reservoir_model_.list_of_vertex_geometry_c[i*3+1],
-								       reservoir_model_.list_of_vertex_geometry_c[i*3+2],1.0);
+			facesFeature[i+8] = reservoir_model_.list_of_vertex_geometry_c[i*3];
+			facesFeature[i+9] = reservoir_model_.list_of_vertex_geometry_c[i*3+1];
+			facesFeature[i+10] = reservoir_model_.list_of_vertex_geometry_c[i*3+2];
+			facesFeature[i+11] = 1.0f;
 
-			facesFeature[i].vertices[3] = Eigen::Vector4f( reservoir_model_.list_of_vertex_geometry_d[i*3],
-								       reservoir_model_.list_of_vertex_geometry_d[i*3+1],
-								       reservoir_model_.list_of_vertex_geometry_d[i*3+2],1.0);
+			facesFeature[i+12] = reservoir_model_.list_of_vertex_geometry_d[i*3];
+			facesFeature[i+13] = reservoir_model_.list_of_vertex_geometry_d[i*3+1];
+			facesFeature[i+14] = reservoir_model_.list_of_vertex_geometry_d[i*3+2];
+			facesFeature[i+15] = 1.0f;
 
-			facesFeatureColors[i] = Eigen::Vector4f (1.0,0.0,0.0,1.0);
+			facesFeatureColors[i]   = 1.0f;
+			facesFeatureColors[i+1] = 0.0f;
+			facesFeatureColors[i+2] = 0.0f;
+			facesFeatureColors[i+3] = 1.0f;
 
-			facesFeatureIJK[i] = Eigen::Vector4f (1.0,0.0,0.0,1.0);
-			facesFeatureType[i] = Eigen::Vector4f ( reservoir_model_.list_of_block_flag[i],
-							              reservoir_model_.list_of_block_flag[i],
-							              reservoir_model_.list_of_block_flag[i], 1.0f);
+			facesFeatureIJK[i]   = 1.0f;
+			facesFeatureIJK[i+1] = 0.0f;
+			facesFeatureIJK[i+2] = 0.0f;
+			facesFeatureIJK[i+3] = 1.0f;
 
+			facesFeatureType[i]   = reservoir_model_.list_of_block_flag[i];
+			facesFeatureType[i+1] = reservoir_model_.list_of_block_flag[i];
+			facesFeatureType[i+2] = reservoir_model_.list_of_block_flag[i];
+			facesFeatureType[i+3] = 1.0f;
 		}
 
 		std::cout << " Face Interleaved = " << reservoir_model_.list_of_block_id.size() << std::endl;
 
-		cuboids.resize(reservoir_model_.blocks.size( ));
-		cubeColor.resize( reservoir_model_.blocks.size( ) );
-		cubeIJK.resize( reservoir_model_.blocks.size( ));
-		cubeFocus.resize( reservoir_model_.blocks.size( ));
-		cubeProperties.resize ( reservoir_model_.blocks.size( ));
+		cuboids.resize        ( reservoir_model_.blocks.size( ) * 32 );
+		cubeColor.resize      ( reservoir_model_.blocks.size( ) * 4  );
+		cubeIJK.resize        ( reservoir_model_.blocks.size( ) * 4  );
+		cubeFocus.resize      ( reservoir_model_.blocks.size( ) * 4  );
+		cubeProperties.resize ( reservoir_model_.blocks.size( ) * 4  );
 
 		int index = 0;
 
@@ -373,24 +382,25 @@ void GLWidget::openIRESCharles( const std::string& filename )
 
 			if ( reservoir_model_.blocks[i].valid )
 			{
+				// @link http://www.cplusplus.com/reference/iterator/back_inserter/
+				std::copy ( reservoir_model_.blocks[i].vertices.begin(), reservoir_model_.blocks[i].vertices.end(), std::back_inserter(cuboids) );
 
-				cuboids[index].vertices[4] = reservoir_model_.blocks[i].vertices[0];
-				cuboids[index].vertices[5] = reservoir_model_.blocks[i].vertices[1];
-				cuboids[index].vertices[7] = reservoir_model_.blocks[i].vertices[2];
-				cuboids[index].vertices[6] = reservoir_model_.blocks[i].vertices[3];
+				cubeColor[index]   = 1.0f;
+				cubeColor[index+1] = 0.0f;
+				cubeColor[index+2] = 0.0f;
+				cubeColor[index+3] = 1.0f;
 
-				cuboids[index].vertices[0] = reservoir_model_.blocks[i].vertices[4];
-				cuboids[index].vertices[3] = reservoir_model_.blocks[i].vertices[5];
-				cuboids[index].vertices[1] = reservoir_model_.blocks[i].vertices[6];
-				cuboids[index].vertices[2] = reservoir_model_.blocks[i].vertices[7];
+				cubeIJK[index]   = reservoir_model_.blocks[i].IJK[0];
+				cubeIJK[index+1] = reservoir_model_.blocks[i].IJK[1];
+				cubeIJK[index+2] = reservoir_model_.blocks[i].IJK[2];
+				cubeIJK[index+3] = reservoir_model_.blocks[i].IJK[3];
 
-				cubeColor[index]  = Eigen::Vector4f(1.0,0.0,0.0,1.0);
+				cubeFocus[index]   = 1.0f;
+				cubeFocus[index+1] = 0.0f;
+				cubeFocus[index+2] = 0.0f;
+				cubeFocus[index+3] = 1.0f;
 
-				cubeIJK[index] =  Eigen::Vector4f (reservoir_model_.blocks[i].IJK[0][0] , reservoir_model_.blocks[i].IJK[0][1] , reservoir_model_.blocks[i].IJK[0][2] , 1.0f );
-
-				cubeFocus[index] = Eigen::Vector4f (1.0 ,0.0, 0.0 ,1.0 );
-
-				index++;
+				index += 4;
 
 			}
 			else
@@ -399,7 +409,9 @@ void GLWidget::openIRESCharles( const std::string& filename )
 			}
 		}
 
-		cuboids.resize(  index  );
+		cubeColor.resize(index);
+		cubeFocus.resize(index);
+		cubeIJK.resize(index);
 
 		changeProperty(0);
 
@@ -418,8 +430,8 @@ void GLWidget::openIRESCharles( const std::string& filename )
                         glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer_cuboid );
                         glBufferData ( GL_ARRAY_BUFFER , cuboids.size( ) * sizeof(cuboids[0]) , &cuboids[0] , GL_STATIC_DRAW );
 
-                        int size_of_vertice = sizeof(Eigen::Vector4f);
-                        int size_of_struct  =  sizeof(Cuboid);
+                        int size_of_vertice = 4 * sizeof(float);
+                        int size_of_struct  = 8 * size_of_vertice;
 
                         //http://www.opengl.org/wiki/Vertex_Specification
                         for ( int location = 0 ; location < 8 ; location++)
@@ -462,8 +474,8 @@ void GLWidget::openIRESCharles( const std::string& filename )
                         glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer_faceFeature );
                         glBufferData ( GL_ARRAY_BUFFER , facesFeature.size( ) * sizeof(facesFeature[0]) , &facesFeature[0] , GL_STATIC_DRAW );
 
-                        int size_of_vertice_face = sizeof(Eigen::Vector4f);
-                        int size_of_struct_face  =  sizeof(FaceFeature);
+                        int size_of_vertice_face = 4 * sizeof(float);
+                        int size_of_struct_face  = 4 * sizeof(size_of_vertice_face);
 
                         //http://www.opengl.org/wiki/Vertex_Specification
                         for ( int location = 0 ; location < 4 ; location++)
@@ -585,7 +597,7 @@ void GLWidget::drawSecundary ( )
 		glBlendFunc(GL_DST_COLOR, GL_ONE_MINUS_SRC_ALPHA);
 	}
 
-	GLfloat light_elements[lights.size ( ) * 3];
+	GLfloat light_elements[12];
 	for ( std::size_t i = 0; i < lights.size ( ); ++i )
 	{
 		for ( int j = 0; j < 3; ++j )
@@ -654,7 +666,7 @@ void GLWidget::drawSecundary ( )
 void GLWidget::drawPrimary( )
 {
 
-	GLfloat light_elements[lights.size ( ) * 3];
+	GLfloat light_elements[12];
 	for ( std::size_t i = 0; i < lights.size ( ); ++i )
 	{
 		for ( int j = 0; j < 3; ++j )
@@ -734,7 +746,7 @@ void GLWidget::NoCutaway ( )
         if ( draw_secondary && (cuboids.size() != 0) )
         {
 
-        	GLfloat light_elements[lights.size ( ) * 3];
+        	GLfloat light_elements[12];
         	for ( std::size_t i = 0; i < lights.size ( ); ++i )
         	{
         		for ( int j = 0; j < 3; ++j )

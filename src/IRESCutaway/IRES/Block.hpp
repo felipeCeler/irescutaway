@@ -8,16 +8,9 @@
 #ifndef BLOCK_HPP_
 #define BLOCK_HPP_
 
-#include <vector>
+// Standard Library
 #include <string>
-
-#ifdef _WIN32
-#include "Eigen\Eigen"  // For math-related stuff.
-#else
-#include "Eigen/Eigen"
-#endif
-
-#include <IRES/BoundingBox.hpp>
+#include <vector>
 
 namespace IRES
 {
@@ -59,21 +52,14 @@ namespace IRES
 			Block ( const Block& new_block );
 
 			// 24 vertices of the cuboid. Set to use One Pass Wireframe Rendering (@Jonatas Shaders)
-			std::vector< Eigen::Vector4f > vertices;
-			// 24 normals for each vertex
-			std::vector< Eigen::Vector4f > normals;
-			// 24 colors per vertex
-			std::vector< Eigen::Vector4f > colors;
-			// Primary and Secondary approach
-			std::vector< Eigen::Vector4f > focus;
+			std::vector<float> vertices;
+
 			// To draw using glDrawElements*
 			std::vector<int>	 	     indices;
 			// FIXME Crazy structure on Corner Point
-			std::vector< Eigen::Vector4f >   IJK;
+			std::vector<float>   IJK;
 
 			bool 				     valid;
-
-			IRES::BoundingBox	 	     AABB;
 
 			std::vector<Block::Dynamic_Property> 	     dynamic_properties;
 			std::vector<Block::Static_Property> 	     static_porperties;

@@ -8,28 +8,21 @@
 #ifndef CORNERPOINTGRID_HPP_
 #define CORNERPOINTGRID_HPP_
 
-
-// Learning ifstream
 #include <iostream>
-#include <fstream>
-#include <iterator>
-#include <sstream>
-#include <vector>
-#include <memory>
 #include <iomanip>
 #include <algorithm>
 #include <string>
-#include <cstring>
+
 #include <cctype>
 #include <ctime>
 
 
 // IRES Classes
 #include <IRES/Block.hpp>
-#include <IRES/BoundingBox.hpp>
 
 /// Ires Library
 #include <ires/ires.h>
+
 
 namespace IRES
 {
@@ -155,7 +148,7 @@ namespace IRES
 					int number_of_Perforated_Blocks_;
 
 					// Control points of the Well. ( index of the block and 3D point )
-					std::vector<std::pair<int,Eigen::Vector3d >  > tractory_;
+					std::vector<std::pair<int, double >  > tractory_;
 
 					// For each well, property and on a specific time, get the data.
 					// FIXME That data comes from a perforated block.
@@ -185,14 +178,11 @@ namespace IRES
 
 			std::vector<Well_Data> 			wells;
 
-			std::vector<Eigen::Vector3d > 		vertices;
+			std::vector<double > 			vertices;
 
 			std::vector<int> 			block_indices;
 
 			std::vector<IRES::Block>                blocks;
-
-			IRES::BoundingBox box;
-			IRES::BoundingBox box_v2;
 
 			std::vector<ires::U32> list_of_vertex_indice;
 			std::vector<ires::F32> list_of_vertex_geometry_a;

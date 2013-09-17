@@ -16,11 +16,10 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
-
+#include <vector>
 #include <limits>
 #include <algorithm>
 #include <iterator>
-#include <vector>
 #include <functional>
 
 /// Qt 4.8
@@ -35,7 +34,8 @@
 #include <QtCore/QElapsedTimer>
 
 #include <IRES/CornerPointGrid.hpp>
-#include <IRES/BoundingBox.hpp>
+
+
 
 
 class GLWidget: public QGLWidget
@@ -182,7 +182,7 @@ private:
 	int min_K_;
 
 	// lights
-	std::vector < Eigen::Vector3f > lights;
+	std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f> >  lights;
 
 	/// normal x y z + vertice .z
 	Framebuffer * depthFBO;
@@ -198,24 +198,20 @@ private:
 	// 1 Vertex Buffer with 8 vertex which define a Cuboid
 	GLuint vertexBuffer_cuboid;
 
-	struct Cuboid
-	{
-		Eigen::Vector4f vertices[8];
-	};
 
-	std::vector<Cuboid>           cuboids;
+	std::vector<float>           cuboids;
 
-	std::vector<Eigen::Vector4f> cubeColor;
+	std::vector<float> cubeColor;
 	/// vec4 (R, G, B , 0 );
 		GLuint vertexBuffer_cube_color;
-	std::vector<Eigen::Vector4f > cubeIJK;
+	std::vector<float> cubeIJK;
 	/// vec4 (I, J, K , 0 );
 		GLuint vertexBuffer_cube_IJK;
-	std::vector<Eigen::Vector4f > cubeFocus;
+	std::vector<float> cubeFocus;
 	/// vec4 (Primary/Secondary , Active  ,0.0 , 0.0);
 		GLuint vertexBuffer_cube_Focus;
 
-	std::vector<Eigen::Vector4f > cubeProperties;
+	std::vector<float> cubeProperties;
 	// Four property x = Bubble Point Pressure
 	//               y = Pressure
 	//	         z = Porosity
@@ -232,29 +228,25 @@ private:
 	// 1 Vertex Buffer
 	GLuint vertexBuffer_faceFeature;
 
-	struct FaceFeature
-	{
-		Eigen::Vector4f vertices[4];
-	};
 
-	std::vector<Eigen::Vector4f > facesFeatureColors;
+	std::vector<float> facesFeatureColors;
 	/// vec4 (R, G, B , 0 );
 		GLuint vertexBuffer_faceColor;
-	std::vector<Eigen::Vector4f > facesFeatureIJK;
+	std::vector<float> facesFeatureIJK;
 	/// vec4 (R, G, B , 0 );
 		GLuint vertexBuffer_faceIJK;
-	std::vector<Eigen::Vector4f > facesFeatureType;
+	std::vector<float> facesFeatureType;
 	/// vec4 ( isShell, isFault, 0.0 , 0.0 );
 		GLuint vertexBuffer_faceType;
 
-	std::vector<Eigen::Vector4f > facesFeatureProperties;
+	std::vector<float> facesFeatureProperties;
 	// Four property x = Bubble Point Pressure
 	//               y = Pressure
 	//	         z = Porosity
 	//               w = Modified Block Volume
 			GLuint vertexBuffer_faceProperties;
 
-	std::vector<FaceFeature>      facesFeature;
+	std::vector<float>      facesFeature;
 
         bool enable_blend_;
 

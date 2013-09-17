@@ -7,6 +7,8 @@
 
 #include "CornerPointGrid.hpp"
 
+#include <Eigen\Eigen>
+
 namespace IRES
 {
 
@@ -80,13 +82,9 @@ namespace IRES
 		this->blocks.clear( );
 		this->blocks.reserve( header_.number_of_Blocks );
 
-		this->box_v2.reset();
-
                 IRES::Block new_block;
-                new_block.vertices.resize(24);
-                new_block.normals.resize(24);
-                new_block.IJK.resize(24);
-                new_block.focus.resize(24);
+                new_block.vertices.resize(32);
+                new_block.IJK.resize(4);
 
         	list_of_vertex_indice.clear( );
         	list_of_vertex_geometry_a.clear( );
@@ -117,11 +115,14 @@ namespace IRES
 			unsigned int I;
 			unsigned int J;
 			unsigned int K;
+
 			reservoir_file.getIJKfromIndex( i , I, J, K );
 
-			Eigen::Vector4f IJK ( I, J, K, 0 );
+			new_block.IJK[0] =  static_cast<float>( I );
+			new_block.IJK[1] =  static_cast<float>( J );
+			new_block.IJK[2] =  static_cast<float>( K );
+			new_block.IJK[3] =  static_cast<float>( 0.0f );
 
-			std::fill (new_block.IJK.begin(),new_block.IJK.end(),IJK);
 
 			if ( reservoir_file.getBlockVertices ( i , v ) )
 			{
@@ -166,116 +167,47 @@ namespace IRES
 				vecs[7][2] = v[23];
 
 
-                                new_block.vertices[0] = (Eigen::Vector4f ( vecs[4][0],vecs[4][1],vecs[4][2], 1.0f));
-                                new_block.vertices[1] = (Eigen::Vector4f ( vecs[5][0],vecs[5][1],vecs[5][2], 1.0f));
-                                new_block.vertices[2] = (Eigen::Vector4f ( vecs[7][0],vecs[7][1],vecs[7][2], 1.0f));
-                                new_block.vertices[3] = (Eigen::Vector4f ( vecs[6][0],vecs[6][1],vecs[6][2], 1.0f));
+				// Top Face
+                                new_block.vertices[0] = 1.0f;
+                                new_block.vertices[1] = vecs[4][0];
+                                new_block.vertices[2] = vecs[4][1];
+                                new_block.vertices[3] = vecs[4][2];
+
+                                new_block.vertices[4] = 1.0f;
+                                new_block.vertices[5] = vecs[5][0];
+                                new_block.vertices[6] = vecs[5][1];
+                                new_block.vertices[7] = vecs[5][2];
+
+                                new_block.vertices[8]  = 1.0f;
+                                new_block.vertices[9]  = vecs[7][0];
+                                new_block.vertices[10] = vecs[7][1];
+                                new_block.vertices[11] = vecs[7][2];
+
+                                new_block.vertices[12]  = 1.0f;
+                                new_block.vertices[13]  = vecs[6][0];
+                                new_block.vertices[14] = vecs[6][1];
+                                new_block.vertices[15] = vecs[6][2];
+
                                 // Bottom Face
-                                new_block.vertices[4] = (Eigen::Vector4f ( vecs[0][0],vecs[0][1],vecs[0][2], 1.0f));
-                                new_block.vertices[5] = (Eigen::Vector4f ( vecs[3][0],vecs[3][1],vecs[3][2], 1.0f));
-                                new_block.vertices[6] = (Eigen::Vector4f ( vecs[1][0],vecs[1][1],vecs[1][2], 1.0f));
-                                new_block.vertices[7] = (Eigen::Vector4f ( vecs[2][0],vecs[2][1],vecs[2][2], 1.0f));
-                                // Front Face
-                                new_block.vertices[8] = (Eigen::Vector4f ( vecs[4][0],vecs[4][1],vecs[4][2], 1.0f));
-                                new_block.vertices[9] = (Eigen::Vector4f ( vecs[0][0],vecs[0][1],vecs[0][2], 1.0f));
-                                new_block.vertices[10] = (Eigen::Vector4f ( vecs[5][0],vecs[5][1],vecs[5][2], 1.0f));
-                                new_block.vertices[11] = (Eigen::Vector4f ( vecs[1][0],vecs[1][1],vecs[1][2], 1.0f));
-                                // Back Face
-                                new_block.vertices[12] = (Eigen::Vector4f ( vecs[2][0],vecs[2][1],vecs[2][2], 1.0f));
-                                new_block.vertices[13] = (Eigen::Vector4f ( vecs[3][0],vecs[3][1],vecs[3][2], 1.0f));
-                                new_block.vertices[14] = (Eigen::Vector4f ( vecs[6][0],vecs[6][1],vecs[6][2], 1.0f));
-                                new_block.vertices[15] = (Eigen::Vector4f ( vecs[7][0],vecs[7][1],vecs[7][2], 1.0f));
-                                // Right Face
-                                new_block.vertices[16] = (Eigen::Vector4f ( vecs[1][0],vecs[1][1],vecs[1][2], 1.0f));
-                                new_block.vertices[17] = (Eigen::Vector4f ( vecs[2][0],vecs[2][1],vecs[2][2], 1.0f));
-                                new_block.vertices[18] = (Eigen::Vector4f ( vecs[5][0],vecs[5][1],vecs[5][2], 1.0f));
-                                new_block.vertices[19] = (Eigen::Vector4f ( vecs[6][0],vecs[6][1],vecs[6][2], 1.0f));
-                                // Left Face
-                                new_block.vertices[20] = (Eigen::Vector4f ( vecs[0][0],vecs[0][1],vecs[0][2], 1.0f));
-                                new_block.vertices[21] = (Eigen::Vector4f ( vecs[3][0],vecs[3][1],vecs[3][2], 1.0f));
-                                new_block.vertices[22] = (Eigen::Vector4f ( vecs[4][0],vecs[4][1],vecs[4][2], 1.0f));
-                                new_block.vertices[23] = (Eigen::Vector4f ( vecs[7][0],vecs[7][1],vecs[7][2], 1.0f));
+                                new_block.vertices[16] = 1.0f;
+                                new_block.vertices[17] = vecs[0][0];
+                                new_block.vertices[18] = vecs[0][1];
+                                new_block.vertices[19] = vecs[0][2];
 
+                                new_block.vertices[20] = 1.0f;
+                                new_block.vertices[21] = vecs[3][0];
+                                new_block.vertices[22] = vecs[3][1];
+                                new_block.vertices[23] = vecs[3][2];
 
-				Eigen::Vector3f topNormal    = (vecs[5] - vecs[4]).cross(vecs[7] - vecs[4]);
-				//std::cout << topNormal << std::endl;
-				Eigen::Vector3f bottomNormal = (vecs[3] - vecs[0]).cross(vecs[1] - vecs[0]);
-				//std::cout << bottomNormal << std::endl;
-				Eigen::Vector3f frontNormal  = (vecs[1] - vecs[0]).cross(vecs[4] - vecs[0]);
-				//std::cout << frontNormal << std::endl;
-				Eigen::Vector3f backmNormal  = (vecs[3] - vecs[2]).cross(vecs[6] - vecs[2]);
-				//std::cout << backmNormal << std::endl;
-				Eigen::Vector3f rightNormal  = (vecs[2] - vecs[1]).cross(vecs[5] - vecs[1]);
-				//std::cout << rightNormal << std::endl;
-				Eigen::Vector3f leftNormal   = (vecs[4] - vecs[0]).cross(vecs[3] - vecs[0]);
-				//std::cout << leftNormal << std::endl;
+                                new_block.vertices[24] = 1.0f;
+                                new_block.vertices[25] = vecs[1][0];
+                                new_block.vertices[28] = vecs[1][1];
+                                new_block.vertices[27] = vecs[1][2];
 
-				// Care about the type: GL_DOUBLE or GL_FLOAT
-				//  Top Face
-				new_block.normals[0] = (Eigen::Vector4f ( topNormal[0],topNormal[1],topNormal[2], 1.0f));
-				new_block.normals[1] = (Eigen::Vector4f ( topNormal[0],topNormal[1],topNormal[2], 1.0f));
-				new_block.normals[2] = (Eigen::Vector4f ( topNormal[0],topNormal[1],topNormal[2], 1.0f));
-				new_block.normals[3] = (Eigen::Vector4f ( topNormal[0],topNormal[1],topNormal[2], 1.0f));
-					// Bottom Face
-				new_block.normals[4] = (Eigen::Vector4f ( bottomNormal[0],bottomNormal[1],bottomNormal[2], 1.0f));
-				new_block.normals[5] = (Eigen::Vector4f ( bottomNormal[0],bottomNormal[1],bottomNormal[2], 1.0f));
-				new_block.normals[6] = (Eigen::Vector4f ( bottomNormal[0],bottomNormal[1],bottomNormal[2], 1.0f));
-				new_block.normals[7] = (Eigen::Vector4f ( bottomNormal[0],bottomNormal[1],bottomNormal[2], 1.0f));
-					// Front Face
-				new_block.normals[8] = (Eigen::Vector4f ( frontNormal[0],frontNormal[1],frontNormal[2], 1.0f));
-				new_block.normals[9] = (Eigen::Vector4f ( frontNormal[0],frontNormal[1],frontNormal[2], 1.0f));
-				new_block.normals[10] = (Eigen::Vector4f ( frontNormal[0],frontNormal[1],frontNormal[2], 1.0f));
-				new_block.normals[11] = (Eigen::Vector4f ( frontNormal[0],frontNormal[1],frontNormal[2], 1.0f));
-					// Back Face
-				new_block.normals[12] = (Eigen::Vector4f ( backmNormal[0],backmNormal[1],backmNormal[2], 1.0f));
-				new_block.normals[13] = (Eigen::Vector4f ( backmNormal[0],backmNormal[1],backmNormal[2], 1.0f));
-				new_block.normals[14] = (Eigen::Vector4f ( backmNormal[0],backmNormal[1],backmNormal[2], 1.0f));
-				new_block.normals[15] = (Eigen::Vector4f ( backmNormal[0],backmNormal[1],backmNormal[2], 1.0f));
-					// Right Face
-				new_block.normals[16] = (Eigen::Vector4f ( rightNormal[0],rightNormal[1],rightNormal[2], 1.0f));
-				new_block.normals[17] = (Eigen::Vector4f ( rightNormal[0],rightNormal[1],rightNormal[2], 1.0f));
-				new_block.normals[18] = (Eigen::Vector4f ( rightNormal[0],rightNormal[1],rightNormal[2], 1.0f));
-				new_block.normals[19] = (Eigen::Vector4f ( rightNormal[0],rightNormal[1],rightNormal[2], 1.0f));
-					// Left Face
-				new_block.normals[20] = (Eigen::Vector4f ( leftNormal[0],leftNormal[1],leftNormal[2], 1.0f));
-				new_block.normals[21] = (Eigen::Vector4f ( leftNormal[0],leftNormal[1],leftNormal[2], 1.0f));
-				new_block.normals[22] = (Eigen::Vector4f ( leftNormal[0],leftNormal[1],leftNormal[2], 1.0f));
-				new_block.normals[23] = (Eigen::Vector4f ( leftNormal[0],leftNormal[1],leftNormal[2], 1.0f));
-
-				    // Top Face
-				new_block.focus[0] = (Eigen::Vector4f ( 1.0,1.0,1.0,1.0f));
-				new_block.focus[1] = (Eigen::Vector4f ( 1.0,1.0,1.0,1.0f));
-				new_block.focus[2] = (Eigen::Vector4f ( 1.0,1.0,1.0,1.0f));
-				new_block.focus[3] = (Eigen::Vector4f ( 1.0,1.0,1.0,1.0f));
-				    // Bottom Face
-				new_block.focus[4] = (Eigen::Vector4f ( 1.0,1.0,1.0,1.0f));
-				new_block.focus[5] = (Eigen::Vector4f ( 1.0,1.0,1.0,1.0f));
-				new_block.focus[6] = (Eigen::Vector4f ( 1.0,1.0,1.0,1.0f));
-				new_block.focus[7] = (Eigen::Vector4f ( 1.0,1.0,1.0,1.0f));
-				    // Front Face
-				new_block.focus[8] = (Eigen::Vector4f ( 1.0,1.0,1.0,1.0f));
-				new_block.focus[9] = (Eigen::Vector4f ( 1.0,1.0,1.0,1.0f));
-				new_block.focus[10] = (Eigen::Vector4f ( 1.0,1.0,1.0,1.0f));
-				new_block.focus[11] = (Eigen::Vector4f ( 1.0,1.0,1.0,1.0f));
-				    // Back Face
-				new_block.focus[12] = (Eigen::Vector4f ( 1.0,1.0,1.0,1.0f));
-				new_block.focus[13] = (Eigen::Vector4f ( 1.0,1.0,1.0,1.0f));
-				new_block.focus[14] = (Eigen::Vector4f ( 1.0,1.0,1.0,1.0f));
-				new_block.focus[15] = (Eigen::Vector4f ( 1.0,1.0,1.0,1.0f));
-				    // Right Face
-				new_block.focus[16] = (Eigen::Vector4f ( 1.0,1.0,1.0,1.0f));
-				new_block.focus[17] = (Eigen::Vector4f ( 1.0,1.0,1.0,1.0f));
-				new_block.focus[18] = (Eigen::Vector4f ( 1.0,1.0,1.0,1.0f));
-				new_block.focus[19] = (Eigen::Vector4f ( 1.0,1.0,1.0,1.0f));
-				    // Left Face
-				new_block.focus[20] = (Eigen::Vector4f ( 1.0,1.0,1.0,1.0f));
-				new_block.focus[21] = (Eigen::Vector4f ( 1.0,1.0,1.0,1.0f));
-				new_block.focus[22] = (Eigen::Vector4f ( 1.0,1.0,1.0,1.0f));
-				new_block.focus[23] = (Eigen::Vector4f ( 1.0,1.0,1.0,1.0f));
-
-				new_block.AABB.fromPointCloud( new_block.vertices.begin() , new_block.vertices.end() );
-
-				this->box_v2 = this->box_v2 + new_block.AABB;
+                                new_block.vertices[28] = 1.0f;
+                                new_block.vertices[29] = vecs[2][0];
+                                new_block.vertices[30] = vecs[2][1];
+                                new_block.vertices[31] = vecs[2][2];
 
 			}else
 			{

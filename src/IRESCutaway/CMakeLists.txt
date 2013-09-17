@@ -46,8 +46,7 @@ set( ${PROJECT_NAME}_SOURCES App/main.cpp
     						 GUI/Qt/MainWindow/MainWindow.cpp
     						 GUI/Qt/AboutWidget/AboutWidgetIRESReader.cpp
     						 GUI/Qt/GLWidget/GLWidget.cpp
-    						 IRES/CornerPointGrid.cpp
-    						 IRES/BoundingBox.cpp
+    						 IRES/CornerPointGrid.cpp    						 
     						 IRES/Block.cpp
     						 ${CMAKE_SOURCE_DIR}/libs/LCG/shaderlib/trackball.cpp
     						 ${CMAKE_SOURCE_DIR}/libs/LCG/shaderlib/framebuffer.cpp
@@ -60,7 +59,6 @@ set( ${PROJECT_NAME}_HEADERS GUI/Qt/MainWindow/MainWindow.hpp
                              GUI/Qt/AboutWidget/AboutWidgetIRESReader.hpp
                              GUI/Qt/GLWidget/GLWidget.hpp
                              IRES/CornerPointGrid.hpp
-                             IRES/BoundingBox.hpp
                              IRES/Block.hpp
                              ${CMAKE_SOURCE_DIR}/libs/LCG/shaderlib/trackball.hpp
                              ${CMAKE_SOURCE_DIR}/libs/LCG/shaderlib/framebuffer.hpp
