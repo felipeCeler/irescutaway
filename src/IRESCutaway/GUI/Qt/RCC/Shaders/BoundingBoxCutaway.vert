@@ -54,11 +54,15 @@ vec4 propertyColor ( in float min_range, in float max_range, in int index )
 void main(void)
 {
 
+		// We revert the vertices order to fit in the triangle strip pipeline
+		// Triangle strips request vertices in zig-zag order.
+
+		// Top
 		cube.v[4] = v4;
 		cube.v[5] = v5;
 		cube.v[7] = v7;
 		cube.v[6] = v6;
-
+		// Bottom
 		cube.v[0] = v0;
 		cube.v[3] = v3;
 		cube.v[1] = v1;

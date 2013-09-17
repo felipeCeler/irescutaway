@@ -223,7 +223,10 @@ void GLWidget::loadProperties( )
 
 	for ( std::size_t shell_index = 0; shell_index < reservoir_model_.list_of_block_id.size() ; shell_index++ )
 	{
-		facesFeatureProperties[shell_index] = cubeProperties[reservoir_model_.list_of_block_id[shell_index]];
+		facesFeatureProperties[shell_index*4]   = cubeProperties[reservoir_model_.list_of_block_id[shell_index]*4];
+		facesFeatureProperties[shell_index*4+1] = cubeProperties[reservoir_model_.list_of_block_id[shell_index]*4+1];
+		facesFeatureProperties[shell_index*4+2] = cubeProperties[reservoir_model_.list_of_block_id[shell_index]*4+2];
+		facesFeatureProperties[shell_index*4+3] = cubeProperties[reservoir_model_.list_of_block_id[shell_index]*4+3];
 	}
 
 	// Cuboid
@@ -329,42 +332,47 @@ void GLWidget::openIRESCharles( const std::string& filename )
 		facesFeatureType.resize ( reservoir_model_.list_of_block_id.size ( ) * 4  );
 		facesFeatureProperties.resize ( reservoir_model_.list_of_block_id.size ( ) * 4 );
 
+		facesFeature_size = 0;
+
 		for ( std::size_t i = 0; i < reservoir_model_.list_of_block_id.size( ) ; i++)
 		{
-			facesFeature[i] = reservoir_model_.list_of_vertex_geometry_a[i*3];
-			facesFeature[i+1] = reservoir_model_.list_of_vertex_geometry_a[i*3+1];
-			facesFeature[i+2] = reservoir_model_.list_of_vertex_geometry_a[i*3+2];
-			facesFeature[i+3] = 1.0f;
+			facesFeature[i*16] = reservoir_model_.list_of_vertex_geometry_a[i*3];
+			facesFeature[i*16+1] = reservoir_model_.list_of_vertex_geometry_a[i*3+1];
+			facesFeature[i*16+2] = reservoir_model_.list_of_vertex_geometry_a[i*3+2];
+			facesFeature[i*16+3] = 1.0f;
 
-			facesFeature[i+4] = reservoir_model_.list_of_vertex_geometry_b[i*3];
-			facesFeature[i+5] = reservoir_model_.list_of_vertex_geometry_b[i*3+1];
-			facesFeature[i+6] = reservoir_model_.list_of_vertex_geometry_b[i*3+2];
-			facesFeature[i+7] = 1.0f;
+			facesFeature[i*16+4] = reservoir_model_.list_of_vertex_geometry_b[i*3];
+			facesFeature[i*16+5] = reservoir_model_.list_of_vertex_geometry_b[i*3+1];
+			facesFeature[i*16+6] = reservoir_model_.list_of_vertex_geometry_b[i*3+2];
+			facesFeature[i*16+7] = 1.0f;
 
-			facesFeature[i+8] = reservoir_model_.list_of_vertex_geometry_c[i*3];
-			facesFeature[i+9] = reservoir_model_.list_of_vertex_geometry_c[i*3+1];
-			facesFeature[i+10] = reservoir_model_.list_of_vertex_geometry_c[i*3+2];
-			facesFeature[i+11] = 1.0f;
+			facesFeature[i*16+8] = reservoir_model_.list_of_vertex_geometry_c[i*3];
+			facesFeature[i*16+9] = reservoir_model_.list_of_vertex_geometry_c[i*3+1];
+			facesFeature[i*16+10] = reservoir_model_.list_of_vertex_geometry_c[i*3+2];
+			facesFeature[i*16+11] = 1.0f;
 
-			facesFeature[i+12] = reservoir_model_.list_of_vertex_geometry_d[i*3];
-			facesFeature[i+13] = reservoir_model_.list_of_vertex_geometry_d[i*3+1];
-			facesFeature[i+14] = reservoir_model_.list_of_vertex_geometry_d[i*3+2];
-			facesFeature[i+15] = 1.0f;
+			facesFeature[i*16+12] = reservoir_model_.list_of_vertex_geometry_d[i*3];
+			facesFeature[i*16+13] = reservoir_model_.list_of_vertex_geometry_d[i*3+1];
+			facesFeature[i*16+14] = reservoir_model_.list_of_vertex_geometry_d[i*3+2];
+			facesFeature[i*16+15] = 1.0f;
 
-			facesFeatureColors[i]   = 1.0f;
-			facesFeatureColors[i+1] = 0.0f;
-			facesFeatureColors[i+2] = 0.0f;
-			facesFeatureColors[i+3] = 1.0f;
+			facesFeatureColors[i*4]   = 1.0f;
+			facesFeatureColors[i*4+1] = 0.0f;
+			facesFeatureColors[i*4+2] = 0.0f;
+			facesFeatureColors[i*4+3] = 1.0f;
 
-			facesFeatureIJK[i]   = 1.0f;
-			facesFeatureIJK[i+1] = 0.0f;
-			facesFeatureIJK[i+2] = 0.0f;
-			facesFeatureIJK[i+3] = 1.0f;
+			facesFeatureIJK[i*4]   = 1.0f;
+			facesFeatureIJK[i*4+1] = 0.0f;
+			facesFeatureIJK[i*4+2] = 0.0f;
+			facesFeatureIJK[i*4+3] = 1.0f;
 
-			facesFeatureType[i]   = reservoir_model_.list_of_block_flag[i];
-			facesFeatureType[i+1] = reservoir_model_.list_of_block_flag[i];
-			facesFeatureType[i+2] = reservoir_model_.list_of_block_flag[i];
-			facesFeatureType[i+3] = 1.0f;
+			facesFeatureType[i*4]   = reservoir_model_.list_of_block_flag[i];
+			facesFeatureType[i*4+1] = reservoir_model_.list_of_block_flag[i];
+			facesFeatureType[i*4+2] = reservoir_model_.list_of_block_flag[i];
+			facesFeatureType[i*4+3] = 1.0f;
+
+			facesFeature_size++;
+
 		}
 
 		std::cout << " Face Interleaved = " << reservoir_model_.list_of_block_id.size() << std::endl;
@@ -375,7 +383,9 @@ void GLWidget::openIRESCharles( const std::string& filename )
 		cubeFocus.resize      ( reservoir_model_.blocks.size( ) * 4  );
 		cubeProperties.resize ( reservoir_model_.blocks.size( ) * 4  );
 
-		int index = 0;
+		int index     = 0;
+		int index_x32 = 0;
+		cuboids_size  = 0;
 
 		for ( std::size_t i = 0; i < reservoir_model_.blocks.size( ) ; i++)
 		{
@@ -383,7 +393,14 @@ void GLWidget::openIRESCharles( const std::string& filename )
 			if ( reservoir_model_.blocks[i].valid )
 			{
 				// @link http://www.cplusplus.com/reference/iterator/back_inserter/
-				std::copy ( reservoir_model_.blocks[i].vertices.begin(), reservoir_model_.blocks[i].vertices.end(), std::back_inserter(cuboids) );
+				//std::copy ( reservoir_model_.blocks[i].vertices.begin(), reservoir_model_.blocks[i].vertices.end(), std::back_inserter(cuboids) );
+
+				for ( int vertex_index = 0; vertex_index < 32 ;vertex_index++)
+				{
+					cuboids[index_x32 + vertex_index] =  reservoir_model_.blocks[i].vertices[vertex_index];
+					//std::cout << "Values : " <<  reservoir_model_.blocks[i].vertices[vertex_index] << std::endl;
+
+				}
 
 				cubeColor[index]   = 1.0f;
 				cubeColor[index+1] = 0.0f;
@@ -401,6 +418,8 @@ void GLWidget::openIRESCharles( const std::string& filename )
 				cubeFocus[index+3] = 1.0f;
 
 				index += 4;
+				index_x32 += 32;
+				cuboids_size++;
 
 			}
 			else
@@ -408,7 +427,7 @@ void GLWidget::openIRESCharles( const std::string& filename )
 
 			}
 		}
-
+		cuboids.resize (index_x32);
 		cubeColor.resize(index);
 		cubeFocus.resize(index);
 		cubeIJK.resize(index);
@@ -432,6 +451,7 @@ void GLWidget::openIRESCharles( const std::string& filename )
 
                         int size_of_vertice = 4 * sizeof(float);
                         int size_of_struct  = 8 * size_of_vertice;
+
 
                         //http://www.opengl.org/wiki/Vertex_Specification
                         for ( int location = 0 ; location < 8 ; location++)
@@ -475,7 +495,7 @@ void GLWidget::openIRESCharles( const std::string& filename )
                         glBufferData ( GL_ARRAY_BUFFER , facesFeature.size( ) * sizeof(facesFeature[0]) , &facesFeature[0] , GL_STATIC_DRAW );
 
                         int size_of_vertice_face = 4 * sizeof(float);
-                        int size_of_struct_face  = 4 * sizeof(size_of_vertice_face);
+                        int size_of_struct_face  = 4 * size_of_vertice_face;
 
                         //http://www.opengl.org/wiki/Vertex_Specification
                         for ( int location = 0 ; location < 4 ; location++)
@@ -572,7 +592,7 @@ void GLWidget::drawCutawaySurface ( )
 		BoundingBoxInitializationLCG->setUniform ("FreezeViewMatrix",freeze_viewmatrix_.data ( ),4, GL_FALSE, 1 );
 
 		glBindVertexArray ( vertexArray_cuboid );
-		glDrawArrays ( GL_POINTS , 0 , cuboids.size ( ) );
+		glDrawArrays ( GL_POINTS , 0 , cuboids_size );
 		glBindVertexArray ( 0 );
 
 		BoundingBoxInitializationLCG->disable( );
@@ -623,7 +643,7 @@ void GLWidget::drawSecundary ( )
 	shellLCG->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
 
 	glBindVertexArray ( vertexArray_faceFeature );
-	glDrawArrays ( GL_POINTS , 0 , facesFeature.size ( ) );
+	glDrawArrays ( GL_POINTS , 0 , facesFeature_size );
 	glBindVertexArray ( 0 );
 
 	shellLCG->disable( );
@@ -655,7 +675,7 @@ void GLWidget::drawSecundary ( )
 	BoundingBoxCutawayLCG->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
 
 	glBindVertexArray ( vertexArray_cuboid );
-	glDrawArrays ( GL_POINTS , 0 , cuboids.size ( ) );
+	glDrawArrays ( GL_POINTS , 0 , cuboids_size );
 	glBindVertexArray ( 0 );
 
 	BoundingBoxCutawayLCG->enable( );
@@ -692,7 +712,7 @@ void GLWidget::drawPrimary( )
 	primaryLCG->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
 
 	glBindVertexArray ( vertexArray_cuboid );
-	glDrawArrays ( GL_POINTS , 0 , cuboids.size ( ) );
+	glDrawArrays ( GL_POINTS , 0 , cuboids_size );
 	glBindVertexArray ( 0 );
 
 
@@ -711,20 +731,23 @@ void GLWidget::paintGL ( )
 	}
 
 
-	if ( isRawApproach )
+	if ( isIRESOpen_ )
 	{
-		RawCutaway ( cluster );
-	}
-	else if ( isIRESApproach )
-	{
-		IRESCutaway ( );
-	}else
-	{
-		NoCutaway ( );
-	}
+		if ( isRawApproach )
+		{
+			RawCutaway ( cluster );
+		}
+		else if ( isIRESApproach )
+		{
+			IRESCutaway ( );
+		}
+		else
+		{
+			NoCutaway ( );
+		}
 
-	//trackball_->render();
-
+		//trackball_->render();
+	}
 	fps++;
 
 
@@ -743,44 +766,40 @@ void GLWidget::NoCutaway ( )
         glClearColor ( 1.0 , 1.0 , 1.0 , 1.0 );
         glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-        if ( draw_secondary && (cuboids.size() != 0) )
-        {
 
-        	GLfloat light_elements[12];
-        	for ( std::size_t i = 0; i < lights.size ( ); ++i )
-        	{
-        		for ( int j = 0; j < 3; ++j )
-        		{
-        			light_elements[i * 3 + j] = lights[i][j];
-        		}
-        	}
+	GLfloat light_elements[12];
+	for ( std::size_t i = 0; i < lights.size ( ); ++i )
+	{
+		for ( int j = 0; j < 3; ++j )
+		{
+			light_elements[i * 3 + j] = lights[i][j];
+		}
+	}
 
-        	rawShellLCG->enable( );
+	rawShellLCG->enable( );
 
-        	rawShellLCG->setUniform("min_property", min_value[current_property]  );
-        	rawShellLCG->setUniform("max_property", max_value[current_property]  );
-        	rawShellLCG->setUniform("property_index", current_property );
+	rawShellLCG->setUniform("min_property", min_value[current_property]  );
+	rawShellLCG->setUniform("max_property", max_value[current_property]  );
+	rawShellLCG->setUniform("property_index", current_property );
 
-        	rawShellLCG->setUniform("num_lights", (GLint) lights.size ( )  );
-        	rawShellLCG->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
-        	rawShellLCG->setUniform("WIN_SCALE", (float) width ( ) , (float) height ( ) );
+	rawShellLCG->setUniform("num_lights", (GLint) lights.size ( )  );
+	rawShellLCG->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
+	rawShellLCG->setUniform("WIN_SCALE", (float) width ( ) , (float) height ( ) );
 
-        	rawShellLCG->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
-        	rawShellLCG->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
-        	rawShellLCG->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
+	rawShellLCG->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
+	rawShellLCG->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
+	rawShellLCG->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
 
-        	glBindVertexArray ( vertexArray_faceFeature );
-        	glDrawArrays ( GL_POINTS , 0 , facesFeature.size ( ) );
-        	glBindVertexArray ( 0 );
+	glBindVertexArray ( vertexArray_faceFeature );
+	glDrawArrays ( GL_POINTS , 0 , facesFeature.size ( ) / 16 );
+	glBindVertexArray ( 0 );
 
-        	rawShellLCG->disable( );
+	rawShellLCG->disable( );
 
-        }
 
-        if ( draw_primary && (cuboids.size() != 0)  )
-        {
-        	drawPrimary();
-        }
+
+        drawPrimary();
+
 }
 
 void GLWidget::RawCutaway ( int cluster )
@@ -851,7 +870,7 @@ void GLWidget::loadShaders ( )
 	QString shaderDirectory ("D:\\Workspace\\IRESCutaway\\src\\IRESCutaway\\GUI\\Qt\\RCC\\Shaders\\");
 	#elif defined(__linux__)               // Linux Directory Style
 	/* Do linux stuff */
-    //QString shaderDirectory ("/home/ricardomarroquim/devel/irescutaway/src/IRESCutaway/GUI/Qt/RCC/Shaders/");
+        //QString shaderDirectory ("/home/ricardomarroquim/devel/irescutaway/src/IRESCutaway/GUI/Qt/RCC/Shaders/");
 	QString shaderDirectory ("/media/d/Workspace/IRESCutaway/src/IRESCutaway/GUI/Qt/RCC/Shaders/");
 	#else
 	/* Error, both can't be defined or undefined same time */

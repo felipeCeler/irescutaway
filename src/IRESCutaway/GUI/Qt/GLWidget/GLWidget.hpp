@@ -35,9 +35,6 @@
 
 #include <IRES/CornerPointGrid.hpp>
 
-
-
-
 class GLWidget: public QGLWidget
 {
 	Q_OBJECT
@@ -200,6 +197,7 @@ private:
 
 
 	std::vector<float>           cuboids;
+	GLint			     cuboids_size;
 
 	std::vector<float> cubeColor;
 	/// vec4 (R, G, B , 0 );
@@ -247,6 +245,7 @@ private:
 			GLuint vertexBuffer_faceProperties;
 
 	std::vector<float>      facesFeature;
+	GLint 			facesFeature_size;
 
         bool enable_blend_;
 

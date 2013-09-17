@@ -7,7 +7,7 @@
 
 #include "CornerPointGrid.hpp"
 
-#include <Eigen\Eigen>
+#include <Eigen/Eigen>
 
 namespace IRES
 {
@@ -21,7 +21,6 @@ namespace IRES
 	{
 		// TODO Auto-generated destructor stub
 	}
-
 
 	void CornerPointGrid::openIRES_Version_2 ( const std::string& filename )
 	{
@@ -63,7 +62,7 @@ namespace IRES
 		static_porperties.clear();
 		static_porperties.resize( static_names.size( ) );
 
-		for ( int i = 0; i < static_names.size(); i++)
+		for ( std::size_t i = 0; i < static_names.size(); i++)
 		{
 
 			static_names[i].erase ( std::remove_if ( static_names[i].begin ( ) , static_names[i].end ( ) , ::iscntrl ) , static_names[i].end ( ) );
@@ -75,6 +74,15 @@ namespace IRES
 			static_porperties[i].max_ = *std::max_element ( static_porperties[i].values_.begin ( ) , static_porperties[i].values_.end ( ) );
 
  		}
+
+		std::vector<std::string> 	dynamic_names;
+		reservoir_file.getDynamicPropertyNames(dynamic_names);
+
+		for ( std::size_t i = 0; i < dynamic_names.size(); i++)
+		{
+			std::cout << " Dynamic Name " <<  dynamic_names[i] << std::endl;
+ 		}
+
 
 		float 	  	v[24];
 		Eigen::Vector3f vecs[8];
@@ -106,7 +114,7 @@ namespace IRES
 		                                 list_of_block_id ,
 		                                 list_of_block_flag );
 
-		reservoir_file.generateTriangleList(list_of_vertex_geometry_charles,0,false,false,true );
+		//reservoir_file.generateTriangleList(list_of_vertex_geometry_charles,0,false,false,true );
 
 		for ( int i = 0; i < header_.number_of_Blocks; i++)
 		{
@@ -127,6 +135,11 @@ namespace IRES
 			if ( reservoir_file.getBlockVertices ( i , v ) )
 			{
 				new_block.valid = true;
+
+				// FIXME getBlockVertices returns a list of 8 vertices.
+				// The first 4 of them  belong to the top face of the cube and the remaining
+				// to the bottom.
+				//
 
 				vecs[0][0] = v[0];
 				vecs[0][1] = v[1];
@@ -168,46 +181,46 @@ namespace IRES
 
 
 				// Top Face
-                                new_block.vertices[0] = 1.0f;
-                                new_block.vertices[1] = vecs[4][0];
-                                new_block.vertices[2] = vecs[4][1];
-                                new_block.vertices[3] = vecs[4][2];
+                                new_block.vertices[0]   = vecs[0][0];
+                                new_block.vertices[1]   = vecs[0][1];
+                                new_block.vertices[2]   = vecs[0][2];
+                                new_block.vertices[3]   = 1.0f;
 
-                                new_block.vertices[4] = 1.0f;
-                                new_block.vertices[5] = vecs[5][0];
-                                new_block.vertices[6] = vecs[5][1];
-                                new_block.vertices[7] = vecs[5][2];
+                                new_block.vertices[4]   = vecs[1][0];
+                                new_block.vertices[5]   = vecs[1][1];
+                                new_block.vertices[6]   = vecs[1][2];
+                                new_block.vertices[7]   = 1.0f;
 
-                                new_block.vertices[8]  = 1.0f;
-                                new_block.vertices[9]  = vecs[7][0];
-                                new_block.vertices[10] = vecs[7][1];
-                                new_block.vertices[11] = vecs[7][2];
+                                new_block.vertices[8]   = vecs[2][0];
+                                new_block.vertices[9]   = vecs[2][1];
+                                new_block.vertices[10]  = vecs[2][2];
+                                new_block.vertices[11]  = 1.0f;
 
-                                new_block.vertices[12]  = 1.0f;
-                                new_block.vertices[13]  = vecs[6][0];
-                                new_block.vertices[14] = vecs[6][1];
-                                new_block.vertices[15] = vecs[6][2];
+                                new_block.vertices[12]  = vecs[3][0];
+                                new_block.vertices[13]  = vecs[3][1];
+                                new_block.vertices[14]  = vecs[3][2];
+                                new_block.vertices[15]  = 1.0f;
 
                                 // Bottom Face
-                                new_block.vertices[16] = 1.0f;
-                                new_block.vertices[17] = vecs[0][0];
-                                new_block.vertices[18] = vecs[0][1];
-                                new_block.vertices[19] = vecs[0][2];
+                                new_block.vertices[16]  = vecs[4][0];
+                                new_block.vertices[17]  = vecs[4][1];
+                                new_block.vertices[18]  = vecs[4][2];
+                                new_block.vertices[19]  = 1.0f;
 
-                                new_block.vertices[20] = 1.0f;
-                                new_block.vertices[21] = vecs[3][0];
-                                new_block.vertices[22] = vecs[3][1];
-                                new_block.vertices[23] = vecs[3][2];
+                                new_block.vertices[20] = vecs[5][0];
+                                new_block.vertices[21] = vecs[5][1];
+                                new_block.vertices[22] = vecs[5][2];
+                                new_block.vertices[23] = 1.0f;
 
-                                new_block.vertices[24] = 1.0f;
-                                new_block.vertices[25] = vecs[1][0];
-                                new_block.vertices[28] = vecs[1][1];
-                                new_block.vertices[27] = vecs[1][2];
+                                new_block.vertices[24] = vecs[6][0];
+                                new_block.vertices[25] = vecs[6][1];
+                                new_block.vertices[26] = vecs[6][2];
+                                new_block.vertices[27] = 1.0f;
 
-                                new_block.vertices[28] = 1.0f;
-                                new_block.vertices[29] = vecs[2][0];
-                                new_block.vertices[30] = vecs[2][1];
-                                new_block.vertices[31] = vecs[2][2];
+                                new_block.vertices[28] = vecs[7][0];
+                                new_block.vertices[29] = vecs[7][1];
+                                new_block.vertices[30] = vecs[7][2];
+                                new_block.vertices[31] = 1.0f;
 
 			}else
 			{
@@ -226,22 +239,22 @@ namespace IRES
 
 			}
 
-			new_block.dynamic_properties.resize(dynamic_properties.size());
+//			new_block.dynamic_properties.resize(dynamic_properties.size());
 
-			for ( std::size_t property = 0;  property < dynamic_properties.size();  ++property )
-			{
-
-				new_block.dynamic_properties[property].name  	     = dynamic_properties[property].name;
-				new_block.dynamic_properties[property].unit  	     = dynamic_properties[property].unit;
-				new_block.dynamic_properties[property].variable_name = dynamic_properties[property].variable_name;
-				new_block.dynamic_properties[property].component     = dynamic_properties[property].component;
-
-				for ( size_t  it = 0 ; it < dynamic_properties[property].values_.size() ; ++it)
-				{
-					new_block.dynamic_properties[property].values_.push_back( std::pair<int,float>( dynamic_properties[property].values_[it].first, dynamic_properties[property].values_[it].second[property] ) ) ;
-				}
-
-			}
+//			for ( std::size_t property = 0;  property < dynamic_properties.size();  ++property )
+//			{
+//
+//				new_block.dynamic_properties[property].name  	     = dynamic_properties[property].name;
+//				new_block.dynamic_properties[property].unit  	     = dynamic_properties[property].unit;
+//				new_block.dynamic_properties[property].variable_name = dynamic_properties[property].variable_name;
+//				new_block.dynamic_properties[property].component     = dynamic_properties[property].component;
+//
+//				for ( size_t  it = 0 ; it < dynamic_properties[property].values_.size() ; ++it)
+//				{
+//					new_block.dynamic_properties[property].values_.push_back( std::pair<int,float>( dynamic_properties[property].values_[it].first, dynamic_properties[property].values_[it].second[property] ) ) ;
+//				}
+//
+//			}
 
 			this->blocks.push_back(new_block);
 
