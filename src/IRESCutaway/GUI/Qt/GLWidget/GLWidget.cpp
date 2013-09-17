@@ -125,6 +125,88 @@ void GLWidget::initializeGL ( )
 
 	loadShaders ( );
 
+	// TODO xtoon
+
+	picture = new Mesh( );
+	picture->createQuad( );
+
+}
+
+
+void GLWidget::dragEnterEvent(QDragEnterEvent *event)
+{
+
+	setBackgroundRole(QPalette::Highlight);
+
+	event->acceptProposedAction();
+
+	emit changed(event->mimeData());
+
+	qDebug() << "Entrou";
+}
+/// Then, we invoke acceptProposedAction() on event, setting the drop action to the one proposed.
+/// Lastly, we emit the changed() signal, with the data that was dropped and its MIME type information as a parameter.
+/// For dragMoveEvent(), we just accept the proposed QDragMoveEvent object, event, with acceptProposedAction().
+void GLWidget::dragMoveEvent(QDragMoveEvent *event)
+{
+	event->acceptProposedAction();
+}
+///The DropArea class's implementation of dropEvent() extracts the event's mime data and displays it accordingly.
+void GLWidget::dropEvent(QDropEvent *event)
+{
+	const QMimeData *mimeData = event->mimeData();
+	/// The mimeData object can contain one of the following objects: an image, HTML text, plain text, or a list of URLs.
+
+	if (event->mimeData()->hasUrls())
+	{
+
+		QList<QUrl> urlList = mimeData->urls();
+		QString text;
+		for (int i = 0; i < urlList.size() && i < 32; ++i) {
+			QString url = urlList.at(i).path();
+			text += url;// + QString("\n");
+		}
+		qDebug() << text;
+
+		QImage image 			= QImage(text);
+		QImage imageOpenGL = QGLWidget::convertToGLFormat( image );
+
+
+
+		// TODO this is just the beginning
+		// Create a texture as attachment
+		if ( xtoon_texture_ != 0 )
+		{
+			glDeleteTextures ( 1 , &xtoon_texture_ );
+		}
+		else
+		{
+			glGenTextures ( 1 , &xtoon_texture_ );
+		}
+
+		glBindTexture ( GL_TEXTURE_2D, xtoon_texture_ );
+		// Set basic parameters
+		glTexParameteri ( GL_TEXTURE_2D , GL_TEXTURE_WRAP_S , GL_CLAMP_TO_EDGE );
+		glTexParameteri ( GL_TEXTURE_2D , GL_TEXTURE_WRAP_T , GL_CLAMP_TO_EDGE );
+		glTexParameteri ( GL_TEXTURE_2D , GL_TEXTURE_MIN_FILTER , GL_NEAREST );
+		glTexParameteri ( GL_TEXTURE_2D , GL_TEXTURE_MAG_FILTER , GL_NEAREST );
+		// Allocate memory
+		glTexImage2D ( GL_TEXTURE_2D , 0 , GL_RGBA , image.width() , image.height() , 0 , GL_RGBA , GL_UNSIGNED_BYTE , imageOpenGL.bits() );
+
+		qDebug() << " ID Texture " << xtoon_texture_ << " w x h " << image.width() << " x " << image.height();
+
+		glBindTexture ( GL_TEXTURE_2D, 0 );
+
+		qDebug() << "Soltou";
+
+	}
+
+
+}
+
+void GLWidget::dragLeaveEvent(QDragLeaveEvent *event)
+{
+		event->accept ( );
 }
 
 bool GLWidget::isIRESOpen ( ) const
@@ -778,6 +860,11 @@ void GLWidget::NoCutaway ( )
 
 	rawShellLCG->enable( );
 
+        glActiveTexture(GL_TEXTURE0+3);
+        glBindTexture ( GL_TEXTURE_2D, xtoon_texture_ );
+        rawShellLCG->setUniform("xtoon_texture", 3  );
+        rawShellLCG->setUniform("viewportSize", width(), height() );
+
 	rawShellLCG->setUniform("min_property", min_value[current_property]  );
 	rawShellLCG->setUniform("max_property", max_value[current_property]  );
 	rawShellLCG->setUniform("property_index", current_property );
@@ -836,6 +923,19 @@ void GLWidget::IRESCutaway ( )
 //
         glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
         glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
+        xtoon_texture_viewer->enable();
+
+        glActiveTexture(GL_TEXTURE0+3);
+        glBindTexture ( GL_TEXTURE_2D, xtoon_texture_ );
+        xtoon_texture_viewer->setUniform("imageTexture", 3);
+        xtoon_texture_viewer->setUniform("viewportSize", width(), height() );
+
+        picture->render();
+
+        xtoon_texture_viewer->disable();
+
+
 }
 
 void GLWidget::gameLooping ( )
@@ -929,6 +1029,11 @@ void GLWidget::loadShaders ( )
                               (shaderDirectory + "RawShell.geom").toStdString(),1);
 
         rawShellLCG->initialize( );
+
+        xtoon_texture_viewer = new Shader  ("xtoon_texture", (shaderDirectory + "xtoon_texture.vert").toStdString(),
+        		                              (shaderDirectory + "xtoon_texture.frag").toStdString(),"",1);
+
+        xtoon_texture_viewer->initialize( );
 
 }
 /// KeyInput
@@ -1107,53 +1212,6 @@ void GLWidget::wheelEvent ( QWheelEvent *event )
     updateGL();
 
 
-}
-
-void GLWidget::dragEnterEvent(QDragEnterEvent *event)
-{
-
-	setBackgroundRole(QPalette::Highlight);
-
-	event->acceptProposedAction();
-
-	emit changed(event->mimeData());
-
-}
-/// Then, we invoke acceptProposedAction() on event, setting the drop action to the one proposed.
-/// Lastly, we emit the changed() signal, with the data that was dropped and its MIME type information as a parameter.
-/// For dragMoveEvent(), we just accept the proposed QDragMoveEvent object, event, with acceptProposedAction().
-void GLWidget::dragMoveEvent(QDragMoveEvent *event)
-{
-	event->acceptProposedAction();
-}
-///The DropArea class's implementation of dropEvent() extracts the event's mime data and displays it accordingly.
-void GLWidget::dropEvent(QDropEvent *event)
-{
-	const QMimeData *mimeData = event->mimeData();
-	/// The mimeData object can contain one of the following objects: an image, HTML text, plain text, or a list of URLs.
-
-	if (event->mimeData()->hasUrls())
-	{
-
-		QList<QUrl> urlList = mimeData->urls();
-		QString text;
-		for (int i = 0; i < urlList.size() && i < 32; ++i) {
-			QString url = urlList.at(i).path();
-			text += url;// + QString("\n");
-		}
-		qDebug() << text;
-
-		QImage image 			= QImage(text);
-		QImage imageOpenGL = QGLWidget::convertToGLFormat( image );
-
-	}
-
-
-}
-
-void GLWidget::dragLeaveEvent(QDragLeaveEvent *event)
-{
-		event->accept ( );
 }
 
 void GLWidget::setPrimaryVisibility( bool visibility )

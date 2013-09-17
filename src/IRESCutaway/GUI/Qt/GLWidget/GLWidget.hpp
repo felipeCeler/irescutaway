@@ -269,6 +269,12 @@ private:
 	// LCG procudure
         Eigen::Vector2f convertToNormalizedDeviceCoordinates(Eigen::Vector2i position);
 
+
+        // TODO NPR Stuffs - Mario's request
+        GLuint xtoon_texture_;
+        Mesh * picture;
+
+        Shader * xtoon_texture_viewer;
 };
 
 #endif

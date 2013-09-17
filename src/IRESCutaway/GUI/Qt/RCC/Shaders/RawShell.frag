@@ -1,5 +1,8 @@
 #version 430 core
 
+uniform sampler2D xtoon_texture;
+uniform ivec2 viewportSize;
+
 in VertexData
 {
 	vec4 vertice;
@@ -17,9 +20,16 @@ out vec4 outputColor;
 void main(void)
 {
 
-        vec3 newNormal = VertexIn.normal.xyz;
+	vec2 texCoord = vec2(gl_FragCoord.x/viewportSize[0], gl_FragCoord.y/viewportSize[1]);
+
+		vec3 newNormal = VertexIn.normal.xyz;
         vec3 newVert = VertexIn.vertice.xyz;
         vec4 color_t = VertexIn.color;
+
+
+        vec2 xtoon_texCoord = vec2(0.0);
+
+        xtoon_texCoord.t = pow(max ( 0.0 , abs(dot ( newNormal , vec3(0.0,0.0,1.0) ) )),2);
 
         float d = min(dist[0], min(dist[1], min(dist[2], dist[3])));
         float I = exp2(-2.0 * d * d);
@@ -34,11 +44,14 @@ void main(void)
             vec3 ref = normalize ( -reflect ( light_dir , newNormal ) );
             la += vec4 ( 0.3 / float(num_lights) );
             ld += color_t * (1.0 / float(num_lights)) * max ( 0.0 , abs(dot ( newNormal , light_dir ) ));
+            xtoon_texCoord.s = max ( 0.0 , abs(dot ( newNormal , light_dir ) ));
             //ls += color_t * 0.0 * pow ( max ( 0.0 , dot ( eye_dir , ref ) ) , 5.0 );
         }
 
         vec4 color = la + ld + ls;
 
-        outputColor = I * vec4(vec3(0.0), 1.0) + (1.0 - I) * ( color_t );
+        vec4 xtoon = texture(xtoon_texture, xtoon_texCoord ).rgba;
+
+        outputColor = I * vec4(vec3(0.0), 1.0) + (1.0 - I) * ( xtoon );
 
 }
