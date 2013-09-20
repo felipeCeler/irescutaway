@@ -29,7 +29,7 @@ void main(void)
         vec3 newVert = VertexIn.vertice.xyz;
         vec4 color_t = VertexIn.color;
 
-        // xToon
+        // xToon aerial perspective
         vec2 xtoon_texCoord = vec2(0.0);
 
 	float zmin = -5.0;
@@ -51,7 +51,7 @@ void main(void)
             ld += color_t * (1.0 / float(num_lights)) * max ( 0.0 , abs(dot ( newNormal , light_dir ) ));
             //ls += color_t * 0.0 * pow ( max ( 0.0 , dot ( eye_dir , ref ) ) , 5.0 );
 
-            // xToon
+            // xToon aerial perspective
             xtoon_texCoord.s = abs(dot ( newNormal , light_dir ) );
 
         }
