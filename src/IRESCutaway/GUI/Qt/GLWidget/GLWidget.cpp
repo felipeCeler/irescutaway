@@ -130,6 +130,8 @@ void GLWidget::initializeGL ( )
 	picture = new Mesh( );
 	picture->createQuad( );
 
+	reservoir_model_.initialize( );
+
 }
 
 
@@ -793,8 +795,8 @@ void GLWidget::drawPrimary( )
 	primaryLCG->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
 	primaryLCG->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
 
-	glBindVertexArray ( vertexArray_cuboid );
-	glDrawArrays ( GL_POINTS , 0 , cuboids_size );
+	glBindVertexArray ( vertexArray_faceFeature );
+	glDrawArrays ( GL_POINTS , 0 , facesFeature.size ( ) / 16 );
 	glBindVertexArray ( 0 );
 
 

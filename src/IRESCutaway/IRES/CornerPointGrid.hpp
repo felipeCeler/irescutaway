@@ -8,6 +8,9 @@
 #ifndef CORNERPOINTGRID_HPP_
 #define CORNERPOINTGRID_HPP_
 
+	/// OpenGL
+#include <GL/glew.h>
+
 #include <iostream>
 #include <iomanip>
 #include <algorithm>
@@ -198,11 +201,78 @@ namespace IRES
 			std::vector<ires::F32> list_of_vertex_geometry_charles;
 
 
+			/// About IRES Geometry Information
+
+			// Cube in Interleaved VertexBuffer
+			// Use same layout location as vertexArray
+
+			// 1 Vertex Array
+			GLuint vertexArray_cuboids;
+			// 1 Vertex Buffer with 8 vertex which define a Cuboid
+			GLuint vertexBuffer_cuboid_geometry;
+
+				std::vector<float> cubeColor;
+				/// vec4 (R, G, B , 0 );
+					GLuint vertexBuffer_cube_color;
+				std::vector<float> cubeIJK;
+				/// vec4 (I, J, K , 0 );
+					GLuint vertexBuffer_cube_IJK;
+				std::vector<float> cubeFocus;
+				/// vec4 (Primary/Secondary , Active  ,0.0 , 0.0);
+					GLuint vertexBuffer_cube_Focus;
+
+				std::vector<float> cubeProperties;
+				// Four property x = Bubble Point Pressure
+				//               y = Pressure
+				//	         z = Porosity
+				//               w = Modified Block Volume
+					GLuint vertexBuffer_cube_properties;
+
+			std::vector<float>           cuboids;
+			GLint			     cuboids_size;
+
+				/// -- Shell / Fracture Geometry
+
+			// Face in Interleaved VertexBuffer
+			// Use same layout location as vertexArray
+
+				// 1 Vertex Array
+				GLuint vertexArray_faces;
+				// 1 Vertex Buffer
+				GLuint vertexBuffer_face_geometry;
+
+				std::vector<float> facesColor;
+				/// vec4 (R, G, B , 0 );
+					GLuint vertexBuffer_face_color;
+				std::vector<float> faces_IJK;
+				/// vec4 (R, G, B , 0 );
+					GLuint vertexBuffer_face_IJK;
+				std::vector<float> faces_type;
+				/// vec4 ( isShell, isFault, 0.0 , 0.0 );
+					GLuint vertexBuffer_face_type;
+
+				std::vector<float> facesProperty;
+				// Four property x = Bubble Point Pressure
+				//               y = Pressure
+				//	         z = Porosity
+				//               w = Modified Block Volume
+					GLuint vertexBuffer_face_properties;
+
+			std::vector<float>      faces;
+			GLint 			faces_size;
+
+
+			bool isInitialized;
+
+
+
 		public:
 
 			CornerPointGrid ( );
 
 			virtual ~CornerPointGrid ( );
+
+			void initialize ( );
 
 			// Using Charles IRESv2
 			void openIRES_Version_2 ( const std::string& filename );

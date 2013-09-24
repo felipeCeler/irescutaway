@@ -1,39 +1,18 @@
-//#version 420
-//
-//in vec3 normal;
-//in vec4 color;
-//
-//out vec4 fragmentColor;
-////
-////
-//void main ( void )
-//{
-//	fragmentColor = vec4 ( color );
-//}
-#version 430
-
-////in  float angle;
-//uniform  vec3 lightDirection;
-//
-//
-//in vec3 normal;
-//in vec4 color;
-
-
-noperspective in vec4 dist;
+#version 430 core
 
 in VertexData
 {
-    vec4 vertice;
-    vec4 color;
-    vec4 normal;
-
+	vec4 vertice;
+   flat vec4 normal;
+	vec4 color;
 } VertexIn;
 
-flat out vec4 fragmentColor;
+noperspective in vec4 dist;
 
 uniform int num_lights;
 uniform vec3 lights[4];
+
+out vec4 fragmentColor;
 
 void main(void)
 {

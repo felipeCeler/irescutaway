@@ -6,6 +6,7 @@
 /// Celer::Libraries
 	/// OpenGL
 #include <GL/glew.h>
+#include <IRES/CornerPointGrid.hpp>
 
 /// LCG Libary
 #include <shaderlib/trackball.hpp>
@@ -33,7 +34,6 @@
 #include <QtCore/QTime>
 #include <QtCore/QElapsedTimer>
 
-#include <IRES/CornerPointGrid.hpp>
 
 class GLWidget: public QGLWidget
 {
