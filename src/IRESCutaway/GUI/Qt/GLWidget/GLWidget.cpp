@@ -64,25 +64,12 @@ void GLWidget::initializeGL ( )
 	lights.push_back ( Eigen::Vector3f ( 0.0 , 1.0 , 0.0 ) );
 
 
-	// Cuboid
-	glGenVertexArrays ( 1, &vertexArray_cuboid );
-		glGenBuffers  ( 1, &vertexBuffer_cuboid ); 	     // Geometry
-		glGenBuffers  ( 1, &vertexBuffer_cube_color  );      // Property Color
-		glGenBuffers  ( 1, &vertexBuffer_cube_IJK  );        // Cube IJK
-		glGenBuffers  ( 1, &vertexBuffer_cube_properties  ); // Cube Property
-
-	// Face Features
-	glGenVertexArrays ( 1, &vertexArray_faceFeature );
-		glGenBuffers ( 1, &vertexBuffer_faceFeature );    // Geometry
-		glGenBuffers ( 1, &vertexBuffer_faceColor );      // Property Color
-		glGenBuffers ( 1, &vertexBuffer_faceIJK );        // Face IJK
-		glGenBuffers ( 1, &vertexBuffer_faceProperties ); // Face Properties
-
 	draw_secondary = 1;
 	draw_primary = 0;
 
-	isRawApproach	      = 0;
-	isIRESApproach        = 0;
+	isRawModel_	      = 1;
+	isIRESCutaway_        = 0;
+	isTextureViewer_      = 0;
 
 	cluster = 0;
 
@@ -118,10 +105,6 @@ void GLWidget::initializeGL ( )
 	meanFilter = new MeanFilter( "Gaussian blur");
 	meanFilter->resize(width(), height());
 
-	properties_name[0] = "Bubble Point Pressure";
-	properties_name[1] = "Pressure";
-	properties_name[2] = "Porosity";
-	properties_name[3] = "Modified Block Volume";
 
 	loadShaders ( );
 
@@ -130,7 +113,7 @@ void GLWidget::initializeGL ( )
 	picture = new Mesh( );
 	picture->createQuad( );
 
-	reservoir_model_.initialize( );
+	reservoir_model_.createBuffers( );
 
 }
 
@@ -222,7 +205,7 @@ void GLWidget::changePropertyRange ( const double& minRange, const double& maxRa
 	min_range = minRange;
 	max_range = maxRange;
 
-	current_property = property_index;
+	reservoir_model_.current_property = property_index;
 
 	dynamic_ = true;
 
@@ -235,97 +218,15 @@ void GLWidget::changeProperty ( int property_index )
 
 	std::cout << "Changing the property to : " << reservoir_model_.static_porperties[property_index].name << std::endl;
 
-	float min = min_value[property_index];
-	float max = max_value[property_index];
+	float min = reservoir_model_.min_value[property_index];
+	float max = reservoir_model_.max_value[property_index];
 
 	std::cout << "Property Max : " << min << std::endl;
 	std::cout << "Property Min : " << max << std::endl;
 
-	current_property = property_index;
+	reservoir_model_.current_property = property_index;
 
 }
-
-void GLWidget::loadProperties( )
-{
-
-	// Four property x = Bubble Point Pressure
-	//               y = Pressure
-	//	         z = Porosity
-	//               w = Modified Block Volume
-
-	for ( std::size_t property_index = 0; property_index < reservoir_model_.static_porperties.size( ); property_index++ )
-	{
-		if ( properties_name[0].compare( reservoir_model_.static_porperties[property_index].name ) == 0 )
-		{
-			std::cout << "Bubble -> " << reservoir_model_.static_porperties[property_index].name << std::endl;
-			min_value[0] =  reservoir_model_.static_porperties[property_index].min_;
-			max_value[0] =  reservoir_model_.static_porperties[property_index].max_;
-			indices[0] = property_index;
-		}
-		if ( properties_name[1].compare( reservoir_model_.static_porperties[property_index].name ) == 0 )
-		{
-			std::cout << "Pressure -> " << reservoir_model_.static_porperties[property_index].name << std::endl;
-			min_value[1] =  reservoir_model_.static_porperties[property_index].min_;
-			max_value[1] =  reservoir_model_.static_porperties[property_index].max_;
-			indices[1] = property_index;
-		}
-		if ( properties_name[2].compare( reservoir_model_.static_porperties[property_index].name ) == 0 )
-		{
-			std::cout << "Porosity -> " << reservoir_model_.static_porperties[property_index].name << std::endl;
-			min_value[2] =  reservoir_model_.static_porperties[property_index].min_;
-			max_value[2] =  reservoir_model_.static_porperties[property_index].max_;
-			indices[2] = property_index;
-		}
-		if ( properties_name[3].compare( reservoir_model_.static_porperties[property_index].name ) == 0 )
-		{
-			std::cout << "Volume -> " << reservoir_model_.static_porperties[property_index].name << std::endl;
-			min_value[3] =  reservoir_model_.static_porperties[property_index].min_;
-			max_value[3] =  reservoir_model_.static_porperties[property_index].max_;
-			indices[3] = property_index;
-		}
-	}
-
-	current_property = 0;
-
-	int index = 0;
-
-	for ( std::size_t i = 0; i < reservoir_model_.blocks.size( ); i++)
-	{
-		if ( reservoir_model_.blocks[i].valid )
-		{
-			cubeProperties[index]   = reservoir_model_.blocks[i].static_porperties[indices[0]].value_;
-			cubeProperties[index+1] = reservoir_model_.blocks[i].static_porperties[indices[1]].value_;
-			cubeProperties[index+2] = reservoir_model_.blocks[i].static_porperties[indices[2]].value_;
-			cubeProperties[index+3] = reservoir_model_.blocks[i].static_porperties[indices[3]].value_;
-			index += 4;
-		}
-		else
-		{
-			continue;
-		}
-	}
-
-	for ( std::size_t shell_index = 0; shell_index < reservoir_model_.list_of_block_id.size() ; shell_index++ )
-	{
-		facesFeatureProperties[shell_index*4]   = cubeProperties[reservoir_model_.list_of_block_id[shell_index]*4];
-		facesFeatureProperties[shell_index*4+1] = cubeProperties[reservoir_model_.list_of_block_id[shell_index]*4+1];
-		facesFeatureProperties[shell_index*4+2] = cubeProperties[reservoir_model_.list_of_block_id[shell_index]*4+2];
-		facesFeatureProperties[shell_index*4+3] = cubeProperties[reservoir_model_.list_of_block_id[shell_index]*4+3];
-	}
-
-	// Cuboid
-	glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer_cube_properties);
-	glBufferData ( GL_ARRAY_BUFFER , cubeProperties.size( ) * sizeof(cubeProperties[0]) , &cubeProperties[0] , GL_STATIC_DRAW );
-	glBindBuffer( GL_ARRAY_BUFFER, 0);
-
-	// FaceFeature
-	glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer_faceProperties );
-	glBufferData ( GL_ARRAY_BUFFER , facesFeatureProperties.size( ) * sizeof(facesFeatureProperties[0]) , &facesFeatureProperties[0] , GL_STATIC_DRAW );
-	glBindBuffer( GL_ARRAY_BUFFER, 0);
-
-
-}
-
 void GLWidget::changeIJK ( const int& min_i, const int& max_i,
                            const int& min_j, const int& max_j,
                            const int& min_k, const int& max_k )
@@ -397,226 +298,11 @@ void GLWidget::changeMinK ( const int& value )
 void GLWidget::openIRESCharles( const std::string& filename )
 {
 
-	reservoir_model_.openIRES_Version_2( filename );
+	reservoir_model_.openIRES( filename );
 
-	if ( reservoir_model_.blocks.size( ) > 0 )
+	if ( reservoir_model_.isOpen( ) )
 	{
-		cuboids.clear();
-		cubeColor.clear( );
-		cubeIJK.clear( );
-		cubeFocus.clear( );
-
-		facesFeature.clear();
-
-		// Geometry
-		facesFeature.resize ( reservoir_model_.list_of_block_id.size ( ) * 16 );
-		// Attributes
-		facesFeatureColors.resize ( reservoir_model_.list_of_block_id.size ( ) * 4 );
-		facesFeatureIJK.resize ( reservoir_model_.list_of_block_id.size ( ) * 4 );
-		facesFeatureType.resize ( reservoir_model_.list_of_block_id.size ( ) * 4  );
-		facesFeatureProperties.resize ( reservoir_model_.list_of_block_id.size ( ) * 4 );
-
-		facesFeature_size = 0;
-
-		for ( std::size_t i = 0; i < reservoir_model_.list_of_block_id.size( ) ; i++)
-		{
-			facesFeature[i*16] = reservoir_model_.list_of_vertex_geometry_a[i*3];
-			facesFeature[i*16+1] = reservoir_model_.list_of_vertex_geometry_a[i*3+1];
-			facesFeature[i*16+2] = reservoir_model_.list_of_vertex_geometry_a[i*3+2];
-			facesFeature[i*16+3] = 1.0f;
-
-			facesFeature[i*16+4] = reservoir_model_.list_of_vertex_geometry_b[i*3];
-			facesFeature[i*16+5] = reservoir_model_.list_of_vertex_geometry_b[i*3+1];
-			facesFeature[i*16+6] = reservoir_model_.list_of_vertex_geometry_b[i*3+2];
-			facesFeature[i*16+7] = 1.0f;
-
-			facesFeature[i*16+8] = reservoir_model_.list_of_vertex_geometry_c[i*3];
-			facesFeature[i*16+9] = reservoir_model_.list_of_vertex_geometry_c[i*3+1];
-			facesFeature[i*16+10] = reservoir_model_.list_of_vertex_geometry_c[i*3+2];
-			facesFeature[i*16+11] = 1.0f;
-
-			facesFeature[i*16+12] = reservoir_model_.list_of_vertex_geometry_d[i*3];
-			facesFeature[i*16+13] = reservoir_model_.list_of_vertex_geometry_d[i*3+1];
-			facesFeature[i*16+14] = reservoir_model_.list_of_vertex_geometry_d[i*3+2];
-			facesFeature[i*16+15] = 1.0f;
-
-			facesFeatureColors[i*4]   = 1.0f;
-			facesFeatureColors[i*4+1] = 0.0f;
-			facesFeatureColors[i*4+2] = 0.0f;
-			facesFeatureColors[i*4+3] = 1.0f;
-
-			facesFeatureIJK[i*4]   = 1.0f;
-			facesFeatureIJK[i*4+1] = 0.0f;
-			facesFeatureIJK[i*4+2] = 0.0f;
-			facesFeatureIJK[i*4+3] = 1.0f;
-
-			facesFeatureType[i*4]   = reservoir_model_.list_of_block_flag[i];
-			facesFeatureType[i*4+1] = reservoir_model_.list_of_block_flag[i];
-			facesFeatureType[i*4+2] = reservoir_model_.list_of_block_flag[i];
-			facesFeatureType[i*4+3] = 1.0f;
-
-			facesFeature_size++;
-
-		}
-
-		std::cout << " Face Interleaved = " << reservoir_model_.list_of_block_id.size() << std::endl;
-
-		cuboids.resize        ( reservoir_model_.blocks.size( ) * 32 );
-		cubeColor.resize      ( reservoir_model_.blocks.size( ) * 4  );
-		cubeIJK.resize        ( reservoir_model_.blocks.size( ) * 4  );
-		cubeFocus.resize      ( reservoir_model_.blocks.size( ) * 4  );
-		cubeProperties.resize ( reservoir_model_.blocks.size( ) * 4  );
-
-		int index     = 0;
-		int index_x32 = 0;
-		cuboids_size  = 0;
-
-		for ( std::size_t i = 0; i < reservoir_model_.blocks.size( ) ; i++)
-		{
-
-			if ( reservoir_model_.blocks[i].valid )
-			{
-				// @link http://www.cplusplus.com/reference/iterator/back_inserter/
-				//std::copy ( reservoir_model_.blocks[i].vertices.begin(), reservoir_model_.blocks[i].vertices.end(), std::back_inserter(cuboids) );
-
-				for ( int vertex_index = 0; vertex_index < 32 ;vertex_index++)
-				{
-					cuboids[index_x32 + vertex_index] =  reservoir_model_.blocks[i].vertices[vertex_index];
-					//std::cout << "Values : " <<  reservoir_model_.blocks[i].vertices[vertex_index] << std::endl;
-
-				}
-
-				cubeColor[index]   = 1.0f;
-				cubeColor[index+1] = 0.0f;
-				cubeColor[index+2] = 0.0f;
-				cubeColor[index+3] = 1.0f;
-
-				cubeIJK[index]   = reservoir_model_.blocks[i].IJK[0];
-				cubeIJK[index+1] = reservoir_model_.blocks[i].IJK[1];
-				cubeIJK[index+2] = reservoir_model_.blocks[i].IJK[2];
-				cubeIJK[index+3] = reservoir_model_.blocks[i].IJK[3];
-
-				cubeFocus[index]   = 1.0f;
-				cubeFocus[index+1] = 0.0f;
-				cubeFocus[index+2] = 0.0f;
-				cubeFocus[index+3] = 1.0f;
-
-				index += 4;
-				index_x32 += 32;
-				cuboids_size++;
-
-			}
-			else
-			{
-
-			}
-		}
-		cuboids.resize (index_x32);
-		cubeColor.resize(index);
-		cubeFocus.resize(index);
-		cubeIJK.resize(index);
-
-		changeProperty(0);
-
-		max_I_ = 0;
-		min_I_ = 0;
-		max_J_ = 0;
-		min_J_ = 0;
-		max_K_ = 0;
-		min_K_ = 0;
-
-
-		// trackball_->translateModelMatrix( Eigen::Vector3f(reservoir_model_.box_v2.center ( ).x,reservoir_model_.box_v2.center ( ).y,reservoir_model_.box_v2.center ( ).z));
-
-		glBindVertexArray ( vertexArray_cuboid );
-
-                        glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer_cuboid );
-                        glBufferData ( GL_ARRAY_BUFFER , cuboids.size( ) * sizeof(cuboids[0]) , &cuboids[0] , GL_STATIC_DRAW );
-
-                        int size_of_vertice = 4 * sizeof(float);
-                        int size_of_struct  = 8 * size_of_vertice;
-
-
-                        //http://www.opengl.org/wiki/Vertex_Specification
-                        for ( int location = 0 ; location < 8 ; location++)
-                        {
-                                glEnableVertexAttribArray(location);
-                                glVertexAttribPointer(location, 4, GL_FLOAT, GL_FALSE, size_of_struct , reinterpret_cast<void*>(size_of_vertice * location));
-                        }
-
-                        glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer_cube_color);
-                        glBufferData ( GL_ARRAY_BUFFER , cubeColor.size( ) * sizeof(cubeColor[0]) , &cubeColor[0] , GL_STATIC_DRAW );
-
-                        glEnableVertexAttribArray(8);
-                        glVertexAttribPointer(8, 4, GL_FLOAT, GL_FALSE, 0, 0);
-
-                        glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer_cube_IJK);
-                        glBufferData ( GL_ARRAY_BUFFER , cubeIJK.size( ) * sizeof(cubeIJK[0]) , &cubeIJK[0] , GL_STATIC_DRAW );
-
-                        glEnableVertexAttribArray(9);
-                        glVertexAttribPointer(9, 4, GL_FLOAT, GL_FALSE, 0, 0);
-
-                        glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer_cube_Focus);
-                        glBufferData ( GL_ARRAY_BUFFER , cubeFocus.size( ) * sizeof(cubeFocus[0]) , &cubeFocus[0] , GL_STATIC_DRAW );
-
-                        glEnableVertexAttribArray(10);
-                        glVertexAttribPointer(10, 4, GL_FLOAT, GL_FALSE, 0, 0);
-
-                        glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer_cube_properties);
-                        glBufferData ( GL_ARRAY_BUFFER , cubeProperties.size( ) * sizeof(cubeProperties[0]) , &cubeProperties[0] , GL_STATIC_DRAW );
-
-                        glEnableVertexAttribArray(11);
-                        glVertexAttribPointer(11, 4, GL_FLOAT, GL_FALSE, 0, 0);
-
-
-                glBindVertexArray(0);
-
-                /// FacesFeatures
-
-		glBindVertexArray ( vertexArray_faceFeature );
-
-                        glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer_faceFeature );
-                        glBufferData ( GL_ARRAY_BUFFER , facesFeature.size( ) * sizeof(facesFeature[0]) , &facesFeature[0] , GL_STATIC_DRAW );
-
-                        int size_of_vertice_face = 4 * sizeof(float);
-                        int size_of_struct_face  = 4 * size_of_vertice_face;
-
-                        //http://www.opengl.org/wiki/Vertex_Specification
-                        for ( int location = 0 ; location < 4 ; location++)
-                        {
-                                glEnableVertexAttribArray(location);
-                                glVertexAttribPointer(location, 4, GL_FLOAT, GL_FALSE, size_of_struct_face , reinterpret_cast<void*>(size_of_vertice_face * location));
-                        }
-
-                        glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer_faceType);
-                        glBufferData ( GL_ARRAY_BUFFER , facesFeatureType.size( ) * sizeof(facesFeatureType[0]) , &facesFeatureType[0] , GL_STATIC_DRAW );
-
-                        glEnableVertexAttribArray(4);
-                        glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, 0, 0);
-
-                        glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer_faceColor);
-                        glBufferData ( GL_ARRAY_BUFFER , facesFeatureColors.size( ) * sizeof(facesFeatureColors[0]) , &facesFeatureColors[0] , GL_STATIC_DRAW );
-
-                        glEnableVertexAttribArray(5);
-                        glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, 0, 0);
-
-                        glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer_faceIJK);
-                        glBufferData ( GL_ARRAY_BUFFER , facesFeatureIJK.size( ) * sizeof(facesFeatureIJK[0]) , &facesFeatureIJK[0] , GL_STATIC_DRAW );
-
-                        glEnableVertexAttribArray(6);
-                        glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, 0, 0);
-
-                        glBindBuffer( GL_ARRAY_BUFFER, vertexBuffer_faceProperties);
-                        glBufferData ( GL_ARRAY_BUFFER , facesFeatureProperties.size( ) * sizeof(facesFeatureProperties[0]) , &facesFeatureProperties[0] , GL_STATIC_DRAW );
-
-                        glEnableVertexAttribArray(7);
-                        glVertexAttribPointer(7, 4, GL_FLOAT, GL_FALSE, 0, 0);
-
-                glBindVertexArray(0);
-
 		isIRESOpen_ = 1;
-
-		loadProperties();
 	}
 	else
 	{
@@ -662,9 +348,9 @@ void GLWidget::drawCutawaySurface ( )
 
 		BoundingBoxInitializationLCG->setUniform("min_range", min_range  );
 		BoundingBoxInitializationLCG->setUniform("max_range", max_range  );
-		BoundingBoxInitializationLCG->setUniform("min_property", min_value[current_property]  );
-		BoundingBoxInitializationLCG->setUniform("max_property", max_value[current_property]  );
-		BoundingBoxInitializationLCG->setUniform("property_index", current_property );
+		BoundingBoxInitializationLCG->setUniform("min_property", reservoir_model_.min_value[reservoir_model_.current_property]  );
+		BoundingBoxInitializationLCG->setUniform("max_property", reservoir_model_.max_value[reservoir_model_.current_property]  );
+		BoundingBoxInitializationLCG->setUniform("property_index", reservoir_model_.current_property );
 
 		BoundingBoxInitializationLCG->setUniform( "x" , volume_width );
 		BoundingBoxInitializationLCG->setUniform( "y" , volume_height );
@@ -675,9 +361,7 @@ void GLWidget::drawCutawaySurface ( )
 		BoundingBoxInitializationLCG->setUniform ("freeze", freezeView_ );
 		BoundingBoxInitializationLCG->setUniform ("FreezeViewMatrix",freeze_viewmatrix_.data ( ),4, GL_FALSE, 1 );
 
-		glBindVertexArray ( vertexArray_cuboid );
-		glDrawArrays ( GL_POINTS , 0 , cuboids_size );
-		glBindVertexArray ( 0 );
+		reservoir_model_.drawCuboid ( );
 
 		BoundingBoxInitializationLCG->disable( );
 
@@ -714,9 +398,9 @@ void GLWidget::drawSecundary ( )
 
 	shellLCG->setUniform ( "normals" , depthFBO->bindAttachment(1) );
 
-	shellLCG->setUniform("min_property", min_value[current_property]  );
-	shellLCG->setUniform("max_property", max_value[current_property]  );
-	shellLCG->setUniform("property_index", current_property );
+	shellLCG->setUniform("min_property", reservoir_model_.min_value[reservoir_model_.current_property]  );
+	shellLCG->setUniform("max_property", reservoir_model_.max_value[reservoir_model_.current_property]  );
+	shellLCG->setUniform("property_index", reservoir_model_.current_property );
 
 	shellLCG->setUniform("num_lights", (GLint) lights.size ( )  );
 	shellLCG->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
@@ -726,9 +410,7 @@ void GLWidget::drawSecundary ( )
 	shellLCG->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
 	shellLCG->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
 
-	glBindVertexArray ( vertexArray_faceFeature );
-	glDrawArrays ( GL_POINTS , 0 , facesFeature_size );
-	glBindVertexArray ( 0 );
+	reservoir_model_.drawFace();
 
 	shellLCG->disable( );
 
@@ -743,9 +425,9 @@ void GLWidget::drawSecundary ( )
 
 	BoundingBoxCutawayLCG->setUniform( "normals" , depthFBO->bindAttachment(1) );
 
-	BoundingBoxCutawayLCG->setUniform("min_property", min_value[current_property]  );
-	BoundingBoxCutawayLCG->setUniform("max_property", max_value[current_property]  );
-	BoundingBoxCutawayLCG->setUniform("property_index", current_property );
+	BoundingBoxCutawayLCG->setUniform("min_property", reservoir_model_.min_value[reservoir_model_.current_property]  );
+	BoundingBoxCutawayLCG->setUniform("max_property", reservoir_model_.max_value[reservoir_model_.current_property]  );
+	BoundingBoxCutawayLCG->setUniform("property_index", reservoir_model_.current_property );
 
 	BoundingBoxCutawayLCG->setUniform("num_lights", (GLint) lights.size ( )  );
 	BoundingBoxCutawayLCG->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
@@ -758,9 +440,7 @@ void GLWidget::drawSecundary ( )
 	BoundingBoxCutawayLCG->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
 	BoundingBoxCutawayLCG->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
 
-	glBindVertexArray ( vertexArray_cuboid );
-	glDrawArrays ( GL_POINTS , 0 , cuboids_size );
-	glBindVertexArray ( 0 );
+	reservoir_model_.drawCuboid ( );
 
 	BoundingBoxCutawayLCG->enable( );
 
@@ -787,17 +467,16 @@ void GLWidget::drawPrimary( )
 
 	primaryLCG->setUniform("min_range", min_range  );
 	primaryLCG->setUniform("max_range", max_range  );
-	primaryLCG->setUniform("min_property", min_value[current_property]  );
-	primaryLCG->setUniform("max_property", max_value[current_property]  );
-	primaryLCG->setUniform("property_index", current_property );
+
+	primaryLCG->setUniform("min_property", reservoir_model_.min_value[reservoir_model_.current_property]  );
+	primaryLCG->setUniform("max_property", reservoir_model_.max_value[reservoir_model_.current_property]  );
+	primaryLCG->setUniform("property_index", reservoir_model_.current_property );
 
 	primaryLCG->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
 	primaryLCG->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
 	primaryLCG->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
 
-	glBindVertexArray ( vertexArray_faceFeature );
-	glDrawArrays ( GL_POINTS , 0 , facesFeature.size ( ) / 16 );
-	glBindVertexArray ( 0 );
+	reservoir_model_.drawFace();
 
 
 	primaryLCG->disable( );
@@ -817,17 +496,17 @@ void GLWidget::paintGL ( )
 
 	if ( isIRESOpen_ )
 	{
-		if ( isRawApproach )
+		if ( isRawModel_ )
 		{
-			RawCutaway ( cluster );
+			rawModel();
 		}
-		else if ( isIRESApproach )
+		else if ( isIRESCutaway_ )
 		{
 			IRESCutaway ( );
 		}
 		else
 		{
-			NoCutaway ( );
+			textureViewer( );
 		}
 
 		//trackball_->render();
@@ -845,7 +524,7 @@ void GLWidget::paintGL ( )
 //
 //}
 
-void GLWidget::NoCutaway ( )
+void GLWidget::rawModel ( )
 {
         glClearColor ( 1.0 , 1.0 , 1.0 , 1.0 );
         glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
@@ -867,9 +546,9 @@ void GLWidget::NoCutaway ( )
         rawShellLCG->setUniform("xtoon_texture", 3  );
         rawShellLCG->setUniform("viewportSize", width(), height() );
 
-	rawShellLCG->setUniform("min_property", min_value[current_property]  );
-	rawShellLCG->setUniform("max_property", max_value[current_property]  );
-	rawShellLCG->setUniform("property_index", current_property );
+	rawShellLCG->setUniform("min_property", reservoir_model_.min_value[reservoir_model_.current_property]  );
+	rawShellLCG->setUniform("max_property", reservoir_model_.max_value[reservoir_model_.current_property]  );
+	rawShellLCG->setUniform("property_index", reservoir_model_.current_property );
 
 	rawShellLCG->setUniform("num_lights", (GLint) lights.size ( )  );
 	rawShellLCG->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
@@ -879,9 +558,7 @@ void GLWidget::NoCutaway ( )
 	rawShellLCG->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
 	rawShellLCG->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
 
-	glBindVertexArray ( vertexArray_faceFeature );
-	glDrawArrays ( GL_POINTS , 0 , facesFeature.size ( ) / 16 );
-	glBindVertexArray ( 0 );
+	reservoir_model_.drawFace();
 
 	rawShellLCG->disable( );
 
@@ -891,7 +568,7 @@ void GLWidget::NoCutaway ( )
 
 }
 
-void GLWidget::RawCutaway ( int cluster )
+void GLWidget::IRESCutaway (  )
 {
 
 //	/// FIXME Conditions  - Primary and Secondary well defined.
@@ -919,7 +596,7 @@ void GLWidget::RawCutaway ( int cluster )
 
 }
 
-void GLWidget::IRESCutaway ( )
+void GLWidget::textureViewer ( )
 {
 //        /// FIXME Conditions  - Just the model opened.
 //
@@ -1218,14 +895,14 @@ void GLWidget::wheelEvent ( QWheelEvent *event )
 
 void GLWidget::setPrimaryVisibility( bool visibility )
 {
-	if ( cuboids.size() > 0 )
+	if ( reservoir_model_.cuboids.size() > 0 )
 		draw_primary = visibility;
 	updateGL();
 }
 
 void GLWidget::setSecondaryVisibility( bool visibility )
 {
-	if ( cuboids.size() > 0 )
+	if ( reservoir_model_.cuboids.size() > 0 )
 		draw_secondary = visibility;
 	updateGL();
 }

@@ -45,17 +45,11 @@ class GLWidget: public QGLWidget
 
 		IRES::CornerPointGrid reservoir_model_;
 
-		// GPU load Properties
-
-		std::string properties_name[4];
-		std::size_t indices[4];
-		float min_value[4];
-		float max_value[4];
 
 		float min_range;
 		float max_range;
 
-		int current_property;
+
 
 		// From QGLWidget
 		explicit GLWidget ( const QGLFormat& format , QWidget* parent = 0 , const QGLWidget* shareWidget = 0 , Qt::WindowFlags f = 0 );
@@ -107,15 +101,13 @@ class GLWidget: public QGLWidget
 
 		bool dynamic() { return dynamic_; }
 
-		void NoCutaway          ( );
-		void RawCutaway         ( int cluster );
+		void rawModel           ( );
+		void textureViewer      ( );
 		void IRESCutaway      	( );
-		void loadProperties     ( );
-		void updateCluster      ( int i ) { cluster = i; updateGL();}
 
-		void setNoCutawayVisibility     ( bool visibility ) { isNoCutaway      = visibility; updateGL();}
-		void setRawCutawayVisibility    ( bool visibility ) { isRawApproach    = visibility; updateGL();}
-		void setIRESCutawayVisibility   ( bool visibility ) {   isIRESApproach = visibility; updateGL();}
+		void setTextureViewerVisibility ( bool visibility ) { isTextureViewer_ = visibility; updateGL();}
+		void setRawModelVisibility      ( bool visibility ) { isRawModel_     = visibility; updateGL();}
+		void setIRESCutawayVisibility   ( bool visibility ) { isIRESCutaway_  = visibility; updateGL();}
 
 		void freezeView ( );
 
@@ -161,9 +153,9 @@ private:
 	int fps;
 
 	/// -- RENDERING Stuffs  ----------------------------------------------
-	bool  isNoCutaway;
-	bool  isRawApproach;
-	bool  isIRESApproach;
+	bool  isTextureViewer_;
+	bool  isRawModel_;
+	bool  isIRESCutaway_;
 
 	bool draw_secondary;
 	bool draw_primary;
@@ -189,63 +181,6 @@ private:
 
 	// Cube in Interleaved VertexBuffer
 	// Use same layout location as vertexArray
-
-	// 1 Vertex Array
-	GLuint vertexArray_cuboid;
-	// 1 Vertex Buffer with 8 vertex which define a Cuboid
-	GLuint vertexBuffer_cuboid;
-
-
-	std::vector<float>           cuboids;
-	GLint			     cuboids_size;
-
-	std::vector<float> cubeColor;
-	/// vec4 (R, G, B , 0 );
-		GLuint vertexBuffer_cube_color;
-	std::vector<float> cubeIJK;
-	/// vec4 (I, J, K , 0 );
-		GLuint vertexBuffer_cube_IJK;
-	std::vector<float> cubeFocus;
-	/// vec4 (Primary/Secondary , Active  ,0.0 , 0.0);
-		GLuint vertexBuffer_cube_Focus;
-
-	std::vector<float> cubeProperties;
-	// Four property x = Bubble Point Pressure
-	//               y = Pressure
-	//	         z = Porosity
-	//               w = Modified Block Volume
-		GLuint vertexBuffer_cube_properties;
-
-	/// -- Shell / Fracture Geometry
-
-	// Face in Interleaved VertexBuffer
-	// Use same layout location as vertexArray
-
-	// 1 Vertex Array
-	GLuint vertexArray_faceFeature;
-	// 1 Vertex Buffer
-	GLuint vertexBuffer_faceFeature;
-
-
-	std::vector<float> facesFeatureColors;
-	/// vec4 (R, G, B , 0 );
-		GLuint vertexBuffer_faceColor;
-	std::vector<float> facesFeatureIJK;
-	/// vec4 (R, G, B , 0 );
-		GLuint vertexBuffer_faceIJK;
-	std::vector<float> facesFeatureType;
-	/// vec4 ( isShell, isFault, 0.0 , 0.0 );
-		GLuint vertexBuffer_faceType;
-
-	std::vector<float> facesFeatureProperties;
-	// Four property x = Bubble Point Pressure
-	//               y = Pressure
-	//	         z = Porosity
-	//               w = Modified Block Volume
-			GLuint vertexBuffer_faceProperties;
-
-	std::vector<float>      facesFeature;
-	GLint 			facesFeature_size;
 
         bool enable_blend_;
 

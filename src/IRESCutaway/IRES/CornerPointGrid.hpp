@@ -8,7 +8,7 @@
 #ifndef CORNERPOINTGRID_HPP_
 #define CORNERPOINTGRID_HPP_
 
-	/// OpenGL
+/// OpenGL
 #include <GL/glew.h>
 
 #include <iostream>
@@ -19,63 +19,21 @@
 #include <cctype>
 #include <ctime>
 
-
 // IRES Classes
 #include <IRES/Block.hpp>
 
 /// Ires Library
 #include <ires/ires.h>
 
-
 namespace IRES
 {
 
-	//! Corner Point Geometry and Properties from - � Computer Modelling Group | CMG.
-	/*!
-	 * What is Corner Point Grid ...
-	 *
-	 * What the meaning of this class ...
-	 *
-	 * WTF I'm just read ...
-	 */
-
 	// LORE - Its data come from *.ires
-	//
+
 	class CornerPointGrid
 	{
 
-
 		public:
-
-
-			struct TheHeader
-			{
-
-					float ires_version;
-
-					char first_title_[64];
-					char second_title_[64];
-					char thirt_title_[64];
-					char caseID[64];
-					char simulation_type[64];
-					char run_date[64];
-
-					int number_of_Time_Steps;
-					int number_of_Blocks;
-					int number_of_Dynamic_Properties;
-					int number_of_Static_Properties;
-					int number_of_Wells;
-					int number_of_Vertices;
-					int number_of_Blocks_Doubles; // What's the meaning of this.
-					int number_of_Blocks_in_I_Direction;
-					int number_of_Blocks_in_J_Direction;
-					int number_of_Blocks_in_K_Direction;
-					int number_of_Fault_Surfaces;
-					int number_of_Well_Properties;
-					int well_Properties_Size; // Wired.
-
-			};
-
 
 			struct Static_Property
 			{
@@ -107,85 +65,9 @@ namespace IRES
 
 			};
 
-			// TODO Really confused !! Now It's Totally confused.
-			// Building the structure of wells using Nicole's Presentation as guide !
-			struct Well_Data
-			{
 
-					struct Perforated_Block
-					{
-							std::string name_;
-							// Can be open, closed, etc ...
-							std::string status_;
-							// Index of the Blocks intersected by the Well line.
-							int perforated_Block_Index_;
-
-							bool has_entry_exit_;
-
-							double entry_x_;
-							double entry_y_;
-							double entry_z_;
-
-							double exit_x_;
-							double exit_y_;
-							double exit_z_;
-
-							int I_;
-							int J_;
-							int K_;
-
-							double lenght_;
-
-							float fraction_;
-
-					};
-
-
-					std::string 	name_;
-					std::string 	type_;
-					int		well_number_;
-					// Can be Producer or Injector
-
-					// Number of Block which is intersected by the Well line.
-					// FIXME Number of Entries ?
-					int number_of_Perforated_Blocks_;
-
-					// Control points of the Well. ( index of the block and 3D point )
-					std::vector<std::pair<int, double >  > tractory_;
-
-					// For each well, property and on a specific time, get the data.
-					// FIXME That data comes from a perforated block.
-					std::vector<std::pair<int, std::pair<int, float> > > values_;
-
-					// FIXME How to ready that data
-					// As Charles explain me. But still get hard !!
-
-			};
-
-
-			TheHeader 				header_;
-
-			std::vector<int>	 		number_of_fault_lines;
-
-			std::vector<CornerPointGrid::Dynamic_Property> 	dynamic_properties;
-			std::vector<CornerPointGrid::Static_Property> 	static_porperties;
-
-			// Well Data
-			std::vector<std::string> 		well_names;
-			std::vector<std::string> 		well_status;
-			std::vector<std::string> 		well_types;
-
-			std::vector<std::string> 		well_properties_names;
-			std::vector<std::string> 		well_properties_units;
-			std::vector<std::string> 		well_properties_components;
-
-			std::vector<Well_Data> 			wells;
-
-			std::vector<double > 			vertices;
-
-			std::vector<int> 			block_indices;
-
-			std::vector<IRES::Block>                blocks;
+			std::vector<CornerPointGrid::Dynamic_Property> dynamic_properties;
+			std::vector<CornerPointGrid::Static_Property> static_porperties;
 
 			std::vector<ires::U32> list_of_vertex_indice;
 			std::vector<ires::F32> list_of_vertex_geometry_a;
@@ -200,7 +82,6 @@ namespace IRES
 
 			std::vector<ires::F32> list_of_vertex_geometry_charles;
 
-
 			/// About IRES Geometry Information
 
 			// Cube in Interleaved VertexBuffer
@@ -211,60 +92,61 @@ namespace IRES
 			// 1 Vertex Buffer with 8 vertex which define a Cuboid
 			GLuint vertexBuffer_cuboid_geometry;
 
-				std::vector<float> cubeColor;
-				/// vec4 (R, G, B , 0 );
-					GLuint vertexBuffer_cube_color;
-				std::vector<float> cubeIJK;
-				/// vec4 (I, J, K , 0 );
-					GLuint vertexBuffer_cube_IJK;
-				std::vector<float> cubeFocus;
-				/// vec4 (Primary/Secondary , Active  ,0.0 , 0.0);
-					GLuint vertexBuffer_cube_Focus;
+			std::vector<float> cubeColor;
+			/// vec4 (R, G, B , 0 );
+			GLuint vertexBuffer_cube_color;
+			std::vector<float> cubeIJK;
+			/// vec4 (I, J, K , 0 );
+			GLuint vertexBuffer_cube_IJK;
+			std::vector<float> cubeFocus;
+			/// vec4 (Primary/Secondary , Active  ,0.0 , 0.0);
+			GLuint vertexBuffer_cube_Focus;
 
-				std::vector<float> cubeProperties;
-				// Four property x = Bubble Point Pressure
-				//               y = Pressure
-				//	         z = Porosity
-				//               w = Modified Block Volume
-					GLuint vertexBuffer_cube_properties;
+			std::vector<float> cubeProperties;
+			// Four property x = Bubble Point Pressure
+			//               y = Pressure
+			//	         z = Porosity
+			//               w = Modified Block Volume
+			GLuint vertexBuffer_cube_properties;
 
-			std::vector<float>           cuboids;
-			GLint			     cuboids_size;
+			std::vector<float> cuboids;
+			GLint cuboids_size;
 
-				/// -- Shell / Fracture Geometry
+			/// -- Shell / Fracture Geometry
 
 			// Face in Interleaved VertexBuffer
 			// Use same layout location as vertexArray
 
-				// 1 Vertex Array
-				GLuint vertexArray_faces;
-				// 1 Vertex Buffer
-				GLuint vertexBuffer_face_geometry;
+			// 1 Vertex Array
+			GLuint vertexArray_faces;
+			// 1 Vertex Buffer
+			GLuint vertexBuffer_face_geometry;
 
-				std::vector<float> facesColor;
-				/// vec4 (R, G, B , 0 );
-					GLuint vertexBuffer_face_color;
-				std::vector<float> faces_IJK;
-				/// vec4 (R, G, B , 0 );
-					GLuint vertexBuffer_face_IJK;
-				std::vector<float> faces_type;
-				/// vec4 ( isShell, isFault, 0.0 , 0.0 );
-					GLuint vertexBuffer_face_type;
+			std::vector<float> facesColor;
+			/// vec4 (R, G, B , 0 );
+			GLuint vertexBuffer_face_color;
+			std::vector<float> facesIJK;
+			/// vec4 (R, G, B , 0 );
+			GLuint vertexBuffer_face_IJK;
+			std::vector<float> facesType;
+			/// vec4 ( isShell, isFault, 0.0 , 0.0 );
+			GLuint vertexBuffer_face_type;
 
-				std::vector<float> facesProperty;
-				// Four property x = Bubble Point Pressure
-				//               y = Pressure
-				//	         z = Porosity
-				//               w = Modified Block Volume
-					GLuint vertexBuffer_face_properties;
+			std::vector<float> facesProperty;
+			// Four property x = Bubble Point Pressure
+			//               y = Pressure
+			//	         z = Porosity
+			//               w = Modified Block Volume
+			GLuint vertexBuffer_face_properties;
 
-			std::vector<float>      faces;
-			GLint 			faces_size;
-
+			std::vector<float> faces;
+			GLint faces_size;
 
 			bool isInitialized;
 
+			std::size_t number_of_blocks_;
 
+			ires::Ires reservoir_file;
 
 		public:
 
@@ -272,18 +154,27 @@ namespace IRES
 
 			virtual ~CornerPointGrid ( );
 
-			void initialize ( );
+			void createBuffers ( );
 
-			// Using Charles IRESv2
-			void openIRES_Version_2 ( const std::string& filename );
+			void drawFace ( ) const;
+			void drawCuboid ( ) const;
+
+			void loadProperties ( );
+
+			std::string properties_name[4];
+			std::size_t indices[4];
+			float min_value[4];
+			float max_value[4];
+			int current_property;
+
+			bool isOpen_;
+
+			bool isOpen ( ) const;
 
 			// My crazy implementation
 			void openIRES ( const std::string& filename );
 
-
 	};
-
-
 
 } /* namespace IRES */
 #endif /* CORNERPOINTGRID_HPP_ */

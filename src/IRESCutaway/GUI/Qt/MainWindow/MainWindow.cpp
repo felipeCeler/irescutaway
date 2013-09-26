@@ -51,13 +51,13 @@ MainWindow::MainWindow ( QMainWindow *parent ) :
 	// Controls over the rendering
 	QActionGroup* CutawayTypeGroup = new QActionGroup ( this );
 	CutawayTypeGroup->setExclusive(1);
-	CutawayTypeGroup->addAction ( ui->action_No_Cutaway );
-	CutawayTypeGroup->addAction ( ui->action_Raw_Cutaway );
+	CutawayTypeGroup->addAction ( ui->action_Texture_View );
+	CutawayTypeGroup->addAction ( ui->action_Raw_Model );
 	CutawayTypeGroup->addAction ( ui->action_IRES_Cutaway );
 
-	// Change the Cutaway Type
-	connect(ui->action_No_Cutaway,           SIGNAL(toggled(bool)), glWidget, SLOT(setNoCutawayVisibility(bool)));
-	connect(ui->action_Raw_Cutaway,          SIGNAL(toggled(bool)), glWidget, SLOT(setRawCutawayVisibility(bool)));
+	// Change the Rendering Type
+	connect(ui->action_Texture_View,       SIGNAL(toggled(bool)), glWidget, SLOT(setTextureViewerVisibility(bool)));
+	connect(ui->action_Raw_Model   ,       SIGNAL(toggled(bool)), glWidget, SLOT(setRawModelVisibility(bool)));
 	connect(ui->action_IRES_Cutaway,       SIGNAL(toggled(bool)), glWidget, SLOT(setIRESCutawayVisibility(bool)));
 	// Change visibility  of cells
 	connect(ui->action_Show_Primary_Cells,   SIGNAL(toggled(bool)), glWidget, SLOT(setPrimaryVisibility(bool)));
@@ -86,39 +86,39 @@ void MainWindow::open( QString pFilename,bool who ) {
 		for ( std::size_t i = 0 ; i < 4; ++i )
 		{
 
-			float min =  glWidget->min_value[i];
-			float max =  glWidget->max_value[i];
+			float min =  glWidget->reservoir_model_.min_value[i];
+			float max =  glWidget->reservoir_model_.max_value[i];
 
 
-			ui->comboBox_choose_an_property_->addItem(  QString::fromStdString( glWidget->properties_name[i] ) );
+			ui->comboBox_choose_an_property_->addItem(  QString::fromStdString( glWidget->reservoir_model_.properties_name[i] ) );
 			ui->properties_tableWidget_->setSpan(i * 2, 0, 2, 1);
-			ui->properties_tableWidget_->setItem(i * 2, 0, new QTableWidgetItem(  QString::fromStdString( glWidget->properties_name[i] ) ) );
+			ui->properties_tableWidget_->setItem(i * 2, 0, new QTableWidgetItem(  QString::fromStdString( glWidget->reservoir_model_.properties_name[i] ) ) );
 
 			ui->properties_tableWidget_->setItem(i    , 1, new QTableWidgetItem(  QString::number( min )) );
 			ui->properties_tableWidget_->setItem(i * 2, 1, new QTableWidgetItem(  QString::number( max )) );
 
-			ui->properties_tableWidget_->setItem(i , 0, new QTableWidgetItem(  QString::fromStdString( glWidget->properties_name[i] ) ) );
+			ui->properties_tableWidget_->setItem(i , 0, new QTableWidgetItem(  QString::fromStdString( glWidget->reservoir_model_.properties_name[i] ) ) );
 			ui->properties_tableWidget_->setItem(i , 1, new QTableWidgetItem(  QString( QString::number( min )+" - "+QString::number( max )) ));
 			// ui->properties_tableWidget_->setItem(i * 2, 1, new QTableWidgetItem(  QString::number( max )) );
 
 		}
 
-		ui->label_I_range->setText("[ 0 - "+QString::number(glWidget->reservoir_model_.header_.number_of_Blocks_in_I_Direction)+" ]");
-		ui->label_J_range->setText("[ 0 - "+QString::number(glWidget->reservoir_model_.header_.number_of_Blocks_in_J_Direction)+" ]");
-		ui->label_K_range->setText("[ 0 - "+QString::number(glWidget->reservoir_model_.header_.number_of_Blocks_in_K_Direction)+" ]");
+		ui->label_I_range->setText("[ 0 - "+QString::number(glWidget->reservoir_model_.header_v2_.numI)+" ]");
+		ui->label_J_range->setText("[ 0 - "+QString::number(glWidget->reservoir_model_.header_v2_.numJ)+" ]");
+		ui->label_K_range->setText("[ 0 - "+QString::number(glWidget->reservoir_model_.header_v2_.numK)+" ]");
 
 
-		ui->horizontalslider_max_I->setMaximum(glWidget->reservoir_model_.header_.number_of_Blocks_in_I_Direction+1);
-		ui->horizontalslider_max_J->setMaximum(glWidget->reservoir_model_.header_.number_of_Blocks_in_J_Direction+1);
-		ui->horizontalslider_max_K->setMaximum(glWidget->reservoir_model_.header_.number_of_Blocks_in_K_Direction+1);
+		ui->horizontalslider_max_I->setMaximum(glWidget->reservoir_model_.header_v2_.numI+1);
+		ui->horizontalslider_max_J->setMaximum(glWidget->reservoir_model_.header_v2_.numJ+1);
+		ui->horizontalslider_max_K->setMaximum(glWidget->reservoir_model_.header_v2_.numK+1);
 
-		ui->horizontalslider_min_I->setMaximum(glWidget->reservoir_model_.header_.number_of_Blocks_in_I_Direction+1);
-		ui->horizontalslider_min_J->setMaximum(glWidget->reservoir_model_.header_.number_of_Blocks_in_J_Direction+1);
-		ui->horizontalslider_min_K->setMaximum(glWidget->reservoir_model_.header_.number_of_Blocks_in_K_Direction+1);
+		ui->horizontalslider_min_I->setMaximum(glWidget->reservoir_model_.header_v2_.numI+1);
+		ui->horizontalslider_min_J->setMaximum(glWidget->reservoir_model_.header_v2_.numJ+1);
+		ui->horizontalslider_min_K->setMaximum(glWidget->reservoir_model_.header_v2_.numK+1);
 
-		ui->horizontalslider_max_I->setValue ( glWidget->reservoir_model_.header_.number_of_Blocks_in_I_Direction+1 );
-		ui->horizontalslider_max_J->setValue ( glWidget->reservoir_model_.header_.number_of_Blocks_in_J_Direction+1 );
-		ui->horizontalslider_max_K->setValue ( glWidget->reservoir_model_.header_.number_of_Blocks_in_K_Direction+1 );
+		ui->horizontalslider_max_I->setValue ( glWidget->reservoir_model_.header_v2_.numI+1 );
+		ui->horizontalslider_max_J->setValue ( glWidget->reservoir_model_.header_v2_.numJ+1 );
+		ui->horizontalslider_max_K->setValue ( glWidget->reservoir_model_.header_v2_.numK+1 );
 
 		ui->horizontalslider_min_I->setValue ( 0 );
 		ui->horizontalslider_min_J->setValue ( 0 );
@@ -130,8 +130,8 @@ void MainWindow::open( QString pFilename,bool who ) {
 void MainWindow::updateDoubleSpinMin( int property_index )
 {
 
-	float min =  glWidget->min_value[property_index];
-	float max =  glWidget->max_value[property_index];
+	float min =  glWidget->reservoir_model_.min_value[property_index];
+	float max =  glWidget->reservoir_model_.max_value[property_index];
 
 	ui->doubleSpinMin->setMinimum ( static_cast<double> (min) );
 	ui->doubleSpinMin->setMaximum ( static_cast<double> (max));
@@ -150,8 +150,8 @@ void MainWindow::updateDoubleSpinMax( int property_index )
 {
 
 
-	float min =  glWidget->min_value[property_index];
-	float max =  glWidget->max_value[property_index];
+	float min =  glWidget->reservoir_model_.min_value[property_index];
+	float max =  glWidget->reservoir_model_.max_value[property_index];
 
 	ui->doubleSpinMin->setMinimum ( static_cast<double> (min) );
 	ui->doubleSpinMin->setMaximum ( static_cast<double> (max));
@@ -195,18 +195,18 @@ void MainWindow::on_action_Open_IRES_triggered()
 
 void MainWindow::on_pushButton_Reset_IJK_clicked( )
 {
-	ui->label_I_range->setText("[ 0 - "+QString::number(glWidget->reservoir_model_.header_.number_of_Blocks_in_I_Direction)+" ]");
-	ui->label_J_range->setText("[ 0 - "+QString::number(glWidget->reservoir_model_.header_.number_of_Blocks_in_J_Direction)+" ]");
-	ui->label_K_range->setText("[ 0 - "+QString::number(glWidget->reservoir_model_.header_.number_of_Blocks_in_K_Direction)+" ]");
+	ui->label_I_range->setText("[ 0 - "+QString::number(glWidget->reservoir_model_.header_v2_.numI)+" ]");
+	ui->label_J_range->setText("[ 0 - "+QString::number(glWidget->reservoir_model_.header_v2_.numJ)+" ]");
+	ui->label_K_range->setText("[ 0 - "+QString::number(glWidget->reservoir_model_.header_v2_.numK)+" ]");
 
 
-	ui->horizontalslider_max_I->setMaximum(glWidget->reservoir_model_.header_.number_of_Blocks_in_I_Direction+1);
-	ui->horizontalslider_max_J->setMaximum(glWidget->reservoir_model_.header_.number_of_Blocks_in_J_Direction+1);
-	ui->horizontalslider_max_K->setMaximum(glWidget->reservoir_model_.header_.number_of_Blocks_in_K_Direction+1);
+	ui->horizontalslider_max_I->setMaximum(glWidget->reservoir_model_.header_v2_.numI+1);
+	ui->horizontalslider_max_J->setMaximum(glWidget->reservoir_model_.header_v2_.numJ+1);
+	ui->horizontalslider_max_K->setMaximum(glWidget->reservoir_model_.header_v2_.numK+1);
 
-	ui->horizontalslider_min_I->setMaximum(glWidget->reservoir_model_.header_.number_of_Blocks_in_I_Direction+1);
-	ui->horizontalslider_min_J->setMaximum(glWidget->reservoir_model_.header_.number_of_Blocks_in_J_Direction+1);
-	ui->horizontalslider_min_K->setMaximum(glWidget->reservoir_model_.header_.number_of_Blocks_in_K_Direction+1);
+	ui->horizontalslider_min_I->setMaximum(glWidget->reservoir_model_.header_v2_.numI+1);
+	ui->horizontalslider_min_J->setMaximum(glWidget->reservoir_model_.header_v2_.numJ+1);
+	ui->horizontalslider_min_K->setMaximum(glWidget->reservoir_model_.header_v2_.numK+1);
 
 	ui->horizontalslider_max_I->setValue ( 0 );
 	ui->horizontalslider_max_J->setValue ( 0 );

@@ -134,14 +134,15 @@
     <addaction name="action_Show_Primary_Cells"/>
     <addaction name="action_Show_Secondary_Cells"/>
     <addaction name="separator"/>
-    <addaction name="action_No_Cutaway"/>
-    <addaction name="action_Raw_Cutaway"/>
+    <addaction name="action_Raw_Model"/>
     <addaction name="action_IRES_Cutaway"/>
+    <addaction name="action_Texture_View"/>
     <addaction name="separator"/>
     <addaction name="separator"/>
     <addaction name="action_Trackball"/>
     <addaction name="action_Fly_Camera"/>
     <addaction name="action_Freeze_View"/>
+    <addaction name="separator"/>
     <addaction name="separator"/>
    </widget>
    <addaction name="menuFile"/>
@@ -522,7 +523,7 @@
     <string>F10</string>
    </property>
   </action>
-  <action name="action_No_Cutaway">
+  <action name="action_Raw_Model">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -530,7 +531,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>No Cutaway</string>
+    <string>Raw Model</string>
    </property>
    <property name="toolTip">
     <string>No technique applied</string>
@@ -574,6 +575,17 @@
    </property>
    <property name="text">
     <string>IRES Cutaway</string>
+   </property>
+   <property name="shortcut">
+    <string>F10</string>
+   </property>
+  </action>
+  <action name="action_Texture_View">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Texture View</string>
    </property>
    <property name="shortcut">
     <string>F11</string>
