@@ -40,16 +40,11 @@ class GLWidget: public QGLWidget
 	Q_OBJECT
 
 	public:
-		// FIXME - Putting this as public, but I'm going to search for a better sulution to how feed other
-		//	   widget with data form another one.
 
 		IRES::CornerPointGrid reservoir_model_;
 
-
 		float min_range;
 		float max_range;
-
-
 
 		// From QGLWidget
 		explicit GLWidget ( const QGLFormat& format , QWidget* parent = 0 , const QGLWidget* shareWidget = 0 , Qt::WindowFlags f = 0 );
@@ -123,8 +118,8 @@ class GLWidget: public QGLWidget
 
 private:
 
-	QPoint lastPos;
 	/// Avoid camera_ movement issues
+        QPoint lastPos;
 	QSet<int> keysPresseds_;
 	bool 	  buttonRelease_;
 
@@ -160,9 +155,6 @@ private:
 	bool draw_secondary;
 	bool draw_primary;
 
-	// Used in ires v1 to ires v2 conversion.
-	int blockIndex_;
-
 	int max_I_;
 	int min_I_;
 	int max_J_;
@@ -194,7 +186,6 @@ private:
 	Eigen::Matrix4f freeze_viewmatrix_;
 	bool freezeView_;
 
-	// trackball
 	Trackball * trackball_;
 
 	float orthoZoom;
@@ -203,7 +194,6 @@ private:
 
 	// LCG procudure
         Eigen::Vector2f convertToNormalizedDeviceCoordinates(Eigen::Vector2i position);
-
 
         // TODO NPR Stuffs - Mario's request
         GLuint xtoon_texture_;

@@ -32,6 +32,8 @@ MainWindow::MainWindow ( QMainWindow *parent ) :
 	// Dock Widget Layer Initialization
 
 	ui->dockWidgetLayers->setHidden( true );
+	ui->dockWidgetIJKViewer->setHidden( true );
+
 	connect(ui->comboBox_choose_an_property_, SIGNAL(activated(int)), this, SLOT(updateDoubleSpinMin(int)));
 	connect(ui->comboBox_choose_an_property_, SIGNAL(activated(int)), this, SLOT(updateDoubleSpinMax(int)));
 	// Just the name of the function: so changeProperty , not glWidget->changeProperty
