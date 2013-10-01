@@ -116,60 +116,47 @@ namespace IRES
 			float 	  	v[24];
 			Eigen::Vector3f vecs[8];
 
-			list_of_vertex_indice.clear( );
-			list_of_vertex_geometry_a.clear( );
-			list_of_vertex_geometry_b.clear( );
-			list_of_vertex_geometry_c.clear( );
-			list_of_vertex_geometry_d.clear( );
-			list_of_vertex_color.clear( );
+			iresFaces_.clear ( );
+			std::vector<float> vertexList;
 
-			list_of_block_id.clear( );
-			list_of_block_flag.clear( );
+			reservoir_file.generateFaceList( iresFaces_ );
 
-
-			/// Reading Faces.
-			reservoir_file.generateFaceList( list_of_vertex_indice ,
-							 list_of_vertex_geometry_a,
-							 list_of_vertex_geometry_b,
-							 list_of_vertex_geometry_c,
-							 list_of_vertex_geometry_d,
-							 list_of_vertex_color,
-							 list_of_block_id ,
-							 list_of_block_flag );
-
+			vertexList = reservoir_file.getVertexList( );
 
 			faces.clear();
 
 			// Geometry
-			faces.resize ( list_of_block_id.size ( ) * 16 );
+			faces.resize ( iresFaces_.size ( ) * 16 );
 			// Attributes
-			facesColor.resize    ( list_of_block_id.size ( ) * 4 );
-			facesIJK.resize      ( list_of_block_id.size ( ) * 4 );
-			facesType.resize     ( list_of_block_id.size ( ) * 4  );
-			facesProperty.resize ( list_of_block_id.size ( ) * 4 );
+			facesColor.resize    ( iresFaces_.size ( ) * 4 );
+			facesIJK.resize      ( iresFaces_.size ( ) * 4 );
+			facesType.resize     ( iresFaces_.size ( ) * 4  );
+			facesProperty.resize ( iresFaces_.size ( ) * 4 );
+
+			faceIDs.resize       ( iresFaces_.size ( ) );
 
 			faces_size = 0;
 
-			for ( std::size_t i = 0; i < list_of_block_id.size( ) ; i++)
+			for ( std::size_t i = 0; i < iresFaces_.size( ) ; i++)
 			{
-				faces[i*16] = list_of_vertex_geometry_a[i*3];
-				faces[i*16+1] = list_of_vertex_geometry_a[i*3+1];
-				faces[i*16+2] = list_of_vertex_geometry_a[i*3+2];
+				faces[i*16]   = vertexList[iresFaces_[i].a*3];
+				faces[i*16+1] = vertexList[iresFaces_[i].a*3+1];
+				faces[i*16+2] = vertexList[iresFaces_[i].a*3+2];
 				faces[i*16+3] = 1.0f;
 
-				faces[i*16+4] = list_of_vertex_geometry_b[i*3];
-				faces[i*16+5] = list_of_vertex_geometry_b[i*3+1];
-				faces[i*16+6] = list_of_vertex_geometry_b[i*3+2];
+				faces[i*16+4] = vertexList[iresFaces_[i].b*3];
+				faces[i*16+5] = vertexList[iresFaces_[i].b*3+1];
+				faces[i*16+6] = vertexList[iresFaces_[i].b*3+2];
 				faces[i*16+7] = 1.0f;
 
-				faces[i*16+8] = list_of_vertex_geometry_c[i*3];
-				faces[i*16+9] = list_of_vertex_geometry_c[i*3+1];
-				faces[i*16+10] = list_of_vertex_geometry_c[i*3+2];
+				faces[i*16+8]  = vertexList[iresFaces_[i].c*3];
+				faces[i*16+9]  = vertexList[iresFaces_[i].c*3+1];
+				faces[i*16+10] = vertexList[iresFaces_[i].c*3+2];
 				faces[i*16+11] = 1.0f;
 
-				faces[i*16+12] = list_of_vertex_geometry_d[i*3];
-				faces[i*16+13] = list_of_vertex_geometry_d[i*3+1];
-				faces[i*16+14] = list_of_vertex_geometry_d[i*3+2];
+				faces[i*16+12] = vertexList[iresFaces_[i].d*3];
+				faces[i*16+13] = vertexList[iresFaces_[i].d*3+1];
+				faces[i*16+14] = vertexList[iresFaces_[i].d*3+2];
 				faces[i*16+15] = 1.0f;
 
 				facesColor[i*4]   = 1.0f;
@@ -182,10 +169,12 @@ namespace IRES
 				facesIJK[i*4+2] = 0.0f;
 				facesIJK[i*4+3] = 1.0f;
 
-				facesType[i*4]   = list_of_block_flag[i];
-				facesType[i*4+1] = list_of_block_flag[i];
-				facesType[i*4+2] = list_of_block_flag[i];
+				facesType[i*4]   = static_cast<float> (iresFaces_[i].isExtern);
+				facesType[i*4+1] = static_cast<float> (iresFaces_[i].isExtern);
+				facesType[i*4+2] = static_cast<float> (iresFaces_[i].isExtern);
 				facesType[i*4+3] = 1.0f;
+
+				faceIDs[i] = iresFaces_[i].id;
 
 				faces_size++;
 
@@ -494,12 +483,12 @@ namespace IRES
 			}
 		}
 
-		for ( std::size_t shell_index = 0; shell_index < list_of_block_id.size() ; shell_index++ )
+		for ( std::size_t shell_index = 0; shell_index < faceIDs.size() ; shell_index++ )
 		{
-			facesProperty[shell_index*4]   = cubeProperties[list_of_block_id[shell_index]*4];
-			facesProperty[shell_index*4+1] = cubeProperties[list_of_block_id[shell_index]*4+1];
-			facesProperty[shell_index*4+2] = cubeProperties[list_of_block_id[shell_index]*4+2];
-			facesProperty[shell_index*4+3] = cubeProperties[list_of_block_id[shell_index]*4+3];
+			facesProperty[shell_index]   = cubeProperties[faceIDs[shell_index]];
+			facesProperty[shell_index+1] = cubeProperties[faceIDs[shell_index]];
+			facesProperty[shell_index+2] = cubeProperties[faceIDs[shell_index]];
+			facesProperty[shell_index+3] = cubeProperties[faceIDs[shell_index]];
 		}
 
 

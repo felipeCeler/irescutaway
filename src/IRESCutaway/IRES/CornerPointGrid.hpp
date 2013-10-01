@@ -69,18 +69,9 @@ namespace IRES
 			std::vector<CornerPointGrid::Dynamic_Property> dynamic_properties;
 			std::vector<CornerPointGrid::Static_Property> static_porperties;
 
-			std::vector<ires::U32> list_of_vertex_indice;
-			std::vector<ires::F32> list_of_vertex_geometry_a;
-			std::vector<ires::F32> list_of_vertex_geometry_b;
-			std::vector<ires::F32> list_of_vertex_geometry_c;
-			std::vector<ires::F32> list_of_vertex_geometry_d;
-			std::vector<ires::F32> list_of_vertex_color;
-			std::vector<ires::U32> list_of_block_id;
-			std::vector<ires::U32> list_of_block_flag;
 
 			ires::IresHeader header_v2_;
 
-			std::vector<ires::F32> list_of_vertex_geometry_charles;
 
 			/// About IRES Geometry Information
 
@@ -140,6 +131,7 @@ namespace IRES
 			GLuint vertexBuffer_face_properties;
 
 			std::vector<float> faces;
+			std::vector<std::size_t> faceIDs;
 			GLint faces_size;
 
 			bool isInitialized;
@@ -173,6 +165,8 @@ namespace IRES
 
 			// My crazy implementation
 			void openIRES ( const std::string& filename );
+
+			std::vector<ires::Face> iresFaces_;
 
 	};
 
