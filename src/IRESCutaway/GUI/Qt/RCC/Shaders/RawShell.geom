@@ -13,7 +13,8 @@ in VertexData
 	    vec4 n[2];
 	    vec4 eye[4];
 	    vec4 color;
-} VertexIn[4];
+	    vec4 l;
+} VertexIn[1];
 
 
 out VertexData
@@ -76,4 +77,42 @@ void main(void)
 	EmitVertex();
 
 	EndPrimitive();
+
+//	if ( VertexIn[0].l[0] == 1.0 )
+//	{
+//		gl_Position = VertexIn[0].v[0];
+//		EmitVertex();
+//		gl_Position = VertexIn[0].v[1];
+//		EmitVertex();
+//
+//		EndPrimitive();
+//	}
+//	if ( VertexIn[0].l[1] == 1.0 )
+//	{
+//		gl_Position = VertexIn[0].v[1];
+//		EmitVertex();
+//		gl_Position = VertexIn[0].v[2];
+//		EmitVertex();
+//
+//		EndPrimitive();
+//	}
+//	if ( VertexIn[0].l[2] == 1.0 )
+//	{
+//		gl_Position = VertexIn[0].v[1];
+//		EmitVertex();
+//		gl_Position = VertexIn[0].v[2];
+//		EmitVertex();
+//
+//		EndPrimitive();
+//	}
+//	if ( VertexIn[0].l[3] == 1.0 )
+//	{
+//		gl_Position = VertexIn[0].v[2];
+//		EmitVertex();
+//		gl_Position = VertexIn[0].v[0];
+//		EmitVertex();
+//
+//		EndPrimitive();
+//	}
+
 }

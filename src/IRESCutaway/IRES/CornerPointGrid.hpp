@@ -134,6 +134,9 @@ namespace IRES
 			std::vector<std::size_t> faceIDs;
 			GLint faces_size;
 
+
+			std::vector<float> faceLines;
+
 			bool isInitialized;
 
 			std::size_t number_of_blocks_;

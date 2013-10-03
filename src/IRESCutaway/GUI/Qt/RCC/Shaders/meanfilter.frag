@@ -9,7 +9,7 @@ out vec4 out_Color;
 void main() {
 
 
-  int kernelsizex = 3;
+  int kernelsizex = 18;
   vec4 result = vec4(0.0);
   vec2 texCoord = vec2(gl_FragCoord.x/viewportSize[0], gl_FragCoord.y/viewportSize[1]);
 

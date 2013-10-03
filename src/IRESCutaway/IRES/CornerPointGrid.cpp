@@ -137,6 +137,15 @@ namespace IRES
 
 			faces_size = 0;
 
+			faceLines.resize(iresFaces_.size() * 8);
+
+			std::vector<float> faceCorner;
+			std::vector<float> faceFault;
+
+			reservoir_file.getFacePropertyValues(0,faceCorner);
+
+			reservoir_file.getFacePropertyValues(1,faceFault);
+
 			for ( std::size_t i = 0; i < iresFaces_.size( ) ; i++)
 			{
 				faces[i*16]   = vertexList[iresFaces_[i].a*3];
@@ -164,17 +173,47 @@ namespace IRES
 				facesColor[i*4+2] = 0.0f;
 				facesColor[i*4+3] = 1.0f;
 
-				facesIJK[i*4]   = 1.0f;
+				faceIDs[i] = iresFaces_[i].id;
+
+
+				facesIJK[i*4]   = 0.0f;
 				facesIJK[i*4+1] = 0.0f;
 				facesIJK[i*4+2] = 0.0f;
-				facesIJK[i*4+3] = 1.0f;
+				facesIJK[i*4+3] = 0.0f;
+
+				int IDtmp = iresFaces_[i].id;
+				ires::Face::FACE_BLOCK_POS pos = iresFaces_[i].faceBlockRelPos;
+				float V = faceCorner[ 6*IDtmp + pos ];
+				/// One way to know wich edge are corners given a value V is:
+				if ( V >= 8 )
+				{
+					facesIJK[i * 4] = 1.0;
+					V -= 8;
+				}
+				if ( V >= 4 )
+				{
+					facesIJK[i * 4 + 1] = 1.0;
+					V -= 4;
+				}
+				if ( V >= 2 )
+				{
+					facesIJK[i * 4 + 2] = 1.0;
+					V -= 2;
+				}
+				if ( V == 1 )
+				{
+					facesIJK[i * 4 + 3] = 1.0;
+				}
+
+				float F = faceFault[ 6*IDtmp + pos ];
+
+				// F == 0 pass
+				// F == 1 fault
 
 				facesType[i*4]   = static_cast<float> (iresFaces_[i].isExtern);
-				facesType[i*4+1] = static_cast<float> (iresFaces_[i].isExtern);
+				facesType[i*4+1] = F;
 				facesType[i*4+2] = static_cast<float> (iresFaces_[i].isExtern);
 				facesType[i*4+3] = 1.0f;
-
-				faceIDs[i] = iresFaces_[i].id;
 
 				faces_size++;
 
@@ -485,10 +524,10 @@ namespace IRES
 
 		for ( std::size_t shell_index = 0; shell_index < faceIDs.size() ; shell_index++ )
 		{
-			facesProperty[shell_index]   = cubeProperties[faceIDs[shell_index]];
-			facesProperty[shell_index+1] = cubeProperties[faceIDs[shell_index]];
-			facesProperty[shell_index+2] = cubeProperties[faceIDs[shell_index]];
-			facesProperty[shell_index+3] = cubeProperties[faceIDs[shell_index]];
+			facesProperty[shell_index*4]   = static_porperties[indices[0]].values_[faceIDs[shell_index]];
+			facesProperty[shell_index*4+1] = static_porperties[indices[1]].values_[faceIDs[shell_index]];
+			facesProperty[shell_index*4+2] = static_porperties[indices[2]].values_[faceIDs[shell_index]];
+			facesProperty[shell_index*4+3] = static_porperties[indices[3]].values_[faceIDs[shell_index]];
 		}
 
 
