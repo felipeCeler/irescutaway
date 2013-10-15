@@ -66,82 +66,11 @@ namespace IRES
 			};
 
 
-			std::vector<CornerPointGrid::Dynamic_Property> dynamic_properties;
-			std::vector<CornerPointGrid::Static_Property> static_porperties;
+			std::vector<CornerPointGrid::Dynamic_Property>  dynamic_properties;
 
+			std::vector<CornerPointGrid::Static_Property >  static_porperties;
 
 			ires::IresHeader header_v2_;
-
-
-			/// About IRES Geometry Information
-
-			// Cube in Interleaved VertexBuffer
-			// Use same layout location as vertexArray
-
-			// 1 Vertex Array
-			GLuint vertexArray_cuboids;
-			// 1 Vertex Buffer with 8 vertex which define a Cuboid
-			GLuint vertexBuffer_cuboid_geometry;
-
-			std::vector<float> cubeColor;
-			/// vec4 (R, G, B , 0 );
-			GLuint vertexBuffer_cube_color;
-			std::vector<float> cubeIJK;
-			/// vec4 (I, J, K , 0 );
-			GLuint vertexBuffer_cube_IJK;
-			std::vector<float> cubeFocus;
-			/// vec4 (Primary/Secondary , Active  ,0.0 , 0.0);
-			GLuint vertexBuffer_cube_Focus;
-
-			std::vector<float> cubeProperties;
-			// Four property x = Bubble Point Pressure
-			//               y = Pressure
-			//	         z = Porosity
-			//               w = Modified Block Volume
-			GLuint vertexBuffer_cube_properties;
-
-			std::vector<float> cuboids;
-			GLint cuboids_size;
-
-			/// -- Shell / Fracture Geometry
-
-			// Face in Interleaved VertexBuffer
-			// Use same layout location as vertexArray
-
-			// 1 Vertex Array
-			GLuint vertexArray_faces;
-			// 1 Vertex Buffer
-			GLuint vertexBuffer_face_geometry;
-
-			std::vector<float> facesColor;
-			/// vec4 (R, G, B , 0 );
-			GLuint vertexBuffer_face_color;
-			std::vector<float> facesIJK;
-			/// vec4 (R, G, B , 0 );
-			GLuint vertexBuffer_face_IJK;
-			std::vector<float> facesType;
-			/// vec4 ( isShell, isFault, 0.0 , 0.0 );
-			GLuint vertexBuffer_face_type;
-
-			std::vector<float> facesProperty;
-			// Four property x = Bubble Point Pressure
-			//               y = Pressure
-			//	         z = Porosity
-			//               w = Modified Block Volume
-			GLuint vertexBuffer_face_properties;
-
-			std::vector<float> faces;
-			std::vector<std::size_t> faceIDs;
-			GLint faces_size;
-
-
-			std::vector<float> faceLines;
-
-			bool isInitialized;
-
-			std::size_t number_of_blocks_;
-
-			ires::Ires reservoir_file;
 
 		public:
 
@@ -149,17 +78,20 @@ namespace IRES
 
 			virtual ~CornerPointGrid ( );
 
-			void createBuffers ( );
+			void 	createBuffers 	 ( );
+			void 	drawFace  	 ( ) const;
+			void 	drawCuboid 	 ( ) const;
+			void 	loadProperties 	 ( );
 
-			void drawFace ( ) const;
-			void drawCuboid ( ) const;
 
-			void loadProperties ( );
-
+			// Properties Values Interface
 			std::string properties_name[4];
-			std::size_t indices[4];
+
+			std::size_t property_indices[4];
+
 			float min_value[4];
 			float max_value[4];
+
 			int current_property;
 
 			bool isOpen_;
@@ -169,7 +101,73 @@ namespace IRES
 			// My crazy implementation
 			void openIRES ( const std::string& filename );
 
-			std::vector<ires::Face> iresFaces_;
+		public:
+
+			/// About IRES Geometry Information
+
+			// Cube in Interleaved VertexBuffer
+			// Use same layout location as vertexArray
+
+
+			GLuint vertexArrayCuboids;   	 	// 1 Vertex Array
+								// 1 Vertex Buffer with 8 vertex which define a Cuboid
+			GLuint vertexBufferCuboidGeometry;
+
+			std::vector<float> cubeColor;           /// vec4 (R, G, B , 0 );
+			GLuint vertexBufferCuboidColor;
+
+			std::vector<float> cuboidIJK;           /// vec4 (I, J, K , 0 );
+			GLuint vertexBufferCuboidIJK;
+
+			std::vector<float> cuboidFocus;         /// vec4 (Primary/Secondary , Active  ,0.0 , 0.0);
+			GLuint vertexBufferCuboidFocus;
+
+			std::vector<float> cuboidProperties;    /// Four property x = Bubble Point Pressure
+			GLuint vertexBufferCuboidProperties;	///               y = Pressure
+								///	          z = Porosity
+								///               w = Modified Block Volume
+
+
+			std::vector<float> cuboids;
+			std::size_t 	   cuboidCount;
+
+			/// -- Shell / Fracture Geometry
+
+			// Face in Interleaved VertexBuffer
+			// Use same layout location as vertexArray
+
+			GLuint vertexArrayFaces;		/// 1 Vertex Array
+
+
+			GLuint vertexBufferFaceGeometry;
+
+			std::vector<float> faceColor;		/// vec4 (R, G, B , 0 );
+			GLuint vertexBufferFaceColor;
+
+			std::vector<float> faceIJK;		/// vec4 (R, G, B , 0 );
+			GLuint vertexBufferFaceIJK;
+
+			std::vector<float> faceType; 		/// vec4 ( isShell, isFault, 0.0 , 0.0 );
+			GLuint vertexBufferFaceType;
+
+
+			std::vector<float> faceProperty;	/// Four property x = Bubble Point Pressure
+								///               y = Pressure
+								///	          z = Porosity
+								///               w = Modified Block Volume
+			GLuint vertexBufferFaceProperties;
+
+			std::vector<float> 	  faces;
+
+			std::vector<ires::Face>   iresFaces_;
+			std::size_t 		  faceCount;
+
+
+			bool isInitialized;
+
+			std::size_t number_of_blocks_;
+
+			ires::Ires reservoir_file;
 
 	};
 

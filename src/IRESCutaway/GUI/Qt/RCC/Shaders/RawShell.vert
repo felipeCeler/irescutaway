@@ -17,7 +17,7 @@ out VertexData
     vec4 n[2];
     vec4 eye[4];
     vec4 color;
-    vec4 l;
+    vec4 faceType;
 
 } VertexOut;
 
@@ -67,9 +67,9 @@ void main(void)
 	VertexOut.eye[2] =  ModelMatrix * ViewMatrix * vec4(vc);
 	VertexOut.eye[3] =  ModelMatrix * ViewMatrix * vec4(vd);
 
-	VertexOut.l = IJK;
+	VertexOut.faceType = IJK;
 
-        if ( isShell.y == 1.0 ) // Shell faces
+        if ( isShell.x == 1.0 ) // Shell faces
 	{
 		VertexOut.color  =  propertyColor ( min_property, max_property, property_index );
 		VertexOut.v[0] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(va);
@@ -85,13 +85,6 @@ void main(void)
 		VertexOut.v[2] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(0.0);
 		VertexOut.v[3] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(0.0);
 	}
-
-
-//	VertexOut.color  =  propertyColor ( min_property, max_property, property_index );
-//	VertexOut.v[0] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(va);
-//	VertexOut.v[1] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(vb);
-//	VertexOut.v[2] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(vc);
-//	VertexOut.v[3] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(vd);
 
 	gl_Position = vec4(va);
 }

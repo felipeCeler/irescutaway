@@ -39,6 +39,10 @@ void GLWidget::initializeGL ( )
 
 	glEnable ( GL_TEXTURE_2D );
 
+	glEnable ( GL_MULTISAMPLE );
+
+	glHint(GL_MULTISAMPLE_FILTER_HINT_NV, GL_FASTEST);
+
 	glClearColor ( 0.0 , 0.0 , 0.0 , 1.0 );
 	glDisable(GL_BLEND);
 
@@ -59,7 +63,7 @@ void GLWidget::initializeGL ( )
 	orthoZoom   = 1.0f;
 
 	lights.push_back ( Eigen::Vector3f ( 0.5 , 0.5 , 1.0 ) );
-	lights.push_back ( Eigen::Vector3f ( -0.5 , 0.5 , 1.0 ) );
+	lights.push_back ( Eigen::Vector3f (-0.5 , 0.5 , 1.0 ) );
 	lights.push_back ( Eigen::Vector3f ( 0.0 , 0.0 , 1.0 ) );
 	lights.push_back ( Eigen::Vector3f ( 0.0 , 1.0 , 0.0 ) );
 
@@ -105,11 +109,9 @@ void GLWidget::initializeGL ( )
 	meanFilter = new MeanFilter( "Gaussian blur");
 	meanFilter->resize(width(), height());
 
-
 	loadShaders ( );
 
 	// TODO xtoon
-
 	picture = new Mesh( );
 	picture->createQuad( );
 
@@ -185,7 +187,6 @@ void GLWidget::dropEvent(QDropEvent *event)
 		qDebug() << "Soltou";
 
 	}
-
 
 }
 
@@ -315,7 +316,8 @@ void GLWidget::resizeGL ( int width , int height )
 {
 	glViewport ( 0 , 0 , width , height );
 
-        trackball_->useOrthographicMatrix(-1.0f, 1.0 , -1.0f, 1.0, 0.0, 500.0);
+	trackball_->useOrthographicMatrix ( -1.0f , 1.0 , -1.0f , 1.0 , 0.1 , 500.0 );
+	//trackball_->usePerspectiveMatrix  ( 60.0f , (float) width / float ( height ) , 0.1 , 500 );
 
 	if (depthFBO)
 		delete depthFBO;
@@ -364,7 +366,6 @@ void GLWidget::drawCutawaySurface ( )
 		reservoir_model_.drawCuboid ( );
 
 		BoundingBoxInitializationLCG->disable( );
-
 
 		glDrawBuffer(GL_COLOR_ATTACHMENT0+1);
 
@@ -476,7 +477,7 @@ void GLWidget::drawPrimary( )
 	primaryLCG->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
 	primaryLCG->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
 
-	reservoir_model_.drawFace();
+	reservoir_model_.drawCuboid ( );
 
 
 	primaryLCG->disable( );
@@ -598,7 +599,7 @@ void GLWidget::IRESCutaway (  )
 
 void GLWidget::textureViewer ( )
 {
-//        /// FIXME Conditions  - Just the model opened.
+//      /// FIXME Conditions  - Just the model opened.
 //
         glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
         glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );

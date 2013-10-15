@@ -41,11 +41,6 @@ class GLWidget: public QGLWidget
 
 	public:
 
-		IRES::CornerPointGrid reservoir_model_;
-
-		float min_range;
-		float max_range;
-
 		// From QGLWidget
 		explicit GLWidget ( const QGLFormat& format , QWidget* parent = 0 , const QGLWidget* shareWidget = 0 , Qt::WindowFlags f = 0 );
 		explicit GLWidget ( QWidget* parent = 0 , const QGLWidget* shareWidget = 0 , Qt::WindowFlags f = 0 );
@@ -116,90 +111,97 @@ class GLWidget: public QGLWidget
 
         void changed(const QMimeData *mimeData = 0);
 
-private:
+	public:
 
-	/// Avoid camera_ movement issues
-        QPoint lastPos;
-	QSet<int> keysPresseds_;
-	bool 	  buttonRelease_;
+		IRES::CornerPointGrid reservoir_model_;
 
-	bool isIRESOpen_;
+		float min_range;
+		float max_range;
 
-        Shader*                         BoundingBoxInitializationLCG;
-        Shader*                         BoundingBoxDebugLCG;
-        Shader*                         BoundingBoxCutawayLCG;
+	private:
 
-        Shader*                         secondaryLCG;
+		/// Avoid camera_ movement issues
+		QPoint lastPos;
+		QSet<int> keysPresseds_;
+		bool 	  buttonRelease_;
 
-        Shader*                         primaryLCG;
-        Shader*                         shellLCG;
-        Shader*                         rawShellLCG;
+		bool isIRESOpen_;
 
-	QImage fbo;
-	float  angle;
-	float  zoom_angle_;
-	int    cluster;
+		Shader*                         BoundingBoxInitializationLCG;
+		Shader*                         BoundingBoxDebugLCG;
+		Shader*                         BoundingBoxCutawayLCG;
 
-	/// -- ANIMATION  Stuffs ----------------------------------------------
-	// Celer Gaming Looping 0.1 -> For animation
-	QTimer fpsTimer_;
-	QTimer updateTimer_;
-	QElapsedTimer delta_time;
-	int fps;
+		Shader*                         secondaryLCG;
 
-	/// -- RENDERING Stuffs  ----------------------------------------------
-	bool  isTextureViewer_;
-	bool  isRawModel_;
-	bool  isIRESCutaway_;
+		Shader*                         primaryLCG;
+		Shader*                         shellLCG;
+		Shader*                         rawShellLCG;
 
-	bool draw_secondary;
-	bool draw_primary;
+		QImage fbo;
+		float  angle;
+		float  zoom_angle_;
+		int    cluster;
 
-	int max_I_;
-	int min_I_;
-	int max_J_;
-	int min_J_;
-	int max_K_;
-	int min_K_;
+		/// -- ANIMATION  Stuffs ----------------------------------------------
+		// Celer Gaming Looping 0.1 -> For animation
+		QTimer fpsTimer_;
+		QTimer updateTimer_;
+		QElapsedTimer delta_time;
+		int fps;
 
-	// lights
-	std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f> >  lights;
+		/// -- RENDERING Stuffs  ----------------------------------------------
+		bool  isTextureViewer_;
+		bool  isRawModel_;
+		bool  isIRESCutaway_;
 
-	/// normal x y z + vertice .z
-	Framebuffer * depthFBO;
+		bool draw_secondary;
+		bool draw_primary;
 
-	/// Smooth
-	MeanFilter * meanFilter;
+		int max_I_;
+		int min_I_;
+		int max_J_;
+		int min_J_;
+		int max_K_;
+		int min_K_;
 
-	// Cube in Interleaved VertexBuffer
-	// Use same layout location as vertexArray
+		// lights
+		std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f> >  lights;
 
-        bool enable_blend_;
+		/// normal x y z + vertice .z
+		Framebuffer * depthFBO;
 
-	/// -- SCENE Stuffs ---------------------------------------------------
+		/// Smooth
+		MeanFilter * meanFilter;
 
-	/// -- Aperture of Cutaway
-	float volume_width;
-	float volume_height;
+		// Cube in Interleaved VertexBuffer
+		// Use same layout location as vertexArray
 
-	// Stores the freezed camera (view matrix)
-	Eigen::Matrix4f freeze_viewmatrix_;
-	bool freezeView_;
+		bool enable_blend_;
 
-	Trackball * trackball_;
+		/// -- SCENE Stuffs ---------------------------------------------------
 
-	float orthoZoom;
+		/// -- Aperture of Cutaway
+		float volume_width;
+		float volume_height;
 
-	bool dynamic_;
+		// Stores the freezed camera (view matrix)
+		Eigen::Matrix4f freeze_viewmatrix_;
+		bool freezeView_;
 
-	// LCG procudure
-        Eigen::Vector2f convertToNormalizedDeviceCoordinates(Eigen::Vector2i position);
+		Trackball * trackball_;
 
-        // TODO NPR Stuffs - Mario's request
-        GLuint xtoon_texture_;
-        Mesh * picture;
+		float orthoZoom;
 
-        Shader * xtoon_texture_viewer;
+		bool dynamic_;
+
+		// LCG procudure
+		Eigen::Vector2f convertToNormalizedDeviceCoordinates(Eigen::Vector2i position);
+
+		// TODO NPR Stuffs - Mario's request
+		GLuint xtoon_texture_;
+		Mesh * picture;
+
+		Shader * xtoon_texture_viewer;
 };
 
 #endif

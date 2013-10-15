@@ -17,11 +17,11 @@ MainWindow::MainWindow ( QMainWindow *parent ) :
 
 	aboutIRESReader = new AboutWidgetIRESReader( this );
 
-	glWidget = new GLWidget ( glFormat, ui->viewer_ );
+	glWidget = new GLWidget ( glFormat, ui->viewer );
 	ui->viewer_verticalLayout_->addWidget(glWidget);
-	ui->tabWidget_->setCurrentIndex(0);
+	ui->tabWidget->setCurrentIndex(0);
 
-	ui->properties_tableWidget_->horizontalHeader()->setResizeMode(QHeaderView::Stretch);
+	ui->tableWidgetProperties->horizontalHeader()->setResizeMode(QHeaderView::Stretch);
 
 	QIcon icon;
 	icon.addFile ( ":/Icons/celerSystemIcon.svg" , QSize ( ) , QIcon::Normal , QIcon::Off );
@@ -34,10 +34,10 @@ MainWindow::MainWindow ( QMainWindow *parent ) :
 	ui->dockWidgetLayers->setHidden( true );
 	ui->dockWidgetIJKViewer->setHidden( true );
 
-	connect(ui->comboBox_choose_an_property_, SIGNAL(activated(int)), this, SLOT(updateDoubleSpinMin(int)));
-	connect(ui->comboBox_choose_an_property_, SIGNAL(activated(int)), this, SLOT(updateDoubleSpinMax(int)));
+	connect(ui->comboBoxProperty, SIGNAL(activated(int)), this, SLOT(updateDoubleSpinMin(int)));
+	connect(ui->comboBoxProperty, SIGNAL(activated(int)), this, SLOT(updateDoubleSpinMax(int)));
 	// Just the name of the function: so changeProperty , not glWidget->changeProperty
-	connect(ui->comboBox_choose_an_property_, SIGNAL(activated(int)), glWidget, SLOT(changeProperty(int)));
+	connect(ui->comboBoxProperty, SIGNAL(activated(int)), glWidget, SLOT(changeProperty(int)));
 	// Sliders
 	connect(ui->horizontalslider_min_I, SIGNAL(valueChanged(int)), glWidget, SLOT(changeMinI (int)));
 	connect(ui->horizontalslider_max_I, SIGNAL(valueChanged(int)), glWidget, SLOT(changeMaxI (int)));
@@ -78,12 +78,12 @@ void MainWindow::open( QString pFilename,bool who ) {
 	{
 		QString title ( reinterpret_cast<char*>(glWidget->reservoir_model_.header_v2_.title) );
 
-		ui->simulator_name_->setText (  title );
+		ui->simulatorName->setText (  title );
 
 		updateDoubleSpinMax( 0 );
 		updateDoubleSpinMin( 0 );
-		ui->properties_tableWidget_->setRowCount(2*4);
-		ui->comboBox_choose_an_property_->clear();
+		ui->tableWidgetProperties->setRowCount(2*4);
+		ui->comboBoxProperty->clear();
 
 		for ( std::size_t i = 0 ; i < 4; ++i )
 		{
@@ -92,22 +92,18 @@ void MainWindow::open( QString pFilename,bool who ) {
 			float max =  glWidget->reservoir_model_.max_value[i];
 
 
-			ui->comboBox_choose_an_property_->addItem(  QString::fromStdString( glWidget->reservoir_model_.properties_name[i] ) );
-			ui->properties_tableWidget_->setSpan(i * 2, 0, 2, 1);
-			ui->properties_tableWidget_->setItem(i * 2, 0, new QTableWidgetItem(  QString::fromStdString( glWidget->reservoir_model_.properties_name[i] ) ) );
+			ui->comboBoxProperty->addItem(  QString::fromStdString( glWidget->reservoir_model_.properties_name[i] ) );
+			ui->tableWidgetProperties->setSpan(i * 2, 0, 2, 1);
+			ui->tableWidgetProperties->setItem(i * 2, 0, new QTableWidgetItem(  QString::fromStdString( glWidget->reservoir_model_.properties_name[i] ) ) );
 
-			ui->properties_tableWidget_->setItem(i    , 1, new QTableWidgetItem(  QString::number( min )) );
-			ui->properties_tableWidget_->setItem(i * 2, 1, new QTableWidgetItem(  QString::number( max )) );
-
-			ui->properties_tableWidget_->setItem(i , 0, new QTableWidgetItem(  QString::fromStdString( glWidget->reservoir_model_.properties_name[i] ) ) );
-			ui->properties_tableWidget_->setItem(i , 1, new QTableWidgetItem(  QString( QString::number( min )+" - "+QString::number( max )) ));
-			// ui->properties_tableWidget_->setItem(i * 2, 1, new QTableWidgetItem(  QString::number( max )) );
+			ui->tableWidgetProperties->setItem(i*2    , 1, new QTableWidgetItem(  QString::number( min )) );
+			ui->tableWidgetProperties->setItem(i*2 + 1, 1, new QTableWidgetItem(  QString::number( max )) );
 
 		}
 
-		ui->label_I_range->setText("[ 0 - "+QString::number(glWidget->reservoir_model_.header_v2_.numI)+" ]");
-		ui->label_J_range->setText("[ 0 - "+QString::number(glWidget->reservoir_model_.header_v2_.numJ)+" ]");
-		ui->label_K_range->setText("[ 0 - "+QString::number(glWidget->reservoir_model_.header_v2_.numK)+" ]");
+		ui->label_I_Range->setText("[ 0 - "+QString::number(glWidget->reservoir_model_.header_v2_.numI)+" ]");
+		ui->label_J_Range->setText("[ 0 - "+QString::number(glWidget->reservoir_model_.header_v2_.numJ)+" ]");
+		ui->label_K_Range->setText("[ 0 - "+QString::number(glWidget->reservoir_model_.header_v2_.numK)+" ]");
 
 
 		ui->horizontalslider_max_I->setMaximum(glWidget->reservoir_model_.header_v2_.numI+1);
@@ -173,7 +169,7 @@ void MainWindow::changeProperty()
 
 	if ( glWidget->isIRESOpen( ))
 	{
-		glWidget->changePropertyRange( ui->doubleSpinMin->value(), ui->doubleSpinMax->value(), ui->comboBox_choose_an_property_->currentIndex() );
+		glWidget->changePropertyRange( ui->doubleSpinMin->value(), ui->doubleSpinMax->value(), ui->comboBoxProperty->currentIndex() );
 	}
 }
 
@@ -197,9 +193,9 @@ void MainWindow::on_action_Open_IRES_triggered()
 
 void MainWindow::on_pushButton_Reset_IJK_clicked( )
 {
-	ui->label_I_range->setText("[ 0 - "+QString::number(glWidget->reservoir_model_.header_v2_.numI)+" ]");
-	ui->label_J_range->setText("[ 0 - "+QString::number(glWidget->reservoir_model_.header_v2_.numJ)+" ]");
-	ui->label_K_range->setText("[ 0 - "+QString::number(glWidget->reservoir_model_.header_v2_.numK)+" ]");
+	ui->label_I_Range->setText("[ 0 - "+QString::number(glWidget->reservoir_model_.header_v2_.numI)+" ]");
+	ui->label_J_Range->setText("[ 0 - "+QString::number(glWidget->reservoir_model_.header_v2_.numJ)+" ]");
+	ui->label_K_Range->setText("[ 0 - "+QString::number(glWidget->reservoir_model_.header_v2_.numK)+" ]");
 
 
 	ui->horizontalslider_max_I->setMaximum(glWidget->reservoir_model_.header_v2_.numI+1);
@@ -259,10 +255,9 @@ void MainWindow::on_doubleSpinMin_valueChanged  ( double i)
 {
 	if ( glWidget->isIRESOpen( ) && glWidget->dynamic( ))
 	{
-//		ui->doubleSpinMax->setValue( i);
 
-		glWidget->changePropertyRange( ui->doubleSpinMin->value(), ui->doubleSpinMax->value(), ui->comboBox_choose_an_property_->currentIndex() );
-		std::cout << "Mudou" << std::endl;
+		glWidget->changePropertyRange( ui->doubleSpinMin->value(), ui->doubleSpinMax->value(), ui->comboBoxProperty->currentIndex() );
+
 	}else
 	{
 		//msgBox.setText("First of all. Open a file my friend !!  ");
@@ -275,7 +270,7 @@ void MainWindow::on_doubleSpinMax_valueChanged  ( double i)
 
 	if ( glWidget->isIRESOpen( ) && glWidget->dynamic( ) )
 	{
-		glWidget->changePropertyRange( ui->doubleSpinMin->value(), ui->doubleSpinMax->value(), ui->comboBox_choose_an_property_->currentIndex() );
+		glWidget->changePropertyRange( ui->doubleSpinMin->value(), ui->doubleSpinMax->value(), ui->comboBoxProperty->currentIndex() );
 		std::cout << "doubleSpinMax ::::::::::::: " << ui->doubleSpinMin->value() << std::endl;
 	}else
 	{
