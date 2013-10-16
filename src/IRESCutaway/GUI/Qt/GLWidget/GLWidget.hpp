@@ -64,7 +64,7 @@ class GLWidget: public QGLWidget
 		void fpsCounter ( );
 
 		void loadShaders ( );
-		void openIRESCharles  ( const std::string& filename );
+		void openIRES_v2 ( const std::string& filename );
 		bool isIRESOpen () const;
 
 		void changeProperty ( int property_index );
@@ -84,14 +84,12 @@ class GLWidget: public QGLWidget
 		void setSecondaryVisibility ( bool );
 
 		// Draw Functions
+		void drawCutawaySurface ( );	//
+		void drawSecondary ( );         // Draw only secondary Cells
+		void drawPrimary   ( );		// Draw only primary   Cells
+		void drawPrimaryBoudingBox ( ); // Draw only primary   Cells with its bounding box
 
-		void drawCutawaySurface ( );
-		void drawSecundary ( );
-		void drawPrimary   ( );
-
-		bool dynamic() { return dynamic_; }
-
-		void rawModel           ( );
+		void drawRawModel       ( );
 		void textureViewer      ( );
 		void IRESCutaway      	( );
 
@@ -132,8 +130,9 @@ class GLWidget: public QGLWidget
 		Shader*                         BoundingBoxCutawayLCG;
 
 		Shader*                         secondaryLCG;
-
 		Shader*                         primaryLCG;
+		Shader* 			primaryDebugLCG;
+
 		Shader*                         shellLCG;
 		Shader*                         rawShellLCG;
 
@@ -191,8 +190,6 @@ class GLWidget: public QGLWidget
 		Trackball * trackball_;
 
 		float orthoZoom;
-
-		bool dynamic_;
 
 		// LCG procudure
 		Eigen::Vector2f convertToNormalizedDeviceCoordinates(Eigen::Vector2i position);

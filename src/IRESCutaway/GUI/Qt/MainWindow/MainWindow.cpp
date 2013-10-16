@@ -69,7 +69,7 @@ MainWindow::MainWindow ( QMainWindow *parent ) :
 
 void MainWindow::open( QString pFilename,bool who ) {
 
-	glWidget->openIRESCharles( pFilename.toLocal8Bit().constData() );
+	glWidget->openIRES_v2( pFilename.toLocal8Bit().constData() );
 
 
 	// Filling Dock Widget Layers
@@ -253,7 +253,7 @@ void MainWindow::on_action_Freeze_View_triggered()
 
 void MainWindow::on_doubleSpinMin_valueChanged  ( double i)
 {
-	if ( glWidget->isIRESOpen( ) && glWidget->dynamic( ))
+	if ( glWidget->isIRESOpen( ))
 	{
 
 		glWidget->changePropertyRange( ui->doubleSpinMin->value(), ui->doubleSpinMax->value(), ui->comboBoxProperty->currentIndex() );
@@ -268,7 +268,7 @@ void MainWindow::on_doubleSpinMin_valueChanged  ( double i)
 void MainWindow::on_doubleSpinMax_valueChanged  ( double i)
 {
 
-	if ( glWidget->isIRESOpen( ) && glWidget->dynamic( ) )
+	if ( glWidget->isIRESOpen( )  )
 	{
 		glWidget->changePropertyRange( ui->doubleSpinMin->value(), ui->doubleSpinMax->value(), ui->comboBoxProperty->currentIndex() );
 		std::cout << "doubleSpinMax ::::::::::::: " << ui->doubleSpinMin->value() << std::endl;

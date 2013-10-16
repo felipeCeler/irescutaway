@@ -31,8 +31,6 @@ void GLWidget::initializeGL ( )
 
 	buttonRelease_ = false;
 
-	dynamic_ = false;
-
 	/// OpenGL Stuffs
 	glEnable ( GL_DEPTH_TEST );
 	glDepthMask(GL_TRUE);
@@ -208,8 +206,6 @@ void GLWidget::changePropertyRange ( const double& minRange, const double& maxRa
 
 	reservoir_model_.current_property = property_index;
 
-	dynamic_ = true;
-
     updateGL();
 
 }
@@ -296,7 +292,7 @@ void GLWidget::changeMinK ( const int& value )
 	updateGL();
 }
 
-void GLWidget::openIRESCharles( const std::string& filename )
+void GLWidget::openIRES_v2( const std::string& filename )
 {
 
 	reservoir_model_.openIRES( filename );
@@ -378,14 +374,8 @@ void GLWidget::drawCutawaySurface ( )
 
 }
 
-void GLWidget::drawSecundary ( )
+void GLWidget::drawSecondary ( )
 {
-	if ( enable_blend_ )
-	{
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_DST_COLOR, GL_ONE_MINUS_SRC_ALPHA);
-	}
-
 	GLfloat light_elements[12];
 	for ( std::size_t i = 0; i < lights.size ( ); ++i )
 	{
@@ -448,6 +438,11 @@ void GLWidget::drawSecundary ( )
 	depthFBO->unbindAttachments();
 }
 
+void GLWidget::drawPrimaryBoudingBox ( )
+{
+
+}
+
 void GLWidget::drawPrimary( )
 {
 
@@ -479,7 +474,6 @@ void GLWidget::drawPrimary( )
 
 	reservoir_model_.drawCuboid ( );
 
-
 	primaryLCG->disable( );
 
 
@@ -499,7 +493,7 @@ void GLWidget::paintGL ( )
 	{
 		if ( isRawModel_ )
 		{
-			rawModel();
+			drawRawModel( );
 		}
 		else if ( isIRESCutaway_ )
 		{
@@ -525,7 +519,7 @@ void GLWidget::paintGL ( )
 //
 //}
 
-void GLWidget::rawModel ( )
+void GLWidget::drawRawModel ( )
 {
         glClearColor ( 1.0 , 1.0 , 1.0 , 1.0 );
         glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
@@ -586,7 +580,7 @@ void GLWidget::IRESCutaway (  )
 
 		if ( draw_secondary )
 		{
-			drawSecundary( );
+			drawSecondary( );
 		}
 		if ( draw_primary )
 		{
