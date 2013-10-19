@@ -621,8 +621,6 @@ void GLWidget::gameLooping ( )
 
     //    fps++;
 
-
-
 }
 
 void GLWidget::fpsCounter ( )
