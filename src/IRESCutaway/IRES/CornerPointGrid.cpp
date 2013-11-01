@@ -123,7 +123,10 @@ namespace IRES
 			vertexList = reservoir_file.getVertexList( );
 
 			faces.clear();
-
+			faceColor.clear();
+			faceIJK.clear();
+			faceType.clear();
+			faceProperty.clear();
 			// Geometry
 			faces.resize 	     ( iresFaces_.size ( ) * 16 );
 			// Attributes
@@ -176,7 +179,7 @@ namespace IRES
 				int IDtmp = iresFaces_[i].id;
 				ires::Face::FACE_BLOCK_POS pos = iresFaces_[i].faceBlockRelPos;
 				float V = faceCorner[ 6*IDtmp + pos ];
-				/// One way to know wich edge are corners given a value V is:
+				/// One way to know which edge are corners given a value V is:
 				if ( V >= 8 )
 				{
 					faceIJK[i * 4] = 1.0;
@@ -205,7 +208,7 @@ namespace IRES
 				faceType[i*4]   = static_cast<float> (iresFaces_[i].isExtern);
 				faceType[i*4+1] = F;
 				faceType[i*4+2] = static_cast<float> (iresFaces_[i].isExtern);
-				faceType[i*4+3] = 1.0f;
+				faceType[i*4+3] = static_cast<float> (iresFaces_[i].faceBlockRelPos);
 
 				faceCount++;
 
@@ -484,7 +487,6 @@ namespace IRES
 			faceProperty[i*4+2]   = static_porperties[property_indices[2]].values_[iresFaces_[i].id];
 			faceProperty[i*4+3]   = static_porperties[property_indices[3]].values_[iresFaces_[i].id];
 		}
-
 
 		cuboidProperties.resize(index);
 		// Cuboid

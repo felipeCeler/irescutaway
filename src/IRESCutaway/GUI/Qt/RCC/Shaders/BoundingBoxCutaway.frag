@@ -31,10 +31,13 @@ void main(void)
         int linesize = 1;
         int linesizediag = 1;
 
+        bool wire = false;
+
         // push frontface back, so for double faces we see the interior of the cube (backface)
         if (newNormal.z > 0.0)
         {
             discard;
+            wire = true;
         }
 
         I = 0;
@@ -114,6 +117,7 @@ void main(void)
         // lines outside cutaway (remaining front faces)
         else
            outputColor = I * vec4(vec3(0.7), 1.0) + (1.0 - I) * ( color );
+
 
 
 

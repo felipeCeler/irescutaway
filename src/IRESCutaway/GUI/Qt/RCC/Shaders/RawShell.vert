@@ -69,7 +69,7 @@ void main(void)
 
 	VertexOut.faceType = IJK;
 
-        if ( isShell.x == 1.0 ) // Shell faces
+	if ( (isShell.x == 1 ) &&  (isShell.w > 1 ) && (isShell.y == 0) )  // Shell faces
 	{
 		VertexOut.color  =  propertyColor ( min_property, max_property, property_index );
 		VertexOut.v[0] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(va);
