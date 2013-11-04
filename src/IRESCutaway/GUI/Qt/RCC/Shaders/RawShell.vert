@@ -71,7 +71,7 @@ void main(void)
 
 	if ( (isShell.x == 1 ) &&  (isShell.w > 1 ) && (isShell.y == 0) )  // Shell faces
 	{
-		VertexOut.color  =  propertyColor ( min_property, max_property, property_index );
+		VertexOut.color  =  vec4(0.0,0.0,1.0,1.0);//propertyColor ( min_property, max_property, property_index );
 		VertexOut.v[0] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(va);
 		VertexOut.v[1] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(vb);
 		VertexOut.v[2] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(vc);
@@ -79,7 +79,7 @@ void main(void)
 	}
 	else  // Interior faces
 	{
-		VertexOut.color  = propertyColor ( min_property, max_property, property_index );
+		VertexOut.color  = vec4(0.0,0.0,1.0,1.0);//propertyColor ( min_property, max_property, property_index );
 		VertexOut.v[0] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(0.0);
 		VertexOut.v[1] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(0.0);
 		VertexOut.v[2] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(0.0);

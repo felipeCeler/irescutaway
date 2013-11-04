@@ -84,15 +84,31 @@ namespace IRES
 			void 	loadProperties 	 ( );
 
 
-			// Properties Values Interface
-			std::string properties_name[4];
+			// Properties values Interface for static
+                                std::string static_name [2];
+                                std::size_t static_indices[2];
 
-			std::size_t property_indices[4];
+                                float static_min[2];
+                                float static_max[2];
 
-			float min_value[4];
-			float max_value[4];
+                                int current_static;
 
-			int current_property;
+			// Properties values Interface for dynamic
+                                std::string dynamic_name [7];
+                                std::size_t dynamic_indices[7];
+
+                                float dynamic_min[7];
+                                float dynamic_max[7];
+
+                                int current_dynamic;
+                                int current_dynamic_time_step;
+                        //
+
+                        // Property Interface
+
+                        int type;             // Static or Dynamic
+                        int current_property; //
+
 
 			bool isOpen_;
 

@@ -16,10 +16,8 @@ namespace IRES
 	{
 		isInitialized = 0;
 
-		properties_name[0] = "Bubble Point Pressure";
-		properties_name[1] = "Pressure";
-		properties_name[2] = "Porosity";
-		properties_name[3] = "Modified Block Volume";
+		static_name[0] = "Modified Block Volume";
+		static_name[1] = "Porosity";
 
 		isOpen_ = 0;
 	}
@@ -434,33 +432,20 @@ namespace IRES
 
 		for ( std::size_t property_index = 0; property_index < static_porperties.size( ); property_index++ )
 		{
-			if ( properties_name[0].compare( static_porperties[property_index].name ) == 0 )
-			{
-				std::cout << "Bubble -> " << static_porperties[property_index].name << std::endl;
-				min_value[0] =  static_porperties[property_index].min_;
-				max_value[0] =  static_porperties[property_index].max_;
-				property_indices[0] = property_index;
-			}
-			if ( properties_name[1].compare( static_porperties[property_index].name ) == 0 )
-			{
-				std::cout << "Pressure -> " << static_porperties[property_index].name << std::endl;
-				min_value[1] =  static_porperties[property_index].min_;
-				max_value[1] =  static_porperties[property_index].max_;
-				property_indices[1] = property_index;
-			}
-			if ( properties_name[2].compare( static_porperties[property_index].name ) == 0 )
-			{
-				std::cout << "Porosity -> " << static_porperties[property_index].name << std::endl;
-				min_value[2] =  static_porperties[property_index].min_;
-				max_value[2] =  static_porperties[property_index].max_;
-				property_indices[2] = property_index;
-			}
-			if ( properties_name[3].compare( static_porperties[property_index].name ) == 0 )
+
+			if ( static_name[0].compare( static_porperties[property_index].name ) == 0 )
 			{
 				std::cout << "Volume -> " << static_porperties[property_index].name << std::endl;
-				min_value[3] =  static_porperties[property_index].min_;
-				max_value[3] =  static_porperties[property_index].max_;
-				property_indices[3] = property_index;
+				static_min[0] =  static_porperties[property_index].min_;
+				static_max[0] =  static_porperties[property_index].max_;
+				static_indices[0] = property_index;
+			}
+			if ( static_name[1].compare( static_porperties[property_index].name ) == 0 )
+			{
+				std::cout << "Porosity -> " << static_porperties[property_index].name << std::endl;
+				static_min[1] =  static_porperties[property_index].min_;
+				static_max[1] =  static_porperties[property_index].max_;
+				static_indices[1] = property_index;
 			}
 		}
 
@@ -472,20 +457,20 @@ namespace IRES
 		{
 			if ( reservoir_file.isValidBlock(i) )
 			{
-				cuboidProperties[index+0] = static_porperties[property_indices[0]].values_[i];
-				cuboidProperties[index+1] = static_porperties[property_indices[1]].values_[i];
-				cuboidProperties[index+2] = static_porperties[property_indices[2]].values_[i];
-				cuboidProperties[index+3] = static_porperties[property_indices[3]].values_[i];
+				cuboidProperties[index+0] = static_porperties[static_indices[0]].values_[i];
+				cuboidProperties[index+1] = static_porperties[static_indices[1]].values_[i];
+				cuboidProperties[index+2] = static_porperties[static_indices[0]].values_[i];
+				cuboidProperties[index+3] = static_porperties[static_indices[0]].values_[i];
 				index += 4;
 			}
 		}
 
 		for ( std::size_t i = 0; i < iresFaces_.size() ; i++ )
 		{
-			faceProperty[i*4  ]   = static_porperties[property_indices[0]].values_[iresFaces_[i].id];
-			faceProperty[i*4+1]   = static_porperties[property_indices[1]].values_[iresFaces_[i].id];
-			faceProperty[i*4+2]   = static_porperties[property_indices[2]].values_[iresFaces_[i].id];
-			faceProperty[i*4+3]   = static_porperties[property_indices[3]].values_[iresFaces_[i].id];
+			faceProperty[i*4  ]   = static_porperties[static_indices[0]].values_[iresFaces_[i].id];
+			faceProperty[i*4+1]   = static_porperties[static_indices[1]].values_[iresFaces_[i].id];
+			faceProperty[i*4+2]   = static_porperties[static_indices[0]].values_[iresFaces_[i].id];
+			faceProperty[i*4+3]   = static_porperties[static_indices[0]].values_[iresFaces_[i].id];
 		}
 
 		cuboidProperties.resize(index);

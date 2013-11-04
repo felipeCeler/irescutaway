@@ -85,16 +85,16 @@ void MainWindow::open( QString pFilename,bool who ) {
 		ui->tableWidgetProperties->setRowCount(2*4);
 		ui->comboBoxProperty->clear();
 
-		for ( std::size_t i = 0 ; i < 4; ++i )
+		for ( std::size_t i = 0 ; i < 2; ++i )
 		{
 
-			float min =  glWidget->reservoir_model_.min_value[i];
-			float max =  glWidget->reservoir_model_.max_value[i];
+			float min =  glWidget->reservoir_model_.static_min[i];
+			float max =  glWidget->reservoir_model_.static_max[i];
 
 
-			ui->comboBoxProperty->addItem(  QString::fromStdString( glWidget->reservoir_model_.properties_name[i] ) );
+			ui->comboBoxProperty->addItem(  QString::fromStdString( glWidget->reservoir_model_.static_name[i] ) );
 			ui->tableWidgetProperties->setSpan(i * 2, 0, 2, 1);
-			ui->tableWidgetProperties->setItem(i * 2, 0, new QTableWidgetItem(  QString::fromStdString( glWidget->reservoir_model_.properties_name[i] ) ) );
+			ui->tableWidgetProperties->setItem(i * 2, 0, new QTableWidgetItem(  QString::fromStdString( glWidget->reservoir_model_.static_name[i] ) ) );
 
 			ui->tableWidgetProperties->setItem(i*2    , 1, new QTableWidgetItem(  QString::number( min )) );
 			ui->tableWidgetProperties->setItem(i*2 + 1, 1, new QTableWidgetItem(  QString::number( max )) );
@@ -128,8 +128,8 @@ void MainWindow::open( QString pFilename,bool who ) {
 void MainWindow::updateDoubleSpinMin( int property_index )
 {
 
-	float min =  glWidget->reservoir_model_.min_value[property_index];
-	float max =  glWidget->reservoir_model_.max_value[property_index];
+	float min =  glWidget->reservoir_model_.static_min[property_index];
+	float max =  glWidget->reservoir_model_.static_max[property_index];
 
 	ui->doubleSpinMin->setMinimum ( static_cast<double> (min) );
 	ui->doubleSpinMin->setMaximum ( static_cast<double> (max));
@@ -148,8 +148,8 @@ void MainWindow::updateDoubleSpinMax( int property_index )
 {
 
 
-	float min =  glWidget->reservoir_model_.min_value[property_index];
-	float max =  glWidget->reservoir_model_.max_value[property_index];
+	float min =  glWidget->reservoir_model_.static_min[property_index];
+	float max =  glWidget->reservoir_model_.static_max[property_index];
 
 	ui->doubleSpinMin->setMinimum ( static_cast<double> (min) );
 	ui->doubleSpinMin->setMaximum ( static_cast<double> (max));
