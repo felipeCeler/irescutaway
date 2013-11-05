@@ -6,9 +6,8 @@ layout(location = 2) in vec4 vc;
 layout(location = 3) in vec4 vd;
 
 layout(location = 4) in vec4 isShell;
-layout(location = 5) in vec4 color;
-layout(location = 6) in vec4 IJK;
-layout(location = 7) in vec4 properties;
+layout(location = 5) in vec4 IJK;
+layout(location = 6) in vec4 static_properties;
 
 
 out VertexData
@@ -35,7 +34,7 @@ uniform int property_index;
 vec4 propertyColor ( in float min_range, in float max_range, in int index )
 {
 
-	float normalized_color = ( properties[index] - min_property ) / ( max_property - min_property );
+	float normalized_color = ( static_properties[index] - min_property ) / ( max_property - min_property );
 
 	float fourValue = 4 * normalized_color;
 	float red   = min(fourValue - 1.5, -fourValue + 4.5);

@@ -9,14 +9,11 @@ layout(location = 5) in vec4 v5;
 layout(location = 6) in vec4 v6;
 layout(location = 7) in vec4 v7;
 
-layout(location = 8)  in vec4 color;
-layout(location = 9)  in vec4 IJK;
-layout(location = 10) in vec4 focus;
 // Four property x = Bubble Point Pressure
 //               y = Pressure
 //	         z = Porosity
 //               w = Modified Block Volume
-layout(location = 11) in vec4 properties;
+layout(location = 8) in vec4 static_properties;
 
 /// FIXME - Research for the best away to alignment data on Shader.
 out CubeData
@@ -43,7 +40,7 @@ uniform float max_range;
 vec4 propertyColor ( in float min_range, in float max_range, in int index )
 {
 
-	float normalized_color = ( properties[index] - min_property ) / ( max_property - min_property );
+	float normalized_color = ( static_properties[index] - min_property ) / ( max_property - min_property );
 
 	float fourValue = 4 * normalized_color;
 	float red   = min(fourValue - 1.5, -fourValue + 4.5);
@@ -61,7 +58,7 @@ vec4 propertyColor ( in float min_range, in float max_range, in int index )
 
 bool isPrimary ( )
 {
-	if ( properties[property_index] > min_range && properties[property_index] < max_range)
+	if ( static_properties[property_index] > min_range && static_properties[property_index] < max_range)
 		return true;
 
 	return false;

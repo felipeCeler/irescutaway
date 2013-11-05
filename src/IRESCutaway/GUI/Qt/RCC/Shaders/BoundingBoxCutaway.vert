@@ -9,9 +9,9 @@ layout(location = 5) in vec4 v5;
 layout(location = 6) in vec4 v6;
 layout(location = 7) in vec4 v7;
 
-layout(location = 8)  in vec4 color;
-layout(location = 9)  in vec4 IJK;
-layout(location = 11) in vec4 properties;
+layout(location = 8) in vec4 static_properties;
+
+
 
 /// FIXME - Do research and understand the best away to align data on Shader.
 out CubeData
@@ -35,7 +35,7 @@ uniform int property_index;
 vec4 propertyColor ( in float min_range, in float max_range, in int index )
 {
 
-	float normalized_color = ( properties[index] - min_property ) / ( max_property - min_property );
+	float normalized_color = ( static_properties[index] - min_property ) / ( max_property - min_property );
 
 	float fourValue = 4 * normalized_color;
 	float red   = min(fourValue - 1.5, -fourValue + 4.5);

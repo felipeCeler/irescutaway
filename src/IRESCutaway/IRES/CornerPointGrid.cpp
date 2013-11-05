@@ -332,29 +332,11 @@ namespace IRES
 					glVertexAttribPointer(location, 4, GL_FLOAT, GL_FALSE, size_of_struct , reinterpret_cast<void*>(size_of_vertice * location));
 				}
 
-				glBindBuffer ( GL_ARRAY_BUFFER, vertexBufferCuboidColor);
-				glBufferData ( GL_ARRAY_BUFFER , cubeColor.size( ) * sizeof(cubeColor[0]) , &cubeColor[0] , GL_STATIC_DRAW );
-
-				glEnableVertexAttribArray(8);
-				glVertexAttribPointer(8, 4, GL_FLOAT, GL_FALSE, 0, 0);
-
-				glBindBuffer ( GL_ARRAY_BUFFER, vertexBufferCuboidIJK);
-				glBufferData ( GL_ARRAY_BUFFER , cuboidIJK.size( ) * sizeof(cuboidIJK[0]) , &cuboidIJK[0] , GL_STATIC_DRAW );
-
-				glEnableVertexAttribArray(9);
-				glVertexAttribPointer(9, 4, GL_FLOAT, GL_FALSE, 0, 0);
-
-				glBindBuffer ( GL_ARRAY_BUFFER, vertexBufferCuboidFocus);
-				glBufferData ( GL_ARRAY_BUFFER , cuboidFocus.size( ) * sizeof(cuboidFocus[0]) , &cuboidFocus[0] , GL_STATIC_DRAW );
-
-				glEnableVertexAttribArray(10);
-				glVertexAttribPointer(10, 4, GL_FLOAT, GL_FALSE, 0, 0);
-
 				glBindBuffer ( GL_ARRAY_BUFFER, vertexBufferCuboidProperties);
 				glBufferData ( GL_ARRAY_BUFFER , cuboidProperties.size( ) * sizeof(cuboidProperties[0]) , &cuboidProperties[0] , GL_STATIC_DRAW );
 
-				glEnableVertexAttribArray(11);
-				glVertexAttribPointer(11, 4, GL_FLOAT, GL_FALSE, 0, 0);
+				glEnableVertexAttribArray(8);
+				glVertexAttribPointer(8, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
 
 			glBindVertexArray(0);
@@ -377,29 +359,23 @@ namespace IRES
 	                                glVertexAttribPointer(location, 4, GL_FLOAT, GL_FALSE, size_of_struct_face , reinterpret_cast<void*>(size_of_vertice_face * location));
 	                        }
 
-	                        glBindBuffer ( GL_ARRAY_BUFFER, vertexBufferFaceType);
-	                        glBufferData ( GL_ARRAY_BUFFER , faceType.size( ) * sizeof(faceType[0]) , &faceType[0] , GL_STATIC_DRAW );
+                                glBindBuffer ( GL_ARRAY_BUFFER, vertexBufferFaceType);
+                                glBufferData ( GL_ARRAY_BUFFER , faceType.size( ) * sizeof(faceType[0]) , &faceType[0] , GL_STATIC_DRAW );
 
-	                        glEnableVertexAttribArray(4);
-	                        glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, 0, 0);
+                                glEnableVertexAttribArray(4);
+                                glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
-	                        glBindBuffer ( GL_ARRAY_BUFFER, vertexBufferFaceColor);
-	                        glBufferData ( GL_ARRAY_BUFFER , faceColor.size( ) * sizeof(faceColor[0]) , &faceColor[0] , GL_STATIC_DRAW );
+                                glBindBuffer ( GL_ARRAY_BUFFER, vertexBufferFaceIJK);
+                                glBufferData ( GL_ARRAY_BUFFER , faceIJK.size( ) * sizeof(faceIJK[0]) , &faceIJK[0] , GL_STATIC_DRAW );
 
-	                        glEnableVertexAttribArray(5);
-	                        glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, 0, 0);
+                                glEnableVertexAttribArray(5);
+                                glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
-	                        glBindBuffer ( GL_ARRAY_BUFFER, vertexBufferFaceIJK);
-	                        glBufferData ( GL_ARRAY_BUFFER , faceIJK.size( ) * sizeof(faceIJK[0]) , &faceIJK[0] , GL_STATIC_DRAW );
+                                glBindBuffer ( GL_ARRAY_BUFFER, vertexBufferFaceProperties);
+                                glBufferData ( GL_ARRAY_BUFFER , faceProperty.size( ) * sizeof(faceProperty[0]) , &faceProperty[0] , GL_STATIC_DRAW );
 
-	                        glEnableVertexAttribArray(6);
-	                        glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, 0, 0);
-
-	                        glBindBuffer ( GL_ARRAY_BUFFER, vertexBufferFaceProperties);
-	                        glBufferData ( GL_ARRAY_BUFFER , faceProperty.size( ) * sizeof(faceProperty[0]) , &faceProperty[0] , GL_STATIC_DRAW );
-
-	                        glEnableVertexAttribArray(7);
-	                        glVertexAttribPointer(7, 4, GL_FLOAT, GL_FALSE, 0, 0);
+                                glEnableVertexAttribArray(6);
+                                glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
 	                glBindVertexArray(0);
 
