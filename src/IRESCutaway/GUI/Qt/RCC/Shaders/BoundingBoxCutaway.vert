@@ -11,6 +11,14 @@ layout(location = 7) in vec4 v7;
 
 layout(location = 8) in vec4 static_properties;
 
+layout(location = 9)  in vec4 d1;
+layout(location = 10) in vec4 d2;
+layout(location = 11) in vec4 d3;
+layout(location = 12) in vec4 d4;
+layout(location = 13) in vec4 d5;
+layout(location = 14) in vec4 d6;
+layout(location = 15) in vec4 d7;
+
 
 
 /// FIXME - Do research and understand the best away to align data on Shader.

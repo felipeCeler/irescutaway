@@ -18,7 +18,7 @@ int main ( int argc , char *argv[] )
 	form->show ( );
 
 	//form->open( "D:\\Workspace\\RESCutaway\\build\\build\\bin\\zmap.ires2.ires",true );
-	form->open( "/media/d/Workspace/IRESCutaway/build/build/bin/dynamics/zmapDynamic_NEW01_FaceProp.ires",true );
+	form->open( "/media/d/Workspace/IRESCutaway/build/build/bin/zmapDynamic_NEW01_FaceProp.ires",true );
         //form->open( "/home/ricardomarroquim/devel/irescutaway/build/build/bin/zmap.ires2.ires",true );
 
 	form->ui->doubleSpinMin->setValue( 270000.0 );

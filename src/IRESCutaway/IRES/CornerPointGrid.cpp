@@ -401,10 +401,10 @@ namespace IRES
 	void CornerPointGrid::loadProperties( )
 	{
 
-		// Four property x = Bubble Point Pressure
-		//               y = Pressure
-		//	         z = Porosity
-		//               w = Modified Block Volume
+		// Four property x = Modified Block Volume
+		//               y = Porosity
+		//	         z = 0
+		//               w = 0
 
 		for ( std::size_t property_index = 0; property_index < static_porperties.size( ); property_index++ )
 		{
@@ -425,7 +425,7 @@ namespace IRES
 			}
 		}
 
-		current_property = 0;
+		current_static = 0;
 
 		int index = 0;
 

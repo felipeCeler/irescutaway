@@ -61,7 +61,7 @@ namespace IRES
 					// From Ires.dynamic_ name/units/variable_name/components
 
 					// FIXME std::pair< timeStep, values for each block >
-					std::vector<std::pair<int, std::vector<float> > > values_;
+					std::vector< std::vector<float>  > values_;
 
 			};
 
@@ -85,7 +85,7 @@ namespace IRES
 
 
 			// Properties values Interface for static
-                                std::string static_name [2];
+                                std::string static_name   [2];
                                 std::size_t static_indices[2];
 
                                 float static_min[2];
@@ -94,7 +94,7 @@ namespace IRES
                                 int current_static;
 
 			// Properties values Interface for dynamic
-                                std::string dynamic_name [7];
+                                std::string dynamic_name   [7];
                                 std::size_t dynamic_indices[7];
 
                                 float dynamic_min[7];
@@ -102,12 +102,15 @@ namespace IRES
 
                                 int current_dynamic;
                                 int current_dynamic_time_step;
-                        //
 
                         // Property Interface
 
-                        int type;             // Static or Dynamic
-                        int current_property; //
+                        int setupType;             // Static or Dynamic
+                        int currentProperty;	   // Static or Dynamic
+                        int currentTimeStep;	   // Only for Dynamic
+
+			void setupStatic ( );
+			void setupDynamic ( );
 
 
 			bool isOpen_;

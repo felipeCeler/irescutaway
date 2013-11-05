@@ -204,7 +204,7 @@ void GLWidget::changePropertyRange ( const double& minRange, const double& maxRa
 	min_range = minRange;
 	max_range = maxRange;
 
-	reservoir_model_.current_property = property_index;
+	reservoir_model_.current_static = property_index;
 
     updateGL();
 
@@ -221,7 +221,7 @@ void GLWidget::changeProperty ( int property_index )
 	std::cout << "Property Max : " << min << std::endl;
 	std::cout << "Property Min : " << max << std::endl;
 
-	reservoir_model_.current_property = property_index;
+	reservoir_model_.current_static = property_index;
 
 }
 void GLWidget::changeIJK ( const int& min_i, const int& max_i,
@@ -346,9 +346,9 @@ void GLWidget::drawCutawaySurface ( )
 
 		BoundingBoxInitializationLCG->setUniform("min_range", min_range  );
 		BoundingBoxInitializationLCG->setUniform("max_range", max_range  );
-		BoundingBoxInitializationLCG->setUniform("min_property", reservoir_model_.static_min[reservoir_model_.current_property]  );
-		BoundingBoxInitializationLCG->setUniform("max_property", reservoir_model_.static_max[reservoir_model_.current_property]  );
-		BoundingBoxInitializationLCG->setUniform("property_index", reservoir_model_.current_property );
+		BoundingBoxInitializationLCG->setUniform("min_property", reservoir_model_.static_min[reservoir_model_.current_static]  );
+		BoundingBoxInitializationLCG->setUniform("max_property", reservoir_model_.static_max[reservoir_model_.current_static]  );
+		BoundingBoxInitializationLCG->setUniform("property_index", reservoir_model_.current_static );
 
 		BoundingBoxInitializationLCG->setUniform( "x" , volume_width );
 		BoundingBoxInitializationLCG->setUniform( "y" , volume_height );
@@ -389,9 +389,9 @@ void GLWidget::drawSecondary ( )
 
 	shellLCG->setUniform ( "normals" , depthFBO->bindAttachment(1) );
 
-	shellLCG->setUniform("min_property", reservoir_model_.static_min[reservoir_model_.current_property]  );
-	shellLCG->setUniform("max_property", reservoir_model_.static_max[reservoir_model_.current_property]  );
-	shellLCG->setUniform("property_index", reservoir_model_.current_property );
+	shellLCG->setUniform("min_property", reservoir_model_.static_min[reservoir_model_.current_static]  );
+	shellLCG->setUniform("max_property", reservoir_model_.static_max[reservoir_model_.current_static]  );
+	shellLCG->setUniform("property_index", reservoir_model_.current_static );
 
 	shellLCG->setUniform("num_lights", (GLint) lights.size ( )  );
 	shellLCG->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
@@ -416,9 +416,9 @@ void GLWidget::drawSecondary ( )
 
 	BoundingBoxCutawayLCG->setUniform( "normals" , depthFBO->bindAttachment(1) );
 
-	BoundingBoxCutawayLCG->setUniform("min_property", reservoir_model_.static_min[reservoir_model_.current_property]  );
-	BoundingBoxCutawayLCG->setUniform("max_property", reservoir_model_.static_max[reservoir_model_.current_property]  );
-	BoundingBoxCutawayLCG->setUniform("property_index", reservoir_model_.current_property );
+	BoundingBoxCutawayLCG->setUniform("min_property", reservoir_model_.static_min[reservoir_model_.current_static]  );
+	BoundingBoxCutawayLCG->setUniform("max_property", reservoir_model_.static_max[reservoir_model_.current_static]  );
+	BoundingBoxCutawayLCG->setUniform("property_index", reservoir_model_.current_static );
 
 	BoundingBoxCutawayLCG->setUniform("num_lights", (GLint) lights.size ( )  );
 	BoundingBoxCutawayLCG->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
@@ -464,9 +464,9 @@ void GLWidget::drawPrimary( )
 	primaryLCG->setUniform("min_range", min_range  );
 	primaryLCG->setUniform("max_range", max_range  );
 
-	primaryLCG->setUniform("min_property", reservoir_model_.static_min[reservoir_model_.current_property]  );
-	primaryLCG->setUniform("max_property", reservoir_model_.static_max[reservoir_model_.current_property]  );
-	primaryLCG->setUniform("property_index", reservoir_model_.current_property );
+	primaryLCG->setUniform("min_property", reservoir_model_.static_min[reservoir_model_.current_static]  );
+	primaryLCG->setUniform("max_property", reservoir_model_.static_max[reservoir_model_.current_static]  );
+	primaryLCG->setUniform("property_index", reservoir_model_.current_static );
 
 	primaryLCG->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
 	primaryLCG->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
@@ -541,9 +541,9 @@ void GLWidget::drawRawModel ( )
         rawShellLCG->setUniform("xtoon_texture", 3  );
         rawShellLCG->setUniform("viewportSize", width(), height() );
 
-	rawShellLCG->setUniform("min_property", reservoir_model_.static_min[reservoir_model_.current_property]  );
-	rawShellLCG->setUniform("max_property", reservoir_model_.static_max[reservoir_model_.current_property]  );
-	rawShellLCG->setUniform("property_index", reservoir_model_.current_property );
+	rawShellLCG->setUniform("min_property", reservoir_model_.static_min[reservoir_model_.current_static]  );
+	rawShellLCG->setUniform("max_property", reservoir_model_.static_max[reservoir_model_.current_static]  );
+	rawShellLCG->setUniform("property_index", reservoir_model_.current_static );
 
 	rawShellLCG->setUniform("num_lights", (GLint) lights.size ( )  );
 	rawShellLCG->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
