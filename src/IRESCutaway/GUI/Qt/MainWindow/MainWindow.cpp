@@ -36,6 +36,13 @@ MainWindow::MainWindow ( QMainWindow *parent ) :
 
 	connect(ui->comboBoxProperty, SIGNAL(activated(int)), this, SLOT(updateDoubleSpinMin(int)));
 	connect(ui->comboBoxProperty, SIGNAL(activated(int)), this, SLOT(updateDoubleSpinMax(int)));
+
+	connect(ui->comboBoxProperty_Dynamic, SIGNAL(activated(int)), this,     SLOT(updateDynamicDoubleSpinMin(int)));
+	connect(ui->comboBoxProperty_Dynamic, SIGNAL(activated(int)), this,     SLOT(updateDynamicDoubleSpinMax(int)));
+	connect(ui->comboBoxProperty_Dynamic, SIGNAL(activated(int)), glWidget, SLOT(changeDynamicProperty (int)));
+
+	connect(ui->sliderTimeLine_Dynamic, SIGNAL(valueChanged(int)), glWidget, SLOT(changeTimeStep(int)));
+
 	// Just the name of the function: so changeProperty , not glWidget->changeProperty
 	connect(ui->comboBoxProperty, SIGNAL(activated(int)), glWidget, SLOT(changeProperty(int)));
 	// Sliders
@@ -64,6 +71,11 @@ MainWindow::MainWindow ( QMainWindow *parent ) :
 	// Change visibility  of cells
 	connect(ui->action_Show_Primary_Cells,   SIGNAL(toggled(bool)), glWidget, SLOT(setPrimaryVisibility(bool)));
 	connect(ui->action_Show_Secondary_Cells, SIGNAL(toggled(bool)), glWidget, SLOT(setSecondaryVisibility(bool)));
+
+	// Change Feature Visibility
+
+	connect(ui->action_Fault,   SIGNAL(toggled(bool)), glWidget, SLOT(showFault(bool)));
+	connect(ui->action_BorderLine, SIGNAL(toggled(bool)), glWidget, SLOT(showBorderLines(bool)));
 
 }
 
@@ -121,7 +133,71 @@ void MainWindow::open( QString pFilename,bool who ) {
 		ui->horizontalslider_min_I->setValue ( 0 );
 		ui->horizontalslider_min_J->setValue ( 0 );
 		ui->horizontalslider_min_K->setValue ( 0 );
+
+		loadDynamic();
 	}
+
+}
+
+void MainWindow::loadDynamic( )
+{
+	if ( glWidget->isIRESOpen( ) )
+	{
+
+		QString title ( reinterpret_cast<char*>(glWidget->reservoir_model_.header_v2_.title) );
+
+		ui->labelSimulatorDynamic->setText (  title );
+
+		updateDynamicDoubleSpinMin( 0 );
+		updateDynamicDoubleSpinMax( 0 );
+
+		ui->sliderTimeLine_Dynamic->setMinimum(0);
+		ui->comboBoxProperty_Dynamic->clear();
+
+		for ( std::size_t i = 0; i < glWidget->reservoir_model_.dynamic_properties.size(); i++ )
+		{
+			ui->comboBoxProperty_Dynamic->addItem(  QString::fromStdString( glWidget->reservoir_model_.dynamic_properties[i].name ) );
+		}
+
+		ui->sliderTimeLine_Dynamic->setMaximum(glWidget->reservoir_model_.dynamic_properties[0].min_.size());
+		ui->labelTimeStepsShow_Dynamic->setText( QString::number (glWidget->reservoir_model_.dynamic_properties[0].min_.size()) );
+
+	}
+}
+
+void MainWindow::updateDynamicDoubleSpinMin( int property_index  )
+{
+
+	float min =  glWidget->reservoir_model_.dynamic_properties[property_index].min_[0];
+	float max =  glWidget->reservoir_model_.dynamic_properties[property_index].max_[0];
+
+	ui->doubleSpinMin_Dynamic->setMinimum ( static_cast<float> (min) );
+	ui->doubleSpinMin_Dynamic->setMaximum ( static_cast<float> (max));
+
+	ui->doubleSpinMax_Dynamic->setMinimum ( static_cast<float> (min) );
+	ui->doubleSpinMax_Dynamic->setMaximum ( static_cast<float> (max) );
+
+	qDebug() << "Min: "<< min;
+
+	//ui->doubleSpinMin_Dynamic->setValue(static_cast<double> (min));
+
+}
+
+void MainWindow::updateDynamicDoubleSpinMax( int property_index  )
+{
+
+	float min =  glWidget->reservoir_model_.dynamic_properties[property_index].min_[0];
+	float max =  glWidget->reservoir_model_.dynamic_properties[property_index].max_[0];
+
+	ui->doubleSpinMin_Dynamic->setMinimum ( static_cast<float> (min) );
+	ui->doubleSpinMin_Dynamic->setMaximum ( static_cast<float> (max) );
+
+	ui->doubleSpinMax_Dynamic->setMinimum ( static_cast<float> (min) );
+	ui->doubleSpinMax_Dynamic->setMaximum ( static_cast<float> (max) );
+
+	qDebug() << "Max: "<< max;
+
+	//ui->doubleSpinMax_Dynamic->setValue(static_cast<float> (max));
 
 }
 
@@ -265,6 +341,7 @@ void MainWindow::on_doubleSpinMin_valueChanged  ( double i)
 
 
 }
+
 void MainWindow::on_doubleSpinMax_valueChanged  ( double i)
 {
 

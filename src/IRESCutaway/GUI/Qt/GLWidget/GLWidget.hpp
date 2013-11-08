@@ -93,11 +93,17 @@ class GLWidget: public QGLWidget
 		void textureViewer      ( );
 		void IRESCutaway      	( );
 
+		void showFault		( bool visibility );
+		void showBorderLines    ( bool visibility );
+
 		void setTextureViewerVisibility ( bool visibility ) { isTextureViewer_ = visibility; updateGL();}
 		void setRawModelVisibility      ( bool visibility ) { isRawModel_     = visibility; updateGL();}
 		void setIRESCutawayVisibility   ( bool visibility ) { isIRESCutaway_  = visibility; updateGL();}
 
 		void freezeView ( );
+
+		void changeTimeStep ( int step  ) { this->time_step = step; std::cout << "... " << step << std::endl; updateGL(); };
+		void changeDynamicProperty ( int index ) { reservoir_model_.loadDynamic( index ); dynamic_property_index = index; updateGL(); };
 
 	protected:
 		void dragEnterEvent ( QDragEnterEvent *event );
@@ -135,6 +141,7 @@ class GLWidget: public QGLWidget
 
 		Shader*                         shellLCG;
 		Shader*                         rawShellLCG;
+		Shader* 			borderLinesLCG;
 
 		QImage fbo;
 		float  angle;
@@ -182,6 +189,9 @@ class GLWidget: public QGLWidget
 		/// -- Aperture of Cutaway
 		float volume_width;
 		float volume_height;
+
+		int time_step;
+		int dynamic_property_index;
 
 		// Stores the freezed camera (view matrix)
 		Eigen::Matrix4f freeze_viewmatrix_;

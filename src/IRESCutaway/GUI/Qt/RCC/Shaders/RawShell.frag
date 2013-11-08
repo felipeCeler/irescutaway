@@ -60,7 +60,7 @@ void main(void)
 
         vec4 xtoon = texture(xtoon_texture, xtoon_texCoord ).rgba;
 
-        //outputColor = I * vec4(vec3(0.0), 1.0) + (1.0 - I) * ( xtoon );
-	outputColor = VertexIn.color;
+        outputColor = I * vec4(vec3(0.0), 1.0) + (1.0 - I) * ( xtoon );
+
 
 }

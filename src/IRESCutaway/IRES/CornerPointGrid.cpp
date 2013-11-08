@@ -19,6 +19,9 @@ namespace IRES
 		static_name[0] = "Modified Block Volume";
 		static_name[1] = "Porosity";
 
+		showBorderLine = 0;
+		showFault      = 0;
+
 		isOpen_ = 0;
 	}
 
@@ -33,10 +36,9 @@ namespace IRES
 
 		// Cuboid
 		glGenVertexArrays ( 1, &vertexArrayCuboids );
-			glGenBuffers  ( 1, &vertexBufferCuboidGeometry );  // Geometry
-			glGenBuffers  ( 1, &vertexBufferCuboidColor  );      // Property Color
-			glGenBuffers  ( 1, &vertexBufferCuboidIJK  );        // Cube IJK
-			glGenBuffers  ( 1, &vertexBufferCuboidProperties  ); // Cube Property
+			glGenBuffers ( 1, &vertexBufferCuboidGeometry );  // Geometry
+			glGenBuffers ( 1, &vertexBufferCuboidProperties  ); // Cube Property
+			glGenBuffers ( 1, &vertexBufferCuboidDynamic);
 
 		// Face Features
 		glGenVertexArrays ( 1, &vertexArrayFaces );
@@ -102,12 +104,36 @@ namespace IRES
 
 			}
 
-			std::vector<std::string> 	dynamic_names;
+			std::vector<std::string> 	       dynamic_names;
+			std::vector<unsigned int >	       numTimeSteps;
 			reservoir_file.getDynamicPropertyNames(dynamic_names);
+
+			dynamic_properties.resize ( dynamic_names.size( ) );
 
 			for ( std::size_t i = 0; i < dynamic_names.size(); i++)
 			{
 				std::cout << " Dynamic Name " <<  dynamic_names[i] << std::endl;
+
+			}
+
+			reservoir_file.getDynamicPropertyNumTimesteps( numTimeSteps );
+
+			for ( std::size_t i = 0; i < dynamic_names.size(); i++ )
+			{
+				dynamic_properties[i].name = dynamic_names[i];
+				dynamic_properties[i].values_.resize( numTimeSteps[i] );
+
+				dynamic_properties[i].min_.resize( numTimeSteps[i] );
+				dynamic_properties[i].max_.resize( numTimeSteps[i] );
+
+				for ( std::size_t t = 0; t < numTimeSteps[i]; t ++)
+				{
+					reservoir_file.getDynamicPropertyValues( i, t, dynamic_properties[i].values_[t]);
+					dynamic_properties[i].min_[t] = *std::min_element ( dynamic_properties[i].values_[t].begin ( ) , dynamic_properties[i].values_[t].end ( ) );
+					dynamic_properties[i].max_[t] = *std::max_element ( dynamic_properties[i].values_[t].begin ( ) , dynamic_properties[i].values_[t].end ( ) );
+					std::cout << "Time step: " << t << " min "<< dynamic_properties[i].min_[t] << " max " <<  dynamic_properties[i].max_[t] << std::endl;
+
+				}
 			}
 
 
@@ -216,9 +242,6 @@ namespace IRES
 			cuboids.clear ( );
 			cuboids.resize( number_of_blocks_ * 32 );
 
-			cubeColor.resize        ( number_of_blocks_ * 4 );
-			cuboidFocus.resize      ( number_of_blocks_ * 4 );
-			cuboidIJK.resize        ( number_of_blocks_ * 4 );
 			cuboidProperties.resize ( number_of_blocks_ * 4 );
 
 			int stride_32 = 0;
@@ -284,21 +307,6 @@ namespace IRES
 
 					stride_32 += 32;
 
-					cubeColor[stride_4]     = 1.0f;
-					cubeColor[stride_4+1]   = 0.0f;
-					cubeColor[stride_4+2]   = 0.0f;
-					cubeColor[stride_4+3]   = 1.0f;
-
-					cuboidIJK[stride_4]     = I;
-					cuboidIJK[stride_4+1]   = J;
-					cuboidIJK[stride_4+2]   = K;
-					cuboidIJK[stride_4+3]   = 0.0;
-
-					cuboidFocus[stride_4]   = 1.0f;
-					cuboidFocus[stride_4+1] = 0.0f;
-					cuboidFocus[stride_4+2] = 0.0f;
-					cuboidFocus[stride_4+3] = 1.0f;
-
 					stride_4 += 4;
 
 					cuboidCount++;
@@ -312,9 +320,6 @@ namespace IRES
 			}
 
 			cuboids.resize    (stride_32);
-			cubeColor.resize  (stride_4 );
-			cuboidFocus.resize(stride_4 );
-			cuboidIJK.resize  (stride_4 );
 
 			glBindVertexArray ( vertexArrayCuboids );
 
@@ -337,6 +342,19 @@ namespace IRES
 
 				glEnableVertexAttribArray(8);
 				glVertexAttribPointer(8, 4, GL_FLOAT, GL_FALSE, 0, 0);
+
+				// - Dynamic Attributes
+				glBindBuffer( GL_ARRAY_BUFFER, vertexBufferCuboidDynamic );
+				glBufferData ( GL_ARRAY_BUFFER , cuboidDynamic.size( ) * sizeof(cuboidDynamic[0]) , &cuboidDynamic[0] , GL_STATIC_DRAW );
+
+				size_of_vertice = 4 * sizeof(float);
+				size_of_struct  = 7 * size_of_vertice;
+
+				for ( int location = 0 ; location < 7 ; location++)
+				{
+					glEnableVertexAttribArray(9+location);
+					glVertexAttribPointer(9+location, 4, GL_FLOAT, GL_FALSE, size_of_struct , reinterpret_cast<void*>(size_of_vertice * (9+location)));
+				}
 
 
 			glBindVertexArray(0);
@@ -381,6 +399,7 @@ namespace IRES
 
 
 			loadProperties( );
+			loadDynamic   (0);
 		}
 	}
 
@@ -396,6 +415,44 @@ namespace IRES
 		glBindVertexArray ( this->vertexArrayCuboids );
 		glDrawArrays      ( GL_POINTS , 0 , this->cuboidCount );
 		glBindVertexArray ( 0 );
+	}
+
+	void CornerPointGrid::loadDynamic ( int property_index )
+	{
+		cuboidDynamic.clear();
+
+		int index = 0;
+		std::vector<unsigned int> numTimeSteps;
+
+		std::cout << "Loading Property " << std::endl;
+
+		reservoir_file.getDynamicPropertyNumTimesteps( numTimeSteps );
+
+		cuboidDynamic.resize( 28 * number_of_blocks_ , 0.0f );
+
+		int time_steps = numTimeSteps[0];
+
+		for ( std::size_t i = 0; i < number_of_blocks_; i++)
+		{
+			if ( reservoir_file.isValidBlock(i) )
+			{
+				for ( std::size_t t = 0; t < 28; t++)
+				{
+					if ( t < numTimeSteps[0])
+						cuboidDynamic[i*28+t] = dynamic_properties[property_index].values_[t][i];
+					//std::cout << "Float "<< cuboidDynamic[i*28+t] << std::endl;
+				}
+				index += 28;
+				//std::cout << " ----------------- " << std::endl;
+			}
+		}
+
+		cuboidDynamic.resize( index );
+
+		glBindBuffer ( GL_ARRAY_BUFFER, vertexBufferCuboidDynamic);
+		glBufferData ( GL_ARRAY_BUFFER , cuboidDynamic.size( ) * sizeof(cuboidDynamic[0]) , &cuboidDynamic[0] , GL_STATIC_DRAW );
+		glBindBuffer ( GL_ARRAY_BUFFER, 0);
+
 	}
 
 	void CornerPointGrid::loadProperties( )
@@ -427,7 +484,7 @@ namespace IRES
 
 		current_static = 0;
 
-		int index = 0;
+		int index 	 	  = 0;
 
 		for ( std::size_t i = 0; i < number_of_blocks_; i++)
 		{
@@ -439,6 +496,8 @@ namespace IRES
 				cuboidProperties[index+3] = static_porperties[static_indices[0]].values_[i];
 				index += 4;
 			}
+
+
 		}
 
 		for ( std::size_t i = 0; i < iresFaces_.size() ; i++ )
@@ -459,6 +518,9 @@ namespace IRES
 		glBindBuffer ( GL_ARRAY_BUFFER, vertexBufferFaceProperties );
 		glBufferData ( GL_ARRAY_BUFFER , faceProperty.size( ) * sizeof(faceProperty[0]) , &faceProperty[0] , GL_STATIC_DRAW );
 		glBindBuffer ( GL_ARRAY_BUFFER, 0);
+
+
+
 
 
 	}

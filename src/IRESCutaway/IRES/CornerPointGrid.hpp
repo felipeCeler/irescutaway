@@ -60,6 +60,9 @@ namespace IRES
 					std::string component;
 					// From Ires.dynamic_ name/units/variable_name/components
 
+					std::vector<float> min_;
+					std::vector<float> max_;
+
 					// FIXME std::pair< timeStep, values for each block >
 					std::vector< std::vector<float>  > values_;
 
@@ -109,9 +112,11 @@ namespace IRES
                         int currentProperty;	   // Static or Dynamic
                         int currentTimeStep;	   // Only for Dynamic
 
+                        bool showFault;		   // Fault visibility
+                        bool showBorderLine;        // Border Line Visibility
+
 			void setupStatic ( );
 			void setupDynamic ( );
-
 
 			bool isOpen_;
 
@@ -132,20 +137,14 @@ namespace IRES
 								// 1 Vertex Buffer with 8 vertex which define a Cuboid
 			GLuint vertexBufferCuboidGeometry;
 
-			std::vector<float> cubeColor;           /// vec4 (R, G, B , 0 );
-			GLuint vertexBufferCuboidColor;
-
-			std::vector<float> cuboidIJK;           /// vec4 (I, J, K , 0 );
-			GLuint vertexBufferCuboidIJK;
-
-			std::vector<float> cuboidFocus;         /// vec4 (Primary/Secondary , Active  ,0.0 , 0.0);
-			GLuint vertexBufferCuboidFocus;
 
 			std::vector<float> cuboidProperties;    /// Four property x = Bubble Point Pressure
 			GLuint vertexBufferCuboidProperties;	///               y = Pressure
 								///	          z = Porosity
 								///               w = Modified Block Volume
-
+			std::vector<float> cuboidDynamic;
+			GLuint vertexBufferCuboidDynamic;
+			void loadDynamic ( int property_index );
 
 			std::vector<float> cuboids;
 			std::size_t 	   cuboidCount;

@@ -11,14 +11,13 @@ layout(location = 7) in vec4 v7;
 
 layout(location = 8) in vec4 static_properties;
 
-layout(location = 9)  in vec4 d1;
-layout(location = 10) in vec4 d2;
-layout(location = 11) in vec4 d3;
-layout(location = 12) in vec4 d4;
-layout(location = 13) in vec4 d5;
-layout(location = 14) in vec4 d6;
-layout(location = 15) in vec4 d7;
-
+layout(location = 9)  in vec4 d1; // Time Step 0 - 3
+layout(location = 10) in vec4 d2; // Time Step 4 - 7
+layout(location = 11) in vec4 d3; // Time Step 8 - 11
+layout(location = 12) in vec4 d4; // Time Step 12 - 15
+layout(location = 13) in vec4 d5; // Time Step 16 - 19
+layout(location = 14) in vec4 d6; // Time Step 20 - 23
+layout(location = 15) in vec4 d7; // Time Step 24 - 27
 
 
 /// FIXME - Do research and understand the best away to align data on Shader.
@@ -39,6 +38,66 @@ uniform float max_property;
 
 uniform int property_index;
 
+uniform int time_step;
+
+
+vec4 dynamicValue ( float value )
+{
+	float normalized_color = ( value - min_property ) / ( max_property - min_property );
+
+	float fourValue = 4 * normalized_color;
+	float red   = min(fourValue - 1.5, -fourValue + 4.5);
+	float green = min(fourValue - 0.5, -fourValue + 3.5);
+	float blue  = min(fourValue + 0.5, -fourValue + 2.5);
+
+	red 	= max(0.0f, min(red, 1.0f));
+	green 	= max(0.0f, min(green, 1.0f));
+	blue 	= max(0.0f, min(blue, 1.0f));
+
+	vec4 color = vec4 ( red , green , blue , 1.0f );
+
+	return color;
+}
+
+vec4 dynamicColor ( )
+{
+
+	vec4 color =  vec4(0.0,0.0,0.0,1.0);
+
+	if ( ( time_step >=0 ) && (time_step <=3) )
+        {
+		color = dynamicValue (d1[time_step-0]);
+	}
+	else if ( ( time_step >=4 ) && (time_step <= 7) )
+        {
+		color = dynamicValue (d2[time_step-4]);
+	}
+	else if ( ( time_step >=8 ) && (time_step <= 11) )
+        {
+		color = dynamicValue (d3[time_step-8]);
+	}
+	else if ( ( time_step >=12 ) && (time_step <= 15) )
+        {
+		color = dynamicValue (d4[time_step-12]);
+	}
+	else if ( ( time_step >=16 ) && (time_step <= 19) )
+        {
+		color = dynamicValue (d5[time_step-16]);
+	}
+	else if ( ( time_step >=20 ) && (time_step <= 23) )
+        {
+		color = dynamicValue (d6[time_step-20]);
+	}
+	else if ( ( time_step >=24 ) && (time_step <= 27) )
+        {
+		color = dynamicValue (d7[time_step-24]);
+	}else
+	{
+		vec4 color =  vec4(0.0,1.0,0.0,1.0);
+	}
+
+	return color;
+}
 
 vec4 propertyColor ( in float min_range, in float max_range, in int index )
 {
@@ -76,7 +135,7 @@ void main(void)
 		cube.v[1] = v1;
 		cube.v[2] = v2;
 
-		cube.color    =  propertyColor ( min_property, max_property, property_index );
+		cube.color  = propertyColor ( min_property, max_property, property_index );
 
                 mat3 normalMatrix = mat3(inverse(transpose((ModelMatrix*ViewMatrix))));
 

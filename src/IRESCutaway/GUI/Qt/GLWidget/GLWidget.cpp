@@ -56,6 +56,7 @@ void GLWidget::initializeGL ( )
 	setAcceptDrops(true);
 
 	isIRESOpen_ = 0;
+	time_step   = 0;
 
 	zoom_angle_ = 45.0f;
 	orthoZoom   = 1.0f;
@@ -114,6 +115,8 @@ void GLWidget::initializeGL ( )
 	picture->createQuad( );
 
 	reservoir_model_.createBuffers( );
+
+	dynamic_property_index = 0;
 
 }
 
@@ -385,23 +388,23 @@ void GLWidget::drawSecondary ( )
 		}
 	}
 
-	shellLCG->enable( );
-
-	shellLCG->setUniform ( "normals" , depthFBO->bindAttachment(1) );
-
-	shellLCG->setUniform("min_property", reservoir_model_.static_min[reservoir_model_.current_static]  );
-	shellLCG->setUniform("max_property", reservoir_model_.static_max[reservoir_model_.current_static]  );
-	shellLCG->setUniform("property_index", reservoir_model_.current_static );
-
-	shellLCG->setUniform("num_lights", (GLint) lights.size ( )  );
-	shellLCG->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
-	shellLCG->setUniform("WIN_SCALE", (float) width ( ) , (float) height ( ) );
-
-	shellLCG->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
-	shellLCG->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
-	shellLCG->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
-
-	reservoir_model_.drawFace();
+//	shellLCG->enable( );
+//
+//	shellLCG->setUniform ( "normals" , depthFBO->bindAttachment(1) );
+//
+//	shellLCG->setUniform("min_property", reservoir_model_.static_min[reservoir_model_.current_static]  );
+//	shellLCG->setUniform("max_property", reservoir_model_.static_max[reservoir_model_.current_static]  );
+//	shellLCG->setUniform("property_index", reservoir_model_.current_static );
+//
+//	shellLCG->setUniform("num_lights", (GLint) lights.size ( )  );
+//	shellLCG->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
+//	shellLCG->setUniform("WIN_SCALE", (float) width ( ) , (float) height ( ) );
+//
+//	shellLCG->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
+//	shellLCG->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
+//	shellLCG->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
+//
+//	reservoir_model_.drawFace();
 
 	shellLCG->disable( );
 
@@ -419,6 +422,10 @@ void GLWidget::drawSecondary ( )
 	BoundingBoxCutawayLCG->setUniform("min_property", reservoir_model_.static_min[reservoir_model_.current_static]  );
 	BoundingBoxCutawayLCG->setUniform("max_property", reservoir_model_.static_max[reservoir_model_.current_static]  );
 	BoundingBoxCutawayLCG->setUniform("property_index", reservoir_model_.current_static );
+//	BoundingBoxCutawayLCG->setUniform("min_property", reservoir_model_.dynamic_properties[dynamic_property_index].min_[time_step]  );
+//	BoundingBoxCutawayLCG->setUniform("max_property", reservoir_model_.dynamic_properties[dynamic_property_index].max_[time_step]  );
+	BoundingBoxCutawayLCG->setUniform("property_index", reservoir_model_.current_static );
+	BoundingBoxCutawayLCG->setUniform("time_step", time_step );
 
 	BoundingBoxCutawayLCG->setUniform("num_lights", (GLint) lights.size ( )  );
 	BoundingBoxCutawayLCG->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
@@ -436,6 +443,19 @@ void GLWidget::drawSecondary ( )
 	BoundingBoxCutawayLCG->enable( );
 
 	depthFBO->unbindAttachments();
+
+	if ( reservoir_model_.showBorderLine )
+	{
+		borderLinesLCG->enable ( );
+
+		borderLinesLCG->setUniform ( "ModelMatrix" , trackball_->getModelMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
+		borderLinesLCG->setUniform ( "ViewMatrix" , trackball_->getViewMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
+		borderLinesLCG->setUniform ( "ProjectionMatrix" , trackball_->getProjectionMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
+
+		reservoir_model_.drawFace ( );
+
+		borderLinesLCG->disable ( );
+	}
 }
 
 void GLWidget::drawPrimaryBoudingBox ( )
@@ -556,10 +576,6 @@ void GLWidget::drawRawModel ( )
 	reservoir_model_.drawFace();
 
 	rawShellLCG->disable( );
-
-
-
-        drawPrimary();
 
 }
 
@@ -699,6 +715,12 @@ void GLWidget::loadShaders ( )
         rawShellLCG = new Shader ("Shell", (shaderDirectory + "RawShell.vert").toStdString(),
                               (shaderDirectory + "RawShell.frag").toStdString(),
                               (shaderDirectory + "RawShell.geom").toStdString(),1);
+
+        borderLinesLCG = new Shader ("Border Lines", (shaderDirectory + "borderLines.vert").toStdString(),
+                                    (shaderDirectory + "borderLines.frag").toStdString(),
+        		            (shaderDirectory + "borderLines.geom").toStdString(),1);
+
+        borderLinesLCG->initialize();
 
         rawShellLCG->initialize( );
 
@@ -883,7 +905,16 @@ void GLWidget::wheelEvent ( QWheelEvent *event )
 
     updateGL();
 
+}
 
+void GLWidget::showFault	  ( bool visibility )
+{
+	reservoir_model_.showFault = visibility;
+}
+
+void GLWidget::showBorderLines    ( bool visibility )
+{
+	reservoir_model_.showBorderLine = visibility;;
 }
 
 void GLWidget::setPrimaryVisibility( bool visibility )
