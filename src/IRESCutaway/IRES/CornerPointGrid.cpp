@@ -465,7 +465,7 @@ namespace IRES
 			faceProperty[i*4+3]   = static_porperties[static_indices[0]].values_[iresFaces_[i].id];
 		}
 
-		//cuboidProperties.resize(index);
+		cuboidProperties.resize(index);
 		// Cuboid
 		glBindBuffer ( GL_ARRAY_BUFFER, vertexBufferCuboidProperties);
 		glBufferData ( GL_ARRAY_BUFFER , cuboidProperties.size( ) * sizeof(cuboidProperties[0]) , &cuboidProperties[0] , GL_STATIC_DRAW );
