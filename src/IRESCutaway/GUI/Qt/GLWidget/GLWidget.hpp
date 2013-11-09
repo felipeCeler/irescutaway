@@ -88,6 +88,7 @@ class GLWidget: public QGLWidget
 		void drawSecondary ( );         // Draw only secondary Cells
 		void drawPrimary   ( );		// Draw only primary   Cells
 		void drawPrimaryBoudingBox ( ); // Draw only primary   Cells with its bounding box
+		void drawFullModel ( );
 
 		void drawRawModel       ( );
 		void textureViewer      ( );
@@ -97,8 +98,9 @@ class GLWidget: public QGLWidget
 		void showBorderLines    ( bool visibility );
 
 		void setTextureViewerVisibility ( bool visibility ) { isTextureViewer_ = visibility; updateGL();}
-		void setRawModelVisibility      ( bool visibility ) { isRawModel_     = visibility; updateGL();}
-		void setIRESCutawayVisibility   ( bool visibility ) { isIRESCutaway_  = visibility; updateGL();}
+		void setRawModelVisibility      ( bool visibility ) { isRawModel_      = visibility; updateGL();}
+		void setIRESCutawayVisibility   ( bool visibility ) { isIRESCutaway_   = visibility; updateGL();}
+		void setIRESFullModelVisibility ( bool visibility ) { isFullModel_     = visibility; updateGL();}
 
 		void freezeView ( );
 
@@ -159,6 +161,7 @@ class GLWidget: public QGLWidget
 		bool  isTextureViewer_;
 		bool  isRawModel_;
 		bool  isIRESCutaway_;
+		bool  isFullModel_;
 
 		bool draw_secondary;
 		bool draw_primary;

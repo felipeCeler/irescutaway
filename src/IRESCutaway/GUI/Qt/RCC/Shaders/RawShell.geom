@@ -79,48 +79,4 @@ void main(void)
 
 	EndPrimitive();
 
-//	if ( VertexIn[0].faceType[0] == 1.0 )
-//	{
-//		VertexOut.color   = vec4(1.0,0.0,0.0,1.0);
-//
-//		gl_Position = VertexIn[0].v[0];
-//		EmitVertex();
-//		gl_Position = VertexIn[0].v[1];
-//		EmitVertex();
-//
-//		EndPrimitive();
-//	}
-//	if ( VertexIn[0].faceType[1] == 1.0 )
-//	{
-//		VertexOut.color   = vec4(0.0,1.0,0.0,1.0);
-//
-//		gl_Position = VertexIn[0].v[1];
-//		EmitVertex();
-//		gl_Position = VertexIn[0].v[2];
-//		EmitVertex();
-//
-//		EndPrimitive();
-//	}
-//	if ( VertexIn[0].faceType[2] == 1.0 )
-//	{
-//		VertexOut.color  = vec4(0.0,0.0,1.0,1.0);
-//		gl_Position = VertexIn[0].v[2];
-//		EmitVertex();
-//		gl_Position = VertexIn[0].v[3];
-//		EmitVertex();
-//
-//		EndPrimitive();
-//	}
-//	if ( VertexIn[0].faceType[3] == 1.0 )
-//	{
-//		VertexOut.color   = vec4(0.0,0.0,0.0,1.0);
-//
-//		gl_Position = VertexIn[0].v[3];
-//		EmitVertex();
-//		gl_Position = VertexIn[0].v[0];
-//		EmitVertex();
-//
-//		EndPrimitive();
-//	}
-
 }

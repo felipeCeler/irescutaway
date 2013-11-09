@@ -43,8 +43,6 @@ namespace IRES
 		// Face Features
 		glGenVertexArrays ( 1, &vertexArrayFaces );
 			glGenBuffers ( 1, &vertexBufferFaceGeometry );   // Geometry
-			glGenBuffers ( 1, &vertexBufferFaceColor  );      // Property Color
-			glGenBuffers ( 1, &vertexBufferFaceIJK );        // Face IJK
 			glGenBuffers ( 1, &vertexBufferFaceProperties ); // Face Properties
 
 		isInitialized = 1;
@@ -126,7 +124,7 @@ namespace IRES
 				dynamic_properties[i].min_.resize( numTimeSteps[i] );
 				dynamic_properties[i].max_.resize( numTimeSteps[i] );
 
-				for ( std::size_t t = 0; t < numTimeSteps[i]; t ++)
+				for (unsigned int t = 0; t < numTimeSteps[i]; t++)
 				{
 					reservoir_file.getDynamicPropertyValues( i, t, dynamic_properties[i].values_[t]);
 					dynamic_properties[i].min_[t] = *std::min_element ( dynamic_properties[i].values_[t].begin ( ) , dynamic_properties[i].values_[t].end ( ) );
@@ -137,8 +135,6 @@ namespace IRES
 			}
 
 
-			float 	  	v[24];
-
 			iresFaces_.clear ( );
 			std::vector<float> vertexList;
 
@@ -147,15 +143,11 @@ namespace IRES
 			vertexList = reservoir_file.getVertexList( );
 
 			faces.clear();
-			faceColor.clear();
-			faceIJK.clear();
 			faceType.clear();
 			faceProperty.clear();
 			// Geometry
 			faces.resize 	     ( iresFaces_.size ( ) * 16 );
 			// Attributes
-			faceColor.resize     ( iresFaces_.size ( ) * 4 );
-			faceIJK.resize       ( iresFaces_.size ( ) * 4 );
 			faceType.resize      ( iresFaces_.size ( ) * 4  );
 			faceProperty.resize  ( iresFaces_.size ( ) * 4 );
 
@@ -190,48 +182,17 @@ namespace IRES
 				faces[i*16+14] = vertexList[iresFaces_[i].d*3+2];
 				faces[i*16+15] = 1.0f;
 
-				faceColor[i*4]   = 1.0f;
-				faceColor[i*4+1] = 0.0f;
-				faceColor[i*4+2] = 0.0f;
-				faceColor[i*4+3] = 1.0f;
 
-				faceIJK[i*4]   = 0.0f;
-				faceIJK[i*4+1] = 0.0f;
-				faceIJK[i*4+2] = 0.0f;
-				faceIJK[i*4+3] = 0.0f;
-
-				int IDtmp = iresFaces_[i].id;
 				ires::Face::FACE_BLOCK_POS pos = iresFaces_[i].faceBlockRelPos;
-				float V = faceCorner[ 6*IDtmp + pos ];
-				/// One way to know which edge are corners given a value V is:
-				if ( V >= 8 )
-				{
-					faceIJK[i * 4] = 1.0;
-					V -= 8;
-				}
-				if ( V >= 4 )
-				{
-					faceIJK[i * 4 + 1] = 1.0;
-					V -= 4;
-				}
-				if ( V >= 2 )
-				{
-					faceIJK[i * 4 + 2] = 1.0;
-					V -= 2;
-				}
-				if ( V == 1 )
-				{
-					faceIJK[i * 4 + 3] = 1.0;
-				}
-
-				float F = faceFault[ 6*IDtmp + pos ];
+				float V 		       = faceCorner[ 6*iresFaces_[i].id + pos ];
+				float F 		       = faceFault[ 6*iresFaces_[i].id + pos ];
 
 				// F == 0 pass
 				// F == 1 fault
 
 				faceType[i*4]   = static_cast<float> (iresFaces_[i].isExtern);
 				faceType[i*4+1] = F;
-				faceType[i*4+2] = static_cast<float> (iresFaces_[i].isExtern);
+				faceType[i*4+2] = V;
 				faceType[i*4+3] = static_cast<float> (iresFaces_[i].faceBlockRelPos);
 
 				faceCount++;
@@ -239,6 +200,8 @@ namespace IRES
 			}
 
 			// Reading Cubes
+
+			float 	 v[24];
 			cuboids.clear ( );
 			cuboids.resize( number_of_blocks_ * 32 );
 
@@ -352,8 +315,8 @@ namespace IRES
 
 				for ( int location = 0 ; location < 7 ; location++)
 				{
-					glEnableVertexAttribArray(9+location);
-					glVertexAttribPointer(9+location, 4, GL_FLOAT, GL_FALSE, size_of_struct , reinterpret_cast<void*>(size_of_vertice * (9+location)));
+					glEnableVertexAttribArray ( 9 + location );
+					glVertexAttribPointer ( 9 + location , 4 , GL_FLOAT , GL_FALSE , size_of_struct , reinterpret_cast<void*> ( size_of_vertice * ( 9 + location ) ) );
 				}
 
 
@@ -383,17 +346,11 @@ namespace IRES
                                 glEnableVertexAttribArray(4);
                                 glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
-                                glBindBuffer ( GL_ARRAY_BUFFER, vertexBufferFaceIJK);
-                                glBufferData ( GL_ARRAY_BUFFER , faceIJK.size( ) * sizeof(faceIJK[0]) , &faceIJK[0] , GL_STATIC_DRAW );
-
-                                glEnableVertexAttribArray(5);
-                                glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, 0, 0);
-
                                 glBindBuffer ( GL_ARRAY_BUFFER, vertexBufferFaceProperties);
                                 glBufferData ( GL_ARRAY_BUFFER , faceProperty.size( ) * sizeof(faceProperty[0]) , &faceProperty[0] , GL_STATIC_DRAW );
 
-                                glEnableVertexAttribArray(6);
-                                glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, 0, 0);
+                                glEnableVertexAttribArray(5);
+                                glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
 	                glBindVertexArray(0);
 
@@ -438,7 +395,7 @@ namespace IRES
 			{
 				for ( std::size_t t = 0; t < 28; t++)
 				{
-					if ( t < numTimeSteps[0])
+					if ( t < numTimeSteps[0] )
 						cuboidDynamic[i*28+t] = dynamic_properties[property_index].values_[t][i];
 					//std::cout << "Float "<< cuboidDynamic[i*28+t] << std::endl;
 				}
@@ -508,7 +465,7 @@ namespace IRES
 			faceProperty[i*4+3]   = static_porperties[static_indices[0]].values_[iresFaces_[i].id];
 		}
 
-		cuboidProperties.resize(index);
+		//cuboidProperties.resize(index);
 		// Cuboid
 		glBindBuffer ( GL_ARRAY_BUFFER, vertexBufferCuboidProperties);
 		glBufferData ( GL_ARRAY_BUFFER , cuboidProperties.size( ) * sizeof(cuboidProperties[0]) , &cuboidProperties[0] , GL_STATIC_DRAW );

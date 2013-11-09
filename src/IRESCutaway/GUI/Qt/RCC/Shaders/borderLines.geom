@@ -14,7 +14,8 @@ in VertexData
 	    vec4 n[2];
 	    vec4 eye[4];
 	    vec4 color;
-	    vec4 faceType;
+	    vec4  faceType;
+	    float faceType_;
 } VertexIn[1];
 
 
@@ -52,7 +53,11 @@ void main(void)
 
 	VertexOut.normal = VertexIn[0].n[0];
 
-	if ( VertexIn[0].faceType[0] == 1.0 )
+	float V = VertexIn[0].faceType_;
+
+	/// One way to know which edge are corners given a value V is:
+
+	if ( V >= 8 )
 	{
 		VertexOut.color   = vec4(0.0,0.0,0.0,1.0);
 
@@ -62,8 +67,10 @@ void main(void)
 		EmitVertex();
 
 		EndPrimitive();
+		V -= 8;
+
 	}
-	if ( VertexIn[0].faceType[1] == 1.0 )
+	if ( V >= 4 )
 	{
 		VertexOut.color   = vec4(0.0,0.0,0.0,1.0);
 
@@ -73,8 +80,10 @@ void main(void)
 		EmitVertex();
 
 		EndPrimitive();
+
+		V -= 4;
 	}
-	if ( VertexIn[0].faceType[2] == 1.0 )
+	if ( V >= 2 )
 	{
 		VertexOut.color  = vec4(0.0,0.0,0.0,1.0);
 		gl_Position = VertexIn[0].v[2];
@@ -83,8 +92,10 @@ void main(void)
 		EmitVertex();
 
 		EndPrimitive();
+
+		V -= 2;
 	}
-	if ( VertexIn[0].faceType[3] == 1.0 )
+	if ( V == 1 )
 	{
 		VertexOut.color   = vec4(0.0,0.0,0.0,1.0);
 
@@ -95,5 +106,6 @@ void main(void)
 
 		EndPrimitive();
 	}
+
 
 }

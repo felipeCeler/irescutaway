@@ -97,11 +97,6 @@ namespace IRES
                                 int current_static;
 
 			// Properties values Interface for dynamic
-                                std::string dynamic_name   [7];
-                                std::size_t dynamic_indices[7];
-
-                                float dynamic_min[7];
-                                float dynamic_max[7];
 
                                 int current_dynamic;
                                 int current_dynamic_time_step;
@@ -134,19 +129,18 @@ namespace IRES
 
 
 			GLuint vertexArrayCuboids;   	 	// 1 Vertex Array
-								// 1 Vertex Buffer with 8 vertex which define a Cuboid
-			GLuint vertexBufferCuboidGeometry;
 
+				std::vector<float> cuboids;
+				GLuint vertexBufferCuboidGeometry; // 1 Vertex Buffer with 8 vertex which define a Cuboid
 
-			std::vector<float> cuboidProperties;    /// Four property x = Bubble Point Pressure
-			GLuint vertexBufferCuboidProperties;	///               y = Pressure
-								///	          z = Porosity
-								///               w = Modified Block Volume
-			std::vector<float> cuboidDynamic;
-			GLuint vertexBufferCuboidDynamic;
+				std::vector<float> cuboidProperties;    /// Four property x = Porosity
+				GLuint vertexBufferCuboidProperties;	///               y = Modified Block Volume
+
+				std::vector<float> cuboidDynamic;
+				GLuint vertexBufferCuboidDynamic;
+
 			void loadDynamic ( int property_index );
 
-			std::vector<float> cuboids;
 			std::size_t 	   cuboidCount;
 
 			/// -- Shell / Fracture Geometry
@@ -156,26 +150,15 @@ namespace IRES
 
 			GLuint vertexArrayFaces;		/// 1 Vertex Array
 
+				GLuint vertexBufferFaceGeometry;
+				std::vector<float> 	  faces;
 
-			GLuint vertexBufferFaceGeometry;
+				std::vector<float> faceType; 	   /// vec4 ( isShell, isFault, isBorder , 0.0 );
+				GLuint vertexBufferFaceType;
 
-			std::vector<float> faceColor;		/// vec4 (R, G, B , 0 );
-			GLuint vertexBufferFaceColor;
+				GLuint vertexBufferFaceProperties; /// Four property x = Modified Block Volume
+				std::vector<float> faceProperty;   ///               y = Porosity
 
-			std::vector<float> faceIJK;		/// vec4 (R, G, B , 0 );
-			GLuint vertexBufferFaceIJK;
-
-			std::vector<float> faceType; 		/// vec4 ( isShell, isFault, 0.0 , 0.0 );
-			GLuint vertexBufferFaceType;
-
-
-			std::vector<float> faceProperty;	/// Four property x = Bubble Point Pressure
-								///               y = Pressure
-								///	          z = Porosity
-								///               w = Modified Block Volume
-			GLuint vertexBufferFaceProperties;
-
-			std::vector<float> 	  faces;
 
 			std::vector<ires::Face>   iresFaces_;
 			std::size_t 		  faceCount;

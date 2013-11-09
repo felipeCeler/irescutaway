@@ -5,9 +5,8 @@ layout(location = 1) in vec4 vb;
 layout(location = 2) in vec4 vc;
 layout(location = 3) in vec4 vd;
 
-layout(location = 4) in vec4 isShell;
-layout(location = 5) in vec4 IJK;
-layout(location = 6) in vec4 static_properties;
+layout(location = 4) in vec4 faceType;
+layout(location = 5) in vec4 static_properties;
 
 layout(location = 9)  in vec4 d1; // Time Step 0 - 3
 layout(location = 10) in vec4 d2; // Time Step 4 - 7
@@ -74,11 +73,11 @@ void main(void)
 	VertexOut.eye[2] =  ModelMatrix * ViewMatrix * vec4(vc);
 	VertexOut.eye[3] =  ModelMatrix * ViewMatrix * vec4(vd);
 
-	VertexOut.faceType = IJK;
+	VertexOut.faceType = faceType;
 
-	if ( (isShell.x == 1 )  )  // Shell faces
+	if ( (faceType.x == 1 )  )  // Shell faces
 	{
-		VertexOut.color  =  vec4(0.0,0.0,1.0,1.0);//propertyColor ( min_property, max_property, property_index );
+		VertexOut.color  =  propertyColor ( min_property, max_property, property_index );
 		VertexOut.v[0] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(va);
 		VertexOut.v[1] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(vb);
 		VertexOut.v[2] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(vc);

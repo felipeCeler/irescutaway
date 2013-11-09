@@ -73,6 +73,7 @@ void GLWidget::initializeGL ( )
 	isRawModel_	      = 1;
 	isIRESCutaway_        = 0;
 	isTextureViewer_      = 0;
+	isFullModel_	      = 0;
 
 	cluster = 0;
 
@@ -388,23 +389,23 @@ void GLWidget::drawSecondary ( )
 		}
 	}
 
-//	shellLCG->enable( );
-//
-//	shellLCG->setUniform ( "normals" , depthFBO->bindAttachment(1) );
-//
-//	shellLCG->setUniform("min_property", reservoir_model_.static_min[reservoir_model_.current_static]  );
-//	shellLCG->setUniform("max_property", reservoir_model_.static_max[reservoir_model_.current_static]  );
-//	shellLCG->setUniform("property_index", reservoir_model_.current_static );
-//
-//	shellLCG->setUniform("num_lights", (GLint) lights.size ( )  );
-//	shellLCG->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
-//	shellLCG->setUniform("WIN_SCALE", (float) width ( ) , (float) height ( ) );
-//
-//	shellLCG->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
-//	shellLCG->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
-//	shellLCG->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
-//
-//	reservoir_model_.drawFace();
+	shellLCG->enable( );
+
+	shellLCG->setUniform ( "normals" , depthFBO->bindAttachment(1) );
+
+	shellLCG->setUniform("min_property", reservoir_model_.static_min[reservoir_model_.current_static]  );
+	shellLCG->setUniform("max_property", reservoir_model_.static_max[reservoir_model_.current_static]  );
+	shellLCG->setUniform("property_index", reservoir_model_.current_static );
+
+	shellLCG->setUniform("num_lights", (GLint) lights.size ( )  );
+	shellLCG->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
+	shellLCG->setUniform("WIN_SCALE", (float) width ( ) , (float) height ( ) );
+
+	shellLCG->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
+	shellLCG->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
+	shellLCG->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
+
+	reservoir_model_.drawFace();
 
 	shellLCG->disable( );
 
@@ -499,6 +500,46 @@ void GLWidget::drawPrimary( )
 
 }
 
+void GLWidget::drawFullModel ( )
+{
+	GLfloat light_elements[12];
+	for ( std::size_t i = 0; i < lights.size ( ); ++i )
+	{
+		for ( int j = 0; j < 3; ++j )
+		{
+			light_elements[i * 3 + j] = lights[i][j];
+		}
+	}
+
+	glClearColor ( 1.0 , 1.0 , 1.0 , 1.0 );
+	glDepthFunc(GL_LESS);
+	glClearDepth(1.0f);
+	glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
+	secondaryLCG->enable( );
+
+//	secondaryLCG->setUniform("min_property", reservoir_model_.static_min[reservoir_model_.current_static]  );
+//	secondaryLCG->setUniform("max_property", reservoir_model_.static_max[reservoir_model_.current_static]  );
+//	secondaryLCG->setUniform("property_index", reservoir_model_.current_static );
+	BoundingBoxCutawayLCG->setUniform("min_property", reservoir_model_.dynamic_properties[dynamic_property_index].min_[time_step]  );
+	BoundingBoxCutawayLCG->setUniform("max_property", reservoir_model_.dynamic_properties[dynamic_property_index].max_[time_step]  );
+	secondaryLCG->setUniform("property_index", reservoir_model_.current_static );
+	secondaryLCG->setUniform("time_step", time_step );
+
+	secondaryLCG->setUniform("num_lights", (GLint) lights.size ( )  );
+	secondaryLCG->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
+	secondaryLCG->setUniform("WIN_SCALE", (float) width ( ) , (float) height ( ) );
+
+	secondaryLCG->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
+	secondaryLCG->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
+	secondaryLCG->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
+
+	reservoir_model_.drawCuboid ( );
+
+	secondaryLCG->enable( );
+
+}
+
 void GLWidget::paintGL ( )
 {
 
@@ -519,7 +560,10 @@ void GLWidget::paintGL ( )
 		{
 			IRESCutaway ( );
 		}
-		else
+		else if ( isFullModel_ )
+		{
+			drawFullModel( );
+		}else
 		{
 			textureViewer( );
 		}

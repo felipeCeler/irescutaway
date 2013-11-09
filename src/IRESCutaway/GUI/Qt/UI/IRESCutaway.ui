@@ -8,7 +8,7 @@
     <x>0</x>
     <y>0</y>
     <width>1263</width>
-    <height>848</height>
+    <height>1113</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -153,6 +153,7 @@
     <addaction name="action_Raw_Model"/>
     <addaction name="action_IRES_Cutaway"/>
     <addaction name="action_Texture_View"/>
+    <addaction name="action_FullModel"/>
     <addaction name="separator"/>
     <addaction name="action_Trackball"/>
     <addaction name="action_Fly_Camera"/>
@@ -172,13 +173,13 @@
    <property name="minimumSize">
     <size>
      <width>400</width>
-     <height>749</height>
+     <height>285</height>
     </size>
    </property>
    <property name="maximumSize">
     <size>
      <width>400</width>
-     <height>524287</height>
+     <height>300</height>
     </size>
    </property>
    <attribute name="dockWidgetArea">
@@ -186,6 +187,62 @@
    </attribute>
    <widget class="QWidget" name="dockWidgetLayersContents">
     <layout class="QGridLayout" name="gridLayout">
+     <item row="0" column="0">
+      <widget class="QGroupBox" name="groupBoxDetails">
+       <property name="minimumSize">
+        <size>
+         <width>200</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>400</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="title">
+        <string>Static Properties</string>
+       </property>
+       <property name="flat">
+        <bool>true</bool>
+       </property>
+       <property name="checkable">
+        <bool>false</bool>
+       </property>
+       <layout class="QFormLayout" name="formLayout_2">
+        <property name="fieldGrowthPolicy">
+         <enum>QFormLayout::ExpandingFieldsGrow</enum>
+        </property>
+        <item row="0" column="0">
+         <widget class="QLabel" name="labelSimulator">
+          <property name="text">
+           <string>Model Name:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QLabel" name="simulatorName">
+          <property name="minimumSize">
+           <size>
+            <width>200</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>400</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
      <item row="2" column="0">
       <widget class="QGroupBox" name="groupBoxPropertyAttributes">
        <property name="maximumSize">
@@ -291,62 +348,6 @@
           </property>
           <property name="singleStep">
            <double>1000.000000000000000</double>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </widget>
-     </item>
-     <item row="0" column="0">
-      <widget class="QGroupBox" name="groupBoxDetails">
-       <property name="minimumSize">
-        <size>
-         <width>200</width>
-         <height>0</height>
-        </size>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>400</width>
-         <height>16777215</height>
-        </size>
-       </property>
-       <property name="title">
-        <string>Static Properties</string>
-       </property>
-       <property name="flat">
-        <bool>true</bool>
-       </property>
-       <property name="checkable">
-        <bool>false</bool>
-       </property>
-       <layout class="QFormLayout" name="formLayout_2">
-        <property name="fieldGrowthPolicy">
-         <enum>QFormLayout::ExpandingFieldsGrow</enum>
-        </property>
-        <item row="0" column="0">
-         <widget class="QLabel" name="labelSimulator">
-          <property name="text">
-           <string>Model Name:</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="1">
-         <widget class="QLabel" name="simulatorName">
-          <property name="minimumSize">
-           <size>
-            <width>200</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>400</width>
-            <height>16777215</height>
-           </size>
-          </property>
-          <property name="text">
-           <string/>
           </property>
          </widget>
         </item>
@@ -506,6 +507,12 @@
    </widget>
   </widget>
   <widget class="QDockWidget" name="dockWidgetDynamic">
+   <property name="maximumSize">
+    <size>
+     <width>400</width>
+     <height>300</height>
+    </size>
+   </property>
    <attribute name="dockWidgetArea">
     <number>1</number>
    </attribute>
@@ -902,6 +909,17 @@
    </property>
    <property name="shortcut">
     <string>Alt+3</string>
+   </property>
+  </action>
+  <action name="action_FullModel">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Full Model</string>
+   </property>
+   <property name="shortcut">
+    <string>F12</string>
    </property>
   </action>
  </widget>
