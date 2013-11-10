@@ -62,11 +62,12 @@ vec4 dynamicValue ( float value )
 vec4 dynamicColor ( )
 {
 
+	int time;
 	vec4 color =  vec4(0.0,0.0,0.0,1.0);
 
 	if ( ( time_step >=0 ) && (time_step <=3) )
         {
-		color = dynamicValue (d1[time_step-0]);
+		color = dynamicValue (d1[time]);
 	}
 	else if ( ( time_step >=4 ) && (time_step <= 7) )
         {
@@ -134,6 +135,7 @@ void main(void)
 		cube.v[3] = v3;
 		cube.v[1] = v1;
 		cube.v[2] = v2;
+
 
 		cube.color  = dynamicColor ( );//propertyColor ( min_property, max_property, property_index );
 

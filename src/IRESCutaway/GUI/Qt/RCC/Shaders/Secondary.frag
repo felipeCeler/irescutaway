@@ -22,7 +22,7 @@ void main(void)
         vec4 color_t = VertexIn.color;
 
         float d = min(dist[0], min(dist[1], min(dist[2], dist[3])));
-        float I = exp2(-2.0 * d * d);
+        float I = exp2(-1.0 * d * d);
 
         vec4 la = vec4(0.0);
         vec4 ld = vec4(0.0);
@@ -40,7 +40,7 @@ void main(void)
         }
 
         vec4 color = la + ld + ls;
-        outputColor = I * vec4(vec3(0.7), 1.0) + (1.0 - I) * ( color );
+        outputColor = I * vec4(vec3(1.0), 1.0) + (1.0 - I) * ( color );
 
 
 }

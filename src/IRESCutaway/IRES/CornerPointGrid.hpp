@@ -77,15 +77,16 @@ namespace IRES
 
 		public:
 
-			CornerPointGrid ( );
+			CornerPointGrid 		( );
 
-			virtual ~CornerPointGrid ( );
+			virtual ~CornerPointGrid 	( );
 
-			void 	createBuffers 	 ( );
-			void 	drawFace  	 ( ) const;
-			void 	drawCuboid 	 ( ) const;
-			void 	loadProperties 	 ( );
+			void 	createBuffers 	 	( );
+			void 	drawFace  	 	( ) const;
+			void 	drawCuboid 	 	( ) const;
 
+			void 	loadStaticProperties 	( );
+			void 	loadDynamicProperties  	( int property_index );
 
 			// Properties values Interface for static
                                 std::string static_name   [2];
@@ -108,7 +109,7 @@ namespace IRES
                         int currentTimeStep;	   // Only for Dynamic
 
                         bool showFault;		   // Fault visibility
-                        bool showBorderLine;        // Border Line Visibility
+                        bool showBorderLine;       // Border Line Visibility
 
 			void setupStatic ( );
 			void setupDynamic ( );
@@ -122,24 +123,28 @@ namespace IRES
 
 		public:
 
+
+			bool isInitialized;
+
+			std::size_t number_of_blocks_;
+
+			ires::Ires reservoir_file;   // IRES Version 2.1
+
 			/// About IRES Geometry Information
 
 			// Cube in Interleaved VertexBuffer
 			// Use same layout location as vertexArray
-
 
 			GLuint vertexArrayCuboids;   	 	// 1 Vertex Array
 
 				std::vector<float> cuboids;
 				GLuint vertexBufferCuboidGeometry; // 1 Vertex Buffer with 8 vertex which define a Cuboid
 
-				std::vector<float> cuboidProperties;    /// Four property x = Porosity
-				GLuint vertexBufferCuboidProperties;	///               y = Modified Block Volume
+				std::vector<float> cuboidStatic;   /// property x = Modified Block Volume
+				GLuint vertexBufferCuboidStatic;   ///          y = Porosity
 
 				std::vector<float> cuboidDynamic;
 				GLuint vertexBufferCuboidDynamic;
-
-			void loadDynamic ( int property_index );
 
 			std::size_t 	   cuboidCount;
 
@@ -150,25 +155,22 @@ namespace IRES
 
 			GLuint vertexArrayFaces;		/// 1 Vertex Array
 
-				GLuint vertexBufferFaceGeometry;
-				std::vector<float> 	  faces;
+				std::vector<float> faces;
+				GLuint 		   vertexBufferFaceGeometry;
+
 
 				std::vector<float> faceType; 	   /// vec4 ( isShell, isFault, isBorder , 0.0 );
-				GLuint vertexBufferFaceType;
+				GLuint 		   vertexBufferFaceType;
 
-				GLuint vertexBufferFaceProperties; /// Four property x = Modified Block Volume
-				std::vector<float> faceProperty;   ///               y = Porosity
+				GLuint 		   vertexBufferFaceStatic; /// property x = Modified Block Volume
+				std::vector<float> faceStatic;             ///          y = Porosity
 
+
+				std::vector<float> faceDynamic;
+				GLuint vertexBufferfaceDynamic;
 
 			std::vector<ires::Face>   iresFaces_;
 			std::size_t 		  faceCount;
-
-
-			bool isInitialized;
-
-			std::size_t number_of_blocks_;
-
-			ires::Ires reservoir_file;
 
 	};
 

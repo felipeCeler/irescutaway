@@ -45,9 +45,9 @@ class GLWidget: public QGLWidget
 		explicit GLWidget ( const QGLFormat& format , QWidget* parent = 0 , const QGLWidget* shareWidget = 0 , Qt::WindowFlags f = 0 );
 		explicit GLWidget ( QWidget* parent = 0 , const QGLWidget* shareWidget = 0 , Qt::WindowFlags f = 0 );
 		void initializeGL ( );
-		void resizeGL ( int width , int height );
+		void resizeGL     ( int width , int height );
 
-		void paintGL ( );
+		void paintGL      ( );
 		//void timerEvent(QTimerEvent*);
 		void processMultiKeys ( );
 		void mousePressEvent ( QMouseEvent *event );
@@ -62,6 +62,7 @@ class GLWidget: public QGLWidget
 		/// TODO Physics
 		void gameLooping ( );
 		void fpsCounter ( );
+		void drawBackGround ( );
 
 		void loadShaders ( );
 		void openIRES_v2 ( const std::string& filename );
@@ -84,11 +85,11 @@ class GLWidget: public QGLWidget
 		void setSecondaryVisibility ( bool );
 
 		// Draw Functions
-		void drawCutawaySurface ( );	//
-		void drawSecondary ( );         // Draw only secondary Cells
-		void drawPrimary   ( );		// Draw only primary   Cells
+		void drawCutawaySurface    ( );	//
+		void drawSecondary         ( ); // Draw only secondary Cells
+		void drawPrimary           ( );	// Draw only primary   Cells
 		void drawPrimaryBoudingBox ( ); // Draw only primary   Cells with its bounding box
-		void drawFullModel ( );
+		void drawFullModel         ( );
 
 		void drawRawModel       ( );
 		void textureViewer      ( );
@@ -97,15 +98,15 @@ class GLWidget: public QGLWidget
 		void showFault		( bool visibility );
 		void showBorderLines    ( bool visibility );
 
-		void setTextureViewerVisibility ( bool visibility ) { isTextureViewer_ = visibility; updateGL();}
-		void setRawModelVisibility      ( bool visibility ) { isRawModel_      = visibility; updateGL();}
-		void setIRESCutawayVisibility   ( bool visibility ) { isIRESCutaway_   = visibility; updateGL();}
-		void setIRESFullModelVisibility ( bool visibility ) { isFullModel_     = visibility; updateGL();}
+		void setTextureViewerVisibility ( bool visibility ) { isTextureViewer_ = visibility; updateGL(); }
+		void setRawModelVisibility      ( bool visibility ) { isRawModel_      = visibility; updateGL(); }
+		void setIRESCutawayVisibility   ( bool visibility ) { isIRESCutaway_   = visibility; updateGL(); }
+		void setIRESFullModelVisibility ( bool visibility ) { isFullModel_     = visibility; updateGL(); }
 
 		void freezeView ( );
 
-		void changeTimeStep ( int step  ) { this->time_step = step; std::cout << "... " << step << std::endl; updateGL(); };
-		void changeDynamicProperty ( int index ) { reservoir_model_.loadDynamic( index ); dynamic_property_index = index; updateGL(); };
+		void changeTimeStep        ( int step  ) { this->time_step = step; std::cout << " ... " << step << std::endl; updateGL(); };
+		void changeDynamicProperty ( int index ) { reservoir_model_.loadDynamicProperties( index ); dynamic_property_index = index; updateGL(); };
 
 	protected:
 		void dragEnterEvent ( QDragEnterEvent *event );
@@ -130,6 +131,8 @@ class GLWidget: public QGLWidget
 		QPoint lastPos;
 		QSet<int> keysPresseds_;
 		bool 	  buttonRelease_;
+
+		Shader*                         BackGround;
 
 		bool isIRESOpen_;
 
@@ -181,9 +184,6 @@ class GLWidget: public QGLWidget
 
 		/// Smooth
 		MeanFilter * meanFilter;
-
-		// Cube in Interleaved VertexBuffer
-		// Use same layout location as vertexArray
 
 		bool enable_blend_;
 

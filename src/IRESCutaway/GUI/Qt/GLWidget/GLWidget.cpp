@@ -516,11 +516,18 @@ void GLWidget::drawFullModel ( )
 	glClearDepth(1.0f);
 	glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
+	drawBackGround( );
+
 	secondaryLCG->enable( );
 
 //	secondaryLCG->setUniform("min_property", reservoir_model_.static_min[reservoir_model_.current_static]  );
 //	secondaryLCG->setUniform("max_property", reservoir_model_.static_max[reservoir_model_.current_static]  );
 //	secondaryLCG->setUniform("property_index", reservoir_model_.current_static );
+
+	std::cout << "--- " << 	reservoir_model_.dynamic_properties[dynamic_property_index].min_[time_step] << std::endl;
+	std::cout << "--- " << 	reservoir_model_.dynamic_properties[dynamic_property_index].max_[time_step] << std::endl;
+
+	BoundingBoxCutawayLCG->setUniform("max_property", reservoir_model_.dynamic_properties[dynamic_property_index].max_[time_step]  );
 	BoundingBoxCutawayLCG->setUniform("min_property", reservoir_model_.dynamic_properties[dynamic_property_index].min_[time_step]  );
 	BoundingBoxCutawayLCG->setUniform("max_property", reservoir_model_.dynamic_properties[dynamic_property_index].max_[time_step]  );
 	secondaryLCG->setUniform("property_index", reservoir_model_.current_static );
@@ -548,6 +555,7 @@ void GLWidget::paintGL ( )
 	{
 		processMultiKeys ( );
 	}
+
 
 
 	if ( isIRESOpen_ )
@@ -588,6 +596,7 @@ void GLWidget::drawRawModel ( )
         glClearColor ( 1.0 , 1.0 , 1.0 , 1.0 );
         glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
+        drawBackGround( );
 
 	GLfloat light_elements[12];
 	for ( std::size_t i = 0; i < lights.size ( ); ++i )
@@ -638,6 +647,8 @@ void GLWidget::IRESCutaway (  )
 		glClearDepth(1.0f);
 		glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
+		drawBackGround( );
+
 		if ( draw_secondary )
 		{
 			drawSecondary( );
@@ -649,6 +660,29 @@ void GLWidget::IRESCutaway (  )
 		}
 	}
 
+}
+
+void GLWidget::drawBackGround ( )
+{
+	//      /// FIXME Conditions  - Just the model opened.
+
+
+	glDisable(GL_DEPTH_TEST);
+	glDepthMask(GL_FALSE);
+
+	BackGround->enable();
+
+	glActiveTexture(GL_TEXTURE0+3);
+	glBindTexture ( GL_TEXTURE_2D, xtoon_texture_ );
+	BackGround->setUniform("imageTexture", 3);
+	BackGround->setUniform("viewportSize", width(), height() );
+
+	picture->render();
+
+	BackGround->disable();
+
+	glEnable(GL_DEPTH_TEST);
+	glDepthMask(GL_TRUE);
 }
 
 void GLWidget::textureViewer ( )
@@ -668,7 +702,6 @@ void GLWidget::textureViewer ( )
         picture->render();
 
         xtoon_texture_viewer->disable();
-
 
 }
 
@@ -716,6 +749,11 @@ void GLWidget::loadShaders ( )
 	meanFilter->setShadersDir( shaderDirectory.toStdString() );
 
 	meanFilter->initialize( );
+
+	BackGround = new Shader  ("BackGround", (shaderDirectory + "BackGround.vert").toStdString(),
+				 (shaderDirectory + "BackGround.frag").toStdString(),"",1);
+
+	BackGround->initialize( );
 
 	// LCG
 	// When New is calling, does the destroyer function is also called ?
@@ -786,6 +824,7 @@ void GLWidget::processMultiKeys ( )
 		if ( key == Qt::Key_R )
 		{
 			trackball_->reset();
+			updateGL();
 		}
 		if( key == Qt::Key_Left)
 		{

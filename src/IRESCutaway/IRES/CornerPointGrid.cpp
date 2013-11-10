@@ -37,13 +37,13 @@ namespace IRES
 		// Cuboid
 		glGenVertexArrays ( 1, &vertexArrayCuboids );
 			glGenBuffers ( 1, &vertexBufferCuboidGeometry );  // Geometry
-			glGenBuffers ( 1, &vertexBufferCuboidProperties  ); // Cube Property
-			glGenBuffers ( 1, &vertexBufferCuboidDynamic);
+			glGenBuffers ( 1, &vertexBufferCuboidStatic ); // Cube Property
+			glGenBuffers ( 1, &vertexBufferCuboidDynamic );
 
 		// Face Features
 		glGenVertexArrays ( 1, &vertexArrayFaces );
 			glGenBuffers ( 1, &vertexBufferFaceGeometry );   // Geometry
-			glGenBuffers ( 1, &vertexBufferFaceProperties ); // Face Properties
+			glGenBuffers ( 1, &vertexBufferFaceStatic ); // Face Properties
 
 		isInitialized = 1;
 
@@ -82,7 +82,8 @@ namespace IRES
 
 			std::cout << std::setfill ( '-' ) << std::setw ( 55 ) << "-" << std::endl;
 
-			std::vector<std::string> 	static_names;
+			// - Extracting Static Property Information
+			std::vector<std::string> static_names;
 
 			reservoir_file.getStaticPropertyNames(static_names);
 
@@ -91,7 +92,6 @@ namespace IRES
 
 			for ( std::size_t i = 0; i < static_names.size(); i++)
 			{
-
 				static_names[i].erase ( std::remove_if ( static_names[i].begin ( ) , static_names[i].end ( ) , ::iscntrl ) , static_names[i].end ( ) );
 				static_porperties[i].name = static_names[i];
 
@@ -99,8 +99,9 @@ namespace IRES
 
 				static_porperties[i].min_ = *std::min_element ( static_porperties[i].values_.begin ( ) , static_porperties[i].values_.end ( ) );
 				static_porperties[i].max_ = *std::max_element ( static_porperties[i].values_.begin ( ) , static_porperties[i].values_.end ( ) );
-
 			}
+
+			// - Extracting Dynamic Property Information
 
 			std::vector<std::string> 	       dynamic_names;
 			std::vector<unsigned int >	       numTimeSteps;
@@ -134,6 +135,7 @@ namespace IRES
 				}
 			}
 
+			// - Extracting Face Information
 
 			iresFaces_.clear ( );
 			std::vector<float> vertexList;
@@ -144,17 +146,15 @@ namespace IRES
 
 			faces.clear();
 			faceType.clear();
-			faceProperty.clear();
 			// Geometry
 			faces.resize 	     ( iresFaces_.size ( ) * 16 );
 			// Attributes
 			faceType.resize      ( iresFaces_.size ( ) * 4  );
-			faceProperty.resize  ( iresFaces_.size ( ) * 4 );
 
 			faceCount = 0;
 
-			std::vector<float> faceCorner;
-			std::vector<float> faceFault;
+			std::vector<float> faceCorner; // Border Lines
+			std::vector<float> faceFault;  // Faces that define a fault;
 
 			reservoir_file.getFacePropertyValues(0,faceCorner);
 
@@ -187,7 +187,7 @@ namespace IRES
 				float V 		       = faceCorner[ 6*iresFaces_[i].id + pos ];
 				float F 		       = faceFault[ 6*iresFaces_[i].id + pos ];
 
-				// F == 0 pass
+				// F == 0 no fault
 				// F == 1 fault
 
 				faceType[i*4]   = static_cast<float> (iresFaces_[i].isExtern);
@@ -199,13 +199,11 @@ namespace IRES
 
 			}
 
-			// Reading Cubes
+			// - Extracting Cuboid Information
 
 			float 	 v[24];
 			cuboids.clear ( );
 			cuboids.resize( number_of_blocks_ * 32 );
-
-			cuboidProperties.resize ( number_of_blocks_ * 4 );
 
 			int stride_32 = 0;
 			int stride_4  = 0;
@@ -286,6 +284,7 @@ namespace IRES
 
 			glBindVertexArray ( vertexArrayCuboids );
 
+				// - Geometry Information  v0 to v7
 				glBindBuffer( GL_ARRAY_BUFFER, vertexBufferCuboidGeometry );
 				glBufferData ( GL_ARRAY_BUFFER , cuboids.size( ) * sizeof(cuboids[0]) , &cuboids[0] , GL_STATIC_DRAW );
 
@@ -300,13 +299,14 @@ namespace IRES
 					glVertexAttribPointer(location, 4, GL_FLOAT, GL_FALSE, size_of_struct , reinterpret_cast<void*>(size_of_vertice * location));
 				}
 
-				glBindBuffer ( GL_ARRAY_BUFFER, vertexBufferCuboidProperties);
-				glBufferData ( GL_ARRAY_BUFFER , cuboidProperties.size( ) * sizeof(cuboidProperties[0]) , &cuboidProperties[0] , GL_STATIC_DRAW );
+				// - Cube Static Property - v8
+				glBindBuffer ( GL_ARRAY_BUFFER, vertexBufferCuboidStatic);
+				glBufferData ( GL_ARRAY_BUFFER , cuboidStatic.size( ) * sizeof(cuboidStatic[0]) , &cuboidStatic[0] , GL_STATIC_DRAW );
 
 				glEnableVertexAttribArray(8);
 				glVertexAttribPointer(8, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
-				// - Dynamic Attributes
+				// - Dynamic Attributes  v9 to v15
 				glBindBuffer( GL_ARRAY_BUFFER, vertexBufferCuboidDynamic );
 				glBufferData ( GL_ARRAY_BUFFER , cuboidDynamic.size( ) * sizeof(cuboidDynamic[0]) , &cuboidDynamic[0] , GL_STATIC_DRAW );
 
@@ -346,17 +346,30 @@ namespace IRES
                                 glEnableVertexAttribArray(4);
                                 glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
-                                glBindBuffer ( GL_ARRAY_BUFFER, vertexBufferFaceProperties);
-                                glBufferData ( GL_ARRAY_BUFFER , faceProperty.size( ) * sizeof(faceProperty[0]) , &faceProperty[0] , GL_STATIC_DRAW );
+                                glBindBuffer ( GL_ARRAY_BUFFER, vertexBufferFaceStatic);
+                                glBufferData ( GL_ARRAY_BUFFER , faceStatic.size( ) * sizeof(faceStatic[0]) , &faceStatic[0] , GL_STATIC_DRAW );
 
                                 glEnableVertexAttribArray(5);
                                 glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
+				// - Dynamic Attributes  v9 to v15
+				glBindBuffer( GL_ARRAY_BUFFER, vertexBufferfaceDynamic );
+				glBufferData ( GL_ARRAY_BUFFER , faceDynamic.size( ) * sizeof(faceDynamic[0]) , &faceDynamic[0] , GL_STATIC_DRAW );
+
+				size_of_vertice = 4 * sizeof(float);
+				size_of_struct  = 7 * size_of_vertice;
+
+				for ( int location = 0 ; location < 7 ; location++)
+				{
+					glEnableVertexAttribArray ( 9 + location );
+					glVertexAttribPointer ( 9 + location , 4 , GL_FLOAT , GL_FALSE , size_of_struct , reinterpret_cast<void*> ( size_of_vertice * ( 9 + location ) ) );
+				}
+
 	                glBindVertexArray(0);
 
 
-			loadProperties( );
-			loadDynamic   (0);
+	                loadStaticProperties  ( );
+	                loadDynamicProperties ( 0 );
 		}
 	}
 
@@ -374,7 +387,7 @@ namespace IRES
 		glBindVertexArray ( 0 );
 	}
 
-	void CornerPointGrid::loadDynamic ( int property_index )
+	void CornerPointGrid::loadDynamicProperties ( int property_index )
 	{
 		cuboidDynamic.clear();
 
@@ -387,20 +400,33 @@ namespace IRES
 
 		cuboidDynamic.resize( 28 * number_of_blocks_ , 0.0f );
 
-		int time_steps = numTimeSteps[0];
+		unsigned int time_steps = numTimeSteps[0];
 
 		for ( std::size_t i = 0; i < number_of_blocks_; i++)
 		{
 			if ( reservoir_file.isValidBlock(i) )
 			{
-				for ( std::size_t t = 0; t < 28; t++)
+				for ( unsigned int t = 0; t < 28; t++)
 				{
-					if ( t < numTimeSteps[0] )
+					if ( t < time_steps )
 						cuboidDynamic[i*28+t] = dynamic_properties[property_index].values_[t][i];
 					//std::cout << "Float "<< cuboidDynamic[i*28+t] << std::endl;
 				}
 				index += 28;
 				//std::cout << " ----------------- " << std::endl;
+			}
+
+		}
+
+		faceDynamic.clear();
+                faceDynamic.resize ( 28 * iresFaces_.size() );
+
+		for ( std::size_t i = 0; i < iresFaces_.size() ; i++ )
+		{
+			for ( unsigned int t = 0; t < 28; t++)
+			{
+				if ( t < time_steps )
+					faceDynamic[i*28+t] = dynamic_properties[property_index].values_[t][iresFaces_[i].id];
 			}
 		}
 
@@ -410,15 +436,26 @@ namespace IRES
 		glBufferData ( GL_ARRAY_BUFFER , cuboidDynamic.size( ) * sizeof(cuboidDynamic[0]) , &cuboidDynamic[0] , GL_STATIC_DRAW );
 		glBindBuffer ( GL_ARRAY_BUFFER, 0);
 
+		glBindBuffer ( GL_ARRAY_BUFFER, vertexBufferfaceDynamic);
+		glBufferData ( GL_ARRAY_BUFFER , faceDynamic.size( ) * sizeof(faceDynamic[0]) , &faceDynamic[0] , GL_STATIC_DRAW );
+		glBindBuffer ( GL_ARRAY_BUFFER, 0);
+
 	}
 
-	void CornerPointGrid::loadProperties( )
+	void CornerPointGrid::loadStaticProperties( )
 	{
 
 		// Four property x = Modified Block Volume
 		//               y = Porosity
 		//	         z = 0
 		//               w = 0
+
+		cuboidStatic.clear();
+		cuboidStatic.resize( 4 * number_of_blocks_ );
+
+		faceStatic.clear();
+		faceStatic.resize  ( iresFaces_.size ( ) * 4 );
+
 
 		for ( std::size_t property_index = 0; property_index < static_porperties.size( ); property_index++ )
 		{
@@ -447,33 +484,31 @@ namespace IRES
 		{
 			if ( reservoir_file.isValidBlock(i) )
 			{
-				cuboidProperties[index+0] = static_porperties[static_indices[0]].values_[i];
-				cuboidProperties[index+1] = static_porperties[static_indices[1]].values_[i];
-				cuboidProperties[index+2] = static_porperties[static_indices[0]].values_[i];
-				cuboidProperties[index+3] = static_porperties[static_indices[0]].values_[i];
+				cuboidStatic[index+0] = static_porperties[static_indices[0]].values_[i];
+				cuboidStatic[index+1] = static_porperties[static_indices[1]].values_[i];
+				cuboidStatic[index+2] = static_porperties[static_indices[0]].values_[i];
+				cuboidStatic[index+3] = static_porperties[static_indices[0]].values_[i];
 				index += 4;
 			}
-
-
 		}
 
 		for ( std::size_t i = 0; i < iresFaces_.size() ; i++ )
 		{
-			faceProperty[i*4  ]   = static_porperties[static_indices[0]].values_[iresFaces_[i].id];
-			faceProperty[i*4+1]   = static_porperties[static_indices[1]].values_[iresFaces_[i].id];
-			faceProperty[i*4+2]   = static_porperties[static_indices[0]].values_[iresFaces_[i].id];
-			faceProperty[i*4+3]   = static_porperties[static_indices[0]].values_[iresFaces_[i].id];
+			faceStatic[i*4  ]   = static_porperties[static_indices[0]].values_[iresFaces_[i].id];
+			faceStatic[i*4+1]   = static_porperties[static_indices[1]].values_[iresFaces_[i].id];
+			faceStatic[i*4+2]   = static_porperties[static_indices[0]].values_[iresFaces_[i].id];
+			faceStatic[i*4+3]   = static_porperties[static_indices[0]].values_[iresFaces_[i].id];
 		}
 
-		cuboidProperties.resize(index);
+		cuboidStatic.resize(index);
 		// Cuboid
-		glBindBuffer ( GL_ARRAY_BUFFER, vertexBufferCuboidProperties);
-		glBufferData ( GL_ARRAY_BUFFER , cuboidProperties.size( ) * sizeof(cuboidProperties[0]) , &cuboidProperties[0] , GL_STATIC_DRAW );
+		glBindBuffer ( GL_ARRAY_BUFFER, vertexBufferCuboidStatic);
+		glBufferData ( GL_ARRAY_BUFFER , cuboidStatic.size( ) * sizeof(cuboidStatic[0]) , &cuboidStatic[0] , GL_STATIC_DRAW );
 		glBindBuffer ( GL_ARRAY_BUFFER, 0);
 
 		// FaceFeature
-		glBindBuffer ( GL_ARRAY_BUFFER, vertexBufferFaceProperties );
-		glBufferData ( GL_ARRAY_BUFFER , faceProperty.size( ) * sizeof(faceProperty[0]) , &faceProperty[0] , GL_STATIC_DRAW );
+		glBindBuffer ( GL_ARRAY_BUFFER, vertexBufferFaceStatic );
+		glBufferData ( GL_ARRAY_BUFFER , faceStatic.size( ) * sizeof(faceStatic[0]) , &faceStatic[0] , GL_STATIC_DRAW );
 		glBindBuffer ( GL_ARRAY_BUFFER, 0);
 
 

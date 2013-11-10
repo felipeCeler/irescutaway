@@ -17,9 +17,11 @@ MainWindow::MainWindow ( QMainWindow *parent ) :
 
 	aboutIRESReader = new AboutWidgetIRESReader( this );
 
-	glWidget = new GLWidget ( glFormat, ui->viewer );
-	ui->viewer_verticalLayout_->addWidget(glWidget);
-	ui->tabWidget->setCurrentIndex(0);
+	glWidget = new GLWidget ( glFormat, this );
+	//ui->viewer_verticalLayout_->addWidget(glWidget);
+	//ui->tabWidget->setCurrentIndex(0);
+
+	setCentralWidget( glWidget );
 
 	ui->tableWidgetProperties->horizontalHeader()->setResizeMode(QHeaderView::Stretch);
 
@@ -96,7 +98,7 @@ void MainWindow::open( QString pFilename,bool who ) {
 
 		updateDoubleSpinMax( 0 );
 		updateDoubleSpinMin( 0 );
-		ui->tableWidgetProperties->setRowCount(2*4);
+		ui->tableWidgetProperties->setRowCount(2*2);
 		ui->comboBoxProperty->clear();
 
 		for ( std::size_t i = 0 ; i < 2; ++i )
