@@ -18,12 +18,8 @@ MainWindow::MainWindow ( QMainWindow *parent ) :
 	aboutIRESReader = new AboutWidgetIRESReader( this );
 
 	glWidget = new GLWidget ( glFormat, this );
-	//ui->viewer_verticalLayout_->addWidget(glWidget);
-	//ui->tabWidget->setCurrentIndex(0);
 
 	setCentralWidget( glWidget );
-
-	ui->tableWidgetProperties->horizontalHeader()->setResizeMode(QHeaderView::Stretch);
 
 	QIcon icon;
 	icon.addFile ( ":/Icons/celerSystemIcon.svg" , QSize ( ) , QIcon::Normal , QIcon::Off );
@@ -98,23 +94,11 @@ void MainWindow::open( QString pFilename,bool who ) {
 
 		updateDoubleSpinMax( 0 );
 		updateDoubleSpinMin( 0 );
-		ui->tableWidgetProperties->setRowCount(2*2);
 		ui->comboBoxProperty->clear();
 
 		for ( std::size_t i = 0 ; i < 2; ++i )
 		{
-
-			float min =  glWidget->reservoir_model_.static_min[i];
-			float max =  glWidget->reservoir_model_.static_max[i];
-
-
 			ui->comboBoxProperty->addItem(  QString::fromStdString( glWidget->reservoir_model_.static_name[i] ) );
-			ui->tableWidgetProperties->setSpan(i * 2, 0, 2, 1);
-			ui->tableWidgetProperties->setItem(i * 2, 0, new QTableWidgetItem(  QString::fromStdString( glWidget->reservoir_model_.static_name[i] ) ) );
-
-			ui->tableWidgetProperties->setItem(i*2    , 1, new QTableWidgetItem(  QString::number( min )) );
-			ui->tableWidgetProperties->setItem(i*2 + 1, 1, new QTableWidgetItem(  QString::number( max )) );
-
 		}
 
 		ui->label_I_Range->setText("[ 0 - "+QString::number(glWidget->reservoir_model_.header_v2_.numI)+" ]");
