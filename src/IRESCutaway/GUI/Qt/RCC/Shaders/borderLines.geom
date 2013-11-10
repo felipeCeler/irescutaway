@@ -15,7 +15,6 @@ in VertexData
 	    vec4 eye[4];
 	    vec4 color;
 	    vec4  faceType;
-	    float faceType_;
 } VertexIn[1];
 
 
@@ -53,7 +52,7 @@ void main(void)
 
 	VertexOut.normal = VertexIn[0].n[0];
 
-	float V = VertexIn[0].faceType_;
+	float V = VertexIn[0].faceType.z;
 
 	/// One way to know which edge are corners given a value V is:
 

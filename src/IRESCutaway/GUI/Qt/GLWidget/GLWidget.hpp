@@ -119,12 +119,10 @@ class GLWidget: public QGLWidget
         void changed(const QMimeData *mimeData = 0);
 
 	public:
-
 		IRES::CornerPointGrid reservoir_model_;
 
 		float min_range;
 		float max_range;
-
 	private:
 
 		/// Avoid camera_ movement issues
@@ -161,10 +159,10 @@ class GLWidget: public QGLWidget
 		int fps;
 
 		/// -- RENDERING Stuffs  ----------------------------------------------
-		bool  isTextureViewer_;
-		bool  isRawModel_;
-		bool  isIRESCutaway_;
-		bool  isFullModel_;
+		bool isTextureViewer_;
+		bool isRawModel_;
+		bool isIRESCutaway_;
+		bool isFullModel_;
 
 		bool draw_secondary;
 		bool draw_primary;

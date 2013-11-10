@@ -29,7 +29,8 @@ MainWindow::MainWindow ( QMainWindow *parent ) :
 
 	// Dock Widget Layer Initialization
 
-	ui->dockWidgetLayers->setHidden( true );
+	ui->dockWidgetStatic->setHidden( true );
+	ui->dockWidgetDynamic->setHidden( true );
 	ui->dockWidgetIJKViewer->setHidden( true );
 
 	connect(ui->comboBoxProperty, SIGNAL(activated(int)), this, SLOT(updateDoubleSpinMin(int)));
@@ -63,16 +64,16 @@ MainWindow::MainWindow ( QMainWindow *parent ) :
 	CutawayTypeGroup->addAction ( ui->action_IRES_Cutaway );
 	CutawayTypeGroup->addAction ( ui->action_FullModel );
 
-	// Change the Rendering Type
+	// Rendering Type
 	connect(ui->action_Texture_View, SIGNAL(toggled(bool)), glWidget, SLOT(setTextureViewerVisibility(bool)));
 	connect(ui->action_Raw_Model   , SIGNAL(toggled(bool)), glWidget, SLOT(setRawModelVisibility(bool)));
 	connect(ui->action_IRES_Cutaway, SIGNAL(toggled(bool)), glWidget, SLOT(setIRESCutawayVisibility(bool)));
 	connect(ui->action_FullModel,    SIGNAL(toggled(bool)), glWidget, SLOT(setIRESFullModelVisibility(bool)));
-	// Change visibility  of cells
+	// Cells Visibility
 	connect(ui->action_Show_Primary_Cells,   SIGNAL(toggled(bool)), glWidget, SLOT(setPrimaryVisibility(bool)));
 	connect(ui->action_Show_Secondary_Cells, SIGNAL(toggled(bool)), glWidget, SLOT(setSecondaryVisibility(bool)));
 
-	// Change Feature Visibility
+	// Feature Visibility
 
 	connect(ui->action_Fault,   SIGNAL(toggled(bool)), glWidget, SLOT(showFault(bool)));
 	connect(ui->action_BorderLine, SIGNAL(toggled(bool)), glWidget, SLOT(showBorderLines(bool)));
@@ -123,6 +124,7 @@ void MainWindow::open( QString pFilename,bool who ) {
 		ui->horizontalslider_min_K->setValue ( 0 );
 
 		loadDynamic();
+		changeProperty();
 	}
 
 }

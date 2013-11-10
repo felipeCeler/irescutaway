@@ -35,6 +35,8 @@ uniform float max_property;
 
 uniform int property_index;
 
+uniform int faults;
+
 
 vec4 propertyColor ( in float min_range, in float max_range, in int index )
 {
@@ -71,7 +73,8 @@ void main(void)
 	VertexOut.eye[2] =  ModelMatrix * ViewMatrix * vec4(vc);
 	VertexOut.eye[3] =  ModelMatrix * ViewMatrix * vec4(vd);
 
-        if ( ( faceType.x == 1.0 ) ) // Shell faces
+
+        if ( (faults == 0) || ( faceType.y == 0.0 )  ) // Shell faces
 	{
 		VertexOut.color  =  propertyColor ( min_property, max_property, property_index );
 		VertexOut.v[0] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(va);
@@ -87,6 +90,7 @@ void main(void)
 		VertexOut.v[2] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(0.0);
 		VertexOut.v[3] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(0.0);
 	}
+
 
 	gl_Position = vec4(va);
 }

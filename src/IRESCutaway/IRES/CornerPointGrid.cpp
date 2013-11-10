@@ -130,7 +130,7 @@ namespace IRES
 					reservoir_file.getDynamicPropertyValues( i, t, dynamic_properties[i].values_[t]);
 					dynamic_properties[i].min_[t] = *std::min_element ( dynamic_properties[i].values_[t].begin ( ) , dynamic_properties[i].values_[t].end ( ) );
 					dynamic_properties[i].max_[t] = *std::max_element ( dynamic_properties[i].values_[t].begin ( ) , dynamic_properties[i].values_[t].end ( ) );
-					std::cout << "Time step: " << t << " min "<< dynamic_properties[i].min_[t] << " max " <<  dynamic_properties[i].max_[t] << std::endl;
+					//std::cout << "Time step: " << t << " min "<< dynamic_properties[i].min_[t] << " max " <<  dynamic_properties[i].max_[t] << std::endl;
 
 				}
 			}
@@ -162,40 +162,44 @@ namespace IRES
 
 			for ( std::size_t i = 0; i < iresFaces_.size( ) ; i++)
 			{
-				faces[i*16]   = vertexList[iresFaces_[i].a*3];
-				faces[i*16+1] = vertexList[iresFaces_[i].a*3+1];
-				faces[i*16+2] = vertexList[iresFaces_[i].a*3+2];
-				faces[i*16+3] = 1.0f;
 
-				faces[i*16+4] = vertexList[iresFaces_[i].b*3];
-				faces[i*16+5] = vertexList[iresFaces_[i].b*3+1];
-				faces[i*16+6] = vertexList[iresFaces_[i].b*3+2];
-				faces[i*16+7] = 1.0f;
+				if ( (iresFaces_[i].isExtern) )
+				{
+					faces[faceCount*16]   = vertexList[iresFaces_[i].a*3];
+					faces[faceCount*16+1] = vertexList[iresFaces_[i].a*3+1];
+					faces[faceCount*16+2] = vertexList[iresFaces_[i].a*3+2];
+					faces[faceCount*16+3] = 1.0f;
 
-				faces[i*16+8]  = vertexList[iresFaces_[i].c*3];
-				faces[i*16+9]  = vertexList[iresFaces_[i].c*3+1];
-				faces[i*16+10] = vertexList[iresFaces_[i].c*3+2];
-				faces[i*16+11] = 1.0f;
+					faces[faceCount*16+4] = vertexList[iresFaces_[i].b*3];
+					faces[faceCount*16+5] = vertexList[iresFaces_[i].b*3+1];
+					faces[faceCount*16+6] = vertexList[iresFaces_[i].b*3+2];
+					faces[faceCount*16+7] = 1.0f;
 
-				faces[i*16+12] = vertexList[iresFaces_[i].d*3];
-				faces[i*16+13] = vertexList[iresFaces_[i].d*3+1];
-				faces[i*16+14] = vertexList[iresFaces_[i].d*3+2];
-				faces[i*16+15] = 1.0f;
+					faces[faceCount*16+8]  = vertexList[iresFaces_[i].c*3];
+					faces[faceCount*16+9]  = vertexList[iresFaces_[i].c*3+1];
+					faces[faceCount*16+10] = vertexList[iresFaces_[i].c*3+2];
+					faces[faceCount*16+11] = 1.0f;
+
+					faces[faceCount*16+12] = vertexList[iresFaces_[i].d*3];
+					faces[faceCount*16+13] = vertexList[iresFaces_[i].d*3+1];
+					faces[faceCount*16+14] = vertexList[iresFaces_[i].d*3+2];
+					faces[faceCount*16+15] = 1.0f;
 
 
-				ires::Face::FACE_BLOCK_POS pos = iresFaces_[i].faceBlockRelPos;
-				float V 		       = faceCorner[ 6*iresFaces_[i].id + pos ];
-				float F 		       = faceFault[ 6*iresFaces_[i].id + pos ];
+					ires::Face::FACE_BLOCK_POS pos = iresFaces_[i].faceBlockRelPos;
+					float V 		       = faceCorner[ 6*iresFaces_[i].id + pos ];
+					float F 		       = faceFault[ 6*iresFaces_[i].id + pos ];
 
-				// F == 0 no fault
-				// F == 1 fault
+					// F == 0 no fault
+					// F == 1 fault
 
-				faceType[i*4]   = static_cast<float> (iresFaces_[i].isExtern);
-				faceType[i*4+1] = F;
-				faceType[i*4+2] = V;
-				faceType[i*4+3] = static_cast<float> (iresFaces_[i].faceBlockRelPos);
+					faceType[faceCount*4]   = static_cast<float> (iresFaces_[i].isExtern);
+					faceType[faceCount*4+1] = F;
+					faceType[faceCount*4+2] = V;
+					faceType[faceCount*4+3] = static_cast<float> (iresFaces_[i].faceBlockRelPos);
 
-				faceCount++;
+					faceCount++;
+				}
 
 			}
 
@@ -281,6 +285,8 @@ namespace IRES
 			}
 
 			cuboids.resize    (stride_32);
+			faces.resize(faceCount * 16);
+			faceType.resize(faceCount * 4 );
 
 			glBindVertexArray ( vertexArrayCuboids );
 
@@ -492,15 +498,21 @@ namespace IRES
 			}
 		}
 
+		cuboidStatic.resize(index);
+		index = 0;
 		for ( std::size_t i = 0; i < iresFaces_.size() ; i++ )
 		{
-			faceStatic[i*4  ]   = static_porperties[static_indices[0]].values_[iresFaces_[i].id];
-			faceStatic[i*4+1]   = static_porperties[static_indices[1]].values_[iresFaces_[i].id];
-			faceStatic[i*4+2]   = static_porperties[static_indices[0]].values_[iresFaces_[i].id];
-			faceStatic[i*4+3]   = static_porperties[static_indices[0]].values_[iresFaces_[i].id];
+			if ( (iresFaces_[i].isExtern) )
+			{
+				faceStatic[index  ]   = static_porperties[static_indices[0]].values_[iresFaces_[i].id];
+				faceStatic[index+1]   = static_porperties[static_indices[1]].values_[iresFaces_[i].id];
+				faceStatic[index+2]   = static_porperties[static_indices[0]].values_[iresFaces_[i].id];
+				faceStatic[index+3]   = static_porperties[static_indices[0]].values_[iresFaces_[i].id];
+				index += 4;
+			}
 		}
+		faceStatic.resize( index );
 
-		cuboidStatic.resize(index);
 		// Cuboid
 		glBindBuffer ( GL_ARRAY_BUFFER, vertexBufferCuboidStatic);
 		glBufferData ( GL_ARRAY_BUFFER , cuboidStatic.size( ) * sizeof(cuboidStatic[0]) , &cuboidStatic[0] , GL_STATIC_DRAW );

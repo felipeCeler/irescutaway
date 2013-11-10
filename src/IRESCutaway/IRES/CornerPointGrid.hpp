@@ -108,7 +108,7 @@ namespace IRES
                         int currentProperty;	   // Static or Dynamic
                         int currentTimeStep;	   // Only for Dynamic
 
-                        bool showFault;		   // Fault visibility
+                        int  showFault;		   // Fault visibility
                         bool showBorderLine;       // Border Line Visibility
 
 			void setupStatic ( );

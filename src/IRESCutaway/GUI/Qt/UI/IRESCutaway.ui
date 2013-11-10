@@ -66,7 +66,8 @@
     <property name="title">
      <string>View</string>
     </property>
-    <addaction name="action_Show_Properties_Viwer"/>
+    <addaction name="action_Show_Static_Properties"/>
+    <addaction name="action_Show_Dynamic_Properties"/>
     <addaction name="separator"/>
     <addaction name="action_Show_Primary_Cells"/>
     <addaction name="action_Show_Secondary_Cells"/>
@@ -88,7 +89,7 @@
    <addaction name="menuView"/>
    <addaction name="menuHelp"/>
   </widget>
-  <widget class="QDockWidget" name="dockWidgetLayers">
+  <widget class="QDockWidget" name="dockWidgetStatic">
    <property name="enabled">
     <bool>true</bool>
    </property>
@@ -818,15 +819,15 @@
     <string>F11</string>
    </property>
   </action>
-  <action name="action_Show_Properties_Viwer">
+  <action name="action_Show_Static_Properties">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Show Properties Viewer</string>
+    <string>Show Static Properties</string>
    </property>
    <property name="toolTip">
-    <string>Properties Attributes Viewer</string>
+    <string>Static Properties Viewer</string>
    </property>
   </action>
   <action name="action_Fault">
@@ -862,6 +863,17 @@
     <string>F12</string>
    </property>
   </action>
+  <action name="action_Show_Dynamic_Properties">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show Dynamic Properties</string>
+   </property>
+   <property name="toolTip">
+    <string>Dynamic Properties Viewer</string>
+   </property>
+  </action>
  </widget>
  <resources>
   <include location="../RCC/Resources.qrc"/>
@@ -884,9 +896,9 @@
    </hints>
   </connection>
   <connection>
-   <sender>action_Show_Properties_Viwer</sender>
+   <sender>action_Show_Static_Properties</sender>
    <signal>toggled(bool)</signal>
-   <receiver>dockWidgetLayers</receiver>
+   <receiver>dockWidgetStatic</receiver>
    <slot>setVisible(bool)</slot>
    <hints>
     <hint type="sourcelabel">
@@ -896,6 +908,22 @@
     <hint type="destinationlabel">
      <x>199</x>
      <y>394</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>action_Show_Dynamic_Properties</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>dockWidgetDynamic</receiver>
+   <slot>setVisible(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>199</x>
+     <y>469</y>
     </hint>
    </hints>
   </connection>

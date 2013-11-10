@@ -335,46 +335,46 @@ void GLWidget::resizeGL ( int width , int height )
 void GLWidget::drawCutawaySurface ( )
 {
 
-		glDepthFunc ( GL_GREATER );
-		glClearDepth ( 0.0 );
+	glDepthFunc ( GL_GREATER );
+	glClearDepth ( 0.0 );
 
-		depthFBO->bind( );
+	depthFBO->bind( );
 
-		glDrawBuffer(GL_COLOR_ATTACHMENT0);
+	glDrawBuffer(GL_COLOR_ATTACHMENT0);
 
-		glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
-		glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-
-
-		BoundingBoxInitializationLCG->enable( );
-
-		BoundingBoxInitializationLCG->setUniform("min_range", min_range  );
-		BoundingBoxInitializationLCG->setUniform("max_range", max_range  );
-		BoundingBoxInitializationLCG->setUniform("min_property", reservoir_model_.static_min[reservoir_model_.current_static]  );
-		BoundingBoxInitializationLCG->setUniform("max_property", reservoir_model_.static_max[reservoir_model_.current_static]  );
-		BoundingBoxInitializationLCG->setUniform("property_index", reservoir_model_.current_static );
-
-		BoundingBoxInitializationLCG->setUniform( "x" , volume_width );
-		BoundingBoxInitializationLCG->setUniform( "y" , volume_height );
-		BoundingBoxInitializationLCG->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
-		BoundingBoxInitializationLCG->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
-		BoundingBoxInitializationLCG->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
-
-		BoundingBoxInitializationLCG->setUniform ("freeze", freezeView_ );
-		BoundingBoxInitializationLCG->setUniform ("FreezeViewMatrix",freeze_viewmatrix_.data ( ),4, GL_FALSE, 1 );
-
-		reservoir_model_.drawCuboid ( );
-
-		BoundingBoxInitializationLCG->disable( );
-
-		glDrawBuffer(GL_COLOR_ATTACHMENT0+1);
-
-		meanFilter->renderTexture( depthFBO->bindAttachment(0));
-
-		depthFBO->unbindAll();
+	glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
+	glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
 
-		glDrawBuffer(GL_BACK);
+	BoundingBoxInitializationLCG->enable( );
+
+	BoundingBoxInitializationLCG->setUniform("min_range", min_range  );
+	BoundingBoxInitializationLCG->setUniform("max_range", max_range  );
+	BoundingBoxInitializationLCG->setUniform("min_property", reservoir_model_.static_min[reservoir_model_.current_static]  );
+	BoundingBoxInitializationLCG->setUniform("max_property", reservoir_model_.static_max[reservoir_model_.current_static]  );
+	BoundingBoxInitializationLCG->setUniform("property_index", reservoir_model_.current_static );
+
+	BoundingBoxInitializationLCG->setUniform( "x" , volume_width );
+	BoundingBoxInitializationLCG->setUniform( "y" , volume_height );
+	BoundingBoxInitializationLCG->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
+	BoundingBoxInitializationLCG->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
+	BoundingBoxInitializationLCG->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
+
+	BoundingBoxInitializationLCG->setUniform ("freeze", freezeView_ );
+	BoundingBoxInitializationLCG->setUniform ("FreezeViewMatrix",freeze_viewmatrix_.data ( ),4, GL_FALSE, 1 );
+
+	reservoir_model_.drawCuboid ( );
+
+	BoundingBoxInitializationLCG->disable( );
+
+	glDrawBuffer(GL_COLOR_ATTACHMENT0+1);
+
+	meanFilter->renderTexture( depthFBO->bindAttachment(0));
+
+	depthFBO->unbindAll();
+
+
+	glDrawBuffer(GL_BACK);
 
 }
 
@@ -396,6 +396,7 @@ void GLWidget::drawSecondary ( )
 	shellLCG->setUniform("min_property", reservoir_model_.static_min[reservoir_model_.current_static]  );
 	shellLCG->setUniform("max_property", reservoir_model_.static_max[reservoir_model_.current_static]  );
 	shellLCG->setUniform("property_index", reservoir_model_.current_static );
+	shellLCG->setUniform("faults", reservoir_model_.showFault );
 
 	shellLCG->setUniform("num_lights", (GLint) lights.size ( )  );
 	shellLCG->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
@@ -556,7 +557,8 @@ void GLWidget::paintGL ( )
 		processMultiKeys ( );
 	}
 
-
+        glClearColor ( 1.0 , 1.0 , 1.0 , 1.0 );
+        glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
 	if ( isIRESOpen_ )
 	{
@@ -992,7 +994,10 @@ void GLWidget::wheelEvent ( QWheelEvent *event )
 
 void GLWidget::showFault	  ( bool visibility )
 {
-	reservoir_model_.showFault = visibility;
+	if ( visibility )
+		reservoir_model_.showFault = 0;
+	else
+		reservoir_model_.showFault = 1;
 }
 
 void GLWidget::showBorderLines    ( bool visibility )
