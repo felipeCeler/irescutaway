@@ -128,8 +128,9 @@ void main(void)
             //ls += color_t * 0.0 * pow ( max ( 0.0 , dot ( eye_dir , ref ) ) , 5.0 );
         }
 
+
         vec4 color = la + ld + ls;
-        //color.a = 1.0;
+        color.a = 1.0;
 
         // uncomment to turn off illumination
         //color = color_t;
@@ -149,8 +150,8 @@ void main(void)
         else
         {
 
-        	if (backface)
-        		color.rgb += vec3(0.5);
-            outputColor = I * vec4(vec3(0.0), 1.0) + (1.0 - I) * ( color_t );
+//        	if (backface)
+//        		color.rgb += vec3(0.5);
+            outputColor = I * vec4(vec3(0.0), 1.0) + (1.0 - I) * ( color );
         }
 }

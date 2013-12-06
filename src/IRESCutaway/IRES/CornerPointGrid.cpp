@@ -425,7 +425,7 @@ namespace IRES
 		}
 
 		faceDynamic.clear();
-                faceDynamic.resize ( 28 * iresFaces_.size() );
+                faceDynamic.resize ( 28 * iresFaces_.size(), 0.0f );
 
 		for ( std::size_t i = 0; i < iresFaces_.size() ; i++ )
 		{

@@ -67,7 +67,7 @@ vec4 dynamicColor ( )
 
 	if ( ( time_step >=0 ) && (time_step <=3) )
         {
-		color = dynamicValue (d1[time]);
+		color = dynamicValue (d1[time_step]);
 	}
 	else if ( ( time_step >=4 ) && (time_step <= 7) )
         {
@@ -94,7 +94,7 @@ vec4 dynamicColor ( )
 		color = dynamicValue (d7[time_step-24]);
 	}else
 	{
-		vec4 color =  vec4(0.0,1.0,0.0,1.0);
+		color =  vec4(0.0,1.0,0.0,1.0);
 	}
 
 	return color;
@@ -135,6 +135,18 @@ void main(void)
 		cube.v[3] = v3;
 		cube.v[1] = v1;
 		cube.v[2] = v2;
+
+//		vec4 scale = vec4(1.0,6.0,1.0,1.0);
+//
+//		cube.v[4] *= scale;
+//		cube.v[5] *= scale;
+//		cube.v[7] *= scale;
+//		cube.v[6] *= scale;
+//		// Bottom
+//		cube.v[0] *= scale;
+//		cube.v[3] *= scale;
+//		cube.v[1] *= scale;
+//		cube.v[2] *= scale;
 
 
 		cube.color  = dynamicColor ( );//propertyColor ( min_property, max_property, property_index );

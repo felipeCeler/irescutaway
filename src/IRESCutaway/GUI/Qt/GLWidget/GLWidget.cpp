@@ -528,9 +528,8 @@ void GLWidget::drawFullModel ( )
 	std::cout << "--- " << 	reservoir_model_.dynamic_properties[dynamic_property_index].min_[time_step] << std::endl;
 	std::cout << "--- " << 	reservoir_model_.dynamic_properties[dynamic_property_index].max_[time_step] << std::endl;
 
-	BoundingBoxCutawayLCG->setUniform("max_property", reservoir_model_.dynamic_properties[dynamic_property_index].max_[time_step]  );
-	BoundingBoxCutawayLCG->setUniform("min_property", reservoir_model_.dynamic_properties[dynamic_property_index].min_[time_step]  );
-	BoundingBoxCutawayLCG->setUniform("max_property", reservoir_model_.dynamic_properties[dynamic_property_index].max_[time_step]  );
+	secondaryLCG->setUniform("max_property", reservoir_model_.dynamic_properties[dynamic_property_index].max_[time_step]  );
+	secondaryLCG->setUniform("min_property", reservoir_model_.dynamic_properties[dynamic_property_index].min_[time_step]  );
 	secondaryLCG->setUniform("property_index", reservoir_model_.current_static );
 	secondaryLCG->setUniform("time_step", time_step );
 

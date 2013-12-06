@@ -253,6 +253,9 @@
           <property name="toolTip">
            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Minimum value.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
+          <property name="decimals">
+           <number>5</number>
+          </property>
           <property name="maximum">
            <double>1000000000.000000000000000</double>
           </property>
@@ -278,6 +281,9 @@
           </property>
           <property name="toolTip">
            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Maximum value.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="decimals">
+           <number>5</number>
           </property>
           <property name="maximum">
            <double>1000000000.000000000000000</double>

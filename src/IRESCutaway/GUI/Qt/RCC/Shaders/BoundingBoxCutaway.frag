@@ -57,33 +57,37 @@ void main(void)
             discard;
         }
 
-        int size = 4;
+        int size = 8;
 
         // check the neighbors, we are only interested in border pixels (neighbors to discarded pixels)
         float zsurface = 0;
         float zneighbor = 0;
 
-        for (int i = 0; i < size; ++i) {
-            if (I != 1)
-            {
-                // neighbor coordinate in range [0,1]
-                vec2 neighbor = (pixel_pos + dist_neighbor[i]) / vec2(textureSize(normals,0)).xy ;
+//        for (int i = 0; i < size; ++i) {
+//            if (I != 1)
+//            {
+//                // neighbor coordinate in range [0,1]
+//                vec2 neighbor = (pixel_pos + dist_neighbor[i]) / vec2(textureSize(normals,0)).xy ;
+//
+//                // depth of cutaway surface at neighbor pixel
+//                zsurface = texelFetch( normals, ivec2(pixel_pos + dist_neighbor[i]), 0 ).w;
+//
+//                // invert the orthographic projection (considering ortho planes are in range [-1,1]
+//                vec2 pixel = neighbor*2.0 - vec2(1.0);
+//
+//                // intersection ray from point in image plane with plane containing current 3D point
+//                // note that the denominator is dot(l,n), but the ray in ortho is just (0,0,1)
+//                zneighbor = (dot (newVert.xyz - vec3(pixel.xy, 0.0), newNormal.xyz)) / newNormal.z;
+//
+//                // if neighbor is in front of surface (was discarded), curent pixel is an edge pixel
+//                if (zneighbor > zsurface) {
+//                    I = 1;
+//                }
+//            }
+//        }
 
-                // depth of cutaway surface at neighbor pixel
-                zsurface = texelFetch( normals, ivec2(pixel_pos + dist_neighbor[i]), 0 ).w;
-
-                // invert the orthographic projection (considering ortho planes are in range [-1,1]
-                vec2 pixel = neighbor*2.0 - vec2(1.0);
-
-                // intersection ray from point in image plane with plane containing current 3D point
-                // note that the denominator is dot(l,n), but the ray in ortho is just (0,0,1)
-                zneighbor = (dot (newVert.xyz - vec3(pixel.xy, 0.0), newNormal.xyz)) / newNormal.z;
-
-                // if neighbor is in front of surface (was discarded), curent pixel is an edge pixel
-                if (zneighbor > zsurface) {
-                    I = 1;
-                }
-            }
+        if ( (abs(newVert.z - (cutaway.w)) < 0.003) ) {
+          I = 1;
         }
 
         // for back faces use the normal of the cutaway surface (simulate a cut inside the cells)
