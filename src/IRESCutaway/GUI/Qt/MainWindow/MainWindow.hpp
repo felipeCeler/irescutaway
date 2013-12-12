@@ -37,6 +37,8 @@ class MainWindow: public QMainWindow
 		void on_doubleSpinMin_valueChanged  ( double i);
 		void on_doubleSpinMax_valueChanged  ( double i);
 
+		void updateFPS();
+
 		void changeProperty(  );
 
 	private:

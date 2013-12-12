@@ -61,7 +61,7 @@ class GLWidget: public QGLWidget
 
 		/// TODO Physics
 		void gameLooping ( );
-		void fpsCounter ( );
+		int fpsCounter ( );
 
 		void loadShaders ( );
 		void openIRES_v2 ( const std::string& filename );
@@ -111,6 +111,8 @@ class GLWidget: public QGLWidget
 
 	public:
 
+        	QTimer fpsTimer_;
+
 		IRES::CornerPointGrid reservoir_model_;
 
 		float min_range;
@@ -143,7 +145,7 @@ class GLWidget: public QGLWidget
 
 		/// -- ANIMATION  Stuffs ----------------------------------------------
 		// Celer Gaming Looping 0.1 -> For animation
-		QTimer fpsTimer_;
+
 		QTimer updateTimer_;
 		QElapsedTimer delta_time;
 		int fps;

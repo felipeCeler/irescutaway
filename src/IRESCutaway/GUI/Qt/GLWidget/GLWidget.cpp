@@ -85,9 +85,9 @@ void GLWidget::initializeGL ( )
 	connect ( &updateTimer_ , SIGNAL ( timeout ( ) ) , this , SLOT ( gameLooping ( ) ) );
 	updateTimer_.start( 0 );
 
-	fpsTimer_.setSingleShot ( false );
-	connect ( &fpsTimer_ , SIGNAL ( timeout ( ) ) , this , SLOT ( fpsCounter( ) ) );
-	fpsTimer_.start ( 1000 );
+//	fpsTimer_.setSingleShot ( false );
+//	connect ( &fpsTimer_ , SIGNAL ( timeout ( ) ) , this , SLOT ( fpsCounter( ) ) );
+//	fpsTimer_.start ( 1000 );
 
 	freezeView_ = 0;
 
@@ -615,24 +615,27 @@ void GLWidget::textureViewer ( )
 void GLWidget::gameLooping ( )
 {
 
-	//std::cout << "fps :" << v  << std::endl;
+       //std::cout << "fps :" << fps  << std::endl;
 
      //updateGL();
 
-    //    fps++;
+        fps++;
 
 
 
 }
 
-void GLWidget::fpsCounter ( )
+int GLWidget::fpsCounter ( )
 {
 
+	int  result = fps;
     //std::cout << "fps :" << fps  << std::endl;
 
 	fps = 0;
 
 	delta_time.restart();
+
+	return result;
 }
 
 void GLWidget::loadShaders ( )

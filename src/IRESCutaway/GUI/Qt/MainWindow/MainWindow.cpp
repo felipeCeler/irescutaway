@@ -65,6 +65,18 @@ MainWindow::MainWindow ( QMainWindow *parent ) :
 	connect(ui->action_Show_Primary_Cells,   SIGNAL(toggled(bool)), glWidget, SLOT(setPrimaryVisibility(bool)));
 	connect(ui->action_Show_Secondary_Cells, SIGNAL(toggled(bool)), glWidget, SLOT(setSecondaryVisibility(bool)));
 
+
+	/// -- FPS
+
+	glWidget->fpsTimer_.setSingleShot ( false );
+	connect ( &glWidget->fpsTimer_ , SIGNAL ( timeout ( ) ) , this , SLOT ( updateFPS() ) );
+	glWidget->fpsTimer_.start ( 1000 );
+
+}
+
+void MainWindow::updateFPS( )
+{
+	ui->labelShowFPS->setText( QString::number( glWidget->fpsCounter()) );
 }
 
 void MainWindow::open( QString pFilename,bool who ) {

@@ -83,6 +83,11 @@ void main(void)
             }
         }
 
+//        if ( abs(newVert.z - cutaway.w) < 0.006)
+//        {
+//        	I = 1;
+//        }
+
         // for back faces use the normal of the cutaway surface (simulate a cut inside the cells)
         newNormal = -cutaway.xyz;
         //vec3 eye_dir = normalize ( -newVert.xyz );
