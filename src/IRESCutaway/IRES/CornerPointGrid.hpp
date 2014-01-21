@@ -89,11 +89,11 @@ namespace IRES
 			void 	loadDynamicProperties  	( int property_index );
 
 			// Properties values Interface for static
-                                std::string static_name   [2];
-                                std::size_t static_indices[2];
+                                std::string static_name   [3];
+                                std::size_t static_indices[3];
 
-                                float static_min[2];
-                                float static_max[2];
+                                float static_min[3];
+                                float static_max[3];
 
                                 int current_static;
 
