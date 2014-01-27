@@ -41,7 +41,7 @@ void main(void)
         vec3 eye_dir = normalize ( -newVert.xyz );
 
 	float d = min(dist[0], min(dist[1], min(dist[2], dist[3])));
-	float I = exp2(-2 * d * d);
+	float I = exp2(-0.7 * d * d);
 
         vec4 la = vec4(0.0);
         vec4 ld = vec4(0.0);
@@ -61,6 +61,6 @@ void main(void)
         vec4 color = la + ld + ls;
         color.a = 1.0;
 
-        fragmentColor = I * vec4 ( 0.0 , 0.0 , 0.0 , 1.0 ) + ( 1.0 - I ) * color;
+        fragmentColor = I * vec4 ( 1.0 , 1.0 , 1.0 , 1.0 ) + ( 1.0 - I ) * color;
 
 }

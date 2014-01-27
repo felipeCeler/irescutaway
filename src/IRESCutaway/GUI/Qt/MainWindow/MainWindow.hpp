@@ -31,18 +31,23 @@ class MainWindow: public QMainWindow
 		void on_action_Open_IRES_triggered ( );
 		void on_pushButton_Reset_IJK_clicked( );
 
+
+		void loadStatic( );
 		void updateDoubleSpinMax( int property_index );
 		void updateDoubleSpinMin( int property_index );
 
 		void on_doubleSpinMin_valueChanged  ( double i);
 		void on_doubleSpinMax_valueChanged  ( double i);
-
 		//
 		void changeProperty ( );
+
 
 		void loadDynamic ( );
 		void updateDynamicDoubleSpinMax( int property_index );
 		void updateDynamicDoubleSpinMin( int property_index );
+
+		//
+		void WidgetSignalSlotConnection();
 
 	private:
 

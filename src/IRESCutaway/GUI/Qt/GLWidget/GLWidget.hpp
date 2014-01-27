@@ -8,7 +8,7 @@
 #include <GL/glew.h>
 #include <IRES/CornerPointGrid.hpp>
 
-/// LCG Libary
+/// LCG Library
 #include <shaderlib/trackball.hpp>
 #include <shaderlib/framebuffer.hpp>
 #include <samples/imgproc/meanfilter.hpp>
@@ -60,16 +60,11 @@ class GLWidget: public QGLWidget
 	public slots:
 
 		/// TODO Physics
-		void gameLooping ( );
-		void fpsCounter ( );
-		void drawBackGround ( );
-
+		void gameLooping    ( );
+		void fpsCounter     ( );
 		void loadShaders ( );
 		void openIRES_v2 ( const std::string& filename );
-		bool isIRESOpen () const;
-
-		void changeProperty ( int property_index );
-		void changePropertyRange ( const double& min, const double& max, int property_index );
+		bool isIRESOpen  ( ) const;
 
 		void changeIJK ( const int& min_i, const int& max_i, const int& min_j, const int& max_j, const int& min_k, const int& max_k );
 
@@ -81,20 +76,8 @@ class GLWidget: public QGLWidget
 		void changeMinJ ( const int& value);
 		void changeMinK ( const int& value);
 
-		void setPrimaryVisibility ( bool );
-		void setSecondaryVisibility ( bool );
-
 		// Draw Functions
-		void drawCutawaySurface    ( );	//
-		void drawSecondary         ( ); // Draw only secondary Cells
-		void drawPrimary           ( );	// Draw only primary   Cells
-		void drawPrimaryBoudingBox ( ); // Draw only primary   Cells with its bounding box
-		void drawFullModel         ( );
-
-		void drawRawModel       ( );
-		void textureViewer      ( );
-		void IRESCutaway      	( );
-
+                void drawBackGround ( );
 		void showFault		( bool visibility );
 		void showBorderLines    ( bool visibility );
 
@@ -105,8 +88,28 @@ class GLWidget: public QGLWidget
 
 		void freezeView ( );
 
-		void changeTimeStep        ( int step  ) { this->time_step = step; std::cout << " ... " << step << std::endl; updateGL(); };
-		void changeDynamicProperty ( int index ) { reservoir_model_.loadDynamicProperties( index ); dynamic_property_index = index; updateGL(); };
+		// ! Raw     VIEWER F9
+                        void drawRawModel       ( );
+		// ! STATIC  VIEWER F10
+                        void drawCutawaySurface    ( ); //
+                        void drawSecondary         ( ); // Draw only secondary Cells
+                        void drawPrimary           ( ); // Draw only primary   Cells
+                        void drawPrimaryBoudingBox ( ); // Draw only primary   Cells with its bounding box
+
+                        void IRESCutaway        ( );
+
+                        void setPrimaryVisibility ( bool );
+                        void setSecondaryVisibility ( bool );
+
+                        void changeProperty ( int property_index );
+                        void changePropertyRange ( const double& min, const double& max, int property_index );
+		// ! DYNAMIC VIEWER F11
+                        void drawFullModel         ( );
+
+                        void changeTimeStep        ( int step  ) { this->time_step = step; std::cout << " ... " << step << std::endl; updateGL(); };
+                        void changeDynamicProperty ( int index ) { reservoir_model_.loadDynamicProperties( index ); dynamic_property_index = index; updateGL(); };
+		// ! xToon   VIEWER F12
+                        void textureViewer      ( );
 
 	protected:
 		void dragEnterEvent ( QDragEnterEvent *event );
@@ -194,7 +197,7 @@ class GLWidget: public QGLWidget
 		int time_step;
 		int dynamic_property_index;
 
-		// Stores the freezed camera (view matrix)
+		// Stores the froze camera (view matrix)
 		Eigen::Matrix4f freeze_viewmatrix_;
 		bool freezeView_;
 
@@ -202,7 +205,7 @@ class GLWidget: public QGLWidget
 
 		float orthoZoom;
 
-		// LCG procudure
+		// LCG procedure
 		Eigen::Vector2f convertToNormalizedDeviceCoordinates(Eigen::Vector2i position);
 
 		// TODO NPR Stuffs - Mario's request

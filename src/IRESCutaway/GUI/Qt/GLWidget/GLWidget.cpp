@@ -638,6 +638,11 @@ void GLWidget::IRESCutaway (  )
 
 //	/// FIXME Conditions  - Primary and Secondary well defined.
 
+
+        QTime renderTime;
+
+        renderTime.start();
+
  	if ( isIRESOpen_ )
 	{
 
@@ -661,6 +666,10 @@ void GLWidget::IRESCutaway (  )
 		}
 	}
 
+ 	glFinish( );
+
+
+ 	std::cout << " 1 shot " <<  1000/(float)renderTime.elapsed() << std::endl;
 }
 
 void GLWidget::drawBackGround ( )
@@ -709,18 +718,18 @@ void GLWidget::textureViewer ( )
 void GLWidget::gameLooping ( )
 {
 
-	//std::cout << "fps :" << v  << std::endl;
+     //std::cout << "fps :" << v  << std::endl;
 
      //updateGL();
 
-    //    fps++;
+     fps++;
 
 }
 
 void GLWidget::fpsCounter ( )
 {
 
-    //std::cout << "fps :" << fps  << std::endl;
+        //std::cout << "fps :" << fps  << std::endl;
 
 	fps = 0;
 

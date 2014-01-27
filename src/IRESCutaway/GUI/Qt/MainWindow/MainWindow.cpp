@@ -27,108 +27,118 @@ MainWindow::MainWindow ( QMainWindow *parent ) :
 
 	showfullScreen_ = 0;
 
-	// Dock Widget Layer Initialization
-
-	ui->dockWidgetStatic->setHidden( true );
-	ui->dockWidgetDynamic->setHidden( true );
-	ui->dockWidgetIJKViewer->setHidden( true );
-
-	connect(ui->comboBoxProperty, SIGNAL(activated(int)), this, SLOT(updateDoubleSpinMin(int)));
-	connect(ui->comboBoxProperty, SIGNAL(activated(int)), this, SLOT(updateDoubleSpinMax(int)));
-
-	connect(ui->comboBoxProperty_Dynamic, SIGNAL(activated(int)), this,     SLOT(updateDynamicDoubleSpinMin(int)));
-	connect(ui->comboBoxProperty_Dynamic, SIGNAL(activated(int)), this,     SLOT(updateDynamicDoubleSpinMax(int)));
-	connect(ui->comboBoxProperty_Dynamic, SIGNAL(activated(int)), glWidget, SLOT(changeDynamicProperty (int)));
-
-	connect(ui->sliderTimeLine_Dynamic, SIGNAL(valueChanged(int)), glWidget, SLOT(changeTimeStep(int)));
-
-	// Just the name of the function: so changeProperty , not glWidget->changeProperty
-	connect(ui->comboBoxProperty, SIGNAL(activated(int)), glWidget, SLOT(changeProperty(int)));
-	// Sliders
-	connect(ui->horizontalslider_min_I, SIGNAL(valueChanged(int)), glWidget, SLOT(changeMinI (int)));
-	connect(ui->horizontalslider_max_I, SIGNAL(valueChanged(int)), glWidget, SLOT(changeMaxI (int)));
-	connect(ui->horizontalslider_min_J, SIGNAL(valueChanged(int)), glWidget, SLOT(changeMinJ (int)));
-	connect(ui->horizontalslider_max_J, SIGNAL(valueChanged(int)), glWidget, SLOT(changeMaxJ (int)));
-	connect(ui->horizontalslider_min_K, SIGNAL(valueChanged(int)), glWidget, SLOT(changeMinK (int)));
-	connect(ui->horizontalslider_max_K, SIGNAL(valueChanged(int)), glWidget, SLOT(changeMaxK (int)));
-
-
-	// About Widget
-	connect(ui->action_About, SIGNAL(triggered()), aboutIRESReader, SLOT(show()));
-
-	// Controls over the rendering
-	QActionGroup* CutawayTypeGroup = new QActionGroup ( this );
-	CutawayTypeGroup->setExclusive(1);
-	CutawayTypeGroup->addAction ( ui->action_Texture_View );
-	CutawayTypeGroup->addAction ( ui->action_Raw_Model );
-	CutawayTypeGroup->addAction ( ui->action_IRES_Cutaway );
-	CutawayTypeGroup->addAction ( ui->action_FullModel );
-
-	// Rendering Type
-	connect(ui->action_Texture_View, SIGNAL(toggled(bool)), glWidget, SLOT(setTextureViewerVisibility(bool)));
-	connect(ui->action_Raw_Model   , SIGNAL(toggled(bool)), glWidget, SLOT(setRawModelVisibility(bool)));
-	connect(ui->action_IRES_Cutaway, SIGNAL(toggled(bool)), glWidget, SLOT(setIRESCutawayVisibility(bool)));
-	connect(ui->action_FullModel,    SIGNAL(toggled(bool)), glWidget, SLOT(setIRESFullModelVisibility(bool)));
-	// Cells Visibility
-	connect(ui->action_Show_Primary_Cells,   SIGNAL(toggled(bool)), glWidget, SLOT(setPrimaryVisibility(bool)));
-	connect(ui->action_Show_Secondary_Cells, SIGNAL(toggled(bool)), glWidget, SLOT(setSecondaryVisibility(bool)));
-
-	// Feature Visibility
-
-	connect(ui->action_Fault,   SIGNAL(toggled(bool)), glWidget, SLOT(showFault(bool)));
-	connect(ui->action_BorderLine, SIGNAL(toggled(bool)), glWidget, SLOT(showBorderLines(bool)));
+	WidgetSignalSlotConnection( );
 
 }
+
+void MainWindow::WidgetSignalSlotConnection( )
+{
+        // Dock Widget Layer Initialization
+
+        ui->dockWidgetStatic->setHidden( true );
+        ui->dockWidgetDynamic->setHidden( true );
+        ui->dockWidgetIJKViewer->setHidden( true );
+
+        connect(ui->comboBoxProperty, SIGNAL(activated(int)), this, SLOT(updateDoubleSpinMin(int)));
+        connect(ui->comboBoxProperty, SIGNAL(activated(int)), this, SLOT(updateDoubleSpinMax(int)));
+
+        connect(ui->comboBoxProperty_Dynamic, SIGNAL(activated(int)), this,     SLOT(updateDynamicDoubleSpinMin(int)));
+        connect(ui->comboBoxProperty_Dynamic, SIGNAL(activated(int)), this,     SLOT(updateDynamicDoubleSpinMax(int)));
+        connect(ui->comboBoxProperty_Dynamic, SIGNAL(activated(int)), glWidget, SLOT(changeDynamicProperty (int)));
+
+        connect(ui->sliderTimeLine_Dynamic, SIGNAL(valueChanged(int)), glWidget, SLOT(changeTimeStep(int)));
+
+        // Just the name of the function: so changeProperty , not glWidget->changeProperty
+        connect(ui->comboBoxProperty, SIGNAL(activated(int)), glWidget, SLOT(changeProperty(int)));
+        // Sliders
+        connect(ui->horizontalslider_min_I, SIGNAL(valueChanged(int)), glWidget, SLOT(changeMinI (int)));
+        connect(ui->horizontalslider_max_I, SIGNAL(valueChanged(int)), glWidget, SLOT(changeMaxI (int)));
+        connect(ui->horizontalslider_min_J, SIGNAL(valueChanged(int)), glWidget, SLOT(changeMinJ (int)));
+        connect(ui->horizontalslider_max_J, SIGNAL(valueChanged(int)), glWidget, SLOT(changeMaxJ (int)));
+        connect(ui->horizontalslider_min_K, SIGNAL(valueChanged(int)), glWidget, SLOT(changeMinK (int)));
+        connect(ui->horizontalslider_max_K, SIGNAL(valueChanged(int)), glWidget, SLOT(changeMaxK (int)));
+
+
+        // About Widget
+        connect(ui->action_About, SIGNAL(triggered()), aboutIRESReader, SLOT(show()));
+
+        // Controls over the rendering
+        QActionGroup* CutawayTypeGroup = new QActionGroup ( this );
+        CutawayTypeGroup->setExclusive(1);
+        CutawayTypeGroup->addAction ( ui->action_Texture_View );
+        CutawayTypeGroup->addAction ( ui->action_Raw_Model );
+        CutawayTypeGroup->addAction ( ui->action_IRES_Cutaway );
+        CutawayTypeGroup->addAction ( ui->action_FullModel );
+
+        // Rendering Type
+        connect(ui->action_Texture_View, SIGNAL(toggled(bool)), glWidget, SLOT(setTextureViewerVisibility(bool)));
+        connect(ui->action_Raw_Model   , SIGNAL(toggled(bool)), glWidget, SLOT(setRawModelVisibility(bool)));
+        connect(ui->action_IRES_Cutaway, SIGNAL(toggled(bool)), glWidget, SLOT(setIRESCutawayVisibility(bool)));
+        connect(ui->action_FullModel,    SIGNAL(toggled(bool)), glWidget, SLOT(setIRESFullModelVisibility(bool)));
+        // Cells Visibility
+        connect(ui->action_Show_Primary_Cells,   SIGNAL(toggled(bool)), glWidget, SLOT(setPrimaryVisibility(bool)));
+        connect(ui->action_Show_Secondary_Cells, SIGNAL(toggled(bool)), glWidget, SLOT(setSecondaryVisibility(bool)));
+
+        // Feature Visibility
+
+        connect(ui->action_Fault,   SIGNAL(toggled(bool)), glWidget, SLOT(showFault(bool)));
+        connect(ui->action_BorderLine, SIGNAL(toggled(bool)), glWidget, SLOT(showBorderLines(bool)));
+}
+
 
 void MainWindow::open( QString pFilename,bool who ) {
 
 	glWidget->openIRES_v2( pFilename.toLocal8Bit().constData() );
 
 
-	// Filling Dock Widget Layers
-
-	if ( glWidget->isIRESOpen( ))
-	{
-		QString title ( reinterpret_cast<char*>(glWidget->reservoir_model_.header_v2_.title) );
-
-		ui->simulatorName->setText (  title );
-
-		updateDoubleSpinMax( 0 );
-		updateDoubleSpinMin( 0 );
-		ui->comboBoxProperty->clear();
-
-		for ( std::size_t i = 0 ; i < 2; ++i )
-		{
-			ui->comboBoxProperty->addItem(  QString::fromStdString( glWidget->reservoir_model_.static_name[i] ) );
-		}
-
-		ui->label_I_Range->setText("[ 0 - "+QString::number(glWidget->reservoir_model_.header_v2_.numI)+" ]");
-		ui->label_J_Range->setText("[ 0 - "+QString::number(glWidget->reservoir_model_.header_v2_.numJ)+" ]");
-		ui->label_K_Range->setText("[ 0 - "+QString::number(glWidget->reservoir_model_.header_v2_.numK)+" ]");
-
-
-		ui->horizontalslider_max_I->setMaximum(glWidget->reservoir_model_.header_v2_.numI+1);
-		ui->horizontalslider_max_J->setMaximum(glWidget->reservoir_model_.header_v2_.numJ+1);
-		ui->horizontalslider_max_K->setMaximum(glWidget->reservoir_model_.header_v2_.numK+1);
-
-		ui->horizontalslider_min_I->setMaximum(glWidget->reservoir_model_.header_v2_.numI+1);
-		ui->horizontalslider_min_J->setMaximum(glWidget->reservoir_model_.header_v2_.numJ+1);
-		ui->horizontalslider_min_K->setMaximum(glWidget->reservoir_model_.header_v2_.numK+1);
-
-		ui->horizontalslider_max_I->setValue ( glWidget->reservoir_model_.header_v2_.numI+1 );
-		ui->horizontalslider_max_J->setValue ( glWidget->reservoir_model_.header_v2_.numJ+1 );
-		ui->horizontalslider_max_K->setValue ( glWidget->reservoir_model_.header_v2_.numK+1 );
-
-		ui->horizontalslider_min_I->setValue ( 0 );
-		ui->horizontalslider_min_J->setValue ( 0 );
-		ui->horizontalslider_min_K->setValue ( 0 );
-
-		loadDynamic();
-		changeProperty();
-	}
+	loadStatic ( );
+        loadDynamic ( );
 
 }
 
+void MainWindow::loadStatic( )
+{
+
+        if ( glWidget->isIRESOpen( ))
+        {
+                QString title ( reinterpret_cast<char*>(glWidget->reservoir_model_.header_v2_.title) );
+
+                ui->simulatorName->setText (  title );
+
+                updateDoubleSpinMax( 0 );
+                updateDoubleSpinMin( 0 );
+                ui->comboBoxProperty->clear();
+
+                for ( std::size_t i = 0 ; i < 2; ++i )
+                {
+                        ui->comboBoxProperty->addItem(  QString::fromStdString( glWidget->reservoir_model_.static_name[i] ) );
+                }
+
+                ui->label_I_Range->setText("[ 0 - "+QString::number(glWidget->reservoir_model_.header_v2_.numI)+" ]");
+                ui->label_J_Range->setText("[ 0 - "+QString::number(glWidget->reservoir_model_.header_v2_.numJ)+" ]");
+                ui->label_K_Range->setText("[ 0 - "+QString::number(glWidget->reservoir_model_.header_v2_.numK)+" ]");
+
+
+                ui->horizontalslider_max_I->setMaximum(glWidget->reservoir_model_.header_v2_.numI+1);
+                ui->horizontalslider_max_J->setMaximum(glWidget->reservoir_model_.header_v2_.numJ+1);
+                ui->horizontalslider_max_K->setMaximum(glWidget->reservoir_model_.header_v2_.numK+1);
+
+                ui->horizontalslider_min_I->setMaximum(glWidget->reservoir_model_.header_v2_.numI+1);
+                ui->horizontalslider_min_J->setMaximum(glWidget->reservoir_model_.header_v2_.numJ+1);
+                ui->horizontalslider_min_K->setMaximum(glWidget->reservoir_model_.header_v2_.numK+1);
+
+                ui->horizontalslider_max_I->setValue ( glWidget->reservoir_model_.header_v2_.numI+1 );
+                ui->horizontalslider_max_J->setValue ( glWidget->reservoir_model_.header_v2_.numJ+1 );
+                ui->horizontalslider_max_K->setValue ( glWidget->reservoir_model_.header_v2_.numK+1 );
+
+                ui->horizontalslider_min_I->setValue ( 0 );
+                ui->horizontalslider_min_J->setValue ( 0 );
+                ui->horizontalslider_min_K->setValue ( 0 );
+
+                changeProperty();
+        }
+
+}
 void MainWindow::loadDynamic( )
 {
 	if ( glWidget->isIRESOpen( ) )
@@ -328,8 +338,6 @@ void MainWindow::on_doubleSpinMin_valueChanged  ( double i)
 	{
 		//msgBox.setText("First of all. Open a file my friend !!  ");
 	}
-
-
 }
 
 void MainWindow::on_doubleSpinMax_valueChanged  ( double i)
@@ -343,5 +351,4 @@ void MainWindow::on_doubleSpinMax_valueChanged  ( double i)
 	{
 		//msgBox.setText("First of all. Open a file my friend !!  ");
 	}
-
 }

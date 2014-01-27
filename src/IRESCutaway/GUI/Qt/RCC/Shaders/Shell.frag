@@ -20,7 +20,7 @@ out vec4 outputColor;
 void main(void)
 {
 
-        vec3 newNormal = VertexIn.normal.xyz;
+        vec3 newNormal = normalize(VertexIn.normal.xyz);
         vec3 newVert = VertexIn.vertice.xyz;
         vec4 color_t = VertexIn.color;
 
@@ -122,7 +122,7 @@ void main(void)
         // compute illumination for each light
         for (int i = 0; i < num_lights; ++i) {
             vec3 light_dir = normalize(lights[i]);
-            vec3 ref = normalize ( -reflect ( light_dir , newNormal ) );
+            //vec3 ref = normalize ( -reflect ( light_dir , newNormal ) );
             la += vec4 ( 0.3 / float(num_lights) );
             ld += color_t * (1.0 / float(num_lights)) * max ( 0.0 , abs(dot ( newNormal , light_dir ) ));
             //ls += color_t * 0.0 * pow ( max ( 0.0 , dot ( eye_dir , ref ) ) , 5.0 );
