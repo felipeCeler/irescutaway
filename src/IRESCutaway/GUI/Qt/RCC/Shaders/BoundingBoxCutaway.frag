@@ -20,7 +20,7 @@ uniform vec3 lights[4];
 void main(void)
 {
 
-        vec3 newNormal = VertexIn.normal.xyz;
+        vec3 newNormal = normalize(VertexIn.normal.xyz);
         vec3 newVert = VertexIn.vertice.xyz;
         vec4 color_t = VertexIn.color;
 
