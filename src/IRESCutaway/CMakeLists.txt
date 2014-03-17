@@ -18,7 +18,7 @@ INCLUDE(${QT_USE_FILE})
 include_directories(
 		##- Ires Library
 		${CMAKE_SOURCE_DIR}/libs/Ires
-		## - LCG/shaderlib
+		## - LCG/include
 		${CMAKE_SOURCE_DIR}/libs/LCG
         ##- Qt     
         ${QT_INCLUDE_DIR}

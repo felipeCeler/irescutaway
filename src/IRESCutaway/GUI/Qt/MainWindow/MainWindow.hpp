@@ -46,6 +46,8 @@ class MainWindow: public QMainWindow
 		void updateDynamicDoubleSpinMax( int property_index );
 		void updateDynamicDoubleSpinMin( int property_index );
 
+		void on_horizontalSliderMeanFilterSize_valueChanged  ( int i);
+
 		//
 		void WidgetSignalSlotConnection();
 
@@ -57,6 +59,8 @@ class MainWindow: public QMainWindow
 		GLWidget * glWidget;
 
 		AboutWidgetIRESReader * aboutIRESReader;
+
+		QLabel * fps;
 };
 
 #endif

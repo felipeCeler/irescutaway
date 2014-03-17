@@ -37,6 +37,7 @@ void GLWidget::initializeGL ( )
 
 	glEnable ( GL_TEXTURE_2D );
 
+	glEnable(GL_LINE_SMOOTH);
 	glEnable ( GL_MULTISAMPLE );
 
 	glHint(GL_MULTISAMPLE_FILTER_HINT_NV, GL_FASTEST);
@@ -44,7 +45,7 @@ void GLWidget::initializeGL ( )
 	glClearColor ( 0.0 , 0.0 , 0.0 , 1.0 );
 	glDisable(GL_BLEND);
 
-	setMinimumSize ( 640 , 480 );
+	setMinimumSize ( 800 , 800 );
 	setSizePolicy ( QSizePolicy::MinimumExpanding , QSizePolicy::MinimumExpanding );
 	/// Key event to GLWidget not o MainWindow ! | @QtDocumentation
 	setFocus ( );
@@ -81,6 +82,9 @@ void GLWidget::initializeGL ( )
 
 	fps = 0;
 
+	renderingPass = 0.0f;
+	accumulateRenderingTimes = 0.0f;
+
 	delta_time.start();
 
 	updateTimer_.setSingleShot ( false );
@@ -95,6 +99,9 @@ void GLWidget::initializeGL ( )
 
 	volume_width = 0.0f;
 	volume_height = 0.0f;
+
+        borderLinesSize_ = 0;
+        meanFilterSize_  = 0;
 
 	trackball_ = new Trackball();
 
@@ -118,6 +125,10 @@ void GLWidget::initializeGL ( )
 	reservoir_model_.createBuffers( );
 
 	dynamic_property_index = 0;
+
+	// BenchMarking
+
+	trackball_->decreaseZoom( 5.05 );
 
 }
 
@@ -369,7 +380,7 @@ void GLWidget::drawCutawaySurface ( )
 
 	glDrawBuffer(GL_COLOR_ATTACHMENT0+1);
 
-	meanFilter->renderTexture( depthFBO->bindAttachment(0));
+	meanFilter->renderTexture( depthFBO->bindAttachment(0),meanFilterSize_);
 
 	depthFBO->unbindAll();
 
@@ -448,6 +459,8 @@ void GLWidget::drawSecondary ( )
 
 	if ( reservoir_model_.showBorderLine )
 	{
+
+	        glLineWidth( (float) borderLinesSize_ );
 		borderLinesLCG->enable ( );
 
 		borderLinesLCG->setUniform ( "ModelMatrix" , trackball_->getModelMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
@@ -550,11 +563,14 @@ void GLWidget::drawFullModel ( )
 void GLWidget::paintGL ( )
 {
 
-
 	if ( buttonRelease_ )
 	{
 		processMultiKeys ( );
 	}
+
+        QTime renderTime;
+
+        renderTime.start();
 
         glClearColor ( 1.0 , 1.0 , 1.0 , 1.0 );
         glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
@@ -579,6 +595,26 @@ void GLWidget::paintGL ( )
 
 		//trackball_->render();
 	}
+
+        glFinish( );
+
+        //std::cout << " 1 shot " <<  1000/(float)renderTime.elapsed() << std::endl;
+
+        if (renderingPass > 100.0)
+        {
+                averageFPS = accumulateRenderingTimes / renderingPass;
+                renderingPass = 0.0f;
+                accumulateRenderingTimes = 0.0f;
+        }else
+        {
+                renderingPass            += 1.0;
+                accumulateRenderingTimes += renderTime.elapsed();
+        }
+
+        emit fpsChanged("Resolution :"+QString::number(width())+" x "+QString::number(height())+
+                        " fps : " + QString::number(static_cast<int>(renderTime.elapsed())) +
+                        " Average :" + QString::number( averageFPS ) );
+
 	fps++;
 
 
@@ -639,10 +675,6 @@ void GLWidget::IRESCutaway (  )
 //	/// FIXME Conditions  - Primary and Secondary well defined.
 
 
-        QTime renderTime;
-
-        renderTime.start();
-
  	if ( isIRESOpen_ )
 	{
 
@@ -666,10 +698,6 @@ void GLWidget::IRESCutaway (  )
 		}
 	}
 
- 	glFinish( );
-
-
- 	std::cout << " 1 shot " <<  1000/(float)renderTime.elapsed() << std::endl;
 }
 
 void GLWidget::drawBackGround ( )

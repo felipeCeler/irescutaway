@@ -27,8 +27,13 @@ MainWindow::MainWindow ( QMainWindow *parent ) :
 
 	showfullScreen_ = 0;
 
-	WidgetSignalSlotConnection( );
+	fps = new QLabel;
 
+	fps->setText("fps 60s");
+
+	ui->statusBar->addPermanentWidget(fps,0);
+
+	WidgetSignalSlotConnection( );
 }
 
 void MainWindow::WidgetSignalSlotConnection( )
@@ -38,6 +43,7 @@ void MainWindow::WidgetSignalSlotConnection( )
         ui->dockWidgetStatic->setHidden( true );
         ui->dockWidgetDynamic->setHidden( true );
         ui->dockWidgetIJKViewer->setHidden( true );
+        ui->dockWidgetBeauty->setHidden( true );
 
         connect(ui->comboBoxProperty, SIGNAL(activated(int)), this, SLOT(updateDoubleSpinMin(int)));
         connect(ui->comboBoxProperty, SIGNAL(activated(int)), this, SLOT(updateDoubleSpinMax(int)));
@@ -83,6 +89,13 @@ void MainWindow::WidgetSignalSlotConnection( )
 
         connect(ui->action_Fault,   SIGNAL(toggled(bool)), glWidget, SLOT(showFault(bool)));
         connect(ui->action_BorderLine, SIGNAL(toggled(bool)), glWidget, SLOT(showBorderLines(bool)));
+
+        connect(ui->horizontalSliderMeanFilterSize, SIGNAL(valueChanged(int)), glWidget, SLOT(meanFilterSize(int)));
+        connect(ui->horizontalSliderLineWith      , SIGNAL(valueChanged(int)), glWidget, SLOT(borderLinesSize(int)));
+
+        // Benchmark
+
+        connect(glWidget, SIGNAL(fpsChanged(const QString&)), fps, SLOT(setText(const QString&)));
 }
 
 
@@ -351,4 +364,9 @@ void MainWindow::on_doubleSpinMax_valueChanged  ( double i)
 	{
 		//msgBox.setText("First of all. Open a file my friend !!  ");
 	}
+}
+
+void MainWindow::on_horizontalSliderMeanFilterSize_valueChanged  ( int i)
+{
+        ui->labelKernelSize->setText(QString::number(i));
 }

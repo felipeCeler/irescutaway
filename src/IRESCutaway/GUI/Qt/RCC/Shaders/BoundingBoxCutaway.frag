@@ -117,10 +117,12 @@ void main(void)
         // interior cutaway lines (back face intersection with cutaway)
         if ( I == 1)
             outputColor = I * vec4(vec3(0.1), 1.0) + (1.0 - I) * ( color );
+           //     outputColor = ( color );
         // cutaway border lines (front face intersection with cutaway)
         // lines outside cutaway (remaining front faces)
         else
-           outputColor = I * vec4(vec3(0.7), 1.0) + (1.0 - I) * ( color );
+           //outputColor = I * vec4(vec3(0.7), 1.0) + (1.0 - I) * ( color );
+              outputColor =  ( color );
 
 
 

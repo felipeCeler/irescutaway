@@ -62,6 +62,7 @@ class GLWidget: public QGLWidget
 		/// TODO Physics
 		void gameLooping    ( );
 		void fpsCounter     ( );
+		float benchmark      ( ){ return benchmark_;}
 		void loadShaders ( );
 		void openIRES_v2 ( const std::string& filename );
 		bool isIRESOpen  ( ) const;
@@ -85,6 +86,18 @@ class GLWidget: public QGLWidget
 		void setRawModelVisibility      ( bool visibility ) { isRawModel_      = visibility; updateGL(); }
 		void setIRESCutawayVisibility   ( bool visibility ) { isIRESCutaway_   = visibility; updateGL(); }
 		void setIRESFullModelVisibility ( bool visibility ) { isFullModel_     = visibility; updateGL(); }
+
+		void borderLinesSize ( int size )
+		{
+		        borderLinesSize_        = size;
+		        updateGL();
+		}
+
+		void meanFilterSize ( int size )
+		{
+		        meanFilterSize_         = size;
+		        updateGL();
+		}
 
 		void freezeView ( );
 
@@ -110,6 +123,9 @@ class GLWidget: public QGLWidget
                         void changeDynamicProperty ( int index ) { reservoir_model_.loadDynamicProperties( index ); dynamic_property_index = index; updateGL(); };
 		// ! xToon   VIEWER F12
                         void textureViewer      ( );
+
+        signals:
+                void fpsChanged(const QString&);
 
 	protected:
 		void dragEnterEvent ( QDragEnterEvent *event );
@@ -160,6 +176,11 @@ class GLWidget: public QGLWidget
 		QTimer updateTimer_;
 		QElapsedTimer delta_time;
 		int fps;
+		float benchmark_;
+		float renderingPass;
+		float accumulateRenderingTimes;
+		float averageFPS;
+
 
 		/// -- RENDERING Stuffs  ----------------------------------------------
 		bool isTextureViewer_;
@@ -193,6 +214,9 @@ class GLWidget: public QGLWidget
 		/// -- Aperture of Cutaway
 		float volume_width;
 		float volume_height;
+
+                int borderLinesSize_;
+                int meanFilterSize_;
 
 		int time_step;
 		int dynamic_property_index;
