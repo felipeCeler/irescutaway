@@ -280,6 +280,24 @@ void MainWindow::on_action_Open_IRES_triggered()
 	}
 }
 
+void MainWindow::on_action_Open_PLY_triggered()
+{
+        // Asks for a file name to open.
+        QString filename = QFileDialog::getOpenFileName (
+                        this,
+                        tr("Choose a Reservoir *.ply file"),
+                        ".",
+                        tr("ires reservoir model (*.ply)"));
+
+        // Tries to load file if filename not empty.
+        if ( filename != "" )
+        {
+
+                glWidget->loadPly(filename);
+
+        }
+}
+
 void MainWindow::on_pushButton_Reset_IJK_clicked( )
 {
 	ui->label_I_Range->setText("[ 0 - "+QString::number(glWidget->reservoir_model_.header_v2_.numI)+" ]");

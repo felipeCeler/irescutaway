@@ -92,7 +92,7 @@ void main(void)
 
         // for back faces use the normal of the cutaway surface (simulate a cut inside the cells)
         newNormal = -cutaway.xyz;
-        //vec3 eye_dir = normalize ( -newVert.xyz );
+        vec3 eye_dir = normalize ( -newVert.xyz );
 
         vec4 la = vec4(0.0);
         vec4 ld = vec4(0.0);
@@ -104,7 +104,7 @@ void main(void)
             vec3 ref = normalize ( -reflect ( light_dir , newNormal ) );
             la += vec4 ( 0.3 / float(num_lights) );
             ld += color_t * (1.0 / float(num_lights)) * max ( 0.0 , abs(dot ( newNormal , light_dir ) ));
-            //ls += color_t * 0.0 * pow ( max ( 0.0 , dot ( eye_dir , ref ) ) , 5.0 );
+            ls += color_t * 0.0 * pow ( max ( 0.0 , dot ( eye_dir , ref ) ) , 5.0 );
         }
 
         vec4 color = la + ld + ls;

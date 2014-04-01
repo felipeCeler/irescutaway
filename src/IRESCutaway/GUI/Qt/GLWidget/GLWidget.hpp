@@ -7,6 +7,7 @@
 	/// OpenGL
 #include <GL/glew.h>
 #include <IRES/CornerPointGrid.hpp>
+#include <Loaders/Ply/PlyLoader.hpp>
 
 /// LCG Library
 #include <shaderlib/trackball.hpp>
@@ -120,9 +121,23 @@ class GLWidget: public QGLWidget
                         void drawFullModel         ( );
 
                         void changeTimeStep        ( int step  ) { this->time_step = step; std::cout << " ... " << step << std::endl; updateGL(); };
-                        void changeDynamicProperty ( int index ) { reservoir_model_.loadDynamicProperties( index ); dynamic_property_index = index; updateGL(); };
+                        void changeDynamicProperty ( int index ) { reservoir_model_.loadDynamicProperties(  ); dynamic_property_index = index; updateGL(); };
 		// ! xToon   VIEWER F12
-                        void textureViewer      ( );
+
+                        void loadPly ( QString pFilename )
+                        {
+                                std::string filename = QFile::encodeName ( pFilename ).constData ( );
+                                ply_primary_.Load ( filename.c_str ( ) );
+
+                                if ( ply_primary_.open )
+                                {
+                                        std::cout << "Abriu " << ply_primary_.TotalConnectedPoints << std::endl;
+                                }
+                        }
+                // !  Paper
+                        void PaperPly ( );
+                        void PaperDemo( );
+                        void PaperDrawCutawaySurface( );
 
         signals:
                 void fpsChanged(const QString&);
@@ -164,6 +179,9 @@ class GLWidget: public QGLWidget
 		Shader*                         shellLCG;
 		Shader*                         rawShellLCG;
 		Shader* 			borderLinesLCG;
+
+		Shader*                         BurnsPrimary;
+		Shader*                         BurnsPrimarySetup;
 
 		QImage fbo;
 		float  angle;
@@ -237,6 +255,15 @@ class GLWidget: public QGLWidget
 		Mesh * picture;
 
 		Shader * xtoon_texture_viewer;
+
+		// Ply Models
+                Model_PLY ply_primary_;
+
+                Model_PLY ply_secondary_;
+
+                GLuint vertex_box;
+                GLuint vertexArray_box;
 };
+
 
 #endif

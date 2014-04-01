@@ -4,3 +4,6 @@
 [submodule "libs/LCG"]
 	path = libs/LCG
 	url = git@git.lcg.ufrj.br:vitorandrade/shader-lib.git
+[submodule "libs/Celer"]
+	path = libs/Celer
+	url = https://github.com/felipeCeler/celer-sources.git

@@ -31,5 +31,7 @@ add_definitions(${QT_DEFINITIONS} -Wall)
 
 ## - Libraris
 add_subdirectory(libs/Ires)
+## - Celer Libraris
+add_subdirectory(libs/Celer/src)
 ## - Project Sources
 add_subdirectory(src/${PROJECT_NAME})

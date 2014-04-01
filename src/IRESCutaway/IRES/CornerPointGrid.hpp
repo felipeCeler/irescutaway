@@ -63,8 +63,17 @@ namespace IRES
 					std::vector<float> min_;
 					std::vector<float> max_;
 
+					int numTimeSteps;
+
 					// FIXME std::pair< timeStep, values for each block >
 					std::vector< std::vector<float>  > values_;
+                                        // FIXME
+                                        // Taking advantage of glVertex(X)Pointer to switch between GL_ARRAY_BUFFER Object
+                                        // https://www.opengl.org/wiki/Vertex_Specification
+
+                                        // Vertex Buffer to each time step
+                                        std::vector< GLuint > ids;
+
 
 			};
 
@@ -86,7 +95,7 @@ namespace IRES
 			void 	drawCuboid 	 	( ) const;
 
 			void 	loadStaticProperties 	( );
-			void 	loadDynamicProperties  	( int property_index );
+			void 	loadDynamicProperties  	( );
 
 			// Properties values Interface for static
                                 std::string static_name   [3];
@@ -143,8 +152,8 @@ namespace IRES
 				std::vector<float> cuboidStatic;   /// property x = Modified Block Volume
 				GLuint vertexBufferCuboidStatic;   ///          y = Porosity
 
+				std::vector<std::vector<GLuint> > cuboidDynamicIds;
 				std::vector<float> cuboidDynamic;
-				GLuint vertexBufferCuboidDynamic;
 
 			std::size_t 	   cuboidCount;
 
@@ -165,9 +174,8 @@ namespace IRES
 				GLuint 		   vertexBufferFaceStatic; /// property x = Modified Block Volume
 				std::vector<float> faceStatic;             ///          y = Porosity
 
-
+				std::vector<std::vector<GLuint> > faceDynamicIds;
 				std::vector<float> faceDynamic;
-				GLuint vertexBufferfaceDynamic;
 
 			std::vector<ires::Face>   iresFaces_;
 			std::size_t 		  faceCount;

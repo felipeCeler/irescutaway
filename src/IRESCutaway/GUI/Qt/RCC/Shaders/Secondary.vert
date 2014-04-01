@@ -11,13 +11,8 @@ layout(location = 7) in vec4 v7;
 
 layout(location = 8) in vec4 static_properties;
 
-layout(location = 9)  in vec4 d1; // Time Step 0 - 3
-layout(location = 10) in vec4 d2; // Time Step 4 - 7
-layout(location = 11) in vec4 d3; // Time Step 8 - 11
-layout(location = 12) in vec4 d4; // Time Step 12 - 15
-layout(location = 13) in vec4 d5; // Time Step 16 - 19
-layout(location = 14) in vec4 d6; // Time Step 20 - 23
-layout(location = 15) in vec4 d7; // Time Step 24 - 27
+layout(location = 9)  in float p; // Time Step 0 - 3
+
 
 
 /// FIXME - Do research and understand the best away to align data on Shader.
@@ -65,37 +60,8 @@ vec4 dynamicColor ( )
 	int time;
 	vec4 color =  vec4(0.0,0.0,0.0,1.0);
 
-	if ( ( time_step >=0 ) && (time_step <=3) )
-        {
-		color = dynamicValue (d1[time_step]);
-	}
-	else if ( ( time_step >=4 ) && (time_step <= 7) )
-        {
-		color = dynamicValue (d2[time_step-4]);
-	}
-	else if ( ( time_step >=8 ) && (time_step <= 11) )
-        {
-		color = dynamicValue (d3[time_step-8]);
-	}
-	else if ( ( time_step >=12 ) && (time_step <= 15) )
-        {
-		color = dynamicValue (d4[time_step-12]);
-	}
-	else if ( ( time_step >=16 ) && (time_step <= 19) )
-        {
-		color = dynamicValue (d5[time_step-16]);
-	}
-	else if ( ( time_step >=20 ) && (time_step <= 23) )
-        {
-		color = dynamicValue (d6[time_step-20]);
-	}
-	else if ( ( time_step >=24 ) && (time_step <= 27) )
-        {
-		color = dynamicValue (d7[time_step-24]);
-	}else
-	{
-		color =  vec4(0.0,1.0,0.0,1.0);
-	}
+	color = dynamicValue (p);
+
 
 	return color;
 }

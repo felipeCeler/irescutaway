@@ -130,6 +130,19 @@ void GLWidget::initializeGL ( )
 
 	trackball_->decreaseZoom( 5.05 );
 
+	glGenVertexArrays (1, &vertexArray_box);
+	glGenBuffers(1,&vertex_box);
+
+	std::vector<Celer::Vector4<float> > vertices(8,Celer::Vector4<float>(0.0,0.0,0.0,1.0));
+
+
+	glBindVertexArray(vertexArray_box);
+	        glBindBuffer(GL_ARRAY_BUFFER,vertex_box);
+	        glBufferData ( GL_ARRAY_BUFFER , vertices.size( ) * sizeof(vertices[0]) , &vertices[0] , GL_STATIC_DRAW );
+
+                glEnableVertexAttribArray(0);
+                glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, 0);
+        glBindVertexArray(0);
 }
 
 
@@ -532,6 +545,15 @@ void GLWidget::drawFullModel ( )
 
 	drawBackGround( );
 
+
+        glBindVertexArray ( reservoir_model_.vertexArrayCuboids );
+
+        glBindBuffer(GL_ARRAY_BUFFER, reservoir_model_.cuboidDynamicIds[dynamic_property_index][time_step]);
+        glEnableVertexAttribArray(9);
+        glVertexAttribPointer(9, 1, GL_FLOAT, GL_FALSE, 0, 0);
+
+        glBindVertexArray ( 0 );
+
 	secondaryLCG->enable( );
 
 //	secondaryLCG->setUniform("min_property", reservoir_model_.static_min[reservoir_model_.current_static]  );
@@ -590,7 +612,7 @@ void GLWidget::paintGL ( )
 			drawFullModel( );
 		}else
 		{
-			textureViewer( );
+		        PaperDemo( );
 		}
 
 		//trackball_->render();
@@ -674,7 +696,6 @@ void GLWidget::IRESCutaway (  )
 
 //	/// FIXME Conditions  - Primary and Secondary well defined.
 
-
  	if ( isIRESOpen_ )
 	{
 
@@ -694,7 +715,6 @@ void GLWidget::IRESCutaway (  )
 		if ( draw_primary )
 		{
 			drawPrimary( );
-
 		}
 	}
 
@@ -702,8 +722,7 @@ void GLWidget::IRESCutaway (  )
 
 void GLWidget::drawBackGround ( )
 {
-	//      /// FIXME Conditions  - Just the model opened.
-
+	/// FIXME Conditions  - Just the model opened.
 
 	glDisable(GL_DEPTH_TEST);
 	glDepthMask(GL_FALSE);
@@ -723,23 +742,102 @@ void GLWidget::drawBackGround ( )
 	glDepthMask(GL_TRUE);
 }
 
-void GLWidget::textureViewer ( )
+
+void GLWidget::PaperDemo()
 {
-//      /// FIXME Conditions  - Just the model opened.
-//
+        if ( isIRESOpen_ )
+        {
+                PaperDrawCutawaySurface( );
+
+                glClearColor ( 1.0 , 1.0 , 1.0 , 1.0 );
+                glDepthFunc(GL_LESS);
+                glClearDepth(1.0f);
+                glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
+                drawBackGround( );
+
+                if ( draw_secondary )
+                {
+                        drawSecondary( );
+                }
+                if ( draw_primary )
+                {
+                        PaperPly( );
+
+                }
+        }
+}
+
+void GLWidget::PaperDrawCutawaySurface()
+{
+
+        glDepthFunc ( GL_GREATER );
+        glClearDepth ( 0.0 );
+
+        depthFBO->bind( );
+
+        glDrawBuffer(GL_COLOR_ATTACHMENT0);
+
         glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
         glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-        xtoon_texture_viewer->enable();
+        BoundingBoxInitializationLCG->enable( );
 
-        glActiveTexture(GL_TEXTURE0+3);
-        glBindTexture ( GL_TEXTURE_2D, xtoon_texture_ );
-        xtoon_texture_viewer->setUniform("imageTexture", 3);
-        xtoon_texture_viewer->setUniform("viewportSize", width(), height() );
+        BoundingBoxInitializationLCG->setUniform("min_range", min_range  );
+        BoundingBoxInitializationLCG->setUniform("max_range", max_range  );
+        BoundingBoxInitializationLCG->setUniform("min_property", reservoir_model_.static_min[reservoir_model_.current_static]  );
+        BoundingBoxInitializationLCG->setUniform("max_property", reservoir_model_.static_max[reservoir_model_.current_static]  );
+        BoundingBoxInitializationLCG->setUniform("property_index", reservoir_model_.current_static );
 
-        picture->render();
+        BoundingBoxInitializationLCG->setUniform( "x" , volume_width );
+        BoundingBoxInitializationLCG->setUniform( "y" , volume_height );
+        BoundingBoxInitializationLCG->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
+        BoundingBoxInitializationLCG->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
+        BoundingBoxInitializationLCG->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
 
-        xtoon_texture_viewer->disable();
+        BoundingBoxInitializationLCG->setUniform ("freeze", freezeView_ );
+        BoundingBoxInitializationLCG->setUniform ("FreezeViewMatrix",freeze_viewmatrix_.data ( ),4, GL_FALSE, 1 );
+
+        reservoir_model_.drawCuboid ( );
+
+        BoundingBoxInitializationLCG->disable( );
+
+
+        glDrawBuffer(GL_COLOR_ATTACHMENT0+1);
+
+        meanFilter->renderTexture( depthFBO->bindAttachment(0),meanFilterSize_);
+
+        depthFBO->unbindAll();
+
+
+        glDrawBuffer(GL_BACK);
+
+}
+
+void GLWidget::PaperPly ( )
+{
+        /// FIXME Conditions - Just the model opened.
+
+        GLfloat light_elements[12];
+        for ( std::size_t i = 0; i < lights.size ( ); ++i )
+        {
+                for ( int j = 0; j < 3; ++j )
+                {
+                        light_elements[i * 3 + j] = lights[i][j];
+                }
+        }
+
+        BurnsPrimary->enable();
+
+        BurnsPrimary->setUniform("num_lights", (GLint) lights.size ( )  );
+        BurnsPrimary->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
+        BurnsPrimary->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
+        BurnsPrimary->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
+        BurnsPrimary->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
+
+        ply_primary_.Draw ( );
+
+        BurnsPrimary->disable();
 
 }
 
@@ -823,7 +921,6 @@ void GLWidget::loadShaders ( )
         BoundingBoxCutawayLCG = new Shader ("BoundingBoxCutaway",(shaderDirectory + "BoundingBoxCutaway.vert").toStdString(),
                                                         (shaderDirectory + "BoundingBoxCutaway.frag").toStdString(),
                                                         (shaderDirectory + "BoundingBoxCutaway.geom").toStdString(),1);
-
         BoundingBoxCutawayLCG->initialize();
 
         shellLCG = new Shader ("Shell", (shaderDirectory + "Shell.vert").toStdString(),
@@ -848,6 +945,17 @@ void GLWidget::loadShaders ( )
         		                              (shaderDirectory + "xtoon_texture.frag").toStdString(),"",1);
 
         xtoon_texture_viewer->initialize( );
+
+
+        BurnsPrimary = new Shader ("BurnsPrimary",(shaderDirectory + "BurnsPrimary430.vert").toStdString(),
+                                                  (shaderDirectory + "BurnsPrimary430.frag").toStdString(),"",1);
+        BurnsPrimary->initialize();
+
+        BurnsPrimarySetup = new Shader ("BurnsPrimarySetup", (shaderDirectory + "BurnsPrimarySetup.vert").toStdString(),
+                                    (shaderDirectory + "BurnsPrimarySetup.frag").toStdString(),
+                                    (shaderDirectory + "BurnsPrimarySetup.geom").toStdString(),1);
+        BurnsPrimarySetup->initialize();
+
 
 }
 /// KeyInput

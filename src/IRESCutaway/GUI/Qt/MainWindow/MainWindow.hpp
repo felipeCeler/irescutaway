@@ -29,6 +29,7 @@ class MainWindow: public QMainWindow
 		void on_action_Load_Shaders_triggered ( );
 		// --
 		void on_action_Open_IRES_triggered ( );
+		void on_action_Open_PLY_triggered ( );
 		void on_pushButton_Reset_IJK_clicked( );
 
 

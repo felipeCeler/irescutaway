@@ -46,6 +46,7 @@
      <string>File</string>
     </property>
     <addaction name="action_Open_IRES"/>
+    <addaction name="action_Open_PLY"/>
     <addaction name="separator"/>
     <addaction name="action_Quit"/>
    </widget>
@@ -802,7 +803,7 @@
            <item>
             <widget class="QLabel" name="label">
              <property name="text">
-              <string>  </string>
+              <string/>
              </property>
             </widget>
            </item>
@@ -1022,6 +1023,11 @@
    </property>
    <property name="text">
     <string>Show Lines Properties</string>
+   </property>
+  </action>
+  <action name="action_Open_PLY">
+   <property name="text">
+    <string>Open *.ply</string>
    </property>
   </action>
  </widget>
