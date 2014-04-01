@@ -781,26 +781,25 @@ void GLWidget::PaperDrawCutawaySurface()
         glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
         glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-        BoundingBoxInitializationLCG->enable( );
 
-        BoundingBoxInitializationLCG->setUniform("min_range", min_range  );
-        BoundingBoxInitializationLCG->setUniform("max_range", max_range  );
-        BoundingBoxInitializationLCG->setUniform("min_property", reservoir_model_.static_min[reservoir_model_.current_static]  );
-        BoundingBoxInitializationLCG->setUniform("max_property", reservoir_model_.static_max[reservoir_model_.current_static]  );
-        BoundingBoxInitializationLCG->setUniform("property_index", reservoir_model_.current_static );
+        BurnsPrimarySetup->enable( );
 
-        BoundingBoxInitializationLCG->setUniform( "x" , volume_width );
-        BoundingBoxInitializationLCG->setUniform( "y" , volume_height );
-        BoundingBoxInitializationLCG->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
-        BoundingBoxInitializationLCG->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
-        BoundingBoxInitializationLCG->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
+        BurnsPrimarySetup->setUniform( "v0" , ply_primary_.box.center().x, ply_primary_.box.center().y,ply_primary_.box.center().z);
 
-        BoundingBoxInitializationLCG->setUniform ("freeze", freezeView_ );
-        BoundingBoxInitializationLCG->setUniform ("FreezeViewMatrix",freeze_viewmatrix_.data ( ),4, GL_FALSE, 1 );
+        BurnsPrimarySetup->setUniform( "x" , volume_width );
+        BurnsPrimarySetup->setUniform( "y" , volume_height );
+        BurnsPrimarySetup->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
+        BurnsPrimarySetup->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
+        BurnsPrimarySetup->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
 
-        reservoir_model_.drawCuboid ( );
+        BurnsPrimarySetup->setUniform ("freeze", freezeView_ );
+        BurnsPrimarySetup->setUniform ("FreezeViewMatrix",freeze_viewmatrix_.data ( ),4, GL_FALSE, 1 );
 
-        BoundingBoxInitializationLCG->disable( );
+        glBindVertexArray(vertexArray_box);
+        glDrawArrays(GL_POINTS,0,1);
+        glBindVertexArray(0);
+
+        BurnsPrimarySetup->disable( );
 
 
         glDrawBuffer(GL_COLOR_ATTACHMENT0+1);
