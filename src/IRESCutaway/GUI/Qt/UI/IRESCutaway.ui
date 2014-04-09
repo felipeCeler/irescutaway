@@ -8,7 +8,7 @@
     <x>0</x>
     <y>0</y>
     <width>1263</width>
-    <height>920</height>
+    <height>969</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -18,7 +18,17 @@
    </sizepolicy>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string extracomment="Oil&amp;Gas Reservoir Model Visualization using Cutaway Views">IRES Cutaways</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="../RCC/Resources.qrc">
+    <normaloff>:/Icons/CelerSystemAllBlack.png</normaloff>:/Icons/CelerSystemAllBlack.png</iconset>
+  </property>
+  <property name="iconSize">
+   <size>
+    <width>44</width>
+    <height>44</height>
+   </size>
   </property>
   <property name="documentMode">
    <bool>false</bool>
@@ -67,25 +77,24 @@
     <property name="title">
      <string>View</string>
     </property>
+    <addaction name="separator"/>
     <addaction name="action_Show_Static_Properties"/>
     <addaction name="action_Show_Dynamic_Properties"/>
+    <addaction name="action_Show_Lines_Properties"/>
+    <addaction name="action_Show_BrenchMark"/>
     <addaction name="separator"/>
     <addaction name="action_Show_Primary_Cells"/>
     <addaction name="action_Show_Secondary_Cells"/>
-    <addaction name="action_Show_Lines_Properties"/>
     <addaction name="action_BorderLine"/>
     <addaction name="action_Fault"/>
     <addaction name="separator"/>
-    <addaction name="action_Raw_Model"/>
+    <addaction name="action_Paper_Demo"/>
     <addaction name="action_IRES_Cutaway"/>
-    <addaction name="action_Texture_View"/>
-    <addaction name="action_FullModel"/>
+    <addaction name="action_IRES_Cutaway_Static"/>
+    <addaction name="action_IRES_Cutaway_Dynamic"/>
     <addaction name="separator"/>
     <addaction name="action_Full_Screen"/>
-    <addaction name="action_Trackball"/>
-    <addaction name="action_Fly_Camera"/>
     <addaction name="action_Freeze_View"/>
-    <addaction name="separator"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuTools"/>
@@ -816,6 +825,90 @@
     </layout>
    </widget>
   </widget>
+  <widget class="QDockWidget" name="dockWidgetBrenchMarking">
+   <property name="minimumSize">
+    <size>
+     <width>235</width>
+     <height>150</height>
+    </size>
+   </property>
+   <property name="maximumSize">
+    <size>
+     <width>400</width>
+     <height>150</height>
+    </size>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>1</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents_4">
+    <layout class="QVBoxLayout" name="verticalLayout_5">
+     <item>
+      <widget class="QGroupBox" name="groupBox_BrenchMark">
+       <property name="title">
+        <string>Brenchmarks</string>
+       </property>
+       <property name="flat">
+        <bool>true</bool>
+       </property>
+       <layout class="QFormLayout" name="formLayout_7">
+        <property name="fieldGrowthPolicy">
+         <enum>QFormLayout::ExpandingFieldsGrow</enum>
+        </property>
+        <item row="0" column="0">
+         <widget class="QLabel" name="label_ModelName">
+          <property name="text">
+           <string>Model Name:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QLabel" name="label_ModelNameSlot">
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="label_NumberOfCells">
+          <property name="text">
+           <string>Number of Cells:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QLabel" name="label_NumberOfCellsSlot">
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="1">
+         <spacer name="verticalSpacer_4">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_fps_slot">
+       <property name="text">
+        <string>adasdas</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
   <action name="action_Open_IRES">
    <property name="text">
     <string>Open *.ires</string>
@@ -880,7 +973,7 @@
     <string>F10</string>
    </property>
   </action>
-  <action name="action_Raw_Model">
+  <action name="action_Paper_Demo">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -888,7 +981,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Raw Model</string>
+    <string>Paper Demo</string>
    </property>
    <property name="toolTip">
     <string>No technique applied</string>
@@ -937,12 +1030,12 @@
     <string>F10</string>
    </property>
   </action>
-  <action name="action_Texture_View">
+  <action name="action_IRES_Cutaway_Static">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Texture View</string>
+    <string>IRES Cutaway Static</string>
    </property>
    <property name="shortcut">
     <string>F11</string>
@@ -964,7 +1057,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Show Fault</string>
+    <string>Show Faults</string>
    </property>
    <property name="shortcut">
     <string>Alt+4</string>
@@ -981,12 +1074,12 @@
     <string>Alt+3</string>
    </property>
   </action>
-  <action name="action_FullModel">
+  <action name="action_IRES_Cutaway_Dynamic">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Full Model</string>
+    <string>IRES Cutaway Dynamic</string>
    </property>
    <property name="shortcut">
     <string>F12</string>
@@ -1030,6 +1123,14 @@
     <string>Open *.ply</string>
    </property>
   </action>
+  <action name="action_Show_BrenchMark">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show BrenchMark</string>
+   </property>
+  </action>
  </widget>
  <resources>
   <include location="../RCC/Resources.qrc"/>
@@ -1063,7 +1164,7 @@
     </hint>
     <hint type="destinationlabel">
      <x>199</x>
-     <y>394</y>
+     <y>320</y>
     </hint>
    </hints>
   </connection>
@@ -1096,6 +1197,38 @@
     <hint type="destinationlabel">
      <x>199</x>
      <y>763</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>action_Full_Screen</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>showFullScreen()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>631</x>
+     <y>459</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>action_Show_BrenchMark</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>dockWidgetBrenchMarking</receiver>
+   <slot>setVisible(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1170</x>
+     <y>861</y>
     </hint>
    </hints>
   </connection>

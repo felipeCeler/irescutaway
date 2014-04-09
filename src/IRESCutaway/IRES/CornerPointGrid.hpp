@@ -63,7 +63,7 @@ namespace IRES
 					std::vector<float> min_;
 					std::vector<float> max_;
 
-					int numTimeSteps;
+					unsigned int numTimeSteps;
 
 					// FIXME std::pair< timeStep, values for each block >
 					std::vector< std::vector<float>  > values_;
@@ -91,7 +91,7 @@ namespace IRES
 			virtual ~CornerPointGrid 	( );
 
 			void 	createBuffers 	 	( );
-			void 	drawFace  	 	( ) const;
+			void 	drawFaces  	 	( ) const;
 			void 	drawCuboid 	 	( ) const;
 
 			void 	loadStaticProperties 	( );

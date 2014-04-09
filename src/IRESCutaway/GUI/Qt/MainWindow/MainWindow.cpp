@@ -34,6 +34,9 @@ MainWindow::MainWindow ( QMainWindow *parent ) :
 	ui->statusBar->addPermanentWidget(fps,0);
 
 	WidgetSignalSlotConnection( );
+
+	setFocusPolicy ( Qt::StrongFocus );
+
 }
 
 void MainWindow::WidgetSignalSlotConnection( )
@@ -44,6 +47,7 @@ void MainWindow::WidgetSignalSlotConnection( )
         ui->dockWidgetDynamic->setHidden( true );
         ui->dockWidgetIJKViewer->setHidden( true );
         ui->dockWidgetBeauty->setHidden( true );
+        ui->dockWidgetBrenchMarking->setHidden(true);
 
         connect(ui->comboBoxProperty, SIGNAL(activated(int)), this, SLOT(updateDoubleSpinMin(int)));
         connect(ui->comboBoxProperty, SIGNAL(activated(int)), this, SLOT(updateDoubleSpinMax(int)));
@@ -71,16 +75,16 @@ void MainWindow::WidgetSignalSlotConnection( )
         // Controls over the rendering
         QActionGroup* CutawayTypeGroup = new QActionGroup ( this );
         CutawayTypeGroup->setExclusive(1);
-        CutawayTypeGroup->addAction ( ui->action_Texture_View );
-        CutawayTypeGroup->addAction ( ui->action_Raw_Model );
+        CutawayTypeGroup->addAction ( ui->action_Paper_Demo );
         CutawayTypeGroup->addAction ( ui->action_IRES_Cutaway );
-        CutawayTypeGroup->addAction ( ui->action_FullModel );
+        CutawayTypeGroup->addAction ( ui->action_IRES_Cutaway_Static );
+        CutawayTypeGroup->addAction ( ui->action_IRES_Cutaway_Dynamic );
 
         // Rendering Type
-        connect(ui->action_Texture_View, SIGNAL(toggled(bool)), glWidget, SLOT(setTextureViewerVisibility(bool)));
-        connect(ui->action_Raw_Model   , SIGNAL(toggled(bool)), glWidget, SLOT(setRawModelVisibility(bool)));
-        connect(ui->action_IRES_Cutaway, SIGNAL(toggled(bool)), glWidget, SLOT(setIRESCutawayVisibility(bool)));
-        connect(ui->action_FullModel,    SIGNAL(toggled(bool)), glWidget, SLOT(setIRESFullModelVisibility(bool)));
+        connect(ui->action_Paper_Demo,           SIGNAL(toggled(bool)), glWidget, SLOT(setPaperDemoVisibility(bool)));
+        connect(ui->action_IRES_Cutaway   ,      SIGNAL(toggled(bool)), glWidget, SLOT(setIRESCutawayVisibility(bool)));
+        connect(ui->action_IRES_Cutaway_Static,  SIGNAL(toggled(bool)), glWidget, SLOT(setIRESCutawayStaticVisibility(bool)));
+        connect(ui->action_IRES_Cutaway_Dynamic, SIGNAL(toggled(bool)), glWidget, SLOT(setIRESCutawayDynamicVisibility(bool)));
         // Cells Visibility
         connect(ui->action_Show_Primary_Cells,   SIGNAL(toggled(bool)), glWidget, SLOT(setPrimaryVisibility(bool)));
         connect(ui->action_Show_Secondary_Cells, SIGNAL(toggled(bool)), glWidget, SLOT(setSecondaryVisibility(bool)));
@@ -96,6 +100,7 @@ void MainWindow::WidgetSignalSlotConnection( )
         // Benchmark
 
         connect(glWidget, SIGNAL(fpsChanged(const QString&)), fps, SLOT(setText(const QString&)));
+        connect(glWidget, SIGNAL(fpsChanged(const QString&)), ui->label_fps_slot, SLOT(setText(const QString&)));
 }
 
 
@@ -117,6 +122,8 @@ void MainWindow::loadStatic( )
                 QString title ( reinterpret_cast<char*>(glWidget->reservoir_model_.header_v2_.title) );
 
                 ui->simulatorName->setText (  title );
+                ui->label_ModelNameSlot->setText ( title );
+                ui->label_NumberOfCellsSlot->setText( QString::number( glWidget->reservoir_model_.number_of_blocks_ ) );
 
                 updateDoubleSpinMax( 0 );
                 updateDoubleSpinMin( 0 );
@@ -172,7 +179,7 @@ void MainWindow::loadDynamic( )
 			ui->comboBoxProperty_Dynamic->addItem(  QString::fromStdString( glWidget->reservoir_model_.dynamic_properties[i].name ) );
 		}
 
-		ui->sliderTimeLine_Dynamic->setMaximum(glWidget->reservoir_model_.dynamic_properties[0].min_.size());
+		ui->sliderTimeLine_Dynamic->setMaximum(glWidget->reservoir_model_.dynamic_properties[0].min_.size()-1);
 		ui->labelTimeStepsShow_Dynamic->setText( QString::number (glWidget->reservoir_model_.dynamic_properties[0].min_.size()) );
 
 	}
@@ -328,21 +335,25 @@ void MainWindow::on_action_Load_Shaders_triggered()
 	glWidget->loadShaders();
 }
 
-void MainWindow::keyPressEvent(QKeyEvent *e)
+void MainWindow::keyPressEvent(QKeyEvent *event)
 {
-	if(e->key()==Qt::Key_Return && e->modifiers()==Qt::AltModifier)
+	if(event->key()==Qt::Key_F)
 	{
 		showfullScreen_ = !showfullScreen_;
 		if ( showfullScreen_ )
 		{
-			showFullScreen ( );
+                        this->menuBar()->setHidden(true);
+                        this->statusBar()->setHidden(true);
+		        showFullScreen();
 		}else
 		{
+                        this->menuBar()->setHidden(false);
+                        this->statusBar()->setHidden(false);
 			showNormal();
 		}
-		e->accept();
+		event->accept();
 	}
-	else e->ignore();
+	else event->ignore();
 }
 
 void MainWindow::on_action_Trackball_triggered  ( )

@@ -12,6 +12,7 @@ in VertexData
 
 noperspective in vec4 dist;
 
+uniform vec2 WIN_SCALE;
 uniform int num_lights;
 uniform vec3 lights[4];
 
@@ -28,9 +29,8 @@ void main(void)
         float I = exp2(-2.0 * d * d);
 
         bool backface = false;
-        int linesize = 1;
-        int linesizediag = 1;
-
+        int linesize = 2;
+        int linesizediag = 2;
         // make sure we are at the center of the pixel to make the right texture access
         vec2 pixel_pos = vec2(floor(gl_FragCoord.x), floor(gl_FragCoord.y)) + vec2(0.5);
         // cutaway normal = rgb, and cutaway depth in camera space = w
@@ -80,6 +80,8 @@ void main(void)
         float zsurface = 0;
         float zneighbor = 0;
 
+        float aspect_ratio = (WIN_SCALE.x/WIN_SCALE.y);
+
         for (int i = 0; i < size; ++i) {
             if (I != 1)
             {
@@ -91,6 +93,7 @@ void main(void)
 
                 // invert the orthographic projection (considering ortho planes are in range [-1,1]
                 vec2 pixel = neighbor*2.0 - vec2(1.0);
+                pixel.x *= aspect_ratio;
 
                 // intersection ray from point in image plane with plane containing current 3D point
                 // note that the denominator is dot(l,n), but the ray in ortho is just (0,0,1)
@@ -144,7 +147,7 @@ void main(void)
         // cutaway border lines (front face intersection with cutaway)
          if (I == 1)
         {   //outputColor = I * vec4(vec3(0.1), 1.0) + (1.0 - I) * ( color );
-            outputColor = I * vec4(vec3(1.0,0.0,0.0), 1.0) + (1.0 - I) * ( color );
+            outputColor = I * vec4(vec3(1.0,1.0,1.0), 1.0) + (1.0 - I) * ( color );
         }
         // lines outside cutaway (remaining front faces)
         else

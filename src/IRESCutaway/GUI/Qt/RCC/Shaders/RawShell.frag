@@ -62,7 +62,12 @@ void main(void)
 
         color = xtoon;
 
-        outputColor = I * vec4(vec3(1.0), 1.0) + (1.0 - I) * ( color );
+
+        if ( I >= 0.7)
+                outputColor = vec4(vec3(1.0), 1.0);
+        else
+                discard;//outputColor = I * vec4(vec3(1.0), 1.0) + (1.0 - I) * ( color );
+
 
 
 }

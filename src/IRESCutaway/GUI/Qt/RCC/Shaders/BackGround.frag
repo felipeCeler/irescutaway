@@ -18,4 +18,5 @@ void main() {
   float y = gl_FragCoord.y/viewportSize.y;
 
   out_Color = vec4(vec3(0.605,0.691,0.781) + (1-y)* vec3(0.1,0.1,0.1),1.0);
+  //out_Color = vec4(1.0,1.0,1.0,1.0);
 }

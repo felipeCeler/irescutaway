@@ -66,7 +66,7 @@ vec4 dynamicColor ( )
 	return color;
 }
 
-vec4 propertyColor ( in float min_range, in float max_range, in int index )
+vec4 propertyColor ( float min_range, float max_range,  int index )
 {
 
 	float normalized_color = ( static_properties[index] - min_property ) / ( max_property - min_property );

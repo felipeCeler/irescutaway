@@ -15,14 +15,6 @@ layout(location = 7) in vec4 v7;
 //               w = Modified Block Volume
 layout(location = 8) in vec4 static_properties;
 
-layout(location = 9)  in vec4 d1; // Time Step 0 - 3
-layout(location = 10) in vec4 d2; // Time Step 4 - 7
-layout(location = 11) in vec4 d3; // Time Step 8 - 11
-layout(location = 12) in vec4 d4; // Time Step 12 - 15
-layout(location = 13) in vec4 d5; // Time Step 16 - 19
-layout(location = 14) in vec4 d6; // Time Step 20 - 23
-layout(location = 15) in vec4 d7; // Time Step 24 - 28
-
 /// FIXME - Research for the best away to alignment data on Shader.
 out CubeData
 {
@@ -45,6 +37,11 @@ uniform int property_index;
 uniform float min_range;
 uniform float max_range;
 
+
+uniform vec3 box_min;
+uniform vec3 box_max;
+uniform float paper;
+
 vec4 propertyColor ( in float min_range, in float max_range, in int index )
 {
 
@@ -64,20 +61,51 @@ vec4 propertyColor ( in float min_range, in float max_range, in int index )
 	return color;
 }
 
-bool isPrimary ( )
+bool intersect ( in vec4 p )
 {
-	if ( static_properties[property_index] > min_range && static_properties[property_index] < max_range)
-		return true;
-
-	return false;
-
+        return ( ( p.x >= box_min.x ) && ( p.x  < box_max.x ) &&
+                 ( p.y >= box_min.y ) && ( p.y  < box_max.y ) &&
+                 ( p.z  >= box_min.z ) && ( p.z  < box_max.z ) );
 }
 
+bool isInside ( )
+{
+        if ( intersect(v0) &&
+             intersect(v1) &&
+             intersect(v2) &&
+             intersect(v3) &&
+             intersect(v4) &&
+             intersect(v5) &&
+             intersect(v6) &&
+             intersect(v7)
+            )
+        {
+                return true;
+        }
+
+        return false;
+}
+
+
+bool isPrimary (  )
+{
+
+        if (paper == 1.0 )
+        {
+               return isInside();
+
+        }else if ( static_properties[property_index] > min_range && static_properties[property_index] < max_range )
+        {
+                return true;
+        }
+        return false;
+
+}
 
 void main(void)
 {
 
-	if ( isPrimary() )
+	if ( isPrimary( ) )
 	{
 		// We revert the vertices order to fit in the triangle strip pipeline
 		// Triangle strips request vertices in zig-zag order.

@@ -61,6 +61,8 @@ void main(void)
         vec4 color = la + ld + ls;
         color.a = 1.0;
 
+        color += vec4(1.0,-0.2,-1.0,1.0);
+
         fragmentColor = I * vec4 ( 1.0 , 1.0 , 1.0 , 1.0 ) + ( 1.0 - I ) * color;
 
 }

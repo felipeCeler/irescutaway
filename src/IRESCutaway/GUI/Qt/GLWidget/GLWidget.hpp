@@ -83,10 +83,10 @@ class GLWidget: public QGLWidget
 		void showFault		( bool visibility );
 		void showBorderLines    ( bool visibility );
 
-		void setTextureViewerVisibility ( bool visibility ) { isTextureViewer_ = visibility; updateGL(); }
-		void setRawModelVisibility      ( bool visibility ) { isRawModel_      = visibility; updateGL(); }
-		void setIRESCutawayVisibility   ( bool visibility ) { isIRESCutaway_   = visibility; updateGL(); }
-		void setIRESFullModelVisibility ( bool visibility ) { isFullModel_     = visibility; updateGL(); }
+		void setPaperDemoVisibility             ( bool visibility ) { isPaperDemo_ = visibility; updateGL(); }
+		void setIRESCutawayVisibility           ( bool visibility ) { isIRESCutaway_      = visibility; updateGL(); }
+		void setIRESCutawayStaticVisibility     ( bool visibility ) { isIRESCutawayStatic_   = visibility; updateGL(); }
+		void setIRESCutawayDynamicVisibility    ( bool visibility ) { isIRESCutawayDynamic_     = visibility; updateGL(); }
 
 		void borderLinesSize ( int size )
 		{
@@ -102,27 +102,9 @@ class GLWidget: public QGLWidget
 
 		void freezeView ( );
 
-		// ! Raw     VIEWER F9
-                        void drawRawModel       ( );
-		// ! STATIC  VIEWER F10
-                        void drawCutawaySurface    ( ); //
-                        void drawSecondary         ( ); // Draw only secondary Cells
-                        void drawPrimary           ( ); // Draw only primary   Cells
-                        void drawPrimaryBoudingBox ( ); // Draw only primary   Cells with its bounding box
-
-                        void IRESCutaway        ( );
-
-                        void setPrimaryVisibility ( bool );
-                        void setSecondaryVisibility ( bool );
-
-                        void changeProperty ( int property_index );
-                        void changePropertyRange ( const double& min, const double& max, int property_index );
-		// ! DYNAMIC VIEWER F11
-                        void drawFullModel         ( );
-
-                        void changeTimeStep        ( int step  ) { this->time_step = step; std::cout << " ... " << step << std::endl; updateGL(); };
-                        void changeDynamicProperty ( int index ) { reservoir_model_.loadDynamicProperties(  ); dynamic_property_index = index; updateGL(); };
-		// ! xToon   VIEWER F12
+		// ! Raw IRES model    VIEWER F9
+                        void drawIRESModel       ( );
+                // ! Paper Demo        VIEWER F10
 
                         void loadPly ( QString pFilename )
                         {
@@ -131,13 +113,76 @@ class GLWidget: public QGLWidget
 
                                 if ( ply_primary_.open )
                                 {
-                                        std::cout << "Abriu " << ply_primary_.TotalConnectedPoints << std::endl;
+                                        std::cout << "Opened succefuly " << ply_primary_.TotalConnectedPoints << std::endl;
                                 }
                         }
-                // !  Paper
                         void PaperPly ( );
                         void PaperDemo( );
                         void PaperDrawCutawaySurface( );
+		// ! STATIC  VIEWER F11 Static Properties
+                        void drawIRESCutawayStaticSurface    ( ); //
+                        void drawSecondary                   ( ); // Draw only secondary Cells
+                        void drawPrimary                     ( ); // Draw only primary   Cells
+                        void drawPrimaryBoudingBox           ( ); // Draw only primary   Cells with its bounding box
+
+                        void IRESCutawayStatic        ( );
+
+                        void setPrimaryVisibility ( bool );
+                        void setSecondaryVisibility ( bool );
+
+                        void changeProperty ( int property_index );
+                        void changePropertyRange ( const double& min, const double& max, int property_index );
+		// ! DYNAMIC VIEWER F12 Dynamic Properties
+                        void IRESCutawayDynamic         ( );
+
+                        void changeTimeStep        ( int step  )
+                        {
+                                // ! Debug std::cout << " ... " << step << std::endl;
+                                        this->time_step = step;
+
+                                        glBindVertexArray ( reservoir_model_.vertexArrayCuboids );
+
+                                        glBindBuffer(GL_ARRAY_BUFFER, reservoir_model_.cuboidDynamicIds[dynamic_property_index][time_step]);
+                                        glEnableVertexAttribArray(9);
+                                        glVertexAttribPointer(9, 1, GL_FLOAT, GL_FALSE, 0, 0);
+
+                                        glBindVertexArray ( 0 );
+
+
+                                        glBindVertexArray ( reservoir_model_.vertexArrayFaces );
+
+                                        glBindBuffer(GL_ARRAY_BUFFER, reservoir_model_.faceDynamicIds[dynamic_property_index][time_step]);
+                                        glEnableVertexAttribArray(6);
+                                        glVertexAttribPointer(6, 1, GL_FLOAT, GL_FALSE, 0, 0);
+
+                                        glBindVertexArray ( 0 );
+
+                                updateGL();
+                        };
+                        void changeDynamicProperty ( int index )
+                        {
+                                reservoir_model_.loadDynamicProperties(  ); dynamic_property_index = index;
+
+                                        glBindVertexArray ( reservoir_model_.vertexArrayCuboids );
+
+                                        glBindBuffer(GL_ARRAY_BUFFER, reservoir_model_.cuboidDynamicIds[dynamic_property_index][time_step]);
+                                        glEnableVertexAttribArray(9);
+                                        glVertexAttribPointer(9, 1, GL_FLOAT, GL_FALSE, 0, 0);
+
+                                        glBindVertexArray ( 0 );
+
+                                        glBindVertexArray ( reservoir_model_.vertexArrayFaces );
+
+                                        glBindBuffer(GL_ARRAY_BUFFER, reservoir_model_.faceDynamicIds[dynamic_property_index][time_step]);
+                                        glEnableVertexAttribArray(6);
+                                        glVertexAttribPointer(6, 1, GL_FLOAT, GL_FALSE, 0, 0);
+
+                                        glBindVertexArray ( 0 );
+
+                                updateGL();
+                        };
+
+
 
         signals:
                 void fpsChanged(const QString&);
@@ -171,17 +216,23 @@ class GLWidget: public QGLWidget
 		Shader*                         BoundingBoxInitializationLCG;
 		Shader*                         BoundingBoxDebugLCG;
 		Shader*                         BoundingBoxCutawayLCG;
+                Shader*                         shellLCG;
 
 		Shader*                         secondaryLCG;
 		Shader*                         primaryLCG;
 		Shader* 			primaryDebugLCG;
 
-		Shader*                         shellLCG;
 		Shader*                         rawShellLCG;
 		Shader* 			borderLinesLCG;
 
 		Shader*                         BurnsPrimary;
 		Shader*                         BurnsPrimarySetup;
+
+		// ! DYNAMIC VIEWER F12 Dynamic Properties
+
+                Shader*                         IRESCutawaySurfaceDynamic;
+                Shader*                         IRESCutawayDynamicCrust;
+                Shader*                         IRESCutawayShellDynamic;
 
 		QImage fbo;
 		float  angle;
@@ -201,10 +252,10 @@ class GLWidget: public QGLWidget
 
 
 		/// -- RENDERING Stuffs  ----------------------------------------------
-		bool isTextureViewer_;
-		bool isRawModel_;
+		bool isPaperDemo_;
 		bool isIRESCutaway_;
-		bool isFullModel_;
+		bool isIRESCutawayStatic_;
+		bool isIRESCutawayDynamic_;
 
 		bool draw_secondary;
 		bool draw_primary;
@@ -232,6 +283,8 @@ class GLWidget: public QGLWidget
 		/// -- Aperture of Cutaway
 		float volume_width;
 		float volume_height;
+
+		float justWireFrame;
 
                 int borderLinesSize_;
                 int meanFilterSize_;
@@ -263,6 +316,8 @@ class GLWidget: public QGLWidget
 
                 GLuint vertex_box;
                 GLuint vertexArray_box;
+
+                long unsigned int videoSequence;
 };
 
 

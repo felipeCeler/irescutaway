@@ -8,13 +8,6 @@ layout(location = 3) in vec4 vd;
 layout(location = 4) in vec4 faceType;
 layout(location = 5) in vec4 static_properties;
 
-layout(location = 9)  in vec4 d1; // Time Step 0 - 3
-layout(location = 10) in vec4 d2; // Time Step 4 - 7
-layout(location = 11) in vec4 d3; // Time Step 8 - 11
-layout(location = 12) in vec4 d4; // Time Step 12 - 15
-layout(location = 13) in vec4 d5; // Time Step 16 - 19
-layout(location = 14) in vec4 d6; // Time Step 20 - 23
-layout(location = 15) in vec4 d7; // Time Step 24 - 28
 
 
 out VertexData
@@ -92,11 +85,11 @@ void main(void)
 //		VertexOut.v[3] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(0.0);
 //	}
 
-			VertexOut.color  =  propertyColor ( min_property, max_property, property_index );
-			VertexOut.v[0] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(va);
-			VertexOut.v[1] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(vb);
-			VertexOut.v[2] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(vc);
-			VertexOut.v[3] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(vd);
+        VertexOut.color  =  propertyColor ( min_property, max_property, property_index );
+        VertexOut.v[0] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(va);
+        VertexOut.v[1] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(vb);
+        VertexOut.v[2] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(vc);
+        VertexOut.v[3] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(vd);
 
 	gl_Position = vec4(va);
 }
