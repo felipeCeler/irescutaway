@@ -39,6 +39,11 @@ namespace IRES
 			glGenBuffers ( 1, &vertexBufferCuboidGeometry );  // Geometry
 			glGenBuffers ( 1, &vertexBufferCuboidStatic ); // Cube Property
 
+                // Internal Face Features
+                glGenVertexArrays ( 1, &vertexArrayInternalFaces );
+                        glGenBuffers ( 1, &vertexBufferInternalFaces );   // Geometry
+                        glGenBuffers ( 1, &vertexBufferInternalFacesStatic ); // Face Properties
+
 		// Face Features
 		glGenVertexArrays ( 1, &vertexArrayFaces );
 			glGenBuffers ( 1, &vertexBufferFaceGeometry );   // Geometry
@@ -161,6 +166,25 @@ namespace IRES
 
 			reservoir_file.getFacePropertyValues(1,faceFault);
 
+
+			internalFaces.clear( );
+			internalFaces.resize( iresFaces_.size ( ) * 48 );
+
+			internalFacesCount = 0;
+
+			Eigen::Vector3f a;
+			Eigen::Vector3f b;
+			Eigen::Vector3f c;
+			Eigen::Vector3f d;
+
+			Eigen::Vector3f n1;
+			Eigen::Vector3f n2;
+
+                        Eigen::Vector3f d1;
+                        Eigen::Vector3f d2;
+
+			int stride_48 = 0;
+
 			for ( std::size_t i = 0; i < iresFaces_.size( ) ; i++)
 			{
 
@@ -202,7 +226,99 @@ namespace IRES
 					faceCount++;
 				}
 
+                                a[0] = vertexList[iresFaces_[i].a*3];
+                                a[1] = vertexList[iresFaces_[i].a*3+1];
+                                a[2] = vertexList[iresFaces_[i].a*3+2];
+
+                                b[0] = vertexList[iresFaces_[i].b*3];
+                                b[1] = vertexList[iresFaces_[i].b*3+1];
+                                b[2] = vertexList[iresFaces_[i].b*3+2];
+
+                                c[0] = vertexList[iresFaces_[i].c*3];
+                                c[1] = vertexList[iresFaces_[i].c*3+1];
+                                c[2] = vertexList[iresFaces_[i].c*3+2];
+
+                                d[0] = vertexList[iresFaces_[i].d*3];
+                                d[1] = vertexList[iresFaces_[i].d*3+1];
+                                d[2] = vertexList[iresFaces_[i].d*3+2];
+
+                                d1 = b-a;
+                                d2 = c-a;
+
+                                n1 = d1.cross(d2);
+
+                                internalFaces[stride_48+0]  = a[0];
+                                internalFaces[stride_48+1]  = a[1];
+                                internalFaces[stride_48+2]  = a[2];
+                                internalFaces[stride_48+3]  = 1.0f;
+
+                                internalFaces[stride_48 +4] = n1[0];
+                                internalFaces[stride_48 +5] = n1[1];
+                                internalFaces[stride_48 +6] = n1[2];
+                                internalFaces[stride_48 +7] = static_cast<float> (iresFaces_[i].isExtern);
+
+                                internalFaces[stride_48+8]  = b[0];
+                                internalFaces[stride_48+9]  = b[1];
+                                internalFaces[stride_48+10] = b[2];
+                                internalFaces[stride_48+11] = 1.0f;
+
+                                internalFaces[stride_48+12] = n1[0];
+                                internalFaces[stride_48+13] = n1[1];
+                                internalFaces[stride_48+14] = n1[2];
+                                internalFaces[stride_48+15] = static_cast<float> (iresFaces_[i].isExtern);
+
+                                internalFaces[stride_48+16] = c[0];
+                                internalFaces[stride_48+17] = c[1];
+                                internalFaces[stride_48+18] = c[2];
+                                internalFaces[stride_48+19] = 1.0f;
+
+                                internalFaces[stride_48+20] = n1[0];
+                                internalFaces[stride_48+21] = n1[1];
+                                internalFaces[stride_48+22] = n1[2];
+                                internalFaces[stride_48+23] = static_cast<float> (iresFaces_[i].isExtern);
+
+                                d1 = d-c;
+                                d2 = a-c;
+
+                                n2 = d1.cross(d2);
+
+                                internalFaces[stride_48+24] = a[0];
+                                internalFaces[stride_48+25] = a[1];
+                                internalFaces[stride_48+26] = a[2];
+                                internalFaces[stride_48+27] = 1.0f;
+
+                                internalFaces[stride_48+28] = n2[0];
+                                internalFaces[stride_48+29] = n2[1];
+                                internalFaces[stride_48+30] = n2[2];
+                                internalFaces[stride_48+31] = static_cast<float> (iresFaces_[i].isExtern);
+
+                                internalFaces[stride_48+32] = c[0];
+                                internalFaces[stride_48+33] = c[1];
+                                internalFaces[stride_48+34] = c[2];
+                                internalFaces[stride_48+35] = 1.0f;
+
+                                internalFaces[stride_48+36] = n2[0];
+                                internalFaces[stride_48+37] = n2[1];
+                                internalFaces[stride_48+38] = n2[2];
+                                internalFaces[stride_48+39] = static_cast<float> (iresFaces_[i].isExtern);
+
+                                internalFaces[stride_48+40] = d[0];
+                                internalFaces[stride_48+41] = d[1];
+                                internalFaces[stride_48+42] = d[2];
+                                internalFaces[stride_48+43] = 1.0f;
+
+                                internalFaces[stride_48+44] = n2[0];
+                                internalFaces[stride_48+45] = n2[1];
+                                internalFaces[stride_48+46] = n2[2];
+                                internalFaces[stride_48+47] = 1.0f;
+
+                                stride_48 += 48;
+
+                                internalFacesCount += 6;
+
+
 			}
+
 
 			// - Extracting Cuboid Information
 
@@ -289,6 +405,8 @@ namespace IRES
 			faces.resize(faceCount * 16);
 			faceType.resize(faceCount * 4 );
 
+			internalFaces.resize( stride_48 );
+
 			glBindVertexArray ( vertexArrayCuboids );
 
 				// - Geometry Information  v0 to v7
@@ -348,11 +466,44 @@ namespace IRES
 
 	                glBindVertexArray(0);
 
+	                // Internal Faces
+
+                        glBindVertexArray ( vertexArrayInternalFaces );
+
+                                glBindBuffer ( GL_ARRAY_BUFFER , vertexBufferInternalFaces );
+                                glBufferData ( GL_ARRAY_BUFFER , internalFaces.size ( ) * sizeof ( internalFaces[0] ) , &internalFaces[0] , GL_STATIC_DRAW );
+
+                                int size_of_vertice_internalFace = 4 * sizeof(float);
+                                int size_of_struct_internalFace  = 2 * size_of_vertice_internalFace;
+
+                                // @link - http://www.opengl.org/wiki/Vertex_Specification
+                                // Assign for vertex attribute location 0 - 4 on point of the face
+                                for ( int location = 0 ; location < 2 ; location++)
+                                {
+                                        glEnableVertexAttribArray(location);
+                                        glVertexAttribPointer(location, 4, GL_FLOAT, GL_FALSE, size_of_struct_internalFace , reinterpret_cast<void*>(size_of_vertice_internalFace * location));
+                                }
+
+                                glBindBuffer ( GL_ARRAY_BUFFER, vertexBufferInternalFacesStatic);
+                                glBufferData ( GL_ARRAY_BUFFER , internalFacesStatic.size( ) * sizeof(internalFacesStatic[0]) , &internalFacesStatic[0] , GL_STATIC_DRAW );
+
+                                glEnableVertexAttribArray(2);
+                                glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 0, 0);
+
+	                glBindVertexArray(0);
+
 
 	                loadStaticProperties  ( );
 	                loadDynamicProperties ( );
 		}
 	}
+
+        void CornerPointGrid::drawInternalFaces   ( ) const
+        {
+                glBindVertexArray ( vertexArrayInternalFaces );
+                glDrawArrays      ( GL_TRIANGLES , 0 , this->internalFacesCount );
+                glBindVertexArray ( 0 );
+        }
 
 	void CornerPointGrid::drawFaces   ( ) const
 	{
@@ -480,6 +631,8 @@ namespace IRES
 		faceStatic.clear();
 		faceStatic.resize  ( iresFaces_.size ( ) * 4 );
 
+                internalFacesStatic.clear();
+                internalFacesStatic.resize  ( iresFaces_.size ( ) * 24 );
 
 		for ( std::size_t property_index = 0; property_index < static_porperties.size( ); property_index++ )
 		{
@@ -502,34 +655,71 @@ namespace IRES
 
 		current_static = 0;
 
-		int index 	 	  = 0;
+		std::size_t index_cuboid  = 0;
 
 		for ( std::size_t i = 0; i < number_of_blocks_; i++)
 		{
 			if ( reservoir_file.isValidBlock(i) )
 			{
-				cuboidStatic[index+0] = static_porperties[static_indices[0]].values_[i];
-				cuboidStatic[index+1] = static_porperties[static_indices[1]].values_[i];
-				cuboidStatic[index+2] = static_porperties[static_indices[0]].values_[i];
-				cuboidStatic[index+3] = static_porperties[static_indices[0]].values_[i];
-				index += 4;
+				cuboidStatic[index_cuboid+0] = static_porperties[static_indices[0]].values_[i];
+				cuboidStatic[index_cuboid+1] = static_porperties[static_indices[1]].values_[i];
+				cuboidStatic[index_cuboid+2] = static_porperties[static_indices[0]].values_[i];
+				cuboidStatic[index_cuboid+3] = static_porperties[static_indices[0]].values_[i];
+				index_cuboid += 4;
 			}
 		}
 
-		cuboidStatic.resize(index);
-		index = 0;
+		cuboidStatic.resize(index_cuboid);
+
+		std::size_t index_external = 0;
+		std::size_t index_internal = 0;
+
 		for ( std::size_t i = 0; i < iresFaces_.size() ; i++ )
 		{
 			if ( (iresFaces_[i].isExtern) )
 			{
-				faceStatic[index  ]   = static_porperties[static_indices[0]].values_[iresFaces_[i].id];
-				faceStatic[index+1]   = static_porperties[static_indices[1]].values_[iresFaces_[i].id];
-				faceStatic[index+2]   = static_porperties[static_indices[0]].values_[iresFaces_[i].id];
-				faceStatic[index+3]   = static_porperties[static_indices[0]].values_[iresFaces_[i].id];
-				index += 4;
+				faceStatic[index_external+0]   = static_porperties[static_indices[0]].values_[iresFaces_[i].id];
+				faceStatic[index_external+1]   = static_porperties[static_indices[1]].values_[iresFaces_[i].id];
+				faceStatic[index_external+2]   = static_porperties[static_indices[0]].values_[iresFaces_[i].id];
+				faceStatic[index_external+3]   = static_porperties[static_indices[0]].values_[iresFaces_[i].id];
+				index_external += 4;
 			}
+
+			internalFacesStatic[index_internal+0]   = static_porperties[static_indices[0]].values_[iresFaces_[i].id];
+                        internalFacesStatic[index_internal+1]   = static_porperties[static_indices[1]].values_[iresFaces_[i].id];
+                        internalFacesStatic[index_internal+2]   = static_porperties[static_indices[0]].values_[iresFaces_[i].id];
+                        internalFacesStatic[index_internal+3]   = static_porperties[static_indices[0]].values_[iresFaces_[i].id];
+
+                        internalFacesStatic[index_internal+4]   = static_porperties[static_indices[0]].values_[iresFaces_[i].id];
+                        internalFacesStatic[index_internal+5]   = static_porperties[static_indices[1]].values_[iresFaces_[i].id];
+                        internalFacesStatic[index_internal+6]   = static_porperties[static_indices[0]].values_[iresFaces_[i].id];
+                        internalFacesStatic[index_internal+7]   = static_porperties[static_indices[0]].values_[iresFaces_[i].id];
+
+                        internalFacesStatic[index_internal+8]   = static_porperties[static_indices[0]].values_[iresFaces_[i].id];
+                        internalFacesStatic[index_internal+9]   = static_porperties[static_indices[1]].values_[iresFaces_[i].id];
+                        internalFacesStatic[index_internal+10]   = static_porperties[static_indices[0]].values_[iresFaces_[i].id];
+                        internalFacesStatic[index_internal+11]   = static_porperties[static_indices[0]].values_[iresFaces_[i].id];
+
+                        internalFacesStatic[index_internal+12]   = static_porperties[static_indices[0]].values_[iresFaces_[i].id];
+                        internalFacesStatic[index_internal+13]   = static_porperties[static_indices[1]].values_[iresFaces_[i].id];
+                        internalFacesStatic[index_internal+14]   = static_porperties[static_indices[0]].values_[iresFaces_[i].id];
+                        internalFacesStatic[index_internal+15]   = static_porperties[static_indices[0]].values_[iresFaces_[i].id];
+
+                        internalFacesStatic[index_internal+16]   = static_porperties[static_indices[0]].values_[iresFaces_[i].id];
+                        internalFacesStatic[index_internal+17]   = static_porperties[static_indices[1]].values_[iresFaces_[i].id];
+                        internalFacesStatic[index_internal+18]   = static_porperties[static_indices[0]].values_[iresFaces_[i].id];
+                        internalFacesStatic[index_internal+19]   = static_porperties[static_indices[0]].values_[iresFaces_[i].id];
+
+                        internalFacesStatic[index_internal+20]   = static_porperties[static_indices[0]].values_[iresFaces_[i].id];
+                        internalFacesStatic[index_internal+21]   = static_porperties[static_indices[1]].values_[iresFaces_[i].id];
+                        internalFacesStatic[index_internal+22]   = static_porperties[static_indices[0]].values_[iresFaces_[i].id];
+                        internalFacesStatic[index_internal+23]   = static_porperties[static_indices[0]].values_[iresFaces_[i].id];
+
+                        index_internal += 24;
+
 		}
-		faceStatic.resize( index );
+		faceStatic.resize( index_external );
+		internalFacesStatic.resize(index_internal);
 
 		// Cuboid
 		glBindBuffer ( GL_ARRAY_BUFFER, vertexBufferCuboidStatic);
@@ -540,6 +730,11 @@ namespace IRES
 		glBindBuffer ( GL_ARRAY_BUFFER, vertexBufferFaceStatic );
 		glBufferData ( GL_ARRAY_BUFFER , faceStatic.size( ) * sizeof(faceStatic[0]) , &faceStatic[0] , GL_STATIC_DRAW );
 		glBindBuffer ( GL_ARRAY_BUFFER, 0);
+
+                // Internal FaceFeature
+                glBindBuffer ( GL_ARRAY_BUFFER, vertexBufferInternalFacesStatic );
+                glBufferData ( GL_ARRAY_BUFFER , internalFacesStatic.size( ) * sizeof(internalFacesStatic[0]) , &internalFacesStatic[0] , GL_STATIC_DRAW );
+                glBindBuffer ( GL_ARRAY_BUFFER, 0);
 
 
 

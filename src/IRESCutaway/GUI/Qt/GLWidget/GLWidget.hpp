@@ -49,6 +49,27 @@ class GLWidget: public QGLWidget
 		void resizeGL     ( int width , int height );
 
 		void paintGL      ( );
+                //virtual void paintEvent   ( QPaintEvent * );
+
+                void saveGLState()
+                {
+                    glPushAttrib(GL_ALL_ATTRIB_BITS);
+                    glMatrixMode(GL_PROJECTION);
+                    glPushMatrix();
+                    glMatrixMode(GL_MODELVIEW);
+                    glPushMatrix();
+                }
+
+                void restoreGLState()
+                {
+                    glMatrixMode(GL_PROJECTION);
+                    glPopMatrix();
+                    glMatrixMode(GL_MODELVIEW);
+                    glPopMatrix();
+                    glPopAttrib();
+                }
+
+
 		//void timerEvent(QTimerEvent*);
 		void processMultiKeys ( );
 		void mousePressEvent ( QMouseEvent *event );
@@ -79,7 +100,7 @@ class GLWidget: public QGLWidget
 		void changeMinK ( const int& value);
 
 		// Draw Functions
-                void drawBackGround ( );
+                void drawBackGround ( ) const;
 		void showFault		( bool visibility );
 		void showBorderLines    ( bool visibility );
 
@@ -120,22 +141,24 @@ class GLWidget: public QGLWidget
                         void PaperDemo( );
                         void PaperDrawCutawaySurface( );
 		// ! STATIC  VIEWER F11 Static Properties
-                        void drawIRESCutawayStaticSurface    ( ); //
-                        void drawSecondary                   ( ); // Draw only secondary Cells
-                        void drawPrimary                     ( ); // Draw only primary   Cells
-                        void drawPrimaryBoudingBox           ( ); // Draw only primary   Cells with its bounding box
+                        void IRESCutawayStatic                  ( ) const;
+                        void drawIRESCutawayStaticSurface       ( ) const; //
+                        void drawSecondary                      ( ) const; // Draw only secondary Cells
+                        void drawPrimary                        ( ) const; // Draw only primary   Cells
+                        void drawPrimaryBoudingBox              ( ); // Draw only primary   Cells with its bounding box
 
-                        void IRESCutawayStatic        ( );
-
-                        void setPrimaryVisibility ( bool );
+                        void setPrimaryVisibility   ( bool );
                         void setSecondaryVisibility ( bool );
 
-                        void changeProperty ( int property_index );
+                        void changeProperty      ( const int property_index );
                         void changePropertyRange ( const double& min, const double& max, int property_index );
 		// ! DYNAMIC VIEWER F12 Dynamic Properties
-                        void IRESCutawayDynamic         ( );
+                        void IRESCutawayDynamic                    ( ) const;
+                        void drawIRESCutawayDynamicSurface         ( ) const;
+                        void drawPrimaryDynamic                    ( ) const;
+                        void drawSecondaryDynamic                  ( ) const;
 
-                        void changeTimeStep        ( int step  )
+                        void changeTimeStep        ( const int step  )
                         {
                                 // ! Debug std::cout << " ... " << step << std::endl;
                                         this->time_step = step;
@@ -161,7 +184,7 @@ class GLWidget: public QGLWidget
                         };
                         void changeDynamicProperty ( int index )
                         {
-                                reservoir_model_.loadDynamicProperties(  ); dynamic_property_index = index;
+                                        dynamic_property_index = index;
 
                                         glBindVertexArray ( reservoir_model_.vertexArrayCuboids );
 
@@ -217,6 +240,7 @@ class GLWidget: public QGLWidget
 		Shader*                         BoundingBoxDebugLCG;
 		Shader*                         BoundingBoxCutawayLCG;
                 Shader*                         shellLCG;
+                Shader*                         IRESCutawayStatic_;
 
 		Shader*                         secondaryLCG;
 		Shader*                         primaryLCG;
@@ -233,6 +257,7 @@ class GLWidget: public QGLWidget
                 Shader*                         IRESCutawaySurfaceDynamic;
                 Shader*                         IRESCutawayDynamicCrust;
                 Shader*                         IRESCutawayShellDynamic;
+                Shader*                         IRESPrimaryDynamic;
 
 		QImage fbo;
 		float  angle;

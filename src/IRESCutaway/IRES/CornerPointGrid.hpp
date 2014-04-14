@@ -93,6 +93,7 @@ namespace IRES
 			void 	createBuffers 	 	( );
 			void 	drawFaces  	 	( ) const;
 			void 	drawCuboid 	 	( ) const;
+		        void    drawInternalFaces       ( ) const;
 
 			void 	loadStaticProperties 	( );
 			void 	loadDynamicProperties  	( );
@@ -139,7 +140,7 @@ namespace IRES
 
 			ires::Ires reservoir_file;   // IRES Version 2.1
 
-			/// About IRES Geometry Information
+			/// IRES Geometry Information
 
 			// Cube in Interleaved VertexBuffer
 			// Use same layout location as vertexArray
@@ -147,15 +148,28 @@ namespace IRES
 			GLuint vertexArrayCuboids;   	 	// 1 Vertex Array
 
 				std::vector<float> cuboids;
-				GLuint vertexBufferCuboidGeometry; // 1 Vertex Buffer with 8 vertex which define a Cuboid
+				GLuint vertexBufferCuboidGeometry; // 1 Vertex Buffer with 8 vertex which defines a Cuboid
 
 				std::vector<float> cuboidStatic;   /// property x = Modified Block Volume
 				GLuint vertexBufferCuboidStatic;   ///          y = Porosity
 
-				std::vector<std::vector<GLuint> > cuboidDynamicIds;
+				std::vector<std::vector<GLuint> > cuboidDynamicIds;  // Number of properties x times steps buffers
 				std::vector<float> cuboidDynamic;
 
 			std::size_t 	   cuboidCount;
+
+			GLuint vertexArrayInternalFaces;
+
+                                std::vector<float> internalFaces;
+                                GLuint vertexBufferInternalFaces; // 1 Vertex Buffer with Vertex and
+
+                                std::vector<float> internalFacesStatic;
+                                GLuint vertexBufferInternalFacesStatic; // 1 Vertex Buffer with Vertex and
+
+                                std::vector<std::vector<GLuint> > internalFacesDynamicIds;  // Number of properties x times steps buffers
+                                std::vector<float> internalFacesDynamic;
+
+                        std::size_t        internalFacesCount;
 
 			/// -- Shell / Fracture Geometry
 
