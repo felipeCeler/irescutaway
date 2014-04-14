@@ -30,23 +30,68 @@ uniform int property_index;
 uniform int faults;
 
 
-vec4 propertyColor ( in float min_range, in float max_range, in int index )
+uniform float min_range;
+uniform float max_range;
+
+
+uniform vec3 box_min;
+uniform vec3 box_max;
+uniform float paper;
+
+vec4 propertyColor (  )
 {
 
-	float normalized_color = ( static_properties[index] - min_property ) / ( max_property - min_property );
+        float normalized_color = ( static_properties[property_index] - min_property ) / ( max_property - min_property );
 
-	float fourValue = 4 * normalized_color;
-	float red   = min(fourValue - 1.5, -fourValue + 4.5);
-	float green = min(fourValue - 0.5, -fourValue + 3.5);
-	float blue  = min(fourValue + 0.5, -fourValue + 2.5);
+        float fourValue = 4 * normalized_color;
+        float red   = min(fourValue - 1.5, -fourValue + 4.5);
+        float green = min(fourValue - 0.5, -fourValue + 3.5);
+        float blue  = min(fourValue + 0.5, -fourValue + 2.5);
 
-	red 	= max(0.0f, min(red, 1.0f));
-	green 	= max(0.0f, min(green, 1.0f));
-	blue 	= max(0.0f, min(blue, 1.0f));
+        red     = max(0.0f, min(red, 1.0f));
+        green   = max(0.0f, min(green, 1.0f));
+        blue    = max(0.0f, min(blue, 1.0f));
 
-	vec4 color = vec4 ( red , green , blue , 1.0f );
+        vec4 color = vec4 ( red , green , blue , 1.0f );
 
-	return color;
+        return color;
+}
+
+bool intersect ( vec4 p )
+{
+        return ( ( p.x >= box_min.x ) && ( p.x  < box_max.x ) &&
+                 ( p.y >= box_min.y ) && ( p.y  < box_max.y ) &&
+                 ( p.z  >= box_min.z ) && ( p.z  < box_max.z ) );
+}
+
+bool isInside ( )
+{
+        if ( intersect(va) &&
+             intersect(vb) &&
+             intersect(vc) &&
+             intersect(vd)
+            )
+        {
+                return true;
+        }
+
+        return false;
+}
+
+
+bool isPrimary (  )
+{
+
+        if (paper == 0.0 )
+        {
+               return isInside();
+
+        }else if ( static_properties[property_index] > min_range && static_properties[property_index] < max_range )
+        {
+                return true;
+        }
+        return false;
+
 }
 
 void main(void)
@@ -65,9 +110,9 @@ void main(void)
 	VertexOut.eye[2] =  ModelMatrix * ViewMatrix * vec4(vc);
 	VertexOut.eye[3] =  ModelMatrix * ViewMatrix * vec4(vd);
 
-        if (  faceType.x == 1.0  ) // Fault Faces
+        if (  isPrimary( )  ) // Fault Faces
         {
-                VertexOut.color  =  propertyColor ( min_property, max_property, property_index );
+                VertexOut.color  =  propertyColor ( );
                 VertexOut.v[0] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(va);
                 VertexOut.v[1] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(vb);
                 VertexOut.v[2] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(vc);
@@ -75,7 +120,7 @@ void main(void)
         }
         else  // Shell Faces
         {
-                VertexOut.color  = propertyColor ( min_property, max_property, property_index );
+                VertexOut.color  = propertyColor (  );
                 VertexOut.v[0] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(0.0);
                 VertexOut.v[1] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(0.0);
                 VertexOut.v[2] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(0.0);

@@ -43,11 +43,10 @@ void main(void)
 
 	VertexOut.faceType = faceType;
 
-	VertexOut.color  = vec4(0.0,0.0,1.0,1.0);
+	VertexOut.color  = vec4(1.0,1.0,1.0,1.0);
 
 	if (  (faceType.y == 0) )  // Shell faces
 	{
-		VertexOut.color  =  vec4(0.0,0.0,1.0,1.0);//propertyColor ( min_property, max_property, property_index );
 		VertexOut.v[0] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(va);
 		VertexOut.v[1] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(vb);
 		VertexOut.v[2] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(vc);
@@ -55,7 +54,6 @@ void main(void)
 	}
 	else  // Interior faces
 	{
-		VertexOut.color  = vec4(0.0,0.0,1.0,1.0);//propertyColor ( min_property, max_property, property_index );
 		VertexOut.v[0] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(0.0);
 		VertexOut.v[1] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(0.0);
 		VertexOut.v[2] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(0.0);

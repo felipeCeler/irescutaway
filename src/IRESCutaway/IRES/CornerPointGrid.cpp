@@ -188,43 +188,42 @@ namespace IRES
 			for ( std::size_t i = 0; i < iresFaces_.size( ) ; i++)
 			{
 
-				if ( (iresFaces_[i].isExtern) )
-				{
-					faces[faceCount*16]   = vertexList[iresFaces_[i].a*3];
-					faces[faceCount*16+1] = vertexList[iresFaces_[i].a*3+1];
-					faces[faceCount*16+2] = vertexList[iresFaces_[i].a*3+2];
-					faces[faceCount*16+3] = 1.0f;
 
-					faces[faceCount*16+4] = vertexList[iresFaces_[i].b*3];
-					faces[faceCount*16+5] = vertexList[iresFaces_[i].b*3+1];
-					faces[faceCount*16+6] = vertexList[iresFaces_[i].b*3+2];
-					faces[faceCount*16+7] = 1.0f;
+                                faces[faceCount*16]   = vertexList[iresFaces_[i].a*3];
+                                faces[faceCount*16+1] = vertexList[iresFaces_[i].a*3+1];
+                                faces[faceCount*16+2] = vertexList[iresFaces_[i].a*3+2];
+                                faces[faceCount*16+3] = 1.0f;
 
-					faces[faceCount*16+8]  = vertexList[iresFaces_[i].c*3];
-					faces[faceCount*16+9]  = vertexList[iresFaces_[i].c*3+1];
-					faces[faceCount*16+10] = vertexList[iresFaces_[i].c*3+2];
-					faces[faceCount*16+11] = 1.0f;
+                                faces[faceCount*16+4] = vertexList[iresFaces_[i].b*3];
+                                faces[faceCount*16+5] = vertexList[iresFaces_[i].b*3+1];
+                                faces[faceCount*16+6] = vertexList[iresFaces_[i].b*3+2];
+                                faces[faceCount*16+7] = 1.0f;
 
-					faces[faceCount*16+12] = vertexList[iresFaces_[i].d*3];
-					faces[faceCount*16+13] = vertexList[iresFaces_[i].d*3+1];
-					faces[faceCount*16+14] = vertexList[iresFaces_[i].d*3+2];
-					faces[faceCount*16+15] = 1.0f;
+                                faces[faceCount*16+8]  = vertexList[iresFaces_[i].c*3];
+                                faces[faceCount*16+9]  = vertexList[iresFaces_[i].c*3+1];
+                                faces[faceCount*16+10] = vertexList[iresFaces_[i].c*3+2];
+                                faces[faceCount*16+11] = 1.0f;
+
+                                faces[faceCount*16+12] = vertexList[iresFaces_[i].d*3];
+                                faces[faceCount*16+13] = vertexList[iresFaces_[i].d*3+1];
+                                faces[faceCount*16+14] = vertexList[iresFaces_[i].d*3+2];
+                                faces[faceCount*16+15] = 1.0f;
 
 
-					ires::Face::FACE_BLOCK_POS pos = iresFaces_[i].faceBlockRelPos;
-					float V 		       = faceCorner[ 6*iresFaces_[i].id + pos ];
-					float F 		       = faceFault[ 6*iresFaces_[i].id + pos ];
+                                ires::Face::FACE_BLOCK_POS pos = iresFaces_[i].faceBlockRelPos;
+                                float V 		       = faceCorner[ 6*iresFaces_[i].id + pos ];
+                                float F 		       = faceFault[ 6*iresFaces_[i].id + pos ];
 
-					// F == 0 no fault
-					// F == 1 fault
+                                // F == 0 no fault
+                                // F == 1 fault
 
-					faceType[faceCount*4]   = static_cast<float> (iresFaces_[i].isExtern);
-					faceType[faceCount*4+1] = F;
-					faceType[faceCount*4+2] = V;
-					faceType[faceCount*4+3] = static_cast<float> (iresFaces_[i].faceBlockRelPos);
+                                faceType[faceCount*4]   = static_cast<float> (iresFaces_[i].isExtern);
+                                faceType[faceCount*4+1] = F;
+                                faceType[faceCount*4+2] = V;
+                                faceType[faceCount*4+3] = static_cast<float> (iresFaces_[i].faceBlockRelPos);
 
-					faceCount++;
-				}
+                                faceCount++;
+
 
                                 a[0] = vertexList[iresFaces_[i].a*3];
                                 a[1] = vertexList[iresFaces_[i].a*3+1];
@@ -597,11 +596,10 @@ namespace IRES
 
                                 for ( std::size_t b = 0; b < iresFaces_.size ( ); b++ )
                                 {
-                                        if ( (iresFaces_[b].isExtern) )
-                                        {
-                                                faceDynamic[index] = dynamic_properties[p].values_[t][iresFaces_[b].id];
-                                                index++;
-                                        }
+
+                                        faceDynamic[index] = dynamic_properties[p].values_[t][iresFaces_[b].id];
+                                        index++;
+
 
                                 }
 
@@ -676,14 +674,13 @@ namespace IRES
 
 		for ( std::size_t i = 0; i < iresFaces_.size() ; i++ )
 		{
-			if ( (iresFaces_[i].isExtern) )
-			{
-				faceStatic[index_external+0]   = static_porperties[static_indices[0]].values_[iresFaces_[i].id];
-				faceStatic[index_external+1]   = static_porperties[static_indices[1]].values_[iresFaces_[i].id];
-				faceStatic[index_external+2]   = static_porperties[static_indices[0]].values_[iresFaces_[i].id];
-				faceStatic[index_external+3]   = static_porperties[static_indices[0]].values_[iresFaces_[i].id];
-				index_external += 4;
-			}
+
+                        faceStatic[index_external+0]   = static_porperties[static_indices[0]].values_[iresFaces_[i].id];
+                        faceStatic[index_external+1]   = static_porperties[static_indices[1]].values_[iresFaces_[i].id];
+                        faceStatic[index_external+2]   = static_porperties[static_indices[0]].values_[iresFaces_[i].id];
+                        faceStatic[index_external+3]   = static_porperties[static_indices[0]].values_[iresFaces_[i].id];
+                        index_external += 4;
+
 
 			internalFacesStatic[index_internal+0]   = static_porperties[static_indices[0]].values_[iresFaces_[i].id];
                         internalFacesStatic[index_internal+1]   = static_porperties[static_indices[1]].values_[iresFaces_[i].id];
