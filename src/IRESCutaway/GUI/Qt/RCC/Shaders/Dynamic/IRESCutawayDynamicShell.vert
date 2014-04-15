@@ -65,11 +65,22 @@ void main(void)
         VertexOut.eye[2] =  ModelMatrix * ViewMatrix * vec4(vc);
         VertexOut.eye[3] =  ModelMatrix * ViewMatrix * vec4(vd);
 
-        VertexOut.color  =  propertyColor (  );
-        VertexOut.v[0] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(va);
-        VertexOut.v[1] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(vb);
-        VertexOut.v[2] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(vc);
-        VertexOut.v[3] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(vd);
+        if (  faceType.x == 1.0  ) // Fault Faces
+        {
+                VertexOut.color  =  propertyColor (  );
+                VertexOut.v[0] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(va);
+                VertexOut.v[1] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(vb);
+                VertexOut.v[2] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(vc);
+                VertexOut.v[3] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(vd);
+        }
+        else  // Shell Faces
+        {
+                VertexOut.color  = propertyColor (  );
+                VertexOut.v[0] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(0.0);
+                VertexOut.v[1] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(0.0);
+                VertexOut.v[2] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(0.0);
+                VertexOut.v[3] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(0.0);
+        }
 
         gl_Position = vec4(va);
 }

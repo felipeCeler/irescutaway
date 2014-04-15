@@ -145,9 +145,6 @@ class GLWidget: public QGLWidget
                         void drawIRESCutawayStaticSurface       ( ) const; //
                         void drawSecondaryStatic                ( ) const; // Draw only secondary Cells
                         void drawPrimaryStatic                  ( ) const; // Draw only primary   Cells
-                        void drawSecondary                      ( ) const; // Draw only secondary Cells
-                        void drawPrimary                        ( ) const; // Draw only primary   Cells
-                        void drawPrimaryBoudingBox              ( ); // Draw only primary   Cells with its bounding box
 
                         void setPrimaryVisibility   ( bool );
                         void setSecondaryVisibility ( bool );
@@ -238,16 +235,13 @@ class GLWidget: public QGLWidget
 
 		bool isIRESOpen_;
 
+		// ! DYNAMIC VIEWER F10 Static Properties
+
 		Shader*                         IRESCutawaySurfaceStatic;
-		Shader*                         BoundingBoxDebugLCG;
-		Shader*                         BoundingBoxCutawayLCG;
-                Shader*                         shellLCG;
+		Shader*                         IRESCutawayStaticShell_;
                 Shader*                         IRESCutawayStatic_;
                 Shader*                         IRESPrimaryStatic_;
-
-		Shader*                         secondaryLCG;
-		Shader*                         primaryLCG;
-		Shader* 			primaryDebugLCG;
+                Shader*                         shellLCG;
 
 		Shader*                         rawShellLCG;
 		Shader* 			borderLinesLCG;

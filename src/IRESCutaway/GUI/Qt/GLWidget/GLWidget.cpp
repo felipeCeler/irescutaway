@@ -600,27 +600,27 @@ void GLWidget::drawSecondaryStatic  ( ) const  // Draw only secondary Cells
 
         // Surface Faces
 
-        shellLCG->enable( );
+        IRESCutawayStaticShell_->enable( );
 
-        shellLCG->setUniform ( "normals" , depthFBO->bindAttachment(1) );
+        IRESCutawayStaticShell_->setUniform ( "normals" , depthFBO->bindAttachment(1) );
 
-        shellLCG->setUniform("min_property", reservoir_model_.static_min[reservoir_model_.current_static]  );
-        shellLCG->setUniform("max_property", reservoir_model_.static_max[reservoir_model_.current_static]  );
-        shellLCG->setUniform("property_index", reservoir_model_.current_static );
-        shellLCG->setUniform("faults", reservoir_model_.showFault );
-        shellLCG->setUniform("justWireFrame", justWireFrame );
+        IRESCutawayStaticShell_->setUniform("min_property", reservoir_model_.static_min[reservoir_model_.current_static]  );
+        IRESCutawayStaticShell_->setUniform("max_property", reservoir_model_.static_max[reservoir_model_.current_static]  );
+        IRESCutawayStaticShell_->setUniform("property_index", reservoir_model_.current_static );
+        IRESCutawayStaticShell_->setUniform("faults", reservoir_model_.showFault );
+        IRESCutawayStaticShell_->setUniform("justWireFrame", justWireFrame );
 
-        shellLCG->setUniform("num_lights", (GLint) lights.size ( )  );
-        shellLCG->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
-        shellLCG->setUniform("WIN_SCALE", (float) width ( ) , (float) height ( ) );
+        IRESCutawayStaticShell_->setUniform("num_lights", (GLint) lights.size ( )  );
+        IRESCutawayStaticShell_->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
+        IRESCutawayStaticShell_->setUniform("WIN_SCALE", (float) width ( ) , (float) height ( ) );
 
-        shellLCG->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
-        shellLCG->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
-        shellLCG->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
+        IRESCutawayStaticShell_->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
+        IRESCutawayStaticShell_->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
+        IRESCutawayStaticShell_->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
 
         reservoir_model_.drawFaces();
 
-        shellLCG->disable( );
+        IRESCutawayStaticShell_->disable( );
 
         // Interior Cells
 
@@ -712,34 +712,34 @@ void GLWidget::drawIRESCutawayDynamicSurface ( ) const
         glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
 
-        BurnsPrimarySetup->enable( );
+        IRESCutawaySurfaceDynamic->enable( );
 
-        BurnsPrimarySetup->setUniform( "v0" , ply_primary_.box.box_min().x, ply_primary_.box.box_max().y,ply_primary_.box.box_max().z);
-        BurnsPrimarySetup->setUniform( "v1" , ply_primary_.box.box_min().x, ply_primary_.box.box_max().y,ply_primary_.box.box_min().z);
-        BurnsPrimarySetup->setUniform( "v2" , ply_primary_.box.box_max().x, ply_primary_.box.box_max().y,ply_primary_.box.box_min().z);
-        BurnsPrimarySetup->setUniform( "v3" , ply_primary_.box.box_max().x, ply_primary_.box.box_max().y,ply_primary_.box.box_max().z);
+        IRESCutawaySurfaceDynamic->setUniform( "v0" , ply_primary_.box.box_min().x, ply_primary_.box.box_max().y,ply_primary_.box.box_max().z);
+        IRESCutawaySurfaceDynamic->setUniform( "v1" , ply_primary_.box.box_min().x, ply_primary_.box.box_max().y,ply_primary_.box.box_min().z);
+        IRESCutawaySurfaceDynamic->setUniform( "v2" , ply_primary_.box.box_max().x, ply_primary_.box.box_max().y,ply_primary_.box.box_min().z);
+        IRESCutawaySurfaceDynamic->setUniform( "v3" , ply_primary_.box.box_max().x, ply_primary_.box.box_max().y,ply_primary_.box.box_max().z);
 
-        BurnsPrimarySetup->setUniform( "v4" , ply_primary_.box.box_max().x, ply_primary_.box.box_min().y,ply_primary_.box.box_max().z);
-        BurnsPrimarySetup->setUniform( "v5" , ply_primary_.box.box_max().x, ply_primary_.box.box_min().y,ply_primary_.box.box_min().z);
-        BurnsPrimarySetup->setUniform( "v6" , ply_primary_.box.box_min().x, ply_primary_.box.box_min().y,ply_primary_.box.box_min().z);
-        BurnsPrimarySetup->setUniform( "v7" , ply_primary_.box.box_min().x, ply_primary_.box.box_min().y,ply_primary_.box.box_max().z);
+        IRESCutawaySurfaceDynamic->setUniform( "v4" , ply_primary_.box.box_max().x, ply_primary_.box.box_min().y,ply_primary_.box.box_max().z);
+        IRESCutawaySurfaceDynamic->setUniform( "v5" , ply_primary_.box.box_max().x, ply_primary_.box.box_min().y,ply_primary_.box.box_min().z);
+        IRESCutawaySurfaceDynamic->setUniform( "v6" , ply_primary_.box.box_min().x, ply_primary_.box.box_min().y,ply_primary_.box.box_min().z);
+        IRESCutawaySurfaceDynamic->setUniform( "v7" , ply_primary_.box.box_min().x, ply_primary_.box.box_min().y,ply_primary_.box.box_max().z);
 
 
-        BurnsPrimarySetup->setUniform("move", (float) borderLinesSize_ );
-        BurnsPrimarySetup->setUniform( "x" , volume_width );
-        BurnsPrimarySetup->setUniform( "y" , volume_height );
-        BurnsPrimarySetup->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
-        BurnsPrimarySetup->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
-        BurnsPrimarySetup->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
+        IRESCutawaySurfaceDynamic->setUniform("move", (float) borderLinesSize_ );
+        IRESCutawaySurfaceDynamic->setUniform( "x" , volume_width );
+        IRESCutawaySurfaceDynamic->setUniform( "y" , volume_height );
+        IRESCutawaySurfaceDynamic->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
+        IRESCutawaySurfaceDynamic->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
+        IRESCutawaySurfaceDynamic->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
 
-        BurnsPrimarySetup->setUniform ("freeze", freezeView_ );
-        BurnsPrimarySetup->setUniform ("FreezeViewMatrix",freeze_viewmatrix_.data ( ),4, GL_FALSE, 1 );
+        IRESCutawaySurfaceDynamic->setUniform ("freeze", freezeView_ );
+        IRESCutawaySurfaceDynamic->setUniform ("FreezeViewMatrix",freeze_viewmatrix_.data ( ),4, GL_FALSE, 1 );
 
         glBindVertexArray(vertexArray_box);
         glDrawArrays(GL_POINTS,0,1);
         glBindVertexArray(0);
 
-        BurnsPrimarySetup->disable( );
+        IRESCutawaySurfaceDynamic->disable( );
 
 
         glDrawBuffer(GL_COLOR_ATTACHMENT0+1);
@@ -943,53 +943,30 @@ void GLWidget::drawIRESModel ( )
 		}
 	}
 
-//	rawShellLCG->enable( );
-//
-//        glActiveTexture(GL_TEXTURE0+3);
-//        glBindTexture ( GL_TEXTURE_2D, xtoon_texture_ );
-//        rawShellLCG->setUniform("xtoon_texture", 3  );
-//        rawShellLCG->setUniform("viewportSize", width(), height() );
-//
-//	rawShellLCG->setUniform("min_property", reservoir_model_.static_min[reservoir_model_.current_static]  );
-//	rawShellLCG->setUniform("max_property", reservoir_model_.static_max[reservoir_model_.current_static]  );
-//	rawShellLCG->setUniform("property_index", reservoir_model_.current_static );
-//
-//	rawShellLCG->setUniform("num_lights", (GLint) lights.size ( )  );
-//	rawShellLCG->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
-//	rawShellLCG->setUniform("WIN_SCALE", (float) width ( ) , (float) height ( ) );
-//
-//	rawShellLCG->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
-//	rawShellLCG->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
-//	rawShellLCG->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
-//
-//	reservoir_model_.drawFaces();
-//
-//	rawShellLCG->disable( );
-
 
         // Surface Faces
 
-        shellLCG->enable( );
+	IRESCutawayStaticShell_->enable( );
 
-        shellLCG->setUniform ( "normals" , depthFBO->bindAttachment(1) );
+	IRESCutawayStaticShell_->setUniform ( "normals" , depthFBO->bindAttachment(1) );
 
-        shellLCG->setUniform("min_property", reservoir_model_.static_min[reservoir_model_.current_static]  );
-        shellLCG->setUniform("max_property", reservoir_model_.static_max[reservoir_model_.current_static]  );
-        shellLCG->setUniform("property_index", reservoir_model_.current_static );
-        shellLCG->setUniform("faults", reservoir_model_.showFault );
-        shellLCG->setUniform("justWireFrame", justWireFrame );
+	IRESCutawayStaticShell_->setUniform("min_property", reservoir_model_.static_min[reservoir_model_.current_static]  );
+	IRESCutawayStaticShell_->setUniform("max_property", reservoir_model_.static_max[reservoir_model_.current_static]  );
+	IRESCutawayStaticShell_->setUniform("property_index", reservoir_model_.current_static );
+	IRESCutawayStaticShell_->setUniform("faults", reservoir_model_.showFault );
+	IRESCutawayStaticShell_->setUniform("justWireFrame", justWireFrame );
 
-        shellLCG->setUniform("num_lights", (GLint) lights.size ( )  );
-        shellLCG->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
-        shellLCG->setUniform("WIN_SCALE", (float) width ( ) , (float) height ( ) );
+	IRESCutawayStaticShell_->setUniform("num_lights", (GLint) lights.size ( )  );
+        IRESCutawayStaticShell_->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
+        IRESCutawayStaticShell_->setUniform("WIN_SCALE", (float) width ( ) , (float) height ( ) );
 
-        shellLCG->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
-        shellLCG->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
-        shellLCG->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
+        IRESCutawayStaticShell_->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
+        IRESCutawayStaticShell_->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
+        IRESCutawayStaticShell_->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
 
         reservoir_model_.drawFaces();
 
-        shellLCG->disable( );
+        IRESCutawayStaticShell_->disable( );
 
         // Interior Cells
 
@@ -997,7 +974,7 @@ void GLWidget::drawIRESModel ( )
 
 	IRESCutawayStatic_->enable( );
 
-	BoundingBoxCutawayLCG->setUniform( "normals" , depthFBO->bindAttachment(1) );
+	IRESCutawayStatic_->setUniform( "normals" , depthFBO->bindAttachment(1) );
 
         IRESCutawayStatic_->setUniform("min_property", reservoir_model_.static_min[reservoir_model_.current_static]  );
         IRESCutawayStatic_->setUniform("max_property", reservoir_model_.static_max[reservoir_model_.current_static]  );
@@ -1152,155 +1129,6 @@ void GLWidget::PaperPly ( )
 
 }
 
-void GLWidget::drawSecondary ( ) const
-{
-        GLfloat light_elements[12];
-        for ( std::size_t i = 0; i < lights.size ( ); ++i )
-        {
-                for ( int j = 0; j < 3; ++j )
-                {
-                        light_elements[i * 3 + j] = lights[i][j];
-                }
-        }
-
-        // Surface Faces
-
-        shellLCG->enable( );
-
-        shellLCG->setUniform ( "normals" , depthFBO->bindAttachment(1) );
-
-        shellLCG->setUniform("min_property", reservoir_model_.static_min[reservoir_model_.current_static]  );
-        shellLCG->setUniform("max_property", reservoir_model_.static_max[reservoir_model_.current_static]  );
-        shellLCG->setUniform("property_index", reservoir_model_.current_static );
-        shellLCG->setUniform("faults", reservoir_model_.showFault );
-        shellLCG->setUniform("justWireFrame", justWireFrame );
-
-        shellLCG->setUniform("num_lights", (GLint) lights.size ( )  );
-        shellLCG->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
-        shellLCG->setUniform("WIN_SCALE", (float) width ( ) , (float) height ( ) );
-
-        shellLCG->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
-        shellLCG->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
-        shellLCG->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
-
-        reservoir_model_.drawFaces();
-
-        shellLCG->disable( );
-
-        // Interior Cells
-
-        depthFBO->unbindAttachments();
-
-        BoundingBoxCutawayLCG->enable( );
-
-        BoundingBoxCutawayLCG->setUniform( "normals" , depthFBO->bindAttachment(1) );
-
-        BoundingBoxCutawayLCG->setUniform("min_property", reservoir_model_.static_min[reservoir_model_.current_static]  );
-        BoundingBoxCutawayLCG->setUniform("max_property", reservoir_model_.static_max[reservoir_model_.current_static]  );
-        BoundingBoxCutawayLCG->setUniform("property_index", reservoir_model_.current_static );
-        BoundingBoxCutawayLCG->setUniform("property_index", reservoir_model_.current_static );
-        BoundingBoxCutawayLCG->setUniform("time_step", time_step );
-        BoundingBoxCutawayLCG->setUniform("justWireFrame", justWireFrame );
-
-        BoundingBoxCutawayLCG->setUniform("num_lights", (GLint) lights.size ( )  );
-        BoundingBoxCutawayLCG->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
-        BoundingBoxCutawayLCG->setUniform("WIN_SCALE", (float) width ( ) , (float) height ( ) );
-
-        BoundingBoxCutawayLCG->setUniform( "min_IJK" , min_I_ , min_J_ , min_K_ );
-        BoundingBoxCutawayLCG->setUniform( "max_IJK" , max_I_ , max_J_ , max_K_ );
-
-        BoundingBoxCutawayLCG->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
-        BoundingBoxCutawayLCG->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
-        BoundingBoxCutawayLCG->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
-
-        reservoir_model_.drawCuboid ( );
-
-        BoundingBoxCutawayLCG->disable( );
-
-        depthFBO->unbindAttachments();
-
-        if ( reservoir_model_.showBorderLine )
-        {
-
-                glLineWidth( (float) borderLinesSize_ );
-                borderLinesLCG->enable ( );
-
-                borderLinesLCG->setUniform ( "ModelMatrix" , trackball_->getModelMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
-                borderLinesLCG->setUniform ( "ViewMatrix" , trackball_->getViewMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
-                borderLinesLCG->setUniform ( "ProjectionMatrix" , trackball_->getProjectionMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
-
-                reservoir_model_.drawFaces ( );
-
-                borderLinesLCG->disable ( );
-        }
-}
-
-void GLWidget::drawPrimaryBoudingBox ( )
-{
-
-}
-
-void GLWidget::drawPrimary( ) const
-{
-
-        GLfloat light_elements[12];
-        for ( std::size_t i = 0; i < lights.size ( ); ++i )
-        {
-                for ( int j = 0; j < 3; ++j )
-                {
-                        light_elements[i * 3 + j] = lights[i][j];
-                }
-        }
-
-        primaryLCG->enable( );
-
-        primaryLCG->setUniform("num_lights", (GLint) lights.size ( )  );
-        primaryLCG->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
-        primaryLCG->setUniform("WIN_SCALE", (float) width ( ) , (float) height ( ) );
-
-        primaryLCG->setUniform("min_range", min_range  );
-        primaryLCG->setUniform("max_range", max_range  );
-
-        primaryLCG->setUniform("paper", 1.0  );
-        primaryLCG->setUniform("box_min", ply_primary_.box.box_min().x,ply_primary_.box.box_min().y,ply_primary_.box.box_min().z );
-        primaryLCG->setUniform("box_max", ply_primary_.box.box_max().x,ply_primary_.box.box_max().y,ply_primary_.box.box_max().z );
-
-        primaryLCG->setUniform("min_property", reservoir_model_.static_min[reservoir_model_.current_static]  );
-        primaryLCG->setUniform("max_property", reservoir_model_.static_max[reservoir_model_.current_static]  );
-        primaryLCG->setUniform("property_index", reservoir_model_.current_static );
-
-        primaryLCG->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
-        primaryLCG->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
-        primaryLCG->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
-
-        reservoir_model_.drawCuboid ( );
-
-        primaryLCG->disable( );
-
-        if ( reservoir_model_.showBorderLine )
-        {
-
-                glLineWidth( (float) borderLinesSize_ );
-                borderLinesLCG->enable ( );
-
-                borderLinesLCG->setUniform ( "ModelMatrix" , trackball_->getModelMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
-                borderLinesLCG->setUniform ( "ViewMatrix" , trackball_->getViewMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
-                borderLinesLCG->setUniform ( "ProjectionMatrix" , trackball_->getProjectionMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
-
-                reservoir_model_.drawFaces ( );
-
-                borderLinesLCG->disable ( );
-        }
-
-
-}
-
-
-void drawBoudingBox()
-{
-
-}
-
 void GLWidget::gameLooping ( )
 {
 
@@ -1360,45 +1188,6 @@ void GLWidget::loadShaders ( )
                 BackGround->initialize( );
 
 
-
-        secondaryLCG = new Shader("Secondary",(shaderDirectory + "Secondary.vert").toStdString(),
-                                              (shaderDirectory + "Secondary.frag").toStdString(),
-                                              (shaderDirectory + "Secondary.geom").toStdString(),1);
-
-        secondaryLCG->initialize( );
-
-
-        // LCG
-        // When New is calling, does the destroyer function is also called ?
-        primaryLCG =  new Shader( "Primary",(shaderDirectory + "Static/Primary.vert").toStdString(),
-                                            (shaderDirectory + "Static/Primary.frag").toStdString(),
-                                            (shaderDirectory + "Static/Primary.geom").toStdString(),1);
-        primaryLCG->initialize();
-
-        IRESCutawaySurfaceStatic = new Shader ("IRESCutawaySurfaceStatic",
-                                              (shaderDirectory + "Static/IRESCutawaySurfaceStatic.vert").toStdString(),
-                                              (shaderDirectory + "Static/IRESCutawaySurfaceStatic.frag").toStdString(),
-                                              (shaderDirectory + "Static/IRESCutawaySurfaceStatic.geom").toStdString(),1);
-        IRESCutawaySurfaceStatic->initialize( );
-
-        BoundingBoxDebugLCG = new Shader ("IRESCutawaySurfaceStatic Debug",
-                                         (shaderDirectory + "Static/IRESCutawaySurfaceStatic.vert").toStdString(),
-                                         (shaderDirectory + "Static/IRESCutawaySurfaceStatic.frag").toStdString(),
-                                         (shaderDirectory + "Static/IRESCutawaySurfaceStatic.geom").toStdString(),1);
-        BoundingBoxDebugLCG->initialize();
-
-        BoundingBoxCutawayLCG = new Shader ("BoundingBoxCutaway",(shaderDirectory + "Static/BoundingBoxCutaway.vert").toStdString(),
-                                           (shaderDirectory + "Static/BoundingBoxCutaway.frag").toStdString(),
-                                           (shaderDirectory + "Static/BoundingBoxCutaway.geom").toStdString(),1);
-        BoundingBoxCutawayLCG->initialize();
-
-        shellLCG = new Shader ("Shell", (shaderDirectory + "Static/Shell.vert").toStdString(),
-                              (shaderDirectory + "Static/Shell.frag").toStdString(),
-                              (shaderDirectory + "Static/Shell.geom").toStdString(),1);
-
-        shellLCG->initialize();
-
-
         rawShellLCG = new Shader ("Shell", (shaderDirectory + "RawShell.vert").toStdString(),
                               (shaderDirectory + "RawShell.frag").toStdString(),
                               (shaderDirectory + "RawShell.geom").toStdString(),1);
@@ -1416,6 +1205,17 @@ void GLWidget::loadShaders ( )
         BurnsPrimarySetup->initialize();
 
        // ! DYNAMIC VIEWER F11 Static PropertieswayStatic"
+                IRESCutawaySurfaceStatic = new Shader ("IRESCutawaySurfaceStatic",
+                                                      (shaderDirectory + "Static/IRESCutawaySurfaceStatic.vert").toStdString(),
+                                                      (shaderDirectory + "Static/IRESCutawaySurfaceStatic.frag").toStdString(),
+                                                      (shaderDirectory + "Static/IRESCutawaySurfaceStatic.geom").toStdString(),1);
+                IRESCutawaySurfaceStatic->initialize( );
+
+                IRESCutawayStaticShell_ = new Shader ("IRESCutawayStaticShell",
+                                                     (shaderDirectory + "Static/IRESCutawayStaticShell.vert").toStdString(),
+                                                     (shaderDirectory + "Static/IRESCutawayStaticShell.frag").toStdString(),
+                                                     (shaderDirectory + "Static/IRESCutawayStaticShell.geom").toStdString(),1);
+                IRESCutawayStaticShell_->initialize();
 
                 IRESCutawayStatic_ = new Shader ("IRESCutawayStatic",
                                                 (shaderDirectory + "Static/IRESCutawayStatic.vert").toStdString(),
