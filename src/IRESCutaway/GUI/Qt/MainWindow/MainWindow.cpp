@@ -101,7 +101,13 @@ void MainWindow::WidgetSignalSlotConnection( )
 
         connect(glWidget, SIGNAL(fpsChanged(const QString&)), fps, SLOT(setText(const QString&)));
         connect(glWidget, SIGNAL(fpsChanged(const QString&)), ui->label_fps_slot, SLOT(setText(const QString&)));
+
+        connect(glWidget, SIGNAL(cutawayGenerationTime(const QString&)), ui->label_Generation_Slot, SLOT(setText(const QString&)));
+        connect(glWidget, SIGNAL(renderingCutawayTime(const QString&)), ui->label_Rendering_Slot, SLOT(setText(const QString&)));
+
+
 }
+
 
 
 void MainWindow::open( QString pFilename,bool who ) {
@@ -357,12 +363,10 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
 }
 
 void MainWindow::on_action_Trackball_triggered  ( )
-{
-}
+{}
 
 void MainWindow::on_action_Fly_Camera_triggered ( )
-{
-}
+{}
 
 void MainWindow::on_action_Freeze_View_triggered()
 {
@@ -373,7 +377,6 @@ void MainWindow::on_doubleSpinMin_valueChanged  ( double i)
 {
 	if ( glWidget->isIRESOpen( ))
 	{
-
 		glWidget->changePropertyRange( ui->doubleSpinMin->value(), ui->doubleSpinMax->value(), ui->comboBoxProperty->currentIndex() );
 
 	}else
@@ -388,7 +391,7 @@ void MainWindow::on_doubleSpinMax_valueChanged  ( double i)
 	if ( glWidget->isIRESOpen( )  )
 	{
 		glWidget->changePropertyRange( ui->doubleSpinMin->value(), ui->doubleSpinMax->value(), ui->comboBoxProperty->currentIndex() );
-		std::cout << "doubleSpinMax ::::::::::::: " << ui->doubleSpinMin->value() << std::endl;
+		//std::cout << "doubleSpinMax ::::::::::::: " << ui->doubleSpinMin->value() << std::endl;
 	}else
 	{
 		//msgBox.setText("First of all. Open a file my friend !!  ");

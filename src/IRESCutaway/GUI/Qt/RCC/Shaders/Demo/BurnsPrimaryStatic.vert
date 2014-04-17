@@ -6,8 +6,7 @@ layout(location = 2) in vec4 vc;
 layout(location = 3) in vec4 vd;
 
 layout(location = 4) in vec4 faceType;
-
-layout(location = 6) in float dynamic;
+layout(location = 5) in vec4 static_properties;
 
 out VertexData
 {
@@ -31,9 +30,18 @@ uniform int property_index;
 uniform int faults;
 
 
-vec4 propertyColor ( ){
+uniform float min_range;
+uniform float max_range;
 
-        float normalized_color = ( dynamic - min_property ) / ( max_property - min_property );
+
+uniform vec3 box_min;
+uniform vec3 box_max;
+uniform float paper;
+
+vec4 propertyColor (  )
+{
+
+        float normalized_color = ( static_properties[property_index] - min_property ) / ( max_property - min_property );
 
         float fourValue = 4 * normalized_color;
         float red   = min(fourValue - 1.5, -fourValue + 4.5);
@@ -47,6 +55,43 @@ vec4 propertyColor ( ){
         vec4 color = vec4 ( red , green , blue , 1.0f );
 
         return color;
+}
+
+bool intersect ( vec4 p )
+{
+        return ( ( p.x >= box_min.x ) && ( p.x  < box_max.x ) &&
+                 ( p.y >= box_min.y ) && ( p.y  < box_max.y ) &&
+                 ( p.z  >= box_min.z ) && ( p.z  < box_max.z ) );
+}
+
+bool isInside ( )
+{
+        if ( intersect(va) &&
+             intersect(vb) &&
+             intersect(vc) &&
+             intersect(vd)
+            )
+        {
+                return true;
+        }
+
+        return false;
+}
+
+
+bool isPrimary (  )
+{
+
+        if (paper == 1.0 )
+        {
+               return isInside();
+
+        }else if ( static_properties[property_index] > min_range && static_properties[property_index] < max_range )
+        {
+                return true;
+        }
+        return false;
+
 }
 
 void main(void)
@@ -65,15 +110,15 @@ void main(void)
         VertexOut.eye[2] =  ModelMatrix * ViewMatrix * vec4(vc);
         VertexOut.eye[3] =  ModelMatrix * ViewMatrix * vec4(vd);
 
-        if (  ( faceType.x == 1.0 ) && (faceType.y == 0 || faults == 0 ) ) // Fault Faces
+        if (  isPrimary( )  ) // Fault Faces
         {
-                VertexOut.color = propertyColor ( );
-                VertexOut.v[0] = ProjectionMatrix * ViewMatrix * ModelMatrix * vec4 ( va );
-                VertexOut.v[1] = ProjectionMatrix * ViewMatrix * ModelMatrix * vec4 ( vb );
-                VertexOut.v[2] = ProjectionMatrix * ViewMatrix * ModelMatrix * vec4 ( vc );
-                VertexOut.v[3] = ProjectionMatrix * ViewMatrix * ModelMatrix * vec4 ( vd );
+                VertexOut.color  =  propertyColor ( );
+                VertexOut.v[0] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(va);
+                VertexOut.v[1] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(vb);
+                VertexOut.v[2] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(vc);
+                VertexOut.v[3] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(vd);
         }
-        else
+        else  // Shell Faces
         {
                 VertexOut.color  = propertyColor (  );
                 VertexOut.v[0] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(0.0);
@@ -81,7 +126,6 @@ void main(void)
                 VertexOut.v[2] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(0.0);
                 VertexOut.v[3] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(0.0);
         }
-
 
         gl_Position = vec4(va);
 }

@@ -62,11 +62,12 @@ vec4 propertyColor (  )
         return color;
 }
 
-bool intersect ( in vec4 p )
+bool intersect (  vec4 p )
 {
-        return ( ( p.x >= box_min.x ) && ( p.x  < box_max.x ) &&
-                 ( p.y >= box_min.y ) && ( p.y  < box_max.y ) &&
-                 ( p.z  >= box_min.z ) && ( p.z  < box_max.z ) );
+        float s = 0.35;
+        return ( ( p.x >= box_min.x*s ) && ( p.x  < box_max.x*s ) &&
+                 ( p.y >= box_min.y*s ) && ( p.y  < box_max.y*s ) &&
+                 ( p.z >= box_min.z*s ) && ( p.z  < box_max.z*s ) );
 }
 
 bool isInside ( )

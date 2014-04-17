@@ -227,7 +227,7 @@ int Model_PLY::Load(const char* filename)
 	return 0;
 }
 
-void Model_PLY::Draw()
+void Model_PLY::Draw() const
 {
 
 	glBindVertexArray (vertexArray);

@@ -32,7 +32,7 @@ class Model_PLY
 {
 	public:
 		int Load(const char *filename);
-		void Draw();
+		void Draw() const;
 		void DrawLines();
 		void calculateNormal( float *coord1, float *coord2, float *coord3, float  norm[3] );
 		Model_PLY();

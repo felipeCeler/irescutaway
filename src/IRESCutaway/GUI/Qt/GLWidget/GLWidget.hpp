@@ -51,25 +51,6 @@ class GLWidget: public QGLWidget
 		void paintGL      ( );
                 //virtual void paintEvent   ( QPaintEvent * );
 
-                void saveGLState()
-                {
-                    glPushAttrib(GL_ALL_ATTRIB_BITS);
-                    glMatrixMode(GL_PROJECTION);
-                    glPushMatrix();
-                    glMatrixMode(GL_MODELVIEW);
-                    glPushMatrix();
-                }
-
-                void restoreGLState()
-                {
-                    glMatrixMode(GL_PROJECTION);
-                    glPopMatrix();
-                    glMatrixMode(GL_MODELVIEW);
-                    glPopMatrix();
-                    glPopAttrib();
-                }
-
-
 		//void timerEvent(QTimerEvent*);
 		void processMultiKeys ( );
 		void mousePressEvent ( QMouseEvent *event );
@@ -137,11 +118,12 @@ class GLWidget: public QGLWidget
                                         std::cout << "Opened succefuly " << ply_primary_.TotalConnectedPoints << std::endl;
                                 }
                         }
-                        void PaperPly ( );
+                        void PaperPly ( ) const;
                         void PaperDemo( );
                         void PaperDrawCutawaySurface( );
+                        void PaperPrimary( );
 		// ! STATIC  VIEWER F11 Static Properties
-                        void IRESCutawayStatic                  ( ) const;
+                        void IRESCutawayStatic                  ( ) ;
                         void drawIRESCutawayStaticSurface       ( ) const; //
                         void drawSecondaryStatic                ( ) const; // Draw only secondary Cells
                         void drawPrimaryStatic                  ( ) const; // Draw only primary   Cells
@@ -208,6 +190,8 @@ class GLWidget: public QGLWidget
 
         signals:
                 void fpsChanged(const QString&);
+                void cutawayGenerationTime(const QString&);
+                void renderingCutawayTime(const QString&);
 
 	protected:
 		void dragEnterEvent ( QDragEnterEvent *event );
@@ -241,13 +225,13 @@ class GLWidget: public QGLWidget
 		Shader*                         IRESCutawayStaticShell_;
                 Shader*                         IRESCutawayStatic_;
                 Shader*                         IRESPrimaryStatic_;
-                Shader*                         shellLCG;
 
+                Shader*                         BurnsPrimarySetup;
+                Shader*                         BurnsPrimary;
+                Shader*                         BurnsPly;
 		Shader*                         rawShellLCG;
+		Shader*                         rawModel_;
 		Shader* 			borderLinesLCG;
-
-		Shader*                         BurnsPrimary;
-		Shader*                         BurnsPrimarySetup;
 
 		// ! DYNAMIC VIEWER F12 Dynamic Properties
 
@@ -266,6 +250,15 @@ class GLWidget: public QGLWidget
 		QTimer fpsTimer_;
 		QTimer updateTimer_;
 		QElapsedTimer delta_time;
+		QTime renderTime;
+
+		QTime cutawayGenerationTime_;
+		float accumulateCutawayGenerationTime_;
+		QTime renderingCutawayTime_;
+		float accumulateRenderingCutawayTime_;
+
+		float cutawayPass_;
+
 		int fps;
 		float benchmark_;
 		float renderingPass;
@@ -317,6 +310,9 @@ class GLWidget: public QGLWidget
 		// Stores the froze camera (view matrix)
 		Eigen::Matrix4f freeze_viewmatrix_;
 		bool freezeView_;
+
+		Eigen::Affine3f position_one;
+		Eigen::Affine3f position_two;
 
 		Trackball * trackball_;
 

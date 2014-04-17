@@ -58,8 +58,11 @@ void main()
         axis_x = vec4 (1.0,0.0,0.0,0.0);
         axis_y = vec4 (0.0,1.0,0.0,0.0);
         axis_z = vec4 (0.0,0.0,1.0,0.0);;
-        extends= vec4 ( abs(v0.x-v1.x), abs(v0.y-v4.y), abs(v0.z-v3.z), 0.0 );
-        //extends= vec4 ( 0.5 , 0.5, 0.5, 0.0 );
+        extends= vec4 ( abs(v3.x-v6.x), abs(v3.y-v6.y), abs(v3.z-v6.z), 0.0 );
+        //extends= vec4 ( 0.1 , 0.1, 0.1, 0.0 );
+
+        extends *= 0.2;
+
 
         mat4 invView;
         if ( freeze == 0 )
@@ -149,4 +152,3 @@ void main()
         gl_Position = vec4 ( v[0] );
 
 }
-

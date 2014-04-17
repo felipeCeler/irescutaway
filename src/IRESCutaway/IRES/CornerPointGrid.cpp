@@ -309,7 +309,7 @@ namespace IRES
                                 internalFaces[stride_48+44] = n2[0];
                                 internalFaces[stride_48+45] = n2[1];
                                 internalFaces[stride_48+46] = n2[2];
-                                internalFaces[stride_48+47] = 1.0f;
+                                internalFaces[stride_48+47] = static_cast<float> (iresFaces_[i].isExtern);
 
                                 stride_48 += 48;
 

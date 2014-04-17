@@ -28,10 +28,10 @@ uniform int property_index;
 uniform int time_step;
 
 
-vec4 propertyColor ( in float min_range, in float max_range, in int index )
+vec4 propertyColor ( )
 {
 
-	float normalized_color = ( static_properties[index] - min_property ) / ( max_property - min_property );
+	float normalized_color = ( static_properties[property_index] - min_property ) / ( max_property - min_property );
 
 	float fourValue = 4 * normalized_color;
 	float red   = min(fourValue - 1.5, -fourValue + 4.5);
@@ -54,7 +54,7 @@ void main(void)
 		// Triangle strips request vertices in zig-zag order.
 
 
-                VertexOut.color  = propertyColor ( min_property, max_property, property_index );
+                VertexOut.color  = propertyColor ( );
 
                 mat3 normalMatrix = mat3(inverse(transpose((ModelMatrix*ViewMatrix))));
 
@@ -67,6 +67,9 @@ void main(void)
                 VertexOut.vertice = ViewMatrix *  v;
 
 
-                gl_Position =  ProjectionMatrix * ViewMatrix *  v;
+                if ( n.w == 0.0 )
+                        gl_Position =  ProjectionMatrix * ViewMatrix *  v;
+                else
+                        gl_Position =  ProjectionMatrix * ViewMatrix *  vec4(0.0);
 
 }
