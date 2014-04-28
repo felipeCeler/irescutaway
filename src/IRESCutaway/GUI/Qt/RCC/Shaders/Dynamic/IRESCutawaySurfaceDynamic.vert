@@ -53,7 +53,7 @@ void main()
 
         vec3 center_of_mass = (v0+v1+v2+v3+v4+v5+v6+v7) * 0.125;
 
-        center_of_mass += move*0.1;
+        //center_of_mass += move*0.1;
 
         axis_x = vec4 (1.0,0.0,0.0,0.0);
         axis_y = vec4 (0.0,1.0,0.0,0.0);

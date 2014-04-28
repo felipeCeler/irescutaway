@@ -3,7 +3,7 @@
 layout(location = 0) in vec4 v;
 layout(location = 1) in vec4 n;
 
-layout(location = 2) in vec4 static_properties;
+layout(location = 3) in float dynamic_properties;
 
 
 out VertexData
@@ -23,15 +23,11 @@ uniform mat4 ProjectionMatrix;
 uniform float min_property;
 uniform float max_property;
 
-uniform int property_index;
-
-uniform int time_step;
-
 
 vec4 propertyColor ( )
 {
 
-	float normalized_color = ( static_properties[property_index] - min_property ) / ( max_property - min_property );
+	float normalized_color = ( dynamic_properties - min_property ) / ( max_property - min_property );
 
 	float fourValue = 4 * normalized_color;
 	float red   = min(fourValue - 1.5, -fourValue + 4.5);

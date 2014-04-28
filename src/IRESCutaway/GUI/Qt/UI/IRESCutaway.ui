@@ -87,13 +87,13 @@
     <addaction name="action_Show_Secondary_Cells"/>
     <addaction name="action_BorderLine"/>
     <addaction name="action_Fault"/>
+    <addaction name="action_Show_WireFrame"/>
     <addaction name="separator"/>
     <addaction name="action_Paper_Demo"/>
     <addaction name="action_IRES_Cutaway"/>
     <addaction name="action_IRES_Cutaway_Static"/>
     <addaction name="action_IRES_Cutaway_Dynamic"/>
     <addaction name="separator"/>
-    <addaction name="action_Full_Screen"/>
     <addaction name="action_Freeze_View"/>
    </widget>
    <addaction name="menuFile"/>
@@ -1131,20 +1131,6 @@
     <string>Dynamic Properties Viewer</string>
    </property>
   </action>
-  <action name="action_Full_Screen">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Full Screen</string>
-   </property>
-   <property name="toolTip">
-    <string>Set to Full Screen Mode</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+F</string>
-   </property>
-  </action>
   <action name="action_Show_Lines_Properties">
    <property name="checkable">
     <bool>true</bool>
@@ -1164,6 +1150,20 @@
    </property>
    <property name="text">
     <string>Show BrenchMark</string>
+   </property>
+  </action>
+  <action name="action_Show_WireFrame">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show WireFrame</string>
+   </property>
+   <property name="toolTip">
+    <string>Draw Model in WireFrame</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+5</string>
    </property>
   </action>
  </widget>
@@ -1232,22 +1232,6 @@
     <hint type="destinationlabel">
      <x>199</x>
      <y>763</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>action_Full_Screen</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>MainWindow</receiver>
-   <slot>showFullScreen()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>631</x>
-     <y>459</y>
     </hint>
    </hints>
   </connection>

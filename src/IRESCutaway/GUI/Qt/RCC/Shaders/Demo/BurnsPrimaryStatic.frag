@@ -9,7 +9,6 @@ in VertexData
 
 noperspective in vec4 dist;
 
-uniform vec2 WIN_SCALE;
 uniform int num_lights;
 uniform vec3 lights[4];
 
@@ -18,7 +17,7 @@ out vec4 fragmentColor;
 void main(void)
 {
 
-        vec3 newNormal = normalize(VertexIn.normal.xyz);
+        vec3 newNormal = VertexIn.normal.xyz;
         vec3 newVert = VertexIn.vertice.xyz;
 
         vec3 eye_dir = normalize ( -newVert.xyz );
@@ -43,6 +42,8 @@ void main(void)
 
         vec4 color = la + ld + ls;
         color.a = 1.0;
+
+        //color += vec4(1.0,-0.2,-1.0,1.0);
 
         fragmentColor = I * vec4 ( 1.0 , 1.0 , 1.0 , 1.0 ) + ( 1.0 - I ) * color;
 

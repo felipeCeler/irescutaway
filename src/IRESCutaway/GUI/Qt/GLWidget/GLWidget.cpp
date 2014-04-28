@@ -67,6 +67,16 @@ void GLWidget::initializeGL ( )
 	lights.push_back ( Eigen::Vector3f ( 0.0 , 0.0 , 1.0 ) );
 	lights.push_back ( Eigen::Vector3f ( 0.0 , 1.0 , 0.0 ) );
 
+	light_elements = new float[12];
+
+        for ( std::size_t i = 0; i < lights.size ( ); ++i )
+        {
+                for ( int j = 0; j < 3; ++j )
+                {
+                        light_elements[i * 3 + j] = lights[i][j];
+                }
+        }
+
 
 	draw_secondary = 1;
 	draw_primary = 0;
@@ -93,7 +103,7 @@ void GLWidget::initializeGL ( )
 
 	updateTimer_.setSingleShot ( false );
 	connect ( &updateTimer_ , SIGNAL ( timeout ( ) ) , this , SLOT ( gameLooping ( ) ) );
-	updateTimer_.start( 0 );
+	updateTimer_.start(0 );
 
 	fpsTimer_.setSingleShot ( false );
 	connect ( &fpsTimer_ , SIGNAL ( timeout ( ) ) , this , SLOT ( fpsCounter( ) ) );
@@ -106,6 +116,20 @@ void GLWidget::initializeGL ( )
 
         borderLinesSize_ = 0;
         meanFilterSize_  = 0;
+
+        // Quaternion Slerp
+
+        sourcePosition_ = Eigen::Quaternionf(0.0,1.0,0.0,0.0);
+
+        sourcePosition_.normalize();
+
+        targetPosition_ = Eigen::Quaternionf(0.0,0.0,0.0,1.0);
+        targetPosition_.normalized();
+
+        time_steps_ = 0.0;
+
+        smoothrotationMatrix_.Identity();
+
 
 	trackball_ = new Trackball();
 
@@ -136,23 +160,28 @@ void GLWidget::initializeGL ( )
 
 	trackball_->decreaseZoom( 5.05 );
 
-	glGenVertexArrays (1, &vertexArray_box);
-	glGenBuffers(1,&vertex_box);
+	glGenVertexArrays (1, &vertexArray_Dummy);
+	        glGenBuffers(1,&vertexBuffer_Dummy);
 
-	std::vector<Celer::Vector4<float> > vertices(8,Celer::Vector4<float>(0.0,0.0,0.0,1.0));
-
-
-	glBindVertexArray(vertexArray_box);
-	        glBindBuffer(GL_ARRAY_BUFFER,vertex_box);
-	        glBufferData ( GL_ARRAY_BUFFER , vertices.size( ) * sizeof(vertices[0]) , &vertices[0] , GL_STATIC_DRAW );
+	glBindVertexArray(vertexArray_Dummy);
+	        glBindBuffer(GL_ARRAY_BUFFER,vertexBuffer_Dummy);
+	        glBufferData ( GL_ARRAY_BUFFER , 0, 0 , GL_STATIC_DRAW );
 
                 glEnableVertexAttribArray(0);
-                glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, 0);
+                glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
         glBindVertexArray(0);
 
         videoSequence = 0;
+
+       displacement = Eigen::Vector3f(-3.0,-3.0,-3.0);
+       max_displacement = Eigen::Vector3f(3.0,3.0,3.0);
+
 }
 
+GLWidget::~GLWidget( )
+{
+        delete[] light_elements;
+}
 
 void GLWidget::dragEnterEvent(QDragEnterEvent *event)
 {
@@ -363,65 +392,10 @@ void GLWidget::resizeGL ( int width , int height )
 	meanFilter->resize(width, height);
 }
 
-void GLWidget::paintGL ( )
+void GLWidget::paintEvent   ( QPaintEvent * )
 {
 
-        //  Reset OpenGL state for overlays.
-        glEnable( GL_DEPTH_TEST );
-        glEnable( GL_LINE_SMOOTH );
-
-        if ( buttonRelease_ )
-        {
-                processMultiKeys ( );
-        }
-
-        renderTime.start();
-
-        if ( isIRESOpen_ )
-        {
-                if ( isPaperDemo_ )
-                {
-                        PaperDemo( );                // F9
-                }
-                else if ( isIRESCutaway_ )
-                {
-                        drawIRESModel( );            // F10
-                }
-                else if ( isIRESCutawayStatic_ )
-                {
-                        IRESCutawayStatic ( );       // F11
-                }
-                else // isIRESCutawayDynamic_
-                {
-                        IRESCutawayDynamic ( );      // F12
-                }
-
-                //trackball_->render();
-        }
-
-        glFinish( );
-
-        //std::cout << " 1 shot " <<  1000/(float)renderTime.elapsed() << std::endl;
-
-        if (renderingPass > 200.0)
-        {
-                averageFPS = accumulateRenderingTimes / renderingPass;
-                renderingPass = 0.0f;
-                accumulateRenderingTimes = 0.0f;
-        }else
-        {
-                renderingPass            += 1.0;
-                accumulateRenderingTimes += renderTime.elapsed();
-        }
-
-        emit fpsChanged( QString::number( 1000/averageFPS ) );
-
-        fps++;
-
-        //QGLWidget::grabFrameBuffer().save("frame"+QString::number(videoSequence)+".tif","TIFF",100);
-
-        videoSequence++;
-
+        paintGL();
 
         //  Reset OpenGL state for overlays.
         glDisable( GL_DEPTH_TEST );
@@ -476,6 +450,68 @@ void GLWidget::paintGL ( )
 
 }
 
+void GLWidget::paintGL ( )
+{
+
+        //  Reset OpenGL state for overlays.
+        glEnable( GL_DEPTH_TEST );
+        glEnable( GL_LINE_SMOOTH );
+
+        if ( buttonRelease_ )
+        {
+                processMultiKeys ( );
+        }
+
+        renderTime.start();
+
+        if ( isIRESOpen_ )
+        {
+                if ( isPaperDemo_ )
+                {
+                        PaperDemo( );                // F9
+                }
+                else if ( isIRESCutaway_ )
+                {
+                        drawIRESModel( );            // F10
+                }
+                else if ( isIRESCutawayStatic_ )
+                {
+                        IRESCutawayStatic ( );       // F11
+                }
+                else // isIRESCutawayDynamic_
+                {
+                        IRESCutawayDynamic ( );      // F12
+                }
+
+                //trackball_->render();
+        }
+
+        glFinish( );
+
+        // std::cout << " 1 shot " <<  trackball_->getQuaternion().coeffs() <<  std::endl;
+
+        if (renderingPass > 200.0)
+        {
+                averageFPS = accumulateRenderingTimes / renderingPass;
+                renderingPass = 0.0f;
+                accumulateRenderingTimes = 0.0f;
+        }else
+        {
+                renderingPass            += 1.0;
+                accumulateRenderingTimes += renderTime.elapsed();
+        }
+
+        emit fpsChanged( QString::number( 1000/averageFPS ) );
+
+        fps++;
+
+        //QGLWidget::grabFrameBuffer().save("frame"+QString::number(videoSequence)+".tif","TIFF",100);
+
+        videoSequence++;
+
+
+}
+
 
 /// For DropArea's implementation, we clear invoke clear() and then accept the proposed event.
 /// The clear() function sets the text in DropArea to "<drop content>" and sets the backgroundRole to
@@ -496,30 +532,30 @@ void GLWidget::drawIRESCutawayStaticSurface ( ) const
 	glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
 
-	IRESCutawaySurfaceStatic->enable( );
+	IRESCutawaySurfaceStatic_->enable( );
 
-	IRESCutawaySurfaceStatic->setUniform("min_range", min_range  );
-	IRESCutawaySurfaceStatic->setUniform("max_range", max_range  );
-	IRESCutawaySurfaceStatic->setUniform("min_property", reservoir_model_.static_min[reservoir_model_.current_static]  );
-	IRESCutawaySurfaceStatic->setUniform("max_property", reservoir_model_.static_max[reservoir_model_.current_static]  );
-	IRESCutawaySurfaceStatic->setUniform("property_index", reservoir_model_.current_static );
+	IRESCutawaySurfaceStatic_->setUniform("min_range", min_range  );
+	IRESCutawaySurfaceStatic_->setUniform("max_range", max_range  );
+	IRESCutawaySurfaceStatic_->setUniform("min_property", reservoir_model_.static_min[reservoir_model_.current_static]  );
+	IRESCutawaySurfaceStatic_->setUniform("max_property", reservoir_model_.static_max[reservoir_model_.current_static]  );
+	IRESCutawaySurfaceStatic_->setUniform("property_index", reservoir_model_.current_static );
 
-	IRESCutawaySurfaceStatic->setUniform("paper", 1.0  );
-	IRESCutawaySurfaceStatic->setUniform("box_min", ply_primary_.box.box_min().x,ply_primary_.box.box_min().y,ply_primary_.box.box_min().z );
-	IRESCutawaySurfaceStatic->setUniform("box_max", ply_primary_.box.box_max().x,ply_primary_.box.box_max().y,ply_primary_.box.box_max().z );
+	IRESCutawaySurfaceStatic_->setUniform("paper", 1.0  );
+	IRESCutawaySurfaceStatic_->setUniform("box_min", ply_primary_.box.box_min().x,ply_primary_.box.box_min().y,ply_primary_.box.box_min().z );
+	IRESCutawaySurfaceStatic_->setUniform("box_max", ply_primary_.box.box_max().x,ply_primary_.box.box_max().y,ply_primary_.box.box_max().z );
 
-	IRESCutawaySurfaceStatic->setUniform( "x" , volume_width );
-	IRESCutawaySurfaceStatic->setUniform( "y" , volume_height );
-	IRESCutawaySurfaceStatic->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
-	IRESCutawaySurfaceStatic->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
-	IRESCutawaySurfaceStatic->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
+	IRESCutawaySurfaceStatic_->setUniform( "x" , volume_width );
+	IRESCutawaySurfaceStatic_->setUniform( "y" , volume_height );
+	IRESCutawaySurfaceStatic_->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
+	IRESCutawaySurfaceStatic_->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
+	IRESCutawaySurfaceStatic_->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
 
-	IRESCutawaySurfaceStatic->setUniform ("freeze", freezeView_ );
-	IRESCutawaySurfaceStatic->setUniform ("FreezeViewMatrix",freeze_viewmatrix_.data ( ),4, GL_FALSE, 1 );
+	IRESCutawaySurfaceStatic_->setUniform ("freeze", freezeView_ );
+	IRESCutawaySurfaceStatic_->setUniform ("FreezeViewMatrix",freeze_viewmatrix_.data ( ),4, GL_FALSE, 1 );
 
 	reservoir_model_.drawCuboid ( );
 
-	IRESCutawaySurfaceStatic->disable( );
+	IRESCutawaySurfaceStatic_->disable( );
 
 	glDrawBuffer(GL_COLOR_ATTACHMENT0+1);
 
@@ -535,15 +571,6 @@ void GLWidget::drawIRESCutawayStaticSurface ( ) const
 
 void GLWidget::drawPrimaryStatic  ( ) const // Draw only primary   Cells
 {
-
-        GLfloat light_elements[12];
-        for ( std::size_t i = 0; i < lights.size ( ); ++i )
-        {
-                for ( int j = 0; j < 3; ++j )
-                {
-                        light_elements[i * 3 + j] = lights[i][j];
-                }
-        }
 
         IRESPrimaryStatic_->enable( );
 
@@ -574,29 +601,42 @@ void GLWidget::drawPrimaryStatic  ( ) const // Draw only primary   Cells
         {
 
                 glLineWidth( (float) borderLinesSize_ );
-                borderLinesLCG->enable ( );
+                BorderLines_->enable ( );
 
-                borderLinesLCG->setUniform ( "ModelMatrix" , trackball_->getModelMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
-                borderLinesLCG->setUniform ( "ViewMatrix" , trackball_->getViewMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
-                borderLinesLCG->setUniform ( "ProjectionMatrix" , trackball_->getProjectionMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
+                BorderLines_->setUniform ( "ModelMatrix" , trackball_->getModelMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
+                BorderLines_->setUniform ( "ViewMatrix" , trackball_->getViewMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
+                BorderLines_->setUniform ( "ProjectionMatrix" , trackball_->getProjectionMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
 
                 reservoir_model_.drawFaces ( );
 
-                borderLinesLCG->disable ( );
+                BorderLines_->disable ( );
         }
 }
 
 void GLWidget::drawSecondaryStatic  ( ) const  // Draw only secondary Cells
 {
 
-        GLfloat light_elements[12];
-        for ( std::size_t i = 0; i < lights.size ( ); ++i )
-        {
-                for ( int j = 0; j < 3; ++j )
-                {
-                        light_elements[i * 3 + j] = lights[i][j];
-                }
-        }
+        // Interior Cells
+
+        IRESCutawayStatic_->enable( );
+
+        IRESCutawayStatic_->setUniform( "normals" , depthFBO->bindAttachment(1) );
+
+        IRESCutawayStatic_->setUniform("min_property", reservoir_model_.static_min[reservoir_model_.current_static]  );
+        IRESCutawayStatic_->setUniform("max_property", reservoir_model_.static_max[reservoir_model_.current_static]  );
+        IRESCutawayStatic_->setUniform("property_index", reservoir_model_.current_static );
+
+        IRESCutawayStatic_->setUniform("num_lights", (GLint) lights.size ( )  );
+        IRESCutawayStatic_->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
+        IRESCutawayStatic_->setUniform("WIN_SCALE", (float) width ( ) , (float) height ( ) );
+
+        IRESCutawayStatic_->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
+        IRESCutawayStatic_->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
+        IRESCutawayStatic_->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
+
+        reservoir_model_.drawInternalFaces( );
+
+        IRESCutawayStatic_->disable( );
 
         // Surface Faces
 
@@ -622,47 +662,21 @@ void GLWidget::drawSecondaryStatic  ( ) const  // Draw only secondary Cells
 
         IRESCutawayStaticShell_->disable( );
 
-        // Interior Cells
-
-        // Interior Cells
-
-        depthFBO->unbindAttachments();
-
-        IRESCutawayStatic_->enable( );
-
-        IRESCutawayStatic_->setUniform( "normals" , depthFBO->bindAttachment(1) );
-
-        IRESCutawayStatic_->setUniform("min_property", reservoir_model_.static_min[reservoir_model_.current_static]  );
-        IRESCutawayStatic_->setUniform("max_property", reservoir_model_.static_max[reservoir_model_.current_static]  );
-        IRESCutawayStatic_->setUniform("property_index", reservoir_model_.current_static );
-
-        IRESCutawayStatic_->setUniform("num_lights", (GLint) lights.size ( )  );
-        IRESCutawayStatic_->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
-        IRESCutawayStatic_->setUniform("WIN_SCALE", (float) width ( ) , (float) height ( ) );
-
-        IRESCutawayStatic_->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
-        IRESCutawayStatic_->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
-        IRESCutawayStatic_->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
-
-        reservoir_model_.drawInternalFaces( );
-
-        IRESCutawayStatic_->disable( );
-
         depthFBO->unbindAttachments();
 
         if ( reservoir_model_.showBorderLine )
         {
 
                 glLineWidth( (float) borderLinesSize_ );
-                borderLinesLCG->enable ( );
+                BorderLines_->enable ( );
 
-                borderLinesLCG->setUniform ( "ModelMatrix" , trackball_->getModelMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
-                borderLinesLCG->setUniform ( "ViewMatrix" , trackball_->getViewMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
-                borderLinesLCG->setUniform ( "ProjectionMatrix" , trackball_->getProjectionMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
+                BorderLines_->setUniform ( "ModelMatrix" , trackball_->getModelMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
+                BorderLines_->setUniform ( "ViewMatrix" , trackball_->getViewMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
+                BorderLines_->setUniform ( "ProjectionMatrix" , trackball_->getProjectionMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
 
                 reservoir_model_.drawFaces ( );
 
-                borderLinesLCG->disable ( );
+                BorderLines_->disable ( );
         }
 
 }
@@ -675,10 +689,10 @@ void GLWidget::IRESCutawayStatic (  )
         if ( isIRESOpen_ )
         {
 //
-//                cutawayGenerationTime_.start ();
+                cutawayGenerationTime_.start ();
                 drawIRESCutawayStaticSurface( );
-//                glFinish();
-//                accumulateCutawayGenerationTime_ += (float)cutawayGenerationTime_.elapsed();
+                glFinish();
+                accumulateCutawayGenerationTime_ += (float)cutawayGenerationTime_.elapsed();
 
 
 
@@ -689,33 +703,34 @@ void GLWidget::IRESCutawayStatic (  )
 
                 drawBackGround( );
 
-//                renderingCutawayTime_.start();
+                renderingCutawayTime_.start();
                 if ( draw_secondary )
                 {
                         drawSecondaryStatic( );
 
                 }
+                glFinish();
+                accumulateRenderingCutawayTime_ += (float)renderingCutawayTime_.elapsed();
                 if ( draw_primary )
                 {
                         drawPrimaryStatic( );
 
                 }
-//                glFinish();
-//                accumulateRenderingCutawayTime_ += (float)renderingCutawayTime_.elapsed();
-//
-//                if (cutawayPass_ >= 1000.0)
-//                {
-//
-//                        emit cutawayGenerationTime( QString::number( 1000.0f/(accumulateCutawayGenerationTime_*0.001f) ) ) ;
-//                        emit renderingCutawayTime( QString::number( 1000.0f/(accumulateRenderingCutawayTime_*0.001f) ) ) ;
-//                        accumulateCutawayGenerationTime_ = 0.0f;
-//                        accumulateRenderingCutawayTime_ = 0.0f;
-//                        cutawayPass_ = 0.0f;
-//
-//                }else
-//                {
-//                        cutawayPass_ += 1.0f;
-//                }
+
+
+                if (cutawayPass_ >= 100.0)
+                {
+
+                        emit cutawayGenerationTime( QString::number( 1000.0f/(accumulateCutawayGenerationTime_*0.01f) ) ) ;
+                        emit renderingCutawayTime( QString::number( 1000.0f/(accumulateRenderingCutawayTime_*0.01f) ) ) ;
+                        accumulateCutawayGenerationTime_ = 0.0f;
+                        accumulateRenderingCutawayTime_ = 0.0f;
+                        cutawayPass_ = 0.0f;
+
+                }else
+                {
+                        cutawayPass_ += 1.0f;
+                }
 
         }
 
@@ -736,34 +751,34 @@ void GLWidget::drawIRESCutawayDynamicSurface ( ) const
         glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
 
-        IRESCutawaySurfaceDynamic->enable( );
+        IRESCutawaySurfaceDynamic_->enable( );
 
-        IRESCutawaySurfaceDynamic->setUniform( "v0" , ply_primary_.box.box_min().x, ply_primary_.box.box_max().y,ply_primary_.box.box_max().z);
-        IRESCutawaySurfaceDynamic->setUniform( "v1" , ply_primary_.box.box_min().x, ply_primary_.box.box_max().y,ply_primary_.box.box_min().z);
-        IRESCutawaySurfaceDynamic->setUniform( "v2" , ply_primary_.box.box_max().x, ply_primary_.box.box_max().y,ply_primary_.box.box_min().z);
-        IRESCutawaySurfaceDynamic->setUniform( "v3" , ply_primary_.box.box_max().x, ply_primary_.box.box_max().y,ply_primary_.box.box_max().z);
+        IRESCutawaySurfaceDynamic_->setUniform( "v0" , ply_primary_.box.box_min().x, ply_primary_.box.box_max().y,ply_primary_.box.box_max().z);
+        IRESCutawaySurfaceDynamic_->setUniform( "v1" , ply_primary_.box.box_min().x, ply_primary_.box.box_max().y,ply_primary_.box.box_min().z);
+        IRESCutawaySurfaceDynamic_->setUniform( "v2" , ply_primary_.box.box_max().x, ply_primary_.box.box_max().y,ply_primary_.box.box_min().z);
+        IRESCutawaySurfaceDynamic_->setUniform( "v3" , ply_primary_.box.box_max().x, ply_primary_.box.box_max().y,ply_primary_.box.box_max().z);
 
-        IRESCutawaySurfaceDynamic->setUniform( "v4" , ply_primary_.box.box_max().x, ply_primary_.box.box_min().y,ply_primary_.box.box_max().z);
-        IRESCutawaySurfaceDynamic->setUniform( "v5" , ply_primary_.box.box_max().x, ply_primary_.box.box_min().y,ply_primary_.box.box_min().z);
-        IRESCutawaySurfaceDynamic->setUniform( "v6" , ply_primary_.box.box_min().x, ply_primary_.box.box_min().y,ply_primary_.box.box_min().z);
-        IRESCutawaySurfaceDynamic->setUniform( "v7" , ply_primary_.box.box_min().x, ply_primary_.box.box_min().y,ply_primary_.box.box_max().z);
+        IRESCutawaySurfaceDynamic_->setUniform( "v4" , ply_primary_.box.box_max().x, ply_primary_.box.box_min().y,ply_primary_.box.box_max().z);
+        IRESCutawaySurfaceDynamic_->setUniform( "v5" , ply_primary_.box.box_max().x, ply_primary_.box.box_min().y,ply_primary_.box.box_min().z);
+        IRESCutawaySurfaceDynamic_->setUniform( "v6" , ply_primary_.box.box_min().x, ply_primary_.box.box_min().y,ply_primary_.box.box_min().z);
+        IRESCutawaySurfaceDynamic_->setUniform( "v7" , ply_primary_.box.box_min().x, ply_primary_.box.box_min().y,ply_primary_.box.box_max().z);
 
 
-        IRESCutawaySurfaceDynamic->setUniform("move", (float) borderLinesSize_ );
-        IRESCutawaySurfaceDynamic->setUniform( "x" , volume_width );
-        IRESCutawaySurfaceDynamic->setUniform( "y" , volume_height );
-        IRESCutawaySurfaceDynamic->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
-        IRESCutawaySurfaceDynamic->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
-        IRESCutawaySurfaceDynamic->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
+        IRESCutawaySurfaceDynamic_->setUniform("move", (float) borderLinesSize_ );
+        IRESCutawaySurfaceDynamic_->setUniform( "x" , volume_width );
+        IRESCutawaySurfaceDynamic_->setUniform( "y" , volume_height );
+        IRESCutawaySurfaceDynamic_->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
+        IRESCutawaySurfaceDynamic_->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
+        IRESCutawaySurfaceDynamic_->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
 
-        IRESCutawaySurfaceDynamic->setUniform ("freeze", freezeView_ );
-        IRESCutawaySurfaceDynamic->setUniform ("FreezeViewMatrix",freeze_viewmatrix_.data ( ),4, GL_FALSE, 1 );
+        IRESCutawaySurfaceDynamic_->setUniform ("freeze", freezeView_ );
+        IRESCutawaySurfaceDynamic_->setUniform ("FreezeViewMatrix",freeze_viewmatrix_.data ( ),4, GL_FALSE, 1 );
 
-        glBindVertexArray(vertexArray_box);
-        glDrawArrays(GL_POINTS,0,1);
+        glBindVertexArray(vertexArray_Dummy);
+                glDrawArrays(GL_POINTS,0,1);
         glBindVertexArray(0);
 
-        IRESCutawaySurfaceDynamic->disable( );
+        IRESCutawaySurfaceDynamic_->disable( );
 
 
         glDrawBuffer(GL_COLOR_ATTACHMENT0+1);
@@ -780,71 +795,53 @@ void GLWidget::drawIRESCutawayDynamicSurface ( ) const
 void GLWidget::drawPrimaryDynamic ( ) const
 {
 
-        GLfloat light_elements[12];
-        for ( std::size_t i = 0; i < lights.size ( ); ++i )
-        {
-                for ( int j = 0; j < 3; ++j )
-                {
-                        light_elements[i * 3 + j] = lights[i][j];
-                }
-        }
+        IRESPrimaryDynamic_->enable( );
 
-        IRESPrimaryDynamic->enable( );
+        IRESPrimaryDynamic_->setUniform("num_lights", (GLint) lights.size ( )  );
+        IRESPrimaryDynamic_->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
+        IRESPrimaryDynamic_->setUniform("WIN_SCALE", (float) width ( ) , (float) height ( ) );
 
-        IRESPrimaryDynamic->setUniform("num_lights", (GLint) lights.size ( )  );
-        IRESPrimaryDynamic->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
-        IRESPrimaryDynamic->setUniform("WIN_SCALE", (float) width ( ) , (float) height ( ) );
+        IRESPrimaryDynamic_->setUniform("min_range", min_range  );
+        IRESPrimaryDynamic_->setUniform("max_range", max_range  );
 
-        IRESPrimaryDynamic->setUniform("min_range", min_range  );
-        IRESPrimaryDynamic->setUniform("max_range", max_range  );
+        IRESPrimaryDynamic_->setUniform("paper", 1.0  );
+        IRESPrimaryDynamic_->setUniform("box_min", ply_primary_.box.box_min().x,ply_primary_.box.box_min().y,ply_primary_.box.box_min().z );
+        IRESPrimaryDynamic_->setUniform("box_max", ply_primary_.box.box_max().x,ply_primary_.box.box_max().y,ply_primary_.box.box_max().z );
 
-        IRESPrimaryDynamic->setUniform("paper", 1.0  );
-        IRESPrimaryDynamic->setUniform("box_min", ply_primary_.box.box_min().x,ply_primary_.box.box_min().y,ply_primary_.box.box_min().z );
-        IRESPrimaryDynamic->setUniform("box_max", ply_primary_.box.box_max().x,ply_primary_.box.box_max().y,ply_primary_.box.box_max().z );
-
-        IRESPrimaryDynamic->setUniform ( "max_property" , reservoir_model_.dynamic_properties[dynamic_property_index].max_[time_step] );
-        IRESPrimaryDynamic->setUniform ( "min_property" , reservoir_model_.dynamic_properties[dynamic_property_index].min_[time_step] );
+        IRESPrimaryDynamic_->setUniform ( "max_property" , reservoir_model_.dynamic_properties[dynamic_property_index].max_[time_step] );
+        IRESPrimaryDynamic_->setUniform ( "min_property" , reservoir_model_.dynamic_properties[dynamic_property_index].min_[time_step] );
 //
-//        IRESPrimaryDynamic->setUniform("min_property", reservoir_model_.static_min[reservoir_model_.current_static]  );
-//        IRESPrimaryDynamic->setUniform("max_property", reservoir_model_.static_max[reservoir_model_.current_static]  );
-//        IRESPrimaryDynamic->setUniform("property_index", reservoir_model_.current_static );
+//        IRESPrimaryDynamic_->setUniform("min_property", reservoir_model_.static_min[reservoir_model_.current_static]  );
+//        IRESPrimaryDynamic_->setUniform("max_property", reservoir_model_.static_max[reservoir_model_.current_static]  );
+//        IRESPrimaryDynamic_->setUniform("property_index", reservoir_model_.current_static );
 
-        IRESPrimaryDynamic->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
-        IRESPrimaryDynamic->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
-        IRESPrimaryDynamic->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
+        IRESPrimaryDynamic_->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
+        IRESPrimaryDynamic_->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
+        IRESPrimaryDynamic_->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
 
         reservoir_model_.drawCuboid ( );
 
-        IRESPrimaryDynamic->disable( );
+        IRESPrimaryDynamic_->disable( );
 
         if ( reservoir_model_.showBorderLine )
         {
 
                 glLineWidth( (float) borderLinesSize_ );
-                borderLinesLCG->enable ( );
+                BorderLines_->enable ( );
 
-                borderLinesLCG->setUniform ( "ModelMatrix" , trackball_->getModelMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
-                borderLinesLCG->setUniform ( "ViewMatrix" , trackball_->getViewMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
-                borderLinesLCG->setUniform ( "ProjectionMatrix" , trackball_->getProjectionMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
+                BorderLines_->setUniform ( "ModelMatrix" , trackball_->getModelMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
+                BorderLines_->setUniform ( "ViewMatrix" , trackball_->getViewMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
+                BorderLines_->setUniform ( "ProjectionMatrix" , trackball_->getProjectionMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
 
                 reservoir_model_.drawFaces ( );
 
-                borderLinesLCG->disable ( );
+                BorderLines_->disable ( );
         }
 
 }
 
 void GLWidget::drawSecondaryDynamic () const
 {
-
-        GLfloat light_elements[12];
-        for ( std::size_t i = 0; i < lights.size ( ); ++i )
-        {
-                for ( int j = 0; j < 3; ++j )
-                {
-                        light_elements[i * 3 + j] = lights[i][j];
-                }
-        }
 
         glClearColor ( 1.0 , 1.0 , 1.0 , 1.0 );
         glDepthFunc ( GL_LESS );
@@ -853,63 +850,51 @@ void GLWidget::drawSecondaryDynamic () const
 
         drawBackGround ( );
 
-        IRESCutawayDynamicShell->enable ( );
 
-        IRESCutawayDynamicShell->setUniform ( "normals" , depthFBO->bindAttachment(1) );
-//      secondaryLCG->setUniform("min_property", reservoir_model_.static_min[reservoir_model_.current_static]  );
-//      secondaryLCG->setUniform("max_property", reservoir_model_.static_max[reservoir_model_.current_static]  );
-//      secondaryLCG->setUniform("property_index", reservoir_model_.current_static );
+        // Interior Cells
 
-//        std::cout << "--- " << reservoir_model_.dynamic_properties[dynamic_property_index].min_[time_step] << std::endl;
-//        std::cout << "--- " << reservoir_model_.dynamic_properties[dynamic_property_index].max_[time_step] << std::endl;
+        IRESCutawayDynamicCrust_->enable( );
 
-        IRESCutawayDynamicShell->setUniform ( "max_property" , reservoir_model_.dynamic_properties[dynamic_property_index].max_[time_step] );
-        IRESCutawayDynamicShell->setUniform ( "min_property" , reservoir_model_.dynamic_properties[dynamic_property_index].min_[time_step] );
-        IRESCutawayDynamicShell->setUniform ( "time_step" , time_step );
-        IRESCutawayDynamicShell->setUniform ("faults", reservoir_model_.showFault );
+        IRESCutawayDynamicCrust_->setUniform( "normals" , depthFBO->bindAttachment(1) );
 
-        IRESCutawayDynamicShell->setUniform ( "num_lights" , (GLint) lights.size ( ) );
-        IRESCutawayDynamicShell->setUniform ( "lights[0]" , light_elements , 3 , (GLint) lights.size ( ) );
-        IRESCutawayDynamicShell->setUniform ( "WIN_SCALE" , (float) width ( ) , (float) height ( ) );
+        IRESCutawayDynamicCrust_->setUniform("max_property", reservoir_model_.dynamic_properties[dynamic_property_index].max_[time_step]  );
+        IRESCutawayDynamicCrust_->setUniform("min_property", reservoir_model_.dynamic_properties[dynamic_property_index].min_[time_step]  );
+        IRESCutawayDynamicCrust_->setUniform("property_index", reservoir_model_.current_static );
+        IRESCutawayDynamicCrust_->setUniform("time_step", time_step );
 
-        IRESCutawayDynamicShell->setUniform ( "ModelMatrix" , trackball_->getModelMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
-        IRESCutawayDynamicShell->setUniform ( "ViewMatrix" , trackball_->getViewMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
-        IRESCutawayDynamicShell->setUniform ( "ProjectionMatrix" , trackball_->getProjectionMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
+        IRESCutawayDynamicCrust_->setUniform("num_lights", (GLint) lights.size ( )  );
+        IRESCutawayDynamicCrust_->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
+        IRESCutawayDynamicCrust_->setUniform("WIN_SCALE", (float) width ( ) , (float) height ( ) );
 
-        reservoir_model_.drawFaces( );
-
-        IRESCutawayDynamicShell->disable( );
-
-
-        depthFBO->unbindAttachments();
-
-        IRESCutawayDynamicCrust->enable( );
-
-        IRESCutawayDynamicCrust->setUniform( "normals" , depthFBO->bindAttachment(1) );
-
-//      secondaryLCG->setUniform("min_property", reservoir_model_.static_min[reservoir_model_.current_static]  );
-//      secondaryLCG->setUniform("max_property", reservoir_model_.static_max[reservoir_model_.current_static]  );
-//      secondaryLCG->setUniform("property_index", reservoir_model_.current_static );
-
-//        std::cout << "--- " <<  reservoir_model_.dynamic_properties[dynamic_property_index].min_[time_step] << std::endl;
-//        std::cout << "--- " <<  reservoir_model_.dynamic_properties[dynamic_property_index].max_[time_step] << std::endl;
-
-        IRESCutawayDynamicCrust->setUniform("max_property", reservoir_model_.dynamic_properties[dynamic_property_index].max_[time_step]  );
-        IRESCutawayDynamicCrust->setUniform("min_property", reservoir_model_.dynamic_properties[dynamic_property_index].min_[time_step]  );
-        IRESCutawayDynamicCrust->setUniform("property_index", reservoir_model_.current_static );
-        IRESCutawayDynamicCrust->setUniform("time_step", time_step );
-
-        IRESCutawayDynamicCrust->setUniform("num_lights", (GLint) lights.size ( )  );
-        IRESCutawayDynamicCrust->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
-        IRESCutawayDynamicCrust->setUniform("WIN_SCALE", (float) width ( ) , (float) height ( ) );
-
-        IRESCutawayDynamicCrust->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
-        IRESCutawayDynamicCrust->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
-        IRESCutawayDynamicCrust->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
+        IRESCutawayDynamicCrust_->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
+        IRESCutawayDynamicCrust_->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
+        IRESCutawayDynamicCrust_->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
 
         reservoir_model_.drawCuboid ( );
 
-        IRESCutawayDynamicCrust->disable( );
+        IRESCutawayDynamicCrust_->disable( );
+
+
+        IRESCutawayDynamicShell_->enable( );
+
+        IRESCutawayDynamicShell_->setUniform ( "normals" , depthFBO->bindAttachment(1) );
+
+        IRESCutawayDynamicShell_->setUniform ( "max_property" , reservoir_model_.dynamic_properties[dynamic_property_index].max_[time_step] );
+        IRESCutawayDynamicShell_->setUniform ( "min_property" , reservoir_model_.dynamic_properties[dynamic_property_index].min_[time_step] );
+        IRESCutawayDynamicShell_->setUniform ("faults", reservoir_model_.showFault );
+
+        IRESCutawayDynamicShell_->setUniform ( "num_lights" , (GLint) lights.size ( ) );
+        IRESCutawayDynamicShell_->setUniform ( "lights[0]" , light_elements , 3 , (GLint) lights.size ( ) );
+        IRESCutawayDynamicShell_->setUniform ( "WIN_SCALE" , (float) width ( ) , (float) height ( ) );
+
+        IRESCutawayDynamicShell_->setUniform ( "ModelMatrix" , trackball_->getModelMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
+        IRESCutawayDynamicShell_->setUniform ( "ViewMatrix" , trackball_->getViewMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
+        IRESCutawayDynamicShell_->setUniform ( "ProjectionMatrix" , trackball_->getProjectionMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
+
+        reservoir_model_.drawFaces( );
+
+        IRESCutawayDynamicShell_->disable( );
+
 
         depthFBO->unbindAttachments();
 
@@ -959,55 +944,61 @@ void GLWidget::drawIRESModel ( )
 
         drawBackGround( );
 
-	GLfloat light_elements[12];
-	for ( std::size_t i = 0; i < lights.size ( ); ++i )
-	{
-		for ( int j = 0; j < 3; ++j )
-		{
-			light_elements[i * 3 + j] = lights[i][j];
-		}
-	}
-
-
         // Surface Faces
 
-//        rawModel_->enable( );
+        RawModel_->enable( );
+
+        RawModel_->setUniform("min_property", reservoir_model_.static_min[reservoir_model_.current_static]  );
+        RawModel_->setUniform("max_property", reservoir_model_.static_max[reservoir_model_.current_static]  );
+        RawModel_->setUniform("property_index", reservoir_model_.current_static );
+        RawModel_->setUniform("faults", reservoir_model_.showFault );
+        RawModel_->setUniform("justWireFrame", justWireFrame );
+        RawModel_->setUniform("displacement", displacement[0],displacement[1],displacement[2] );
+
+        RawModel_->setUniform("num_lights", (GLint) lights.size ( )  );
+        RawModel_->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
+        RawModel_->setUniform("WIN_SCALE", (float) width ( ) , (float) height ( ) );
+
+        RawModel_->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
+        RawModel_->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
+        RawModel_->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
+
+        reservoir_model_.drawFaces();
+
+        RawModel_->disable( );
+
+
+        if ( reservoir_model_.showBorderLine )
+        {
+
+                glLineWidth( (float) borderLinesSize_ );
+                BorderLines_->enable ( );
+
+                BorderLines_->setUniform ( "ModelMatrix" , trackball_->getModelMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
+                BorderLines_->setUniform ( "ViewMatrix" , trackball_->getViewMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
+                BorderLines_->setUniform ( "ProjectionMatrix" , trackball_->getProjectionMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
+
+                reservoir_model_.drawFaces ( );
+
+                BorderLines_->disable ( );
+        }
+
+//	rawShellLCG->enable();
+//	rawShellLCG->setUniform("min_property", reservoir_model_.static_min[reservoir_model_.current_static]  );
+//	rawShellLCG->setUniform("max_property", reservoir_model_.static_max[reservoir_model_.current_static]  );
+//	rawShellLCG->setUniform("property_index", reservoir_model_.current_static );
 //
-//        rawModel_->setUniform("min_property", reservoir_model_.static_min[reservoir_model_.current_static]  );
-//        rawModel_->setUniform("max_property", reservoir_model_.static_max[reservoir_model_.current_static]  );
-//        rawModel_->setUniform("property_index", reservoir_model_.current_static );
-//        rawModel_->setUniform("faults", reservoir_model_.showFault );
-//        rawModel_->setUniform("justWireFrame", justWireFrame );
+//        rawShellLCG->setUniform("num_lights", (GLint) lights.size ( )  );
+//        rawShellLCG->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
+//        rawShellLCG->setUniform("WIN_SCALE", (float) width ( ) , (float) height ( ) );
 //
-//        rawModel_->setUniform("num_lights", (GLint) lights.size ( )  );
-//        rawModel_->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
-//        rawModel_->setUniform("WIN_SCALE", (float) width ( ) , (float) height ( ) );
+//        rawShellLCG->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
+//        rawShellLCG->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
+//        rawShellLCG->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
 //
-//        rawModel_->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
-//        rawModel_->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
-//        rawModel_->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
+//        reservoir_model_.drawInternalFaces( );
 //
-//        reservoir_model_.drawFaces();
-//
-//        rawModel_->disable( );
-
-
-	rawShellLCG->enable();
-	rawShellLCG->setUniform("min_property", reservoir_model_.static_min[reservoir_model_.current_static]  );
-	rawShellLCG->setUniform("max_property", reservoir_model_.static_max[reservoir_model_.current_static]  );
-	rawShellLCG->setUniform("property_index", reservoir_model_.current_static );
-
-        rawShellLCG->setUniform("num_lights", (GLint) lights.size ( )  );
-        rawShellLCG->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
-        rawShellLCG->setUniform("WIN_SCALE", (float) width ( ) , (float) height ( ) );
-
-        rawShellLCG->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
-        rawShellLCG->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
-        rawShellLCG->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
-
-        reservoir_model_.drawInternalFaces( );
-
-        rawShellLCG->disable();
+//        rawShellLCG->disable();
 
 
 }
@@ -1020,16 +1011,16 @@ void GLWidget::drawBackGround ( ) const
 	glDisable(GL_DEPTH_TEST);
 	glDepthMask(GL_FALSE);
 
-	BackGround->enable();
+	BackGround_->enable();
 
 	glActiveTexture(GL_TEXTURE0+3);
 	glBindTexture ( GL_TEXTURE_2D, xtoon_texture_ );
-	BackGround->setUniform("imageTexture", 3);
-	BackGround->setUniform("viewportSize", width(), height() );
+	BackGround_->setUniform("imageTexture", 3);
+	BackGround_->setUniform("viewportSize", width(), height() );
 
 	picture->render();
 
-	BackGround->disable();
+	BackGround_->disable();
 
 	glEnable(GL_DEPTH_TEST);
 	glDepthMask(GL_TRUE);
@@ -1040,24 +1031,46 @@ void GLWidget::PaperDemo()
 {
         if ( isIRESOpen_ )
         {
-                PaperDrawCutawaySurface( );
+                //PaperDrawCutawaySurface( );
 
                 glClearColor ( 1.0 , 1.0 , 1.0 , 1.0 );
                 glDepthFunc(GL_LESS);
                 glClearDepth(1.0f);
                 glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
+
                 drawBackGround( );
 
                 if ( draw_secondary )
                 {
-                        drawIRESModel( );
+                        PaperSecondary( );
                 }
                 if ( draw_primary )
                 {
                         PaperPrimary( );
 
                 }
+
+                glActiveTexture(GL_TEXTURE0);
+                glEnable(GL_BLEND);
+                glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+
+                DummyQuad_->enable();
+
+                DummyQuad_->setUniform("WIN_SCALE", (float) width ( ) , (float) height ( ) );
+                DummyQuad_->setUniform("displacement", displacement[0],displacement[1],displacement[2] );
+                DummyQuad_->setUniform("max_displacement", max_displacement[0],max_displacement[1],max_displacement[2] );
+                DummyQuad_->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
+                DummyQuad_->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
+                DummyQuad_->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
+                DummyQuad_->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
+
+                glBindVertexArray( vertexArray_Dummy );
+                glDrawArrays( GL_POINTS, 0, 1 );
+                glBindVertexArray( 0);
+
+                DummyQuad_->disable();
+                glDisable(GL_BLEND);
         }
 }
 
@@ -1076,34 +1089,34 @@ void GLWidget::PaperDrawCutawaySurface()
         glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
 
-        BurnsPrimarySetup->enable( );
+        BurnsPrimarySetup_->enable( );
 
-        BurnsPrimarySetup->setUniform( "v0" , ply_primary_.box.box_min().x, ply_primary_.box.box_max().y,ply_primary_.box.box_max().z);
-        BurnsPrimarySetup->setUniform( "v1" , ply_primary_.box.box_min().x, ply_primary_.box.box_max().y,ply_primary_.box.box_min().z);
-        BurnsPrimarySetup->setUniform( "v2" , ply_primary_.box.box_max().x, ply_primary_.box.box_max().y,ply_primary_.box.box_min().z);
-        BurnsPrimarySetup->setUniform( "v3" , ply_primary_.box.box_max().x, ply_primary_.box.box_max().y,ply_primary_.box.box_max().z);
+        BurnsPrimarySetup_->setUniform( "v0" , ply_primary_.box.box_min().x, ply_primary_.box.box_max().y,ply_primary_.box.box_max().z);
+        BurnsPrimarySetup_->setUniform( "v1" , ply_primary_.box.box_min().x, ply_primary_.box.box_max().y,ply_primary_.box.box_min().z);
+        BurnsPrimarySetup_->setUniform( "v2" , ply_primary_.box.box_max().x, ply_primary_.box.box_max().y,ply_primary_.box.box_min().z);
+        BurnsPrimarySetup_->setUniform( "v3" , ply_primary_.box.box_max().x, ply_primary_.box.box_max().y,ply_primary_.box.box_max().z);
 
-        BurnsPrimarySetup->setUniform( "v4" , ply_primary_.box.box_max().x, ply_primary_.box.box_min().y,ply_primary_.box.box_max().z);
-        BurnsPrimarySetup->setUniform( "v5" , ply_primary_.box.box_max().x, ply_primary_.box.box_min().y,ply_primary_.box.box_min().z);
-        BurnsPrimarySetup->setUniform( "v6" , ply_primary_.box.box_min().x, ply_primary_.box.box_min().y,ply_primary_.box.box_min().z);
-        BurnsPrimarySetup->setUniform( "v7" , ply_primary_.box.box_min().x, ply_primary_.box.box_min().y,ply_primary_.box.box_max().z);
+        BurnsPrimarySetup_->setUniform( "v4" , ply_primary_.box.box_max().x, ply_primary_.box.box_min().y,ply_primary_.box.box_max().z);
+        BurnsPrimarySetup_->setUniform( "v5" , ply_primary_.box.box_max().x, ply_primary_.box.box_min().y,ply_primary_.box.box_min().z);
+        BurnsPrimarySetup_->setUniform( "v6" , ply_primary_.box.box_min().x, ply_primary_.box.box_min().y,ply_primary_.box.box_min().z);
+        BurnsPrimarySetup_->setUniform( "v7" , ply_primary_.box.box_min().x, ply_primary_.box.box_min().y,ply_primary_.box.box_max().z);
 
 
-        BurnsPrimarySetup->setUniform("move", (float) borderLinesSize_ );
-        BurnsPrimarySetup->setUniform( "x" , volume_width );
-        BurnsPrimarySetup->setUniform( "y" , volume_height );
-        BurnsPrimarySetup->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
-        BurnsPrimarySetup->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
-        BurnsPrimarySetup->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
+        BurnsPrimarySetup_->setUniform("move", (float) borderLinesSize_ );
+        BurnsPrimarySetup_->setUniform( "x" , volume_width );
+        BurnsPrimarySetup_->setUniform( "y" , volume_height );
+        BurnsPrimarySetup_->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
+        BurnsPrimarySetup_->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
+        BurnsPrimarySetup_->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
 
-        BurnsPrimarySetup->setUniform ("freeze", freezeView_ );
-        BurnsPrimarySetup->setUniform ("FreezeViewMatrix",freeze_viewmatrix_.data ( ),4, GL_FALSE, 1 );
+        BurnsPrimarySetup_->setUniform ("freeze", freezeView_ );
+        BurnsPrimarySetup_->setUniform ("FreezeViewMatrix",freeze_viewmatrix_.data ( ),4, GL_FALSE, 1 );
 
-        glBindVertexArray(vertexArray_box);
+        glBindVertexArray(vertexArray_Dummy);
         glDrawArrays(GL_POINTS,0,1);
         glBindVertexArray(0);
 
-        BurnsPrimarySetup->disable( );
+        BurnsPrimarySetup_->disable( );
 
 
         glDrawBuffer(GL_COLOR_ATTACHMENT0+1);
@@ -1117,56 +1130,109 @@ void GLWidget::PaperDrawCutawaySurface()
 
 }
 
-void GLWidget::PaperPrimary( )
+void GLWidget::PaperSecondary( )
 {
 
-        GLfloat light_elements[12];
-        for ( std::size_t i = 0; i < lights.size ( ); ++i )
-        {
-                for ( int j = 0; j < 3; ++j )
-                {
-                        light_elements[i * 3 + j] = lights[i][j];
-                }
-        }
+        glClearColor ( 1.0 , 1.0 , 1.0 , 1.0 );
+        glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-        BurnsPrimary->enable( );
+        drawBackGround( );
 
-        BurnsPrimary->setUniform("num_lights", (GLint) lights.size ( )  );
-        BurnsPrimary->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
-        BurnsPrimary->setUniform("WIN_SCALE", (float) width ( ) , (float) height ( ) );
+        // Surface Faces
 
-        BurnsPrimary->setUniform("min_range", min_range  );
-        BurnsPrimary->setUniform("max_range", max_range  );
+        BurnsSecondary_->enable( );
 
-        BurnsPrimary->setUniform("paper", 1.0  );
-        BurnsPrimary->setUniform("box_min", ply_primary_.box.box_min().x,ply_primary_.box.box_min().y,ply_primary_.box.box_min().z );
-        BurnsPrimary->setUniform("box_max", ply_primary_.box.box_max().x,ply_primary_.box.box_max().y,ply_primary_.box.box_max().z );
+        BurnsSecondary_->setUniform("min_StaticProperty", reservoir_model_.static_min[reservoir_model_.current_static]  );
+        BurnsSecondary_->setUniform("max_StaticProperty", reservoir_model_.static_max[reservoir_model_.current_static]  );
+        BurnsSecondary_->setUniform("property_index", reservoir_model_.current_static );
+        BurnsSecondary_->setUniform("min_DynamicProperty", reservoir_model_.dynamic_properties[dynamic_property_index].min_[time_step] );
+        BurnsSecondary_->setUniform("max_DynamicProperty", reservoir_model_.dynamic_properties[dynamic_property_index].max_[time_step] );
+        BurnsSecondary_->setUniform("property_type", 0.0 );
 
-        BurnsPrimary->setUniform("min_property", reservoir_model_.static_min[reservoir_model_.current_static]  );
-        BurnsPrimary->setUniform("max_property", reservoir_model_.static_max[reservoir_model_.current_static]  );
-        BurnsPrimary->setUniform("property_index", reservoir_model_.current_static );
 
-        BurnsPrimary->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
-        BurnsPrimary->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
-        BurnsPrimary->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
+        BurnsSecondary_->setUniform("faults", reservoir_model_.showFault );
+        BurnsSecondary_->setUniform("WireFrame", reservoir_model_.showWireFrame );
+        BurnsSecondary_->setUniform("justWireFrame", justWireFrame );
+        BurnsSecondary_->setUniform("displacement", displacement[0],displacement[1],displacement[2] );
+
+        BurnsSecondary_->setUniform("num_lights", (GLint) lights.size ( )  );
+        BurnsSecondary_->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
+        BurnsSecondary_->setUniform("WIN_SCALE", (float) width ( ) , (float) height ( ) );
+
+        BurnsSecondary_->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
+        BurnsSecondary_->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
+        BurnsSecondary_->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
 
         reservoir_model_.drawFaces();
 
-        BurnsPrimary->disable( );
+        BurnsSecondary_->disable( );
+
+
+        glActiveTexture(GL_TEXTURE0);
+        glEnable(GL_BLEND);
+        glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 
         if ( reservoir_model_.showBorderLine )
         {
 
                 glLineWidth( (float) borderLinesSize_ );
-                borderLinesLCG->enable ( );
+                BorderLines_->enable ( );
 
-                borderLinesLCG->setUniform ( "ModelMatrix" , trackball_->getModelMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
-                borderLinesLCG->setUniform ( "ViewMatrix" , trackball_->getViewMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
-                borderLinesLCG->setUniform ( "ProjectionMatrix" , trackball_->getProjectionMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
+                BorderLines_->setUniform ( "ModelMatrix" , trackball_->getModelMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
+                BorderLines_->setUniform ( "ViewMatrix" , trackball_->getViewMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
+                BorderLines_->setUniform ( "ProjectionMatrix" , trackball_->getProjectionMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
 
                 reservoir_model_.drawFaces ( );
 
-                borderLinesLCG->disable ( );
+                BorderLines_->disable ( );
+        }
+
+}
+
+void GLWidget::PaperPrimary( )
+{
+
+        BurnsPrimary_->enable( );
+
+        BurnsPrimary_->setUniform("num_lights", (GLint) lights.size ( )  );
+        BurnsPrimary_->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
+        BurnsPrimary_->setUniform("WIN_SCALE", (float) width ( ) , (float) height ( ) );
+
+        BurnsPrimary_->setUniform("min_range", min_range  );
+        BurnsPrimary_->setUniform("max_range", max_range  );
+
+        BurnsPrimary_->setUniform("paper", 1.0  );
+        BurnsPrimary_->setUniform("box_min", ply_primary_.box.box_min().x,ply_primary_.box.box_min().y,ply_primary_.box.box_min().z );
+        BurnsPrimary_->setUniform("box_max", ply_primary_.box.box_max().x,ply_primary_.box.box_max().y,ply_primary_.box.box_max().z );
+
+        BurnsPrimary_->setUniform("min_StaticProperty", reservoir_model_.static_min[reservoir_model_.current_static]  );
+        BurnsPrimary_->setUniform("max_StaticProperty", reservoir_model_.static_max[reservoir_model_.current_static]  );
+        BurnsPrimary_->setUniform("property_index", reservoir_model_.current_static );
+        BurnsPrimary_->setUniform("min_DynamicProperty", reservoir_model_.dynamic_properties[dynamic_property_index].min_[time_step] );
+        BurnsPrimary_->setUniform("max_DynamicProperty", reservoir_model_.dynamic_properties[dynamic_property_index].max_[time_step] );
+        BurnsPrimary_->setUniform("property_type", 0.0 );
+
+        BurnsPrimary_->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
+        BurnsPrimary_->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
+        BurnsPrimary_->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
+
+        reservoir_model_.drawCuboid();
+
+        BurnsPrimary_->disable( );
+
+        if ( reservoir_model_.showBorderLine )
+        {
+
+                glLineWidth( (float) borderLinesSize_ );
+                BorderLines_->enable ( );
+
+                BorderLines_->setUniform ( "ModelMatrix" , trackball_->getModelMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
+                BorderLines_->setUniform ( "ViewMatrix" , trackball_->getViewMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
+                BorderLines_->setUniform ( "ProjectionMatrix" , trackball_->getProjectionMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
+
+                reservoir_model_.drawFaces ( );
+
+                BorderLines_->disable ( );
         }
 
 }
@@ -1174,36 +1240,31 @@ void GLWidget::PaperPly ( ) const
 {
         /// FIXME Conditions - Just the model opened.
 
-        GLfloat light_elements[12];
-        for ( std::size_t i = 0; i < lights.size ( ); ++i )
-        {
-                for ( int j = 0; j < 3; ++j )
-                {
-                        light_elements[i * 3 + j] = lights[i][j];
-                }
-        }
+        BurnsPly_->enable();
 
-        BurnsPly->enable();
-
-        BurnsPly->setUniform("move", (float) borderLinesSize_ );
-        BurnsPly->setUniform("num_lights", (GLint) lights.size ( )  );
-        BurnsPly->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
-        BurnsPly->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
-        BurnsPly->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
-        BurnsPly->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
+        BurnsPly_->setUniform("move", (float) borderLinesSize_ );
+        BurnsPly_->setUniform("num_lights", (GLint) lights.size ( )  );
+        BurnsPly_->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
+        BurnsPly_->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
+        BurnsPly_->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
+        BurnsPly_->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
 
         ply_primary_.Draw ( );
 
-        BurnsPly->disable();
+        BurnsPly_->disable();
 
 }
 
 void GLWidget::gameLooping ( )
 {
 
-     //std::cout << "fps :" << v  << std::endl;
-
-     //update();
+//     std::cout << "fps :" << time_steps_  << std::endl;
+//
+//     sourcePosition_ = Eigen::Quaternionf(time_steps_,1.0f,0.0f,0.0f);
+//
+//     trackball_->spin( sourcePosition_ );
+//
+//     update();
 
      fps++;
 
@@ -1240,10 +1301,10 @@ void GLWidget::loadShaders ( )
 
 
         // Effects --
-                borderLinesLCG = new Shader ("Border Lines", (shaderDirectory + "borderLines.vert").toStdString(),
-                                            (shaderDirectory + "borderLines.frag").toStdString(),
-                                            (shaderDirectory + "borderLines.geom").toStdString(),1);
-                borderLinesLCG->initialize();
+                BorderLines_ = new Shader ("Border Lines", (shaderDirectory + "BorderLines.vert").toStdString(),
+                                            (shaderDirectory + "BorderLines.frag").toStdString(),
+                                            (shaderDirectory + "BorderLines.geom").toStdString(),1);
+                BorderLines_->initialize();
 
                 xtoon_texture_viewer = new Shader  ("xtoon_texture", (shaderDirectory + "xtoon_texture.vert").toStdString(),
                                                               (shaderDirectory + "xtoon_texture.frag").toStdString(),"",1);
@@ -1252,50 +1313,66 @@ void GLWidget::loadShaders ( )
                 meanFilter->setShadersDir( shaderDirectory.toStdString() );
                 meanFilter->initialize( );
 
-                BackGround = new Shader  ("BackGround", (shaderDirectory + "BackGround.vert").toStdString(),
+                BackGround_ = new Shader  ("BackGround", (shaderDirectory + "BackGround.vert").toStdString(),
                                          (shaderDirectory + "BackGround.frag").toStdString(),"",1);
-                BackGround->initialize( );
+                BackGround_->initialize( );
         // Paper Demo
-                rawShellLCG = new Shader ("Shell",
+
+
+                RawShell_ = new Shader ("Shell",
                                          (shaderDirectory + "RawShell.vert").toStdString(),
                                          (shaderDirectory + "RawShell.frag").toStdString(),
                                           "",1);
 
-                rawShellLCG->initialize( );
+                RawShell_->initialize( );
 
-                rawModel_ = new Shader ("Raw Model",
+                RawModel_ = new Shader ("Raw Model",
                                          (shaderDirectory + "RawModel.vert").toStdString(),
                                          (shaderDirectory + "RawModel.frag").toStdString(),
                                          (shaderDirectory + "RawModel.geom").toStdString(),1);
 
-                rawModel_->initialize( );
+                RawModel_->initialize( );
 
 
-                BurnsPly = new Shader ("BurnsPly",
+                BurnsPly_ = new Shader ("BurnsPly",
                                       (shaderDirectory + "Demo/BurnsPrimary430.vert").toStdString(),
                                       (shaderDirectory + "Demo/BurnsPrimary430.frag").toStdString(),
                                        "",1);
-                BurnsPly->initialize( );
+                BurnsPly_->initialize( );
 
-                BurnsPrimary = new Shader ("BurnsPrimary",
+                BurnsPrimary_ = new Shader ("BurnsPrimary",
                                       (shaderDirectory + "Demo/BurnsPrimaryStatic.vert").toStdString(),
                                       (shaderDirectory + "Demo/BurnsPrimaryStatic.frag").toStdString(),
                                       (shaderDirectory + "Demo/BurnsPrimaryStatic.geom").toStdString(),1);
 
 
-                BurnsPrimary->initialize( );
-                BurnsPrimarySetup = new Shader ("BurnsPrimarySetup",
-                                      (shaderDirectory + "Demo/BurnsPrimarySetup.vert").toStdString(),
-                                      (shaderDirectory + "Demo/BurnsPrimarySetup.frag").toStdString(),
-                                      (shaderDirectory + "Demo/BurnsPrimarySetup.geom").toStdString(),1);
-                BurnsPrimarySetup->initialize( );
+                BurnsPrimary_->initialize( );
+
+                BurnsPrimarySetup_ = new Shader ("BurnsPrimarySetup",
+                                                (shaderDirectory + "Demo/BurnsPrimarySetup.vert").toStdString(),
+                                                (shaderDirectory + "Demo/BurnsPrimarySetup.frag").toStdString(),
+                                                (shaderDirectory + "Demo/BurnsPrimarySetup.geom").toStdString(),1);
+                BurnsPrimarySetup_->initialize( );
+
+                BurnsSecondary_ = new Shader ("BurnsSecondary",
+                                         (shaderDirectory + "Demo/BurnsSecondary.vert").toStdString(),
+                                         (shaderDirectory + "Demo/BurnsSecondary.frag").toStdString(),
+                                         (shaderDirectory + "Demo/BurnsSecondary.geom").toStdString(),1);
+
+                BurnsSecondary_->initialize( );
+
+                DummyQuad_ = new Shader ("DummyQuad",
+                                        (shaderDirectory + "Demo/DummyQuad.vert").toStdString(),
+                                        (shaderDirectory + "Demo/DummyQuad.frag").toStdString(),
+                                        (shaderDirectory + "Demo/DummyQuad.geom").toStdString(),1);
+                DummyQuad_->initialize( );
 
        // ! DYNAMIC VIEWER F11 Static PropertieswayStatic"
-                IRESCutawaySurfaceStatic = new Shader ("IRESCutawaySurfaceStatic",
+                IRESCutawaySurfaceStatic_ = new Shader ("IRESCutawaySurfaceStatic",
                                                       (shaderDirectory + "Static/IRESCutawaySurfaceStatic.vert").toStdString(),
                                                       (shaderDirectory + "Static/IRESCutawaySurfaceStatic.frag").toStdString(),
                                                       (shaderDirectory + "Static/IRESCutawaySurfaceStatic.geom").toStdString(),1);
-                IRESCutawaySurfaceStatic->initialize( );
+                IRESCutawaySurfaceStatic_->initialize( );
 
                 IRESCutawayStaticShell_ = new Shader ("IRESCutawayStaticShell",
                                                      (shaderDirectory + "Static/IRESCutawayStaticShell.vert").toStdString(),
@@ -1305,7 +1382,8 @@ void GLWidget::loadShaders ( )
 
                 IRESCutawayStatic_ = new Shader ("IRESCutawayStatic",
                                                 (shaderDirectory + "Static/IRESCutawayStatic.vert").toStdString(),
-                                                (shaderDirectory + "Static/IRESCutawayStatic.frag").toStdString(),"",1);
+                                                (shaderDirectory + "Static/IRESCutawayStatic.frag").toStdString(),
+                                                "",1);
                 IRESCutawayStatic_->initialize();
 
                 IRESPrimaryStatic_ = new Shader ("IRESPrimaryStatic",
@@ -1318,30 +1396,36 @@ void GLWidget::loadShaders ( )
 
         // ! DYNAMIC VIEWER F12 Dynamic Properties
 
-                IRESCutawaySurfaceDynamic = new Shader ("IRESCutawaySurfaceDynamic",
+                IRESCutawayDynamic_ = new Shader ("IRESCutawayDynamic",
+                                                (shaderDirectory + "Dynamic/IRESCutawayDynamic.vert").toStdString(),
+                                                (shaderDirectory + "Dynamic/IRESCutawayDynamic.frag").toStdString(),
+                                                "",1);
+                IRESCutawayDynamic_->initialize();
+
+                IRESCutawaySurfaceDynamic_ = new Shader ("IRESCutawaySurfaceDynamic",
                                                        (shaderDirectory + "Dynamic/IRESCutawaySurfaceDynamic.vert").toStdString(),
                                                        (shaderDirectory + "Dynamic/IRESCutawaySurfaceDynamic.frag").toStdString(),
                                                        (shaderDirectory + "Dynamic/IRESCutawaySurfaceDynamic.geom").toStdString(),1);
-                IRESCutawaySurfaceDynamic->initialize();
+                IRESCutawaySurfaceDynamic_->initialize();
 
-                IRESCutawayDynamicCrust = new Shader ("IRESCutawayDynamicCrust",
+                IRESCutawayDynamicCrust_ = new Shader ("IRESCutawayDynamicCrust",
                                                        (shaderDirectory + "Dynamic/IRESCutawayDynamicCrust.vert").toStdString(),
                                                        (shaderDirectory + "Dynamic/IRESCutawayDynamicCrust.frag").toStdString(),
                                                        (shaderDirectory + "Dynamic/IRESCutawayDynamicCrust.geom").toStdString(),1);
-                IRESCutawayDynamicCrust->initialize();
+                IRESCutawayDynamicCrust_->initialize();
 
 
-                IRESCutawayDynamicShell = new Shader ("IRESCutawayDynamicShell",
+                IRESCutawayDynamicShell_ = new Shader ("IRESCutawayDynamicShell",
                                                        (shaderDirectory + "Dynamic/IRESCutawayDynamicShell.vert").toStdString(),
                                                        (shaderDirectory + "Dynamic/IRESCutawayDynamicShell.frag").toStdString(),
                                                        (shaderDirectory + "Dynamic/IRESCutawayDynamicShell.geom").toStdString(),1);
-                IRESCutawayDynamicShell->initialize();
+                IRESCutawayDynamicShell_->initialize();
 
-                IRESPrimaryDynamic = new Shader ("IRESPrimaryDynamic",
+                IRESPrimaryDynamic_ = new Shader ("IRESPrimaryDynamic",
                                                        (shaderDirectory + "Dynamic/IRESPrimaryDynamic.vert").toStdString(),
                                                        (shaderDirectory + "Dynamic/IRESPrimaryDynamic.frag").toStdString(),
                                                        (shaderDirectory + "Dynamic/IRESPrimaryDynamic.geom").toStdString(),1);
-                IRESPrimaryDynamic->initialize();
+                IRESPrimaryDynamic_->initialize();
 }
 /// KeyInput
 void GLWidget::processMultiKeys ( )
@@ -1352,11 +1436,6 @@ void GLWidget::processMultiKeys ( )
 
 		//std::cout  << camera_.position();
 
-		if ( key == Qt::Key_R )
-		{
-			trackball_->reset();
-			update();
-		}
 		if( key == Qt::Key_Left)
 		{
 			if ( volume_width  > 0.0 )
@@ -1377,6 +1456,36 @@ void GLWidget::processMultiKeys ( )
 			if ( volume_height  > 0.0 )
 				volume_height--;
 		}
+		if ( key == Qt::Key_T)
+		{
+		        if ( displacement[0] < max_displacement[0])
+		                displacement[0] += 0.1;
+		}
+		if ( key == Qt::Key_Y)
+		{
+                        if ( displacement[0] > -max_displacement[0])
+                                displacement[0] -= 0.1;
+		}
+                if ( key == Qt::Key_G)
+                {
+                        if ( displacement[1] < max_displacement[1])
+                        displacement[1] += 0.1;
+                }
+                if ( key == Qt::Key_H)
+                {
+                        if ( displacement[1] > -max_displacement[1])
+                        displacement[1] -= 0.1;
+                }
+                if ( key == Qt::Key_V)
+                {
+                        if ( displacement[2] < max_displacement[2])
+                        displacement[2] += 0.1;
+                }
+                if ( key == Qt::Key_B)
+                {
+                        if ( displacement[2] > -max_displacement[2])
+                        displacement[2] -= 0.1;
+                }
 	}
 }
 
@@ -1390,10 +1499,11 @@ void GLWidget::keyPressEvent ( QKeyEvent * event )
 	{
 		loadShaders();
 	}
-	else if ( event->key() == Qt::Key_R )
+	else if ( (event->modifiers() == Qt::ShiftModifier ) && (event->key() == Qt::Key_R) )
 	{
-	        trackball_->reset();
-	        trackball_->decreaseZoom( 5.05 );
+                trackball_->reset();
+                trackball_->decreaseZoom( 5.05 );
+                update();
 	}
 	else if ( event->key() == Qt::Key_1)
 	{
@@ -1411,7 +1521,15 @@ void GLWidget::keyPressEvent ( QKeyEvent * event )
         {
                 trackball_->setViewMatrix( position_two );
         }
-	else
+	else if ( event->key() == Qt::Key_M )
+	{
+	      time_steps_ += 1.0f;
+
+	}else if ( event->key() == Qt::Key_N )
+	{
+	        if ( time_steps_ > 0 )
+	        time_steps_ -= 1.0f;
+	}else
 	{
 	        event->ignore();
 	}
@@ -1421,7 +1539,6 @@ void GLWidget::keyPressEvent ( QKeyEvent * event )
 
 void GLWidget::keyReleaseEvent ( QKeyEvent * event )
 {
-
 	buttonRelease_ = false;
 	keysPresseds_ -= event->key ( );
     update();
@@ -1553,6 +1670,14 @@ void GLWidget::showFault	  ( bool visibility )
 		reservoir_model_.showFault = 0;
 	else
 		reservoir_model_.showFault = 1;
+}
+
+void GLWidget::showWireFrame      ( bool visibility )
+{
+        if ( visibility )
+                reservoir_model_.showWireFrame = 0;
+        else
+                reservoir_model_.showWireFrame = 1;
 }
 
 void GLWidget::showBorderLines    ( bool visibility )

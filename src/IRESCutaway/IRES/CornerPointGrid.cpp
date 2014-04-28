@@ -254,7 +254,7 @@ namespace IRES
                                 internalFaces[stride_48 +4] = n1[0];
                                 internalFaces[stride_48 +5] = n1[1];
                                 internalFaces[stride_48 +6] = n1[2];
-                                internalFaces[stride_48 +7] = static_cast<float> (iresFaces_[i].isExtern);
+                                internalFaces[stride_48 +7] = F+static_cast<float> (iresFaces_[i].isExtern);
 
                                 internalFaces[stride_48+8]  = b[0];
                                 internalFaces[stride_48+9]  = b[1];
@@ -264,7 +264,7 @@ namespace IRES
                                 internalFaces[stride_48+12] = n1[0];
                                 internalFaces[stride_48+13] = n1[1];
                                 internalFaces[stride_48+14] = n1[2];
-                                internalFaces[stride_48+15] = static_cast<float> (iresFaces_[i].isExtern);
+                                internalFaces[stride_48+15] = F+static_cast<float> (iresFaces_[i].isExtern);
 
                                 internalFaces[stride_48+16] = c[0];
                                 internalFaces[stride_48+17] = c[1];
@@ -274,7 +274,7 @@ namespace IRES
                                 internalFaces[stride_48+20] = n1[0];
                                 internalFaces[stride_48+21] = n1[1];
                                 internalFaces[stride_48+22] = n1[2];
-                                internalFaces[stride_48+23] = static_cast<float> (iresFaces_[i].isExtern);
+                                internalFaces[stride_48+23] = F+static_cast<float> (iresFaces_[i].isExtern);
 
                                 d1 = d-c;
                                 d2 = a-c;
@@ -289,7 +289,7 @@ namespace IRES
                                 internalFaces[stride_48+28] = n2[0];
                                 internalFaces[stride_48+29] = n2[1];
                                 internalFaces[stride_48+30] = n2[2];
-                                internalFaces[stride_48+31] = static_cast<float> (iresFaces_[i].isExtern);
+                                internalFaces[stride_48+31] = F+static_cast<float> (iresFaces_[i].isExtern);
 
                                 internalFaces[stride_48+32] = c[0];
                                 internalFaces[stride_48+33] = c[1];
@@ -299,7 +299,7 @@ namespace IRES
                                 internalFaces[stride_48+36] = n2[0];
                                 internalFaces[stride_48+37] = n2[1];
                                 internalFaces[stride_48+38] = n2[2];
-                                internalFaces[stride_48+39] = static_cast<float> (iresFaces_[i].isExtern);
+                                internalFaces[stride_48+39] = F+static_cast<float> (iresFaces_[i].isExtern);
 
                                 internalFaces[stride_48+40] = d[0];
                                 internalFaces[stride_48+41] = d[1];
@@ -309,7 +309,7 @@ namespace IRES
                                 internalFaces[stride_48+44] = n2[0];
                                 internalFaces[stride_48+45] = n2[1];
                                 internalFaces[stride_48+46] = n2[2];
-                                internalFaces[stride_48+47] = static_cast<float> (iresFaces_[i].isExtern);
+                                internalFaces[stride_48+47] = F+static_cast<float> (iresFaces_[i].isExtern);
 
                                 stride_48 += 48;
 
@@ -491,6 +491,7 @@ namespace IRES
 
 	                glBindVertexArray(0);
 
+	                glFinish();
 
 	                loadStaticProperties  ( );
 	                loadDynamicProperties ( );
@@ -520,6 +521,8 @@ namespace IRES
 
 	void CornerPointGrid::loadDynamicProperties (  )
 	{
+	        int index = 0;
+
                 if ( cuboidDynamicIds.size ( ) > 0 )
                 {
 
@@ -536,7 +539,6 @@ namespace IRES
 
                 cuboidDynamic.resize ( number_of_blocks_ );
 
-                int index = 0;
 
                 for ( std::size_t p = 0; p < dynamic_properties.size ( ); p++ )
                 {
@@ -560,7 +562,7 @@ namespace IRES
                                 index = 0;
                                 glBindBuffer ( GL_ARRAY_BUFFER , cuboidDynamicIds[p][t] );
                                 glBufferData ( GL_ARRAY_BUFFER , cuboidDynamic.size ( ) * sizeof ( cuboidDynamic[0] ) , &cuboidDynamic[0] , GL_STATIC_DRAW );
-
+                                glFinish();
                         }
 
                 }
@@ -577,11 +579,24 @@ namespace IRES
 
                 }
 
+//                if ( internalFacesDynamicIds.size ( ) > 0 )
+//                {
+//                        for ( std::size_t p = 0; p < internalFacesDynamicIds.size ( ); p++ )
+//                        {
+//                                glDeleteBuffers ( internalFacesDynamicIds[p].size ( ) , &internalFacesDynamicIds[p][0] );
+//                        }
+//                }
+
 
                 faceDynamicIds.clear ( );
 
                 faceDynamicIds.resize ( dynamic_properties.size ( ) );
                 faceDynamic.resize ( iresFaces_.size() );
+
+//                internalFacesDynamicIds.clear ( );
+//
+//                internalFacesDynamicIds.resize ( dynamic_properties.size ( ) );
+//                internalFacesDynamic.resize ( 6 * iresFaces_.size() );
 
                 index = 0;
 
@@ -591,6 +606,10 @@ namespace IRES
 
                         glGenBuffers ( dynamic_properties[p].numTimeSteps , &faceDynamicIds[p][0] );
 
+//                        internalFacesDynamicIds[p].resize ( dynamic_properties[p].numTimeSteps );
+//
+//                        glGenBuffers ( dynamic_properties[p].numTimeSteps , &internalFacesDynamicIds[p][0] );
+
                         for ( unsigned int t = 0; t < dynamic_properties[p].numTimeSteps; t++ )
                         {
 
@@ -598,20 +617,34 @@ namespace IRES
                                 {
 
                                         faceDynamic[index] = dynamic_properties[p].values_[t][iresFaces_[b].id];
+
+//                                        internalFacesDynamic[index*6+0] = dynamic_properties[p].values_[t][iresFaces_[b].id];
+//                                        internalFacesDynamic[index*6+1] = dynamic_properties[p].values_[t][iresFaces_[b].id];
+//                                        internalFacesDynamic[index*6+2] = dynamic_properties[p].values_[t][iresFaces_[b].id];
+//                                        internalFacesDynamic[index*6+3] = dynamic_properties[p].values_[t][iresFaces_[b].id];
+//                                        internalFacesDynamic[index*6+4] = dynamic_properties[p].values_[t][iresFaces_[b].id];
+//                                        internalFacesDynamic[index*6+5] = dynamic_properties[p].values_[t][iresFaces_[b].id];
+
                                         index++;
 
 
                                 }
 
                                 faceDynamic.resize(index);
+
                                 index = 0;
                                 glBindBuffer ( GL_ARRAY_BUFFER , faceDynamicIds[p][t] );
                                 glBufferData ( GL_ARRAY_BUFFER , faceDynamic.size ( ) * sizeof ( faceDynamic[0] ) , &faceDynamic[0] , GL_STATIC_DRAW );
+                                glFinish();
+//                                internalFacesDynamic.resize( index * 6 );
+//                                glBindBuffer ( GL_ARRAY_BUFFER , internalFacesDynamicIds[p][t] );
+//                                glBufferData ( GL_ARRAY_BUFFER , internalFacesDynamic.size ( ) * sizeof ( internalFacesDynamic[0] ) , &internalFacesDynamic[0] , GL_STATIC_DRAW );
+//                                internalFacesDynamic.clear();
 
                         }
+                        faceDynamic.clear ( );
 
                 }
-                faceDynamic.clear ( );
 
 	}
 
@@ -733,9 +766,10 @@ namespace IRES
                 glBufferData ( GL_ARRAY_BUFFER , internalFacesStatic.size( ) * sizeof(internalFacesStatic[0]) , &internalFacesStatic[0] , GL_STATIC_DRAW );
                 glBindBuffer ( GL_ARRAY_BUFFER, 0);
 
+                glFinish();
 
-
-
+                faceStatic.clear();
+                internalFacesStatic.clear();
 
 	}
 

@@ -343,7 +343,7 @@ void MainWindow::on_action_Load_Shaders_triggered()
 
 void MainWindow::keyPressEvent(QKeyEvent *event)
 {
-	if(event->key()==Qt::Key_F)
+	if((event->modifiers() == Qt::ShiftModifier ) && ( event->key()==Qt::Key_F))
 	{
 		showfullScreen_ = !showfullScreen_;
 		if ( showfullScreen_ )

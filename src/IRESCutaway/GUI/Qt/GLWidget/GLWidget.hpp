@@ -45,11 +45,12 @@ class GLWidget: public QGLWidget
 		// From QGLWidget
 		explicit GLWidget ( const QGLFormat& format , QWidget* parent = 0 , const QGLWidget* shareWidget = 0 , Qt::WindowFlags f = 0 );
 		explicit GLWidget ( QWidget* parent = 0 , const QGLWidget* shareWidget = 0 , Qt::WindowFlags f = 0 );
+		~GLWidget();
 		void initializeGL ( );
 		void resizeGL     ( int width , int height );
 
 		void paintGL      ( );
-                //virtual void paintEvent   ( QPaintEvent * );
+                void paintEvent   ( QPaintEvent * );
 
 		//void timerEvent(QTimerEvent*);
 		void processMultiKeys ( );
@@ -83,6 +84,7 @@ class GLWidget: public QGLWidget
 		// Draw Functions
                 void drawBackGround ( ) const;
 		void showFault		( bool visibility );
+		void showWireFrame      ( bool visibility );
 		void showBorderLines    ( bool visibility );
 
 		void setPaperDemoVisibility             ( bool visibility ) { isPaperDemo_ = visibility; updateGL(); }
@@ -122,6 +124,7 @@ class GLWidget: public QGLWidget
                         void PaperDemo( );
                         void PaperDrawCutawaySurface( );
                         void PaperPrimary( );
+                        void PaperSecondary ( );
 		// ! STATIC  VIEWER F11 Static Properties
                         void IRESCutawayStatic                  ( ) ;
                         void drawIRESCutawayStaticSurface       ( ) const; //
@@ -161,11 +164,19 @@ class GLWidget: public QGLWidget
 
                                         glBindVertexArray ( 0 );
 
-                                updateGL();
+//                                        glBindVertexArray ( reservoir_model_.vertexArrayInternalFaces );
+//
+//                                        glBindBuffer(GL_ARRAY_BUFFER, reservoir_model_.internalFacesDynamicIds[dynamic_property_index][time_step]);
+//                                        glEnableVertexAttribArray(3);
+//                                        glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, 0, 0);
+//
+//                                        glBindVertexArray ( 0 );
+
+                                update();
                         };
                         void changeDynamicProperty ( int index )
                         {
-                                        dynamic_property_index = index;
+                                        this->dynamic_property_index = index;
 
                                         glBindVertexArray ( reservoir_model_.vertexArrayCuboids );
 
@@ -183,7 +194,16 @@ class GLWidget: public QGLWidget
 
                                         glBindVertexArray ( 0 );
 
-                                updateGL();
+
+//                                        glBindVertexArray ( reservoir_model_.vertexArrayInternalFaces );
+//
+//                                        glBindBuffer(GL_ARRAY_BUFFER, reservoir_model_.internalFacesDynamicIds[dynamic_property_index][time_step]);
+//                                        glEnableVertexAttribArray(3);
+//                                        glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, 0, 0);
+//
+//                                        glBindVertexArray ( 0 );
+
+                                update();
                         };
 
 
@@ -215,30 +235,35 @@ class GLWidget: public QGLWidget
 		QSet<int> keysPresseds_;
 		bool 	  buttonRelease_;
 
-		Shader*                         BackGround;
+		Shader*                         BackGround_;
+                Shader*                         RawShell_;
+                Shader*                         RawModel_;
+                Shader*                         BorderLines_;
+                Shader*                         DummyQuad_;
 
 		bool isIRESOpen_;
 
+		// ! DEMO
+
+                Shader*                         BurnsPrimarySetup_;
+                Shader*                         BurnsPrimary_;
+                Shader*                         BurnsSecondary_;
+                Shader*                         BurnsPly_;
+
 		// ! DYNAMIC VIEWER F10 Static Properties
 
-		Shader*                         IRESCutawaySurfaceStatic;
+		Shader*                         IRESCutawaySurfaceStatic_;
 		Shader*                         IRESCutawayStaticShell_;
                 Shader*                         IRESCutawayStatic_;
                 Shader*                         IRESPrimaryStatic_;
 
-                Shader*                         BurnsPrimarySetup;
-                Shader*                         BurnsPrimary;
-                Shader*                         BurnsPly;
-		Shader*                         rawShellLCG;
-		Shader*                         rawModel_;
-		Shader* 			borderLinesLCG;
-
 		// ! DYNAMIC VIEWER F12 Dynamic Properties
 
-                Shader*                         IRESCutawaySurfaceDynamic;
-                Shader*                         IRESCutawayDynamicCrust;
-                Shader*                         IRESCutawayDynamicShell;
-                Shader*                         IRESPrimaryDynamic;
+                Shader*                         IRESCutawaySurfaceDynamic_;
+                Shader*                         IRESCutawayDynamicCrust_;
+                Shader*                         IRESCutawayDynamicShell_;
+                Shader*                         IRESPrimaryDynamic_;
+                Shader*                         IRESCutawayDynamic_;
 
 		QImage fbo;
 		float  angle;
@@ -284,6 +309,7 @@ class GLWidget: public QGLWidget
 
 		// lights
 		std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f> >  lights;
+		GLfloat  * light_elements;
 
 		/// normal x y z + vertice .z
 		Framebuffer * depthFBO;
@@ -299,10 +325,10 @@ class GLWidget: public QGLWidget
 		float volume_width;
 		float volume_height;
 
-		float justWireFrame;
+                int borderLinesSize_;  // Border Lines  Emilio's Algorithm
+                int meanFilterSize_;   // Mean Filter on the Image Cutaway.
 
-                int borderLinesSize_;
-                int meanFilterSize_;
+                float justWireFrame;
 
 		int time_step;
 		int dynamic_property_index;
@@ -316,6 +342,13 @@ class GLWidget: public QGLWidget
 
 		Trackball * trackball_;
 
+		Eigen::Quaternionf targetPosition_;
+		Eigen::Quaternionf sourcePosition_;
+
+                float time_steps_;
+
+                Eigen::Affine3f smoothrotationMatrix_;
+
 		float orthoZoom;
 
 		// LCG procedure
@@ -327,13 +360,15 @@ class GLWidget: public QGLWidget
 
 		Shader * xtoon_texture_viewer;
 
-		// Ply Models
+		// Ply Models Emilio's No sense !
                 Model_PLY ply_primary_;
-
                 Model_PLY ply_secondary_;
 
-                GLuint vertex_box;
-                GLuint vertexArray_box;
+                GLuint vertexBuffer_Dummy;
+                GLuint vertexArray_Dummy;
+
+                Eigen::Vector3f displacement;
+                Eigen::Vector3f max_displacement;
 
                 long unsigned int videoSequence;
 };

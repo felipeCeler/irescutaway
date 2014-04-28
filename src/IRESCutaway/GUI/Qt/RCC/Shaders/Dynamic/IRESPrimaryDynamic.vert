@@ -64,7 +64,7 @@ vec4 propertyColor (  )
 
 bool intersect (  vec4 p )
 {
-        float s = 0.35;
+        float s = 0.5;
         return ( ( p.x >= box_min.x*s ) && ( p.x  < box_max.x*s ) &&
                  ( p.y >= box_min.y*s ) && ( p.y  < box_max.y*s ) &&
                  ( p.z >= box_min.z*s ) && ( p.z  < box_max.z*s ) );

@@ -49,7 +49,7 @@ vec4 extends;
 void main()
 {
 
-        float scale = 0.5;
+        float scale = 0.7;
 
         vec3 center_of_mass = (v0+v1+v2+v3+v4+v5+v6+v7) * 0.125;
 

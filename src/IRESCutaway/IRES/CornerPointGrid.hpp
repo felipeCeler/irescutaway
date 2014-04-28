@@ -119,6 +119,7 @@ namespace IRES
                         int currentTimeStep;	   // Only for Dynamic
 
                         int  showFault;		   // Fault visibility
+                        int  showWireFrame;        // Fault visibility
                         bool showBorderLine;       // Border Line Visibility
 
 			void setupStatic ( );
