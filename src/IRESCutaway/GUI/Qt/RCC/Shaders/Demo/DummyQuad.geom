@@ -11,6 +11,13 @@ uniform vec3 max_displacement;
 uniform vec2 WIN_SCALE;
 noperspective out vec4 dist;
 
+out VertexData
+{
+        vec4 vertice;
+        vec4 normal;
+        vec4 color;
+} VertexOut;
+
 // For while, all transformations come from the Celer::Camera.
 uniform mat4 ModelMatrix;
 uniform mat4 ViewMatrix;
@@ -21,6 +28,7 @@ void main()
     float x = -3;
     float y = -3;
     float z = -3;
+
 
     vec4 vertex0 = ProjectionMatrix * ModelMatrix * ViewMatrix * vec4( -x, -y, displacement.x, 1.0 );
     vec4 vertex1 = ProjectionMatrix * ModelMatrix * ViewMatrix * vec4(  x, -y, displacement.x, 1.0 );
@@ -46,23 +54,31 @@ void main()
     float area3 = abs(v0.x * v5.y - v0.y * v5.x);
     float area4 = abs(v2.x * v5.y - v2.y * v5.x);
 
+    mat3 normalMatrix = mat3(inverse(transpose((ModelMatrix*ViewMatrix))));
+
+    VertexOut.color = vec4(0.7,0.0,0.0,0.75);
+    VertexOut.normal = vec4(normalMatrix * vec3(0.0,0.0,1.0),0.0);
 
     gl_Position = vertex0;
+    VertexOut.vertice = ViewMatrix * vec4( -x, -y, displacement.x, 1.0 );
     dist = vec4(area4/length(v4), area3/length(v3), 0, 0);
     texcoord = vec2( 1.0, 1.0 );
     EmitVertex();
 
     gl_Position = vertex1;
+    VertexOut.vertice = ViewMatrix * vec4( x, -y, displacement.x, 1.0 );
     dist = vec4(area2/length(v4), 0, 0, area1/length(v2));
     texcoord = vec2( 0.0, 1.0 );
     EmitVertex();
 
     gl_Position = vertex3;
+    VertexOut.vertice = ViewMatrix * vec4( x, y, displacement.x, 1.0 );
     dist = vec4(0, area2/length(v3), area1/length(v0), 0);
     texcoord = vec2( 1.0, 0.0 );
     EmitVertex();
 
     gl_Position = vertex2;
+    VertexOut.vertice = ViewMatrix * vec4( -x, y, displacement.x, 1.0 );
     dist = vec4(0, 0, area3/length(v0), area4/length(v2));
     texcoord =  vec2( 0.0, 0.0 );
     EmitVertex();
@@ -95,23 +111,29 @@ void main()
     area3 = abs(v0.x * v5.y - v0.y * v5.x);
     area4 = abs(v2.x * v5.y - v2.y * v5.x);
 
+    VertexOut.color = vec4(0.7,0.0,0.0,0.75);
+    VertexOut.normal = vec4(normalMatrix * vec3(0.0,1.0,0.0),0.0);
 
     gl_Position = vertex0;
+    VertexOut.vertice = ViewMatrix * vec4( -x, displacement.y, -z, 1.0 );
     dist = vec4(area4/length(v4), area3/length(v3), 0, 0);
     texcoord = vec2( 1.0, 1.0 );
     EmitVertex();
 
     gl_Position = vertex1;
+    VertexOut.vertice = ViewMatrix * vec4( x, displacement.y, -z, 1.0 );
     dist = vec4(area2/length(v4), 0, 0, area1/length(v2));
     texcoord = vec2( 0.0, 1.0 );
     EmitVertex();
 
     gl_Position = vertex3;
+    VertexOut.vertice = ViewMatrix * vec4( x, displacement.y, z, 1.0 );
     dist = vec4(0, area2/length(v3), area1/length(v0), 0);
     texcoord = vec2( 1.0, 0.0 );
     EmitVertex();
 
     gl_Position = vertex2;
+    VertexOut.vertice = ViewMatrix * vec4( -x, displacement.y, z, 1.0 );
     dist = vec4(0, 0, area3/length(v0), area4/length(v2));
     texcoord =  vec2( 0.0, 0.0 );
     EmitVertex();
@@ -145,22 +167,29 @@ void main()
     area4 = abs(v2.x * v5.y - v2.y * v5.x);
 
 
+    VertexOut.color = vec4(0.7,0.0,0.0,0.75);
+    VertexOut.normal = vec4(normalMatrix * vec3(1.0,0.0,0.0),0.0);
+
     gl_Position = vertex0;
+    VertexOut.vertice = ViewMatrix * vec4( displacement.z, -y, -z, 1.0 );
     dist = vec4(area4/length(v4), area3/length(v3), 0, 0);
     texcoord = vec2( 1.0, 1.0 );
     EmitVertex();
 
     gl_Position = vertex1;
+    VertexOut.vertice = ViewMatrix * vec4( displacement.z,  y, -z, 1.0 );
     dist = vec4(area2/length(v4), 0, 0, area1/length(v2));
     texcoord = vec2( 0.0, 1.0 );
     EmitVertex();
 
     gl_Position = vertex3;
+    VertexOut.vertice = ViewMatrix * vec4( displacement.z, y, z, 1.0 );
     dist = vec4(0, area2/length(v3), area1/length(v0), 0);
     texcoord = vec2( 1.0, 0.0 );
     EmitVertex();
 
     gl_Position = vertex2;
+    VertexOut.vertice = ViewMatrix * vec4( displacement.z, -y, z, 1.0 );
     dist = vec4(0, 0, area3/length(v0), area4/length(v2));
     texcoord =  vec2( 0.0, 0.0 );
     EmitVertex();

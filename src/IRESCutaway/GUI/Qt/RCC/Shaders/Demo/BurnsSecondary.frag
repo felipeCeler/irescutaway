@@ -15,6 +15,8 @@ uniform vec3 lights[4];
 
 out vec4 outputColor;
 
+uniform int Wireframe;
+
 void main(void)
 {
 
@@ -40,9 +42,16 @@ void main(void)
 
 
         vec4 color = la + ld + ls;
-        color.a = 1.0;
+        color.a = VertexIn.color.a;
 
 
-        outputColor = I * vec4(vec3(0.0), 1.0) + (1.0 - I) * ( color );
+        if ( (Wireframe == 1) && (I > 0.01 ) )
+                outputColor = I * vec4(vec3(0.0), 1.0);
+        else if ( Wireframe == 0 )
+                outputColor = I * vec4(vec3(0.0), 1.0) + (1.0 - I) * ( color );
+        else
+                discard;
+
+
 
 }

@@ -9,7 +9,7 @@ layout(location = 2) in vec4 static_properties;
 out VertexData
 {
                 vec4 vertice;
-                vec4 normal;
+flat            vec4 normal;
                 vec4 color;
 } VertexOut;
 
@@ -68,9 +68,9 @@ void main(void)
 
 
 
-                if ( n.w > 1.0)
-                        gl_Position =  vec4(0.0,0.0,0.0,0.0);
-                else
+//                if ( n.w > 1.0)
+//                        gl_Position =  vec4(0.0,0.0,0.0,0.0);
+//                else
                         gl_Position =  ProjectionMatrix * ViewMatrix *  v;
 
 

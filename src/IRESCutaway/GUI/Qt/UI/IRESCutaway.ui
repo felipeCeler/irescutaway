@@ -96,9 +96,17 @@
     <addaction name="separator"/>
     <addaction name="action_Freeze_View"/>
    </widget>
+   <widget class="QMenu" name="menuAnimation">
+    <property name="title">
+     <string>Animation</string>
+    </property>
+    <addaction name="actionStart_Session"/>
+    <addaction name="actionFlush"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuTools"/>
    <addaction name="menuView"/>
+   <addaction name="menuAnimation"/>
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QDockWidget" name="dockWidgetStatic">
@@ -1164,6 +1172,16 @@
    </property>
    <property name="shortcut">
     <string>Alt+5</string>
+   </property>
+  </action>
+  <action name="actionStart_Session">
+   <property name="text">
+    <string>Start Recording</string>
+   </property>
+  </action>
+  <action name="actionFlush">
+   <property name="text">
+    <string>Flush</string>
    </property>
   </action>
  </widget>

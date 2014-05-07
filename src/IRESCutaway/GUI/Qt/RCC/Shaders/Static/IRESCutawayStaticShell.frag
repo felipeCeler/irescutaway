@@ -6,7 +6,7 @@ layout(location = 1) uniform sampler2D primaryBuffer;
 in VertexData
 {
 	vec4 vertice;
-   flat vec4 normal;
+    vec4 normal;
 	vec4 color;
 } VertexIn;
 

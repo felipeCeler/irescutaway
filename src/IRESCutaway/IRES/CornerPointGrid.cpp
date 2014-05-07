@@ -493,6 +493,12 @@ namespace IRES
 
 	                glFinish();
 
+                        cuboids.clear();
+                        faces.clear();
+                        faceType.clear();
+
+                        internalFaces.clear();
+
 	                loadStaticProperties  ( );
 	                loadDynamicProperties ( );
 		}
@@ -579,24 +585,11 @@ namespace IRES
 
                 }
 
-//                if ( internalFacesDynamicIds.size ( ) > 0 )
-//                {
-//                        for ( std::size_t p = 0; p < internalFacesDynamicIds.size ( ); p++ )
-//                        {
-//                                glDeleteBuffers ( internalFacesDynamicIds[p].size ( ) , &internalFacesDynamicIds[p][0] );
-//                        }
-//                }
-
 
                 faceDynamicIds.clear ( );
 
                 faceDynamicIds.resize ( dynamic_properties.size ( ) );
                 faceDynamic.resize ( iresFaces_.size() );
-
-//                internalFacesDynamicIds.clear ( );
-//
-//                internalFacesDynamicIds.resize ( dynamic_properties.size ( ) );
-//                internalFacesDynamic.resize ( 6 * iresFaces_.size() );
 
                 index = 0;
 
@@ -606,9 +599,6 @@ namespace IRES
 
                         glGenBuffers ( dynamic_properties[p].numTimeSteps , &faceDynamicIds[p][0] );
 
-//                        internalFacesDynamicIds[p].resize ( dynamic_properties[p].numTimeSteps );
-//
-//                        glGenBuffers ( dynamic_properties[p].numTimeSteps , &internalFacesDynamicIds[p][0] );
 
                         for ( unsigned int t = 0; t < dynamic_properties[p].numTimeSteps; t++ )
                         {
@@ -618,33 +608,20 @@ namespace IRES
 
                                         faceDynamic[index] = dynamic_properties[p].values_[t][iresFaces_[b].id];
 
-//                                        internalFacesDynamic[index*6+0] = dynamic_properties[p].values_[t][iresFaces_[b].id];
-//                                        internalFacesDynamic[index*6+1] = dynamic_properties[p].values_[t][iresFaces_[b].id];
-//                                        internalFacesDynamic[index*6+2] = dynamic_properties[p].values_[t][iresFaces_[b].id];
-//                                        internalFacesDynamic[index*6+3] = dynamic_properties[p].values_[t][iresFaces_[b].id];
-//                                        internalFacesDynamic[index*6+4] = dynamic_properties[p].values_[t][iresFaces_[b].id];
-//                                        internalFacesDynamic[index*6+5] = dynamic_properties[p].values_[t][iresFaces_[b].id];
-
                                         index++;
 
 
                                 }
 
                                 faceDynamic.resize(index);
-
                                 index = 0;
                                 glBindBuffer ( GL_ARRAY_BUFFER , faceDynamicIds[p][t] );
                                 glBufferData ( GL_ARRAY_BUFFER , faceDynamic.size ( ) * sizeof ( faceDynamic[0] ) , &faceDynamic[0] , GL_STATIC_DRAW );
                                 glFinish();
-//                                internalFacesDynamic.resize( index * 6 );
-//                                glBindBuffer ( GL_ARRAY_BUFFER , internalFacesDynamicIds[p][t] );
-//                                glBufferData ( GL_ARRAY_BUFFER , internalFacesDynamic.size ( ) * sizeof ( internalFacesDynamic[0] ) , &internalFacesDynamic[0] , GL_STATIC_DRAW );
-//                                internalFacesDynamic.clear();
-
                         }
-                        faceDynamic.clear ( );
 
                 }
+                faceDynamic.clear ( );
 
 	}
 

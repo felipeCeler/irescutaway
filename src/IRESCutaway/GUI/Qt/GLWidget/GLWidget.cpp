@@ -29,6 +29,7 @@ void GLWidget::initializeGL ( )
 	}
 	/// GLEW OpenGL
 
+
 	buttonRelease_ = false;
 
 	/// OpenGL Stuffs
@@ -87,11 +88,6 @@ void GLWidget::initializeGL ( )
 	isIRESCutawayDynamic_ = 0;
 
 	cluster = 0;
-
-	//Timer Animation
-
-	fps = 0;
-
         cutawayPass_ = 0.0;
         accumulateCutawayGenerationTime_ = 0.0;
         accumulateRenderingCutawayTime_ = 0.0;
@@ -103,7 +99,7 @@ void GLWidget::initializeGL ( )
 
 	updateTimer_.setSingleShot ( false );
 	connect ( &updateTimer_ , SIGNAL ( timeout ( ) ) , this , SLOT ( gameLooping ( ) ) );
-	updateTimer_.start(0 );
+	updateTimer_.start(20);
 
 	fpsTimer_.setSingleShot ( false );
 	connect ( &fpsTimer_ , SIGNAL ( timeout ( ) ) , this , SLOT ( fpsCounter( ) ) );
@@ -116,20 +112,6 @@ void GLWidget::initializeGL ( )
 
         borderLinesSize_ = 0;
         meanFilterSize_  = 0;
-
-        // Quaternion Slerp
-
-        sourcePosition_ = Eigen::Quaternionf(0.0,1.0,0.0,0.0);
-
-        sourcePosition_.normalize();
-
-        targetPosition_ = Eigen::Quaternionf(0.0,0.0,0.0,1.0);
-        targetPosition_.normalized();
-
-        time_steps_ = 0.0;
-
-        smoothrotationMatrix_.Identity();
-
 
 	trackball_ = new Trackball();
 
@@ -165,16 +147,40 @@ void GLWidget::initializeGL ( )
 
 	glBindVertexArray(vertexArray_Dummy);
 	        glBindBuffer(GL_ARRAY_BUFFER,vertexBuffer_Dummy);
-	        glBufferData ( GL_ARRAY_BUFFER , 0, 0 , GL_STATIC_DRAW );
+	        glBufferData ( GL_ARRAY_BUFFER , 1, 0 , GL_STATIC_DRAW );
 
                 glEnableVertexAttribArray(0);
                 glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
         glBindVertexArray(0);
 
-        videoSequence = 0;
 
-       displacement = Eigen::Vector3f(-3.0,-3.0,-3.0);
-       max_displacement = Eigen::Vector3f(3.0,3.0,3.0);
+
+       displacement = Eigen::Vector3f ( -3.0 , -3.0 , -3.0 );
+        max_displacement = Eigen::Vector3f ( 3.0 , 3.0 , 3.0 );
+
+       // Animation Controls
+                //Timer Animation
+
+                fps             = 0;
+                videoSequence   = 0;
+                frames.resize ( 4000 );
+                // Quaternion Slerp
+
+                sourcePosition_ = Eigen::Quaternionf ( 0.0 , 1.0 , 0.0 , 0.0 );
+                sourcePosition_.normalize ( );
+
+                targetPosition_ = Eigen::Quaternionf ( 0.0 , 0.0 , 0.0 , 1.0 );
+                targetPosition_.normalized ( );
+
+
+                nextKeyframe_ = 0;
+
+                keyframes_.resize( 6 );
+                number_of_keyframes_ = 0;
+
+                time_steps_     = 0.0;
+
+                play_           = false;
 
 }
 
@@ -375,7 +381,6 @@ void GLWidget::openIRES_v2( const std::string& filename )
 
 void GLWidget::resizeGL ( int width , int height )
 {
-
 	glViewport ( 0 , 0 , width , height );
 
 	float aspect = (float) width / height;
@@ -395,17 +400,21 @@ void GLWidget::resizeGL ( int width , int height )
 void GLWidget::paintEvent   ( QPaintEvent * )
 {
 
+        QPainter p; // used for text overlay
+
+        p.begin ( this );
+
+        p.setWindow(0,0,width(),height());
+        p.setRenderHint ( QPainter::Antialiasing );
+
+        p.beginNativePainting();
         paintGL();
+        p.endNativePainting();
 
         //  Reset OpenGL state for overlays.
         glDisable( GL_DEPTH_TEST );
         glDisable( GL_LINE_SMOOTH );
 
-
-        QPainter p; // used for text overlay
-
-        p.begin ( this );
-        p.setRenderHint ( QPainter::Antialiasing );
         // save the GL state set for QPainter
         //draw the overlayed text using QPainter
 
@@ -462,7 +471,10 @@ void GLWidget::paintGL ( )
                 processMultiKeys ( );
         }
 
+        drawBackGround ( );
+
         renderTime.start();
+
 
         if ( isIRESOpen_ )
         {
@@ -486,6 +498,7 @@ void GLWidget::paintGL ( )
                 //trackball_->render();
         }
 
+
         glFinish( );
 
         // std::cout << " 1 shot " <<  trackball_->getQuaternion().coeffs() <<  std::endl;
@@ -505,13 +518,45 @@ void GLWidget::paintGL ( )
 
         fps++;
 
-        //QGLWidget::grabFrameBuffer().save("frame"+QString::number(videoSequence)+".tif","TIFF",100);
+        // .save("frame"+QString::number(videoSequence)+".tif","TIFF",100);
 
-        videoSequence++;
+//        if ( play_ )
+//        {
+//                if ( videoSequence <= 3998 )
+//                {
+//                        frames[videoSequence] = QImage(width(),height(),QImage::Format_ARGB32_Premultiplied);
+//                        glReadPixels(0, 0, width(), height(), GL_BGRA, GL_UNSIGNED_BYTE, frames[videoSequence].bits());
+//                        frames[videoSequence].rgbSwapped();
+//                        videoSequence++;
+//                }
+//                else
+//                {
+//                        play_ = false;
+//
+//                }
+//
+//        }
+
+
 
 
 }
 
+
+void GLWidget::flush()
+{
+
+        for (std::size_t index = 0; index < videoSequence; index++)
+        {
+                frames[index].save("frame"+QString::number(index)+".tif","TIFF",100);
+        }
+
+        QProcess _process;
+        _process.start(QString("echo"), QStringList("-la"));
+        _process.waitForFinished();
+
+
+}
 
 /// For DropArea's implementation, we clear invoke clear() and then accept the proposed event.
 /// The clear() function sets the text in DropArea to "<drop content>" and sets the backgroundRole to
@@ -795,6 +840,7 @@ void GLWidget::drawIRESCutawayDynamicSurface ( ) const
 void GLWidget::drawPrimaryDynamic ( ) const
 {
 
+
         IRESPrimaryDynamic_->enable( );
 
         IRESPrimaryDynamic_->setUniform("num_lights", (GLint) lights.size ( )  );
@@ -915,8 +961,6 @@ void GLWidget::IRESCutawayDynamic ( ) const
                 glClearDepth ( 1.0f );
                 glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-                drawBackGround ( );
-
                 if ( draw_secondary )
                 {
                         drawSecondaryDynamic( );
@@ -1031,7 +1075,7 @@ void GLWidget::PaperDemo()
 {
         if ( isIRESOpen_ )
         {
-                //PaperDrawCutawaySurface( );
+                PaperDrawCutawaySurface( );
 
                 glClearColor ( 1.0 , 1.0 , 1.0 , 1.0 );
                 glDepthFunc(GL_LESS);
@@ -1060,6 +1104,7 @@ void GLWidget::PaperDemo()
                 DummyQuad_->setUniform("WIN_SCALE", (float) width ( ) , (float) height ( ) );
                 DummyQuad_->setUniform("displacement", displacement[0],displacement[1],displacement[2] );
                 DummyQuad_->setUniform("max_displacement", max_displacement[0],max_displacement[1],max_displacement[2] );
+                DummyQuad_->setUniform("num_lights", (GLint) lights.size ( )  );
                 DummyQuad_->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
                 DummyQuad_->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
                 DummyQuad_->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
@@ -1151,8 +1196,7 @@ void GLWidget::PaperSecondary( )
 
 
         BurnsSecondary_->setUniform("faults", reservoir_model_.showFault );
-        BurnsSecondary_->setUniform("WireFrame", reservoir_model_.showWireFrame );
-        BurnsSecondary_->setUniform("justWireFrame", justWireFrame );
+        BurnsSecondary_->setUniform("Wireframe", reservoir_model_.showWireFrame );
         BurnsSecondary_->setUniform("displacement", displacement[0],displacement[1],displacement[2] );
 
         BurnsSecondary_->setUniform("num_lights", (GLint) lights.size ( )  );
@@ -1191,6 +1235,9 @@ void GLWidget::PaperSecondary( )
 
 void GLWidget::PaperPrimary( )
 {
+
+
+        drawBackGround();
 
         BurnsPrimary_->enable( );
 
@@ -1258,13 +1305,33 @@ void GLWidget::PaperPly ( ) const
 void GLWidget::gameLooping ( )
 {
 
-//     std::cout << "fps :" << time_steps_  << std::endl;
 //
-//     sourcePosition_ = Eigen::Quaternionf(time_steps_,1.0f,0.0f,0.0f);
-//
-//     trackball_->spin( sourcePosition_ );
-//
-//     update();
+        if ( play_ )
+        {
+
+                if ( time_steps_ <= 1.0 )
+                {
+                        std::cout << "fps :" << time_interval_  << std::endl;
+                        trackball_->setQuaternion(this->squad(sourcePosition_,sourcePositionTangent_,targetPosition_,targetPositionTangent_,time_steps_));
+                        time_steps_ += time_interval_;
+                        update();
+                }else if ( nextKeyframe_ < number_of_keyframes_ )
+                {
+                        time_steps_ = 0.0;
+                        sourcePosition_ = targetPosition_;
+                        targetPosition_ = keyframes_[nextKeyframe_++];
+                        time_interval_  = 0.01*( std::abs(sourcePosition_.dot(targetPosition_)));
+                        qDebug() << keyframes_.size();
+
+                }else
+                {
+                        nextKeyframe_   = 0;
+                        time_steps_     = 0.0;
+                        play_           = false;
+                }
+
+        }
+
 
      fps++;
 
@@ -1499,10 +1566,21 @@ void GLWidget::keyPressEvent ( QKeyEvent * event )
 	{
 		loadShaders();
 	}
+        else if ( (event->modifiers() == Qt::ControlModifier ) && (event->key() == Qt::Key_S) )
+        {
+                flush();
+        }
 	else if ( (event->modifiers() == Qt::ShiftModifier ) && (event->key() == Qt::Key_R) )
 	{
                 trackball_->reset();
                 trackball_->decreaseZoom( 5.05 );
+                //  Animation
+                        number_of_keyframes_    = 0;
+                        nextKeyframe_           = 0;
+                        play_                   = false;
+                        time_steps_             = 0.0;
+                        videoSequence = 0;
+
                 update();
 	}
 	else if ( event->key() == Qt::Key_1)
@@ -1528,8 +1606,27 @@ void GLWidget::keyPressEvent ( QKeyEvent * event )
 	}else if ( event->key() == Qt::Key_N )
 	{
 	        if ( time_steps_ > 0 )
-	        time_steps_ -= 1.0f;
-	}else
+	                time_steps_ -= 1.0f;
+
+	}
+	else if ( event->key() == Qt::Key_P )
+        {
+	        setPlay();
+
+        }
+	else if ( event->key() == Qt::Key_6)
+	{
+	        sourcePosition_ = trackball_->getQuaternion();
+	}
+	else if ( event->key() == Qt::Key_7)
+        {
+                targetPosition_ = trackball_->getQuaternion ( );
+        }
+        else if ( event->key() == Qt::Key_Space)
+        {
+                keyframes_[number_of_keyframes_++] = (trackball_->getQuaternion());
+        }
+	else
 	{
 	        event->ignore();
 	}
@@ -1667,17 +1764,17 @@ void GLWidget::wheelEvent ( QWheelEvent *event )
 void GLWidget::showFault	  ( bool visibility )
 {
 	if ( visibility )
-		reservoir_model_.showFault = 0;
-	else
 		reservoir_model_.showFault = 1;
+	else
+		reservoir_model_.showFault = 0;
 }
 
-void GLWidget::showWireFrame      ( bool visibility )
+void GLWidget::showWireframe      ( bool visibility )
 {
         if ( visibility )
-                reservoir_model_.showWireFrame = 0;
-        else
                 reservoir_model_.showWireFrame = 1;
+        else
+                reservoir_model_.showWireFrame = 0;
 }
 
 void GLWidget::showBorderLines    ( bool visibility )

@@ -92,6 +92,7 @@ void MainWindow::WidgetSignalSlotConnection( )
         // Feature Visibility
 
         connect(ui->action_Fault,   SIGNAL(toggled(bool)), glWidget, SLOT(showFault(bool)));
+        connect(ui->action_Show_WireFrame,   SIGNAL(toggled(bool)), glWidget, SLOT(showWireframe(bool)));
         connect(ui->action_BorderLine, SIGNAL(toggled(bool)), glWidget, SLOT(showBorderLines(bool)));
 
         connect(ui->horizontalSliderMeanFilterSize, SIGNAL(valueChanged(int)), glWidget, SLOT(meanFilterSize(int)));

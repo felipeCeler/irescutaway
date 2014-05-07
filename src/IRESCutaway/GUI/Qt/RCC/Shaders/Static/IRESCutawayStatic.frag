@@ -5,7 +5,7 @@ layout(location = 0) uniform sampler2D normals;
 in VertexData
 {
                 vec4 vertice;
-                vec4 normal;
+flat            vec4 normal;
 		vec4 color;
 } VertexIn;
 
@@ -95,57 +95,38 @@ void main(void)
 
         // for back faces use the normal of the cutaway surface (simulate a cut inside the cells)
 
-       newNormal = -cutaway.xyz;
-       vec3 eye_dir = normalize ( -newVert.xyz );
 
+        vec3 eye_dir = vec3(0.0);
         vec4 la = vec4(0.0);
         vec4 ld = vec4(0.0);
         vec4 ls = vec4(0.0);
 
-        // compute illumination for each light
-        for (int i = 0; i < num_lights; ++i) {
-            vec3 light_dir = normalize(lights[i]);
-            vec3 ref = normalize ( -reflect ( light_dir , newNormal ) );
-            la += vec4 ( 0.3 / float(num_lights) );
-            ld += color_t * (1.0 / float(num_lights)) * max ( 0.0 , abs(dot ( newNormal , light_dir ) ));
-            ls += color_t * 0.0 * pow ( max ( 0.0 , dot ( eye_dir , ref ) ) , 5.0 );
-        }
-
-        vec4 color = la + ld + ls;
-        color.a = 1.0;
-
+        vec4 color = vec4(0.0);
         // uncomment to turn off illumination
         //color = color_t;
 
+        newNormal = -cutaway.xyz;
+         eye_dir = normalize ( -newVert.xyz );
+
+          la = vec4(0.0);
+          ld = vec4(0.0);
+          ls = vec4(0.0);
+
+         // compute illumination for each light
+         for (int i = 0; i < num_lights; ++i) {
+             vec3 light_dir = normalize(lights[i]);
+             vec3 ref = normalize ( -reflect ( light_dir , newNormal ) );
+             la += vec4 ( 0.3 / float(num_lights) );
+             ld += color_t * (1.0 / float(num_lights)) * max ( 0.0 , abs(dot ( newNormal , light_dir ) ));
+             ls += color_t * 0.0 * pow ( max ( 0.0 , dot ( eye_dir , ref ) ) , 5.0 );
+         }
+
+         color = la + ld + ls;
+         color.a = 1.0;
 
         // interior cutaway lines (back face intersection with cutaway)
-        if ( I == 1)
-            outputColor = I * vec4(vec3(0.1), 1.0) + (1.0 - I) * ( color );
-           //     outputColor = ( color );
-        // cutaway border lines (front face intersection with cutaway)
-        // lines outside cutaway (remaining front faces)
-        else
-           //outputColor = I * vec4(vec3(0.7), 1.0) + (1.0 - I) * ( color );
-              outputColor =  ( color );
+
+          outputColor = I * vec4(vec3(0.1), 1.0) + (1.0 - I) * ( color );
 
 
-//
-//
-//                vec4 la = vec4(0.0);
-//                vec4 ld = vec4(0.0);
-//                vec4 ls = vec4(0.0);
-//
-//                vec3 eye_dir = normalize ( -newVert.xyz );
-//
-//                for (int i = 0; i < num_lights; ++i) {
-//                    vec3 light_dir = normalize(lights[i]);
-//                    vec3 ref = normalize ( -reflect ( light_dir , newNormal ) );
-//                    la += vec4 ( 0.3 / float(num_lights) );
-//                    ld += color_t * (1.0 / float(num_lights)) * max ( 0.0 , abs(dot ( newNormal , light_dir ) ));
-//                    ls += color_t * 0.0 * pow ( max ( 0.0 , dot ( eye_dir , ref ) ) , 5.0 );
-//                }
-//
-//                        vec4 color = la + ld + ls;
-//                        color.a = 1.0;
-//        outputColor =  ( color );
 }

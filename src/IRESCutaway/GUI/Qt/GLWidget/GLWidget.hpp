@@ -19,6 +19,7 @@
 #include <cstdlib>
 #include <cmath>
 #include <vector>
+#include <deque>
 #include <limits>
 #include <algorithm>
 #include <iterator>
@@ -84,24 +85,24 @@ class GLWidget: public QGLWidget
 		// Draw Functions
                 void drawBackGround ( ) const;
 		void showFault		( bool visibility );
-		void showWireFrame      ( bool visibility );
+		void showWireframe      ( bool visibility );
 		void showBorderLines    ( bool visibility );
 
-		void setPaperDemoVisibility             ( bool visibility ) { isPaperDemo_ = visibility; updateGL(); }
-		void setIRESCutawayVisibility           ( bool visibility ) { isIRESCutaway_      = visibility; updateGL(); }
-		void setIRESCutawayStaticVisibility     ( bool visibility ) { isIRESCutawayStatic_   = visibility; updateGL(); }
-		void setIRESCutawayDynamicVisibility    ( bool visibility ) { isIRESCutawayDynamic_     = visibility; updateGL(); }
+		void setPaperDemoVisibility             ( bool visibility ) { isPaperDemo_ = visibility; update(); }
+		void setIRESCutawayVisibility           ( bool visibility ) { isIRESCutaway_      = visibility; update(); }
+		void setIRESCutawayStaticVisibility     ( bool visibility ) { isIRESCutawayStatic_   = visibility; update(); }
+		void setIRESCutawayDynamicVisibility    ( bool visibility ) { isIRESCutawayDynamic_     = visibility; update(); }
 
 		void borderLinesSize ( int size )
 		{
 		        borderLinesSize_        = size;
-		        updateGL();
+		        update();
 		}
 
 		void meanFilterSize ( int size )
 		{
 		        meanFilterSize_         = size;
-		        updateGL();
+		        update();
 		}
 
 		void freezeView ( );
@@ -144,7 +145,7 @@ class GLWidget: public QGLWidget
 
                         void changeTimeStep        ( const int step  )
                         {
-                                // ! Debug std::cout << " ... " << step << std::endl;
+                                        std::cout << " ... " << step << std::endl;
                                         this->time_step = step;
 
                                         glBindVertexArray ( reservoir_model_.vertexArrayCuboids );
@@ -342,12 +343,32 @@ class GLWidget: public QGLWidget
 
 		Trackball * trackball_;
 
-		Eigen::Quaternionf targetPosition_;
-		Eigen::Quaternionf sourcePosition_;
+		bool play_;
 
-                float time_steps_;
+		void setPlay ( )
+		{
+		        play_  = !play_;
 
-                Eigen::Affine3f smoothrotationMatrix_;
+		        if ( !play_)
+		        {
+		                nextKeyframe_ = 0;
+		        }
+		        else
+		        {
+		                recalcTangents();
+		                sourcePosition_ = keyframes_[nextKeyframe_++];
+		                targetPosition_ = keyframes_[nextKeyframe_++];
+
+                                sourcePositionTangent_ = mTangents[nextKeyframe_++];
+                                targetPositionTangent_ = mTangents[nextKeyframe_++];
+
+		                sourcePosition_.normalize();
+		                targetPosition_.normalize();
+
+		                time_interval_  = 0.01*( std::abs(sourcePosition_.dot(targetPosition_)));
+		        }
+
+		}
 
 		float orthoZoom;
 
@@ -370,8 +391,231 @@ class GLWidget: public QGLWidget
                 Eigen::Vector3f displacement;
                 Eigen::Vector3f max_displacement;
 
-                long unsigned int videoSequence;
+                void flush();
+                // Animation Controls
+                        long unsigned int videoSequence;
+                        std::vector<QImage> frames;
+
+                        std::vector<Eigen::Quaternionf> keyframes_;
+                        std::vector<Eigen::Quaternionf> mTangents;
+                        std::size_t nextKeyframe_;
+                        std::size_t number_of_keyframes_;
+
+                        Eigen::Quaternionf targetPosition_;
+                        Eigen::Quaternionf sourcePosition_;
+
+                        Eigen::Quaternionf targetPositionTangent_;
+                        Eigen::Quaternionf sourcePositionTangent_;
+
+                        float time_steps_;
+                        float time_interval_;
+
+
+                        // From libQGLViewer
+                        //---------------------------------------------------------------------
+                        /*! Returns the slerp interpolation of Quaternions \p a and \p b, at time \p t.
+
+                         \p t should range in [0,1]. Result is \p a when \p t=0 and \p b when \p t=1.
+
+                         When \p allowFlip is \c true (default) the slerp interpolation will always use the "shortest path"
+                         between the Quaternions' orientations, by "flipping" the source Quaternion if needed (see
+                         negate()). */
+                        Eigen::Quaternionf slerp(const Eigen::Quaternionf& a, const Eigen::Quaternionf& b, float t, bool allowFlip)
+                        {
+                                double cosAngle = a.dot(b);
+
+                                double c1, c2;
+                                // Linear interpolation for close orientations
+                                if ((1.0 - fabs(cosAngle)) < 0.01)
+                                {
+                                        c1 = 1.0 - t;
+                                        c2 = t;
+                                }
+                                else
+                                {
+                                        // Spherical interpolation
+                                        double angle    = acos(fabs(cosAngle));
+                                        double sinAngle = sin(angle);
+                                        c1 = sin(angle * (1.0 - t)) / sinAngle;
+                                        c2 = sin(angle * t) / sinAngle;
+                                }
+
+                                // Use the shortest path
+                                if (allowFlip && (cosAngle < 0.0))
+                                        c1 = -c1;
+
+                                return Eigen::Quaternionf(c1*a.w() + c2*b.w(),c1*a.x() + c2*b.x(), c1*a.y() + c2*b.y(), c1*a.z() + c2*b.z());
+                        }
+
+                        //Useful for smooth spline interpolation of Quaternion with squad() and slerp(). */
+                        Eigen::Quaternionf squadTangent(const Eigen::Quaternionf& before, const Eigen::Quaternionf& center, const Eigen::Quaternionf& after)
+                        {
+                                Eigen::Quaternionf l1 = lnDif(center,before);
+                                Eigen::Quaternionf l2 = lnDif(center,after);
+                                Eigen::Quaternionf e;
+
+                               e  = Eigen::Quaternionf(-0.25 * (l1.w() + l2.w()),
+                                                       -0.25 * (l1.x() + l2.x()),
+                                                       -0.25 * (l1.y() + l2.y()),
+                                                       -0.25 * (l1.z() + l2.z())
+                                                      );
+
+
+
+                               e = center*(exp(e));
+
+                               // if (Quaternion::dot(e,b) < 0.0)
+                               // e.negate();
+
+                               return e;
+                        }
+
+
+                        /*! Returns the slerp interpolation of the two Quaternions \p a and \p b, at time \p t, using
+                          tangents \p tgA and \p tgB.
+
+                          The resulting Quaternion is "between" \p a and \p b (result is \p a when \p t=0 and \p b for \p
+                          t=1).
+
+                          Use squadTangent() to define the Quaternion tangents \p tgA and \p tgB. */
+                        Eigen::Quaternionf squad(const Eigen::Quaternionf& a, const Eigen::Quaternionf& tgA, const Eigen::Quaternionf& tgB, const Eigen::Quaternionf& b, float t)
+                        {
+                                Eigen::Quaternionf ab = slerp(a, b, t,false);
+                                Eigen::Quaternionf tg = slerp(tgA, tgB, t, false);
+                                return slerp(ab, tg, 2.0*t*(1.0-t), false);
+                        }
+
+                        /*! Returns the logarithm of the Quaternion. See also exp(). */
+                        Eigen::Quaternionf log( const Eigen::Quaternionf& q )
+                        {
+                                double len = sqrt(q.x()*q.x() + q.y()*q.y() + q.z()*q.z());
+
+                                if (len < 1E-6)
+                                        return Eigen::Quaternionf(0.0,q.x(), q.y(), q.z());
+                                else
+                                {
+                                        double coef = acos(q.w()) / len;
+                                        return Eigen::Quaternionf(0.0, q.x()*coef, q.y()*coef, q.z()*coef);
+                                }
+                        }
+
+                        /*! Returns the exponential of the Eigen::Quaternionf. See also log(). */
+                        Eigen::Quaternionf exp( const Eigen::Quaternionf& q)
+                        {
+                                double theta = sqrt(q.x()*q.x() + q.y()*q.y() + q.z()*q.z());
+
+                                if (theta < 1E-6)
+                                        return Eigen::Quaternionf(std::cos(theta),q.x(), q.y(), q.z());
+                                else
+                                {
+                                        double coef = sin(theta) / theta;
+                                        return Eigen::Quaternionf(std::cos(theta),q.x()*coef, q.y()*coef, q.z()*coef );
+                                }
+                        }
+
+                        /*! Returns log(a. inverse() * b). Useful for squadTangent(). */
+                        Eigen::Quaternionf lnDif(const Eigen::Quaternionf& a, const Eigen::Quaternionf& b)
+                        {
+                                Eigen::Quaternionf dif = a.inverse()*b;
+                                dif.normalize();
+                                return log(dif);
+                        }
+
+                        // From Ogre
+                        //---------------------------------------------------------------------
+                        void recalcTangents(void)
+                        {
+                        // ShoeMake (1987) approach
+                        // Just like Catmull-Rom really, just more gnarly
+                        // And no, I don't understand how to derive this!
+                        //
+                        // let p = point[i], pInv = p.Inverse
+                        // tangent[i] = p * exp( -0.25 * ( log(pInv * point[i+1]) + log(pInv * point[i-1]) ) )
+                        //
+                        // Assume endpoint tangents are parallel with line with neighbour
+
+                                unsigned int i, numPoints;
+                                bool isClosed;
+
+                                numPoints = (unsigned int)keyframes_.size();
+
+                                numPoints = number_of_keyframes_;
+
+                                if (numPoints < 2)
+                                {
+                                    // Can't do anything yet
+                                    return;
+                                }
+
+                                mTangents.resize(numPoints);
+
+                                if ((keyframes_[0].x() == keyframes_[numPoints-1].x())&&
+                                    (keyframes_[0].y() == keyframes_[numPoints-1].y())&&
+                                    (keyframes_[0].z() == keyframes_[numPoints-1].z())&&
+                                    (keyframes_[0].w() == keyframes_[numPoints-1].w()))
+                                {
+                                    isClosed = true;
+                                }
+                                else
+                                {
+                                    isClosed = false;
+                                }
+
+                                Eigen::Quaternionf invp, part1, part2, preExp;
+                                for(i = 0; i < numPoints; ++i)
+                                {
+                                    Eigen::Quaternionf &p = keyframes_[i];
+                                    invp = p.inverse();
+
+                                    if (i ==0)
+                                    {
+                                        // special case start
+                                        part1 = log((invp * keyframes_[i+1]));
+                                        if (isClosed)
+                                        {
+                                            // Use numPoints-2 since numPoints-1 == end == start == this one
+                                            part2 = log((invp * keyframes_[numPoints-2]));
+                                        }
+                                        else
+                                        {
+                                            part2 = log(invp * p);
+                                        }
+                                    }
+                                    else if (i == numPoints-1)
+                                    {
+                                        // special case end
+                                        if (isClosed)
+                                        {
+                                            // Wrap to [1] (not [0], this is the same as end == this one)
+                                            part1 = log((invp * keyframes_[1]));
+                                        }
+                                        else
+                                        {
+                                            part1 = log(invp * p);
+                                        }
+                                        part2 = log((invp * keyframes_[i-1]));
+                                    }
+                                    else
+                                    {
+                                        part1 = log((invp * keyframes_[i+1]));
+                                        part2 = log((invp * keyframes_[i-1]));
+                                    }
+
+                                    preExp = Eigen::Quaternionf (-0.25 * (part1.x() + part2.x()),
+                                                                 -0.25 * (part1.y() + part2.y()),
+                                                                 -0.25 * (part1.z() + part2.z()),
+                                                                 -0.25 * (part1.w() + part2.w()));
+
+                                    mTangents[i] = p * exp(preExp);
+
+                                }
+
+
+
+                        }
+
 };
+
 
 
 #endif
