@@ -7,7 +7,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1263</width>
+    <width>728</width>
     <height>969</height>
    </rect>
   </property>
@@ -47,8 +47,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1263</width>
-     <height>21</height>
+     <width>728</width>
+     <height>18</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -73,6 +73,13 @@
     <addaction name="separator"/>
     <addaction name="action_About"/>
    </widget>
+   <widget class="QMenu" name="menuAnimation">
+    <property name="title">
+     <string>Animation</string>
+    </property>
+    <addaction name="actionStart_Session"/>
+    <addaction name="actionFlush"/>
+   </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
      <string>View</string>
@@ -85,6 +92,7 @@
     <addaction name="separator"/>
     <addaction name="action_Show_Primary_Cells"/>
     <addaction name="action_Show_Secondary_Cells"/>
+    <addaction name="action_Show_Cutaway_Surface"/>
     <addaction name="action_BorderLine"/>
     <addaction name="action_Fault"/>
     <addaction name="action_Show_WireFrame"/>
@@ -95,13 +103,7 @@
     <addaction name="action_IRES_Cutaway_Dynamic"/>
     <addaction name="separator"/>
     <addaction name="action_Freeze_View"/>
-   </widget>
-   <widget class="QMenu" name="menuAnimation">
-    <property name="title">
-     <string>Animation</string>
-    </property>
-    <addaction name="actionStart_Session"/>
-    <addaction name="actionFlush"/>
+    <addaction name="action_Full_Screen"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuTools"/>
@@ -988,7 +990,7 @@
     <string>Show Primary Cells</string>
    </property>
    <property name="shortcut">
-    <string>Alt+1</string>
+    <string>Ctrl+1</string>
    </property>
   </action>
   <action name="action_Show_Secondary_Cells">
@@ -1002,7 +1004,7 @@
     <string>Show Secondary Cells</string>
    </property>
    <property name="shortcut">
-    <string>Alt+2</string>
+    <string>Ctrl+2</string>
    </property>
   </action>
   <action name="action_Raw_Cutaway">
@@ -1103,7 +1105,7 @@
     <string>Show Faults</string>
    </property>
    <property name="shortcut">
-    <string>Alt+4</string>
+    <string>Ctrl+4</string>
    </property>
   </action>
   <action name="action_BorderLine">
@@ -1114,7 +1116,7 @@
     <string>Show Border Lines</string>
    </property>
    <property name="shortcut">
-    <string>Alt+3</string>
+    <string>Ctrl+3</string>
    </property>
   </action>
   <action name="action_IRES_Cutaway_Dynamic">
@@ -1171,7 +1173,7 @@
     <string>Draw Model in WireFrame</string>
    </property>
    <property name="shortcut">
-    <string>Alt+5</string>
+    <string>Ctrl+5</string>
    </property>
   </action>
   <action name="actionStart_Session">
@@ -1182,6 +1184,28 @@
   <action name="actionFlush">
    <property name="text">
     <string>Flush</string>
+   </property>
+  </action>
+  <action name="action_Full_Screen">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Full Screen</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+F</string>
+   </property>
+  </action>
+  <action name="action_Show_Cutaway_Surface">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show Cutaway Surface</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+6</string>
    </property>
   </action>
  </widget>
@@ -1217,7 +1241,7 @@
     </hint>
     <hint type="destinationlabel">
      <x>199</x>
-     <y>320</y>
+     <y>317</y>
     </hint>
    </hints>
   </connection>
@@ -1264,8 +1288,24 @@
      <y>-1</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1170</x>
-     <y>861</y>
+     <x>399</x>
+     <y>950</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>action_Full_Screen</sender>
+   <signal>triggered(bool)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>showFullScreen()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>363</x>
+     <y>484</y>
     </hint>
    </hints>
   </connection>

@@ -41,7 +41,7 @@ void main(void)
             wire = true;
         }
 
-        I = 0;
+        //I = 0;
 
 
         vec2 dist_neighbor[8] = {vec2(linesize,0), vec2(-linesize,0), vec2(0,linesize), vec2(0,-linesize),
@@ -125,8 +125,12 @@ void main(void)
         // cutaway border lines (front face intersection with cutaway)
         // lines outside cutaway (remaining front faces)
         else
-           //outputColor = I * vec4(vec3(0.7), 1.0) + (1.0 - I) * ( color );
-              outputColor =  ( color );
+        {
+//                float d = min(dist[0], min(dist[1], min(dist[2], dist[3])));
+//                float I = exp2(-2.0 * d * d);
+//           outputColor = I * vec4(vec3(0.0), 1.0) + (1.0 - I) * ( color );
+           outputColor =  ( color );
+        }
 
 
 

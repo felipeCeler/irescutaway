@@ -89,7 +89,7 @@ void main(void)
             }
         }
 
-//        if ( (abs(newVert.z - (cutaway.w)) < 0.007) ) {
+//        if ( (abs(newVert.z - (cutaway.w)) < 0.009) ) {
 //          I = 1;
 //        }
 

@@ -134,6 +134,7 @@ class GLWidget: public QGLWidget
 
                         void setPrimaryVisibility   ( bool );
                         void setSecondaryVisibility ( bool );
+                        void setCutawaySurfaceVisibility( bool );
 
                         void changeProperty      ( const int property_index );
                         void changePropertyRange ( const double& min, const double& max, int property_index );
@@ -300,6 +301,7 @@ class GLWidget: public QGLWidget
 
 		bool draw_secondary;
 		bool draw_primary;
+		bool draw_cutaway_surface_;
 
 		int max_I_;
 		int min_I_;
@@ -331,7 +333,8 @@ class GLWidget: public QGLWidget
 
                 float justWireFrame;
 
-		int time_step;
+                // Whith time on the dynamic property time line
+                int time_step;
 		int dynamic_property_index;
 
 		// Stores the froze camera (view matrix)
@@ -343,34 +346,10 @@ class GLWidget: public QGLWidget
 
 		Trackball * trackball_;
 
-		bool play_;
-
-		void setPlay ( )
-		{
-		        play_  = !play_;
-
-		        if ( !play_)
-		        {
-		                nextKeyframe_ = 0;
-		        }
-		        else
-		        {
-		                recalcTangents();
-		                sourcePosition_ = keyframes_[nextKeyframe_++];
-		                targetPosition_ = keyframes_[nextKeyframe_++];
-
-                                sourcePositionTangent_ = mTangents[nextKeyframe_++];
-                                targetPositionTangent_ = mTangents[nextKeyframe_++];
-
-		                sourcePosition_.normalize();
-		                targetPosition_.normalize();
-
-		                time_interval_  = 0.01*( std::abs(sourcePosition_.dot(targetPosition_)));
-		        }
-
-		}
-
 		float orthoZoom;
+
+		bool zoom_start_;
+		float zoom_increment_;
 
 		// LCG procedure
 		Eigen::Vector2f convertToNormalizedDeviceCoordinates(Eigen::Vector2i position);
@@ -396,10 +375,32 @@ class GLWidget: public QGLWidget
                         long unsigned int videoSequence;
                         std::vector<QImage> frames;
 
-                        std::vector<Eigen::Quaternionf> keyframes_;
-                        std::vector<Eigen::Quaternionf> mTangents;
-                        std::size_t nextKeyframe_;
-                        std::size_t number_of_keyframes_;
+
+                        struct Animation
+                        {
+                                std::vector<Eigen::Quaternionf> keyframes_;
+                                std::vector<Eigen::Quaternionf> tangents_;
+                                std::size_t nextKeyframe_;
+                                std::size_t number_of_keyframes_;
+
+                                void reset()
+                                {
+                                        number_of_keyframes_    = 0;
+                                        nextKeyframe_           = 0;
+                                }
+                                Animation()
+                                {
+                                        keyframes_.resize(30);
+                                        tangents_.resize(30);
+                                        number_of_keyframes_    = 0;
+                                        nextKeyframe_           = 0;
+                                }
+                        };
+
+                        unsigned int take_index_;
+                        unsigned int number_of_takes_;
+
+                        std::vector<Animation> takes_;
 
                         Eigen::Quaternionf targetPosition_;
                         Eigen::Quaternionf sourcePosition_;
@@ -486,7 +487,7 @@ class GLWidget: public QGLWidget
                         }
 
                         /*! Returns the logarithm of the Quaternion. See also exp(). */
-                        Eigen::Quaternionf log( const Eigen::Quaternionf& q )
+                        Eigen::Quaternionf log( const Eigen::Quaternionf& q ) const
                         {
                                 double len = sqrt(q.x()*q.x() + q.y()*q.y() + q.z()*q.z());
 
@@ -500,7 +501,7 @@ class GLWidget: public QGLWidget
                         }
 
                         /*! Returns the exponential of the Eigen::Quaternionf. See also log(). */
-                        Eigen::Quaternionf exp( const Eigen::Quaternionf& q)
+                        Eigen::Quaternionf exp( const Eigen::Quaternionf& q) const
                         {
                                 double theta = sqrt(q.x()*q.x() + q.y()*q.y() + q.z()*q.z());
 
@@ -508,7 +509,7 @@ class GLWidget: public QGLWidget
                                         return Eigen::Quaternionf(std::cos(theta),q.x(), q.y(), q.z());
                                 else
                                 {
-                                        double coef = sin(theta) / theta;
+                                        double coef = std::sin(theta) / theta;
                                         return Eigen::Quaternionf(std::cos(theta),q.x()*coef, q.y()*coef, q.z()*coef );
                                 }
                         }
@@ -516,101 +517,104 @@ class GLWidget: public QGLWidget
                         /*! Returns log(a. inverse() * b). Useful for squadTangent(). */
                         Eigen::Quaternionf lnDif(const Eigen::Quaternionf& a, const Eigen::Quaternionf& b)
                         {
-                                Eigen::Quaternionf dif = a.inverse()*b;
+                                Eigen::Quaternionf dif = Eigen::Quaternionf(a.w(),-a.x(),-a.y(),-a.z())*b;
                                 dif.normalize();
                                 return log(dif);
                         }
 
-                        // From Ogre
-                        //---------------------------------------------------------------------
-                        void recalcTangents(void)
+                        void calculeTangents ( int index )
                         {
-                        // ShoeMake (1987) approach
-                        // Just like Catmull-Rom really, just more gnarly
-                        // And no, I don't understand how to derive this!
-                        //
-                        // let p = point[i], pInv = p.Inverse
-                        // tangent[i] = p * exp( -0.25 * ( log(pInv * point[i+1]) + log(pInv * point[i-1]) ) )
-                        //
-                        // Assume endpoint tangents are parallel with line with neighbour
 
-                                unsigned int i, numPoints;
-                                bool isClosed;
-
-                                numPoints = (unsigned int)keyframes_.size();
-
-                                numPoints = number_of_keyframes_;
-
-                                if (numPoints < 2)
+                                Eigen::Quaternionf prevQ = takes_[index].keyframes_[0];
+                                Eigen::Quaternionf kf;
+                                for (std::size_t i=0; i< takes_[index].number_of_keyframes_ - 1; ++i)
                                 {
-                                    // Can't do anything yet
-                                    return;
-                                }
 
-                                mTangents.resize(numPoints);
-
-                                if ((keyframes_[0].x() == keyframes_[numPoints-1].x())&&
-                                    (keyframes_[0].y() == keyframes_[numPoints-1].y())&&
-                                    (keyframes_[0].z() == keyframes_[numPoints-1].z())&&
-                                    (keyframes_[0].w() == keyframes_[numPoints-1].w()))
-                                {
-                                    isClosed = true;
-                                }
-                                else
-                                {
-                                    isClosed = false;
-                                }
-
-                                Eigen::Quaternionf invp, part1, part2, preExp;
-                                for(i = 0; i < numPoints; ++i)
-                                {
-                                    Eigen::Quaternionf &p = keyframes_[i];
-                                    invp = p.inverse();
-
-                                    if (i ==0)
-                                    {
-                                        // special case start
-                                        part1 = log((invp * keyframes_[i+1]));
-                                        if (isClosed)
+                                        if (prevQ.dot(takes_[index].keyframes_[i]) < 0.0)
                                         {
-                                            // Use numPoints-2 since numPoints-1 == end == start == this one
-                                            part2 = log((invp * keyframes_[numPoints-2]));
+                                                takes_[index].keyframes_[i] = Eigen::Quaternionf(-kf.w(),-kf.x(),-kf.y(),-kf.z());
+                                        }
+                                        prevQ = takes_[index].keyframes_[i];
+
+                                        takes_[index].keyframes_[i].normalize();
+                                }
+
+                                Eigen::Quaternionf prev = takes_[index].keyframes_[0];
+                                kf = takes_[index].keyframes_[0];
+
+                                for (std::size_t i=1; i < takes_[index].number_of_keyframes_ - 2 ; ++i)
+                                {
+                                        Eigen::Quaternionf next = takes_[index].keyframes_[i];
+                                        takes_[index].tangents_[i-1] = squadTangent(prev, kf ,next);
+                                        prev = kf;
+                                        kf = next;
+                                        std::cout << " calRecTagent " << takes_[index].tangents_[i-1].coeffs() << std::endl;
+
+                                        takes_[index].tangents_[i-1].normalize();
+                                }
+
+
+                                takes_[index].tangents_[takes_[index].number_of_keyframes_-1] = squadTangent(takes_[index].keyframes_[takes_[index].number_of_keyframes_-1],takes_[index].keyframes_[takes_[index].number_of_keyframes_-1],takes_[index].keyframes_[takes_[index].number_of_keyframes_-1]);
+                                takes_[index].tangents_[0] = squadTangent(takes_[index].keyframes_[0],takes_[index].keyframes_[0],takes_[index].keyframes_[0]);
+
+                                takes_[index].tangents_[takes_[index].number_of_keyframes_-1].normalize();
+                                takes_[index].tangents_[0].normalize();
+
+                                std::cout << " calRecTagent " << takes_[index].keyframes_.size() << std::endl;
+
+                        }
+
+
+                        bool play_;
+
+                        float clamp(float x, float a, float b);
+
+                        float smoothstep(float x);
+
+                        void setPlay ( int i )
+                        {
+
+                                if ( takes_[i].number_of_keyframes_ > 2 )
+                                {
+                                         calculeTangents(i);
+
+                                        play_ = !play_;
+
+                                        if ( !play_ )
+                                        {
+                                                takes_[i].nextKeyframe_ = 0;
                                         }
                                         else
                                         {
-                                            part2 = log(invp * p);
-                                        }
-                                    }
-                                    else if (i == numPoints-1)
-                                    {
-                                        // special case end
-                                        if (isClosed)
-                                        {
-                                            // Wrap to [1] (not [0], this is the same as end == this one)
-                                            part1 = log((invp * keyframes_[1]));
-                                        }
-                                        else
-                                        {
-                                            part1 = log(invp * p);
-                                        }
-                                        part2 = log((invp * keyframes_[i-1]));
-                                    }
-                                    else
-                                    {
-                                        part1 = log((invp * keyframes_[i+1]));
-                                        part2 = log((invp * keyframes_[i-1]));
-                                    }
+                                                sourcePosition_ = takes_[i].keyframes_[0];
+                                                targetPosition_ = takes_[i].keyframes_[1];
 
-                                    preExp = Eigen::Quaternionf (-0.25 * (part1.x() + part2.x()),
-                                                                 -0.25 * (part1.y() + part2.y()),
-                                                                 -0.25 * (part1.z() + part2.z()),
-                                                                 -0.25 * (part1.w() + part2.w()));
+                                                sourcePositionTangent_ = takes_[i].tangents_[0];
+                                                targetPositionTangent_ = takes_[i].tangents_[1];
 
-                                    mTangents[i] = p * exp(preExp);
 
+                                                float angular = sourcePosition_.angularDistance ( targetPosition_ );
+
+                                                std::cout << " Angular Distance " << angular << std::endl;
+
+                                                takes_[i].nextKeyframe_++;
+        //
+                                                time_interval_ = 0.01 / angular;
+
+                                                time_steps_ = time_interval_;
+        //
+        //                                        std::cout << " mTagent " << takes_[i].tangents_[0].coeffs() << std::endl;
+        //                                        std::cout << " mTagent " << takes_[i].tangents_[1].coeffs() << std::endl;
+        //                                        std::cout << " mTagent " << takes_[i].tangents_[2].coeffs() << std::endl;
+        //
+        //
+        //                                        std::cout << " Rot " << keyframes_[0].coeffs() << std::endl;
+        //                                        std::cout << " Rot " << keyframes_[1].coeffs() << std::endl;
+        //                                        std::cout << " Rot " << keyframes_[2].coeffs() << std::endl;
+        //
+        //                                        std::cout << " next --- " << nextKeyframe_ << std::endl;
+                                        }
                                 }
-
-
 
                         }
 

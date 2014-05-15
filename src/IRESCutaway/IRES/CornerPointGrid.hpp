@@ -159,19 +159,6 @@ namespace IRES
 
 			std::size_t 	   cuboidCount;
 
-			GLuint vertexArrayInternalFaces;
-
-                                std::vector<float> internalFaces;
-                                GLuint vertexBufferInternalFaces; // 1 Vertex Buffer with Vertex and
-
-                                std::vector<float> internalFacesStatic;
-                                GLuint vertexBufferInternalFacesStatic; // 1 Vertex Buffer with Vertex and
-
-                                std::vector<std::vector<GLuint> > internalFacesDynamicIds;  // Number of properties x times steps buffers
-                                std::vector<float> internalFacesDynamic;
-
-                        std::size_t        internalFacesCount;
-
 			/// -- Shell / Fracture Geometry
 
 			// Face in Interleaved VertexBuffer

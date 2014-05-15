@@ -88,6 +88,7 @@ void MainWindow::WidgetSignalSlotConnection( )
         // Cells Visibility
         connect(ui->action_Show_Primary_Cells,   SIGNAL(toggled(bool)), glWidget, SLOT(setPrimaryVisibility(bool)));
         connect(ui->action_Show_Secondary_Cells, SIGNAL(toggled(bool)), glWidget, SLOT(setSecondaryVisibility(bool)));
+        connect(ui->action_Show_Cutaway_Surface, SIGNAL(toggled(bool)), glWidget, SLOT(setCutawaySurfaceVisibility(bool)));
 
         // Feature Visibility
 
@@ -342,25 +343,36 @@ void MainWindow::on_action_Load_Shaders_triggered()
 	glWidget->loadShaders();
 }
 
-void MainWindow::keyPressEvent(QKeyEvent *event)
+
+void MainWindow::keyPressEvent ( QKeyEvent * event )
 {
-	if((event->modifiers() == Qt::ShiftModifier ) && ( event->key()==Qt::Key_F))
-	{
-		showfullScreen_ = !showfullScreen_;
-		if ( showfullScreen_ )
-		{
-                        this->menuBar()->setHidden(true);
-                        this->statusBar()->setHidden(true);
-		        showFullScreen();
-		}else
-		{
-                        this->menuBar()->setHidden(false);
-                        this->statusBar()->setHidden(false);
-			showNormal();
-		}
-		event->accept();
-	}
-	else event->ignore();
+        if ( (event->modifiers() == Qt::ShiftModifier ) && (event->key() == Qt::Key_F) )
+        {
+                setFullScreen();
+        }
+        else
+        {
+                event->ignore();
+        }
+
+
+}
+
+void MainWindow::setFullScreen ( )
+{
+        showfullScreen_ = !showfullScreen_;
+
+        if ( showfullScreen_ )
+        {
+                this->menuBar()->setHidden(true);
+                this->statusBar()->setHidden(true);
+                showFullScreen();
+        }else
+        {
+                this->menuBar()->setHidden(false);
+                this->statusBar()->setHidden(false);
+                showNormal();
+        }
 }
 
 void MainWindow::on_action_Trackball_triggered  ( )

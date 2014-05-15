@@ -17,10 +17,12 @@ int main ( int argc , char *argv[] )
 
 	form->show ( );
 
-//	//form->open( "D:\\Workspace\\RESCutaway\\build\\build\\bin\\zmap.ires2.ires",true );
-//	form->open( "/media/d/Workspace/IRESCutaway/build/build/bin/zmapDynamic_NEW01_FaceProp.ires",true );
-//        //form->open( "/home/ricardomarroquim/devel/irescutaway/build/build/bin/zmap.ires2.ires",true );
-//
+//	form->open( "D:\\Workspace\\RESCutaway\\build\\build\\bin\\zmap.ires2.ires",true );
+//	form->open( "/home/ricardomarroquim/devel/irescutaway/build/build/bin/zmap.ires2.ires",true );
+	form->open( "/media/d/Workspace/IRESCutaway/Files/models/zmapDynamic_v2_NEW01_FaceProp.ires",true );
+	//form->open( "/media/d/Workspace/IRESCutaway/Files/models/opaDynamic_v2_NEW01_FaceProp.ires",true );/
+
+
 //	form->ui->doubleSpinMin->setValue( 270000.0 );
 //	form->ui->doubleSpinMax->setValue( 271000.0 );
 //

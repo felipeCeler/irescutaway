@@ -29,7 +29,6 @@ void GLWidget::initializeGL ( )
 	}
 	/// GLEW OpenGL
 
-
 	buttonRelease_ = false;
 
 	/// OpenGL Stuffs
@@ -110,6 +109,9 @@ void GLWidget::initializeGL ( )
 	volume_width = 0.0f;
 	volume_height = 0.0f;
 
+	zoom_start_ = 0;
+	zoom_increment_ = 1.01;
+
         borderLinesSize_ = 0;
         meanFilterSize_  = 0;
 
@@ -155,8 +157,8 @@ void GLWidget::initializeGL ( )
 
 
 
-       displacement = Eigen::Vector3f ( -3.0 , -3.0 , -3.0 );
-        max_displacement = Eigen::Vector3f ( 3.0 , 3.0 , 3.0 );
+        displacement            = Eigen::Vector3f ( -3.0 , -3.0 , -3.0 );
+        max_displacement        = Eigen::Vector3f ( 3.0 , 3.0 , 3.0 );
 
        // Animation Controls
                 //Timer Animation
@@ -173,14 +175,16 @@ void GLWidget::initializeGL ( )
                 targetPosition_.normalized ( );
 
 
-                nextKeyframe_ = 0;
+                number_of_takes_ = 0;
+                take_index_ = 0;
 
-                keyframes_.resize( 6 );
-                number_of_keyframes_ = 0;
+                takes_.resize(10,Animation());
 
                 time_steps_     = 0.0;
 
                 play_           = false;
+
+
 
 }
 
@@ -642,20 +646,6 @@ void GLWidget::drawPrimaryStatic  ( ) const // Draw only primary   Cells
 
         IRESPrimaryStatic_->disable( );
 
-        if ( reservoir_model_.showBorderLine )
-        {
-
-                glLineWidth( (float) borderLinesSize_ );
-                BorderLines_->enable ( );
-
-                BorderLines_->setUniform ( "ModelMatrix" , trackball_->getModelMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
-                BorderLines_->setUniform ( "ViewMatrix" , trackball_->getViewMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
-                BorderLines_->setUniform ( "ProjectionMatrix" , trackball_->getProjectionMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
-
-                reservoir_model_.drawFaces ( );
-
-                BorderLines_->disable ( );
-        }
 }
 
 void GLWidget::drawSecondaryStatic  ( ) const  // Draw only secondary Cells
@@ -679,7 +669,7 @@ void GLWidget::drawSecondaryStatic  ( ) const  // Draw only secondary Cells
         IRESCutawayStatic_->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
         IRESCutawayStatic_->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
 
-        reservoir_model_.drawInternalFaces( );
+        reservoir_model_.drawFaces( );
 
         IRESCutawayStatic_->disable( );
 
@@ -735,7 +725,54 @@ void GLWidget::IRESCutawayStatic (  )
         {
 //
                 cutawayGenerationTime_.start ();
-                drawIRESCutawayStaticSurface( );
+
+
+
+                if ( draw_cutaway_surface_ )
+                {
+                        drawIRESCutawayStaticSurface ( );
+                }
+                else
+                {
+                        glClearColor ( 1.0 , 1.0 , 1.0 , 1.0 );
+                        glDepthFunc ( GL_LESS );
+                        glClearDepth ( 1.0f );
+                        glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
+                        depthFBO->bind ( );
+
+                        glDrawBuffer ( GL_COLOR_ATTACHMENT0 );
+
+                        glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
+                        glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
+                        glDepthFunc ( GL_GREATER );
+                        glClearDepth ( 0.0 );
+
+                        depthFBO->bind ( );
+
+                        glDrawBuffer ( GL_COLOR_ATTACHMENT0 );
+
+                        glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
+                        glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
+                        glBindVertexArray ( vertexArray_Dummy );
+                        glDrawArrays ( GL_POINTS , 0 , 1 );
+                        glBindVertexArray ( 0 );
+
+                        glDrawBuffer ( GL_COLOR_ATTACHMENT0 + 1 );
+
+                        meanFilter->renderTexture ( depthFBO->bindAttachment ( 0 ) , meanFilterSize_ );
+
+                        depthFBO->unbindAll ( );
+
+                        glDrawBuffer ( GL_BACK );
+                        depthFBO->unbindAll ( );
+
+                        glDrawBuffer ( GL_BACK );
+                }
+
+
                 glFinish();
                 accumulateCutawayGenerationTime_ += (float)cutawayGenerationTime_.elapsed();
 
@@ -752,6 +789,22 @@ void GLWidget::IRESCutawayStatic (  )
                 if ( draw_secondary )
                 {
                         drawSecondaryStatic( );
+
+
+                        if ( reservoir_model_.showBorderLine )
+                        {
+
+                                glLineWidth( (float) borderLinesSize_ );
+                                BorderLines_->enable ( );
+
+                                BorderLines_->setUniform ( "ModelMatrix" , trackball_->getModelMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
+                                BorderLines_->setUniform ( "ViewMatrix" , trackball_->getViewMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
+                                BorderLines_->setUniform ( "ProjectionMatrix" , trackball_->getProjectionMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
+
+                                reservoir_model_.drawFaces ( );
+
+                                BorderLines_->disable ( );
+                        }
 
                 }
                 glFinish();
@@ -869,21 +922,6 @@ void GLWidget::drawPrimaryDynamic ( ) const
 
         IRESPrimaryDynamic_->disable( );
 
-        if ( reservoir_model_.showBorderLine )
-        {
-
-                glLineWidth( (float) borderLinesSize_ );
-                BorderLines_->enable ( );
-
-                BorderLines_->setUniform ( "ModelMatrix" , trackball_->getModelMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
-                BorderLines_->setUniform ( "ViewMatrix" , trackball_->getViewMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
-                BorderLines_->setUniform ( "ProjectionMatrix" , trackball_->getProjectionMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
-
-                reservoir_model_.drawFaces ( );
-
-                BorderLines_->disable ( );
-        }
-
 }
 
 void GLWidget::drawSecondaryDynamic () const
@@ -954,22 +992,85 @@ void GLWidget::IRESCutawayDynamic ( ) const
         if ( isIRESOpen_ )
         {
 
-                drawIRESCutawayDynamicSurface ( );
+                if ( draw_cutaway_surface_ )
+                {
+                        drawIRESCutawayDynamicSurface ( );
+                }else
+                {
+                        glClearColor ( 1.0 , 1.0 , 1.0 , 1.0 );
+                        glDepthFunc ( GL_LESS );
+                        glClearDepth ( 1.0f );
+                        glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
+                        depthFBO->bind( );
+
+                        glDrawBuffer(GL_COLOR_ATTACHMENT0);
+
+                        glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
+                        glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
+                        glDepthFunc ( GL_GREATER );
+                        glClearDepth ( 0.0 );
+
+                        depthFBO->bind( );
+
+                        glDrawBuffer(GL_COLOR_ATTACHMENT0);
+
+                        glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
+                        glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
+
+                        glBindVertexArray(vertexArray_Dummy);
+                                glDrawArrays(GL_POINTS,0,1);
+                        glBindVertexArray(0);
+
+
+                        glDrawBuffer(GL_COLOR_ATTACHMENT0+1);
+
+                        meanFilter->renderTexture( depthFBO->bindAttachment(0),meanFilterSize_);
+
+                        depthFBO->unbindAll();
+
+
+                        glDrawBuffer(GL_BACK);
+                        depthFBO->unbindAll();
+
+
+                        glDrawBuffer(GL_BACK);
+                }
+
 
                 glClearColor ( 1.0 , 1.0 , 1.0 , 1.0 );
                 glDepthFunc ( GL_LESS );
                 glClearDepth ( 1.0f );
                 glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
+                drawBackGround( );
+
                 if ( draw_secondary )
                 {
                         drawSecondaryDynamic( );
+                        if ( reservoir_model_.showBorderLine )
+                        {
+
+                                glLineWidth( (float) borderLinesSize_ );
+                                BorderLines_->enable ( );
+
+                                BorderLines_->setUniform ( "ModelMatrix" , trackball_->getModelMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
+                                BorderLines_->setUniform ( "ViewMatrix" , trackball_->getViewMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
+                                BorderLines_->setUniform ( "ProjectionMatrix" , trackball_->getProjectionMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
+
+                                reservoir_model_.drawFaces ( );
+
+                                BorderLines_->disable ( );
+                        }
+                }
                 }
                 if ( draw_primary )
                 {
                         drawPrimaryDynamic();//PaperPly();
                 }
-        }
+
 
 }
 
@@ -1302,32 +1403,95 @@ void GLWidget::PaperPly ( ) const
 
 }
 
+
+float GLWidget::clamp(float x, float a, float b)
+
+{
+
+    return x < a ? a : (x > b ? b : x);
+
+}
+
+float GLWidget::smoothstep(float x)
+{
+
+        if (x > 1)
+            x = 1.0;
+       else if (x < 0)
+            x = 0.0;
+        // Evaluate polynomial
+      return (x*x*x) * (x * (x * 6 - 15) + 10);
+
+}
+
 void GLWidget::gameLooping ( )
 {
 
-//
+        if ( zoom_start_ )
+        {
+                if ( zoom_increment_ > 0)
+                        trackball_->increaseZoom ( 1.01 );
+                else
+                        trackball_->decreaseZoom( 1.01 );
+                update();
+        }
+
+        //
         if ( play_ )
         {
 
                 if ( time_steps_ <= 1.0 )
                 {
-                        std::cout << "fps :" << time_interval_  << std::endl;
-                        trackball_->setQuaternion(this->squad(sourcePosition_,sourcePositionTangent_,targetPosition_,targetPositionTangent_,time_steps_));
-                        time_steps_ += time_interval_;
-                        update();
-                }else if ( nextKeyframe_ < number_of_keyframes_ )
-                {
-                        time_steps_ = 0.0;
-                        sourcePosition_ = targetPosition_;
-                        targetPosition_ = keyframes_[nextKeyframe_++];
-                        time_interval_  = 0.01*( std::abs(sourcePosition_.dot(targetPosition_)));
-                        qDebug() << keyframes_.size();
+//                        std::cout << "fps :" << time_steps_  << std::endl;
+                        trackball_->setQuaternion(this->squad(sourcePosition_,sourcePositionTangent_,targetPositionTangent_,targetPosition_,time_steps_));
+                        //trackball_->setQuaternion(this->slerp(sourcePosition_,targetPosition_,time_steps_,false));
 
-                }else
+                        std::cout << " mTagent " << takes_[take_index_].keyframes_[takes_[take_index_].nextKeyframe_].coeffs() << std::endl;
+
+                        //time_steps_ += time_interval_;
+
+                        time_steps_ += time_interval_;
+
+                        update();
+
+                }
+                else if ( takes_[take_index_].nextKeyframe_ < takes_[take_index_].number_of_keyframes_-1 )
                 {
-                        nextKeyframe_   = 0;
-                        time_steps_     = 0.0;
-                        play_           = false;
+//                        std::cout << " nextKeyFrame " << nextKeyframe_ << std::endl;
+//
+//                        std::cout << " mTagent " << takes_[take_index_].tangents_[nextKeyframe_].coeffs() << std::endl;
+//                        std::cout << " Rot " << keyframes_[nextKeyframe_].coeffs() << std::endl;
+
+
+                        takes_[take_index_].nextKeyframe_++;
+
+                        sourcePosition_ = targetPosition_;
+                        targetPosition_ = takes_[take_index_].keyframes_[takes_[take_index_].nextKeyframe_];
+
+                        sourcePositionTangent_ = targetPositionTangent_;
+                        targetPositionTangent_ = takes_[take_index_].tangents_[takes_[take_index_].nextKeyframe_];
+
+                        float angular = sourcePosition_.angularDistance(targetPosition_);
+
+                        time_interval_ = 0.01/ angular;
+
+                        time_steps_ = time_interval_;
+
+                        std::cout << " Angular Distance " << angular << std::endl;
+
+//                        sourcePosition_.normalize();
+//                        targetPosition_.normalize();
+//
+//                        sourcePositionTangent_.normalize();
+//                        targetPositionTangent_.normalize();
+
+                }
+                else
+                {
+
+                        play_ = false;
+                        takes_[take_index_].nextKeyframe_ = 0;
+//                        std::cout << " Angular Distance " << angular << std::endl;
                 }
 
         }
@@ -1450,7 +1614,8 @@ void GLWidget::loadShaders ( )
                 IRESCutawayStatic_ = new Shader ("IRESCutawayStatic",
                                                 (shaderDirectory + "Static/IRESCutawayStatic.vert").toStdString(),
                                                 (shaderDirectory + "Static/IRESCutawayStatic.frag").toStdString(),
-                                                "",1);
+                                                (shaderDirectory + "Static/IRESCutawayStatic.geom").toStdString()
+                                                 ,1);
                 IRESCutawayStatic_->initialize();
 
                 IRESPrimaryStatic_ = new Shader ("IRESPrimaryStatic",
@@ -1575,59 +1740,91 @@ void GLWidget::keyPressEvent ( QKeyEvent * event )
                 trackball_->reset();
                 trackball_->decreaseZoom( 5.05 );
                 //  Animation
-                        number_of_keyframes_    = 0;
-                        nextKeyframe_           = 0;
+                        takes_[take_index_].number_of_keyframes_    = 0;
+                        takes_[take_index_].nextKeyframe_           = 0;
                         play_                   = false;
                         time_steps_             = 0.0;
-                        videoSequence = 0;
+                        videoSequence           = 0;
 
                 update();
 	}
-	else if ( event->key() == Qt::Key_1)
-	{
-	        position_one = trackball_->getViewMatrix();
-	}
+        else if ( event->key() == Qt::Key_1)
+        {
+                take_index_ = 0;
+                std::cout << " take_index_ :" << take_index_ << std::endl;
+        }
         else if ( event->key() == Qt::Key_2)
         {
-                position_two = trackball_->getViewMatrix();
+                take_index_ = 1;
+                std::cout << " take_index_ :" << take_index_ << std::endl;
         }
         else if ( event->key() == Qt::Key_3)
         {
-                trackball_->setViewMatrix( position_one );
+                take_index_ = 2;
+                std::cout << " take_index_ :" << take_index_ << std::endl;
         }
         else if ( event->key() == Qt::Key_4)
         {
+                take_index_ = 3;
+                std::cout << " take_index_ :" << take_index_ << std::endl;
+        }
+	else if ( event->key() == Qt::Key_7)
+	{
+	        position_one = trackball_->getViewMatrix();
+	}
+        else if ( event->key() == Qt::Key_8)
+        {
+                position_two = trackball_->getViewMatrix();
+        }
+        else if ( event->key() == Qt::Key_9)
+        {
+                trackball_->setViewMatrix( position_one );
+        }
+        else if ( event->key() == Qt::Key_0)
+        {
                 trackball_->setViewMatrix( position_two );
         }
-	else if ( event->key() == Qt::Key_M )
-	{
-	      time_steps_ += 1.0f;
-
-	}else if ( event->key() == Qt::Key_N )
-	{
-	        if ( time_steps_ > 0 )
-	                time_steps_ -= 1.0f;
-
-	}
 	else if ( event->key() == Qt::Key_P )
         {
-	        setPlay();
+	        setPlay(take_index_);
 
         }
-	else if ( event->key() == Qt::Key_6)
-	{
-	        sourcePosition_ = trackball_->getQuaternion();
-	}
-	else if ( event->key() == Qt::Key_7)
+        else if ( event->key() == Qt::Key_Q )
         {
-                targetPosition_ = trackball_->getQuaternion ( );
+//                sourcePosition_ = takes_[i].keyframes_[0];
+//                targetPosition_ = takes_[i].keyframes_[1];
+//
+//                sourcePositionTangent_ = takes_[i].tangents_[0];
+//                targetPositionTangent_ = takes_[i].tangents_[1];
+//
+//                std::cout << " Quaternion :" << takes_[i].keyframes_[0].coeffs() << std::endl;
+//                std::cout << " Quaternion :" << takes_[i].keyframes_[1].coeffs() << std::endl;
+
+        }
+        else if ( event->key() == Qt::Key_W )
+        {
+//                sourcePosition_ = takes_[i].keyframes_[1];
+//                targetPosition_ = takes_[i].keyframes_[2];
+//
+//                sourcePositionTangent_ = takes_[i].tangents_[1];
+//                targetPositionTangent_ = takes_[i].tangents_[2];
+//
+//                std::cout << " Quaternion :" << takes_[i].keyframes_[1].coeffs() << std::endl;
+//                std::cout << " Quaternion :" << takes_[i].keyframes_[2].coeffs() << std::endl;
+
         }
         else if ( event->key() == Qt::Key_Space)
         {
-                keyframes_[number_of_keyframes_++] = (trackball_->getQuaternion());
+                takes_[take_index_].keyframes_[takes_[take_index_].number_of_keyframes_] = (trackball_->getQuaternion());
+
+                takes_[take_index_].number_of_keyframes_++;
+
+                std::cout << " Size :" << takes_[take_index_].number_of_keyframes_ << std::endl;
+                std::cout << " Quaternion :" << takes_[take_index_].keyframes_[takes_[take_index_].number_of_keyframes_-1].coeffs() << std::endl;
         }
 	else
 	{
+
 	        event->ignore();
 	}
 
@@ -1638,6 +1835,7 @@ void GLWidget::keyReleaseEvent ( QKeyEvent * event )
 {
 	buttonRelease_ = false;
 	keysPresseds_ -= event->key ( );
+	event->ignore();
     update();
 }
 /// MouseInput
@@ -1664,6 +1862,10 @@ void GLWidget::mousePressEvent ( QMouseEvent *event )
 		trackball_->setInitialTranslationPosition(positionInTrackballSystem[0],positionInTrackballSystem[1]);
 		trackball_->beginTranslation();
 	}
+	if ( event->button ( ) == Qt::MiddleButton )
+	{
+	        zoom_start_ = true;
+	}
     update();
 }
 
@@ -1682,6 +1884,11 @@ void GLWidget::mouseReleaseEvent ( QMouseEvent *event )
 	{
 		trackball_->endTranslation();
 	}
+	if ( event->button ( ) == Qt::MiddleButton )
+	{
+	          zoom_start_ = false;
+	}
+
     update();
 }
 
@@ -1743,11 +1950,13 @@ void GLWidget::wheelEvent ( QWheelEvent *event )
 
 		if ( event->delta ( ) < 0.0 )
 		{
-			trackball_->increaseZoom ( 1.05 );
+			//trackball_->increaseZoom ( 1.05 );
+		        zoom_increment_ = 1.01;
 		}
 		else
 		{
-			trackball_->decreaseZoom ( 1.05 );
+			//trackball_->decreaseZoom ( 1.05 );
+			zoom_increment_ = -1.01;
 		}
 
 		orthoZoom += event->delta ( ) / 1200.0;
@@ -1784,16 +1993,27 @@ void GLWidget::showBorderLines    ( bool visibility )
 
 void GLWidget::setPrimaryVisibility( bool visibility )
 {
-	if ( reservoir_model_.cuboids.size() > 0 )
+	if ( reservoir_model_.isOpen_ )
 		draw_primary = visibility;
+
+	std::cout << " Show Primary " << draw_primary << std::endl;
 	update();
 }
 
 void GLWidget::setSecondaryVisibility( bool visibility )
 {
-	if ( reservoir_model_.cuboids.size() > 0 )
+	if ( reservoir_model_.isOpen_ )
 		draw_secondary = visibility;
 	update();
+}
+
+void GLWidget::setCutawaySurfaceVisibility( bool visibility )
+{
+        if ( reservoir_model_.isOpen_ )
+                draw_cutaway_surface_ = visibility;
+
+        std::cout << " Show Cutaway Surface " << draw_cutaway_surface_ << std::endl;
+        update();
 }
 
 void GLWidget::freezeView( )

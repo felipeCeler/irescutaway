@@ -16,8 +16,9 @@ class MainWindow: public QMainWindow
 	public:
 		MainWindow ( QMainWindow *parent = 0 );
 		void open ( QString fileName = QString ( ) , bool who = true );
-		void keyPressEvent ( QKeyEvent *e );
 		Ui::MainWindow * ui;
+
+		void keyPressEvent ( QKeyEvent * event );
 
 	public slots:
 
@@ -51,17 +52,18 @@ class MainWindow: public QMainWindow
 
 		//
 		void WidgetSignalSlotConnection();
+		void setFullScreen ();
 
 	private:
 
 
-		bool showfullScreen_;
+		bool                    showfullScreen_;
 
-		GLWidget * glWidget;
+		GLWidget *              glWidget;
 
 		AboutWidgetIRESReader * aboutIRESReader;
 
-		QLabel * fps;
+		QLabel *                fps;
 };
 
 #endif
