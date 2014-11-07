@@ -59,6 +59,9 @@ void GLWidget::initializeGL ( )
 	isIRESOpen_ = 0;
 	time_step   = 0;
 
+	wall_ = 0;
+	line_ = 0;
+
 	zoom_angle_ = 45.0f;
 	orthoZoom   = 1.0f;
 
@@ -109,6 +112,10 @@ void GLWidget::initializeGL ( )
 	volume_width = 0.0f;
 	volume_height = 0.0f;
 
+	move_x = 0.0f;
+	move_y = 0.0f;
+	move_z = 0.0f;
+
 	zoom_start_ = 0;
 	zoom_increment_ = 1.01;
 
@@ -116,6 +123,8 @@ void GLWidget::initializeGL ( )
         meanFilterSize_  = 0;
 
 	trackball_ = new Trackball();
+	perspective_ = true;
+
 
 	trackball_->initOpenGLMatrices();
 
@@ -155,8 +164,6 @@ void GLWidget::initializeGL ( )
                 glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
         glBindVertexArray(0);
 
-
-
         displacement            = Eigen::Vector3f ( -3.0 , -3.0 , -3.0 );
         max_displacement        = Eigen::Vector3f ( 3.0 , 3.0 , 3.0 );
 
@@ -183,8 +190,7 @@ void GLWidget::initializeGL ( )
                 time_steps_     = 0.0;
 
                 play_           = false;
-
-
+                isply_          = false;
 
 }
 
@@ -389,16 +395,27 @@ void GLWidget::resizeGL ( int width , int height )
 
 	float aspect = (float) width / height;
 
-	trackball_->useOrthographicMatrix ( -1.0f*aspect , 1.0f*aspect , -1.0f , 1.0 , 0.1 , 500.0 );
-	//trackball_->usePerspectiveMatrix  ( 60.0f , (float) width / float ( height ) , 0.1 , 500 );
+	// @Noob - http://math.hws.edu/graphicsnotes/c3/s5.html near plane can be negative on orthographic avoiding clipping by it.
+
+	if ( perspective_ )
+	        trackball_->usePerspectiveMatrix  ( 45.0f , aspect , 0.1 , 500.0f);
+	else
+	        trackball_->useOrthographicMatrix ( -1.0f*aspect , 1.0f*aspect , -1.0f , 1.0 , 0.1f , 500.0f );
+
 
 	if (depthFBO)
 		delete depthFBO;
 
 
+	std::cout << trackball_->getProjectionMatrix() << std::endl;
+
+
 	depthFBO = new Framebuffer( width , height, 2 );
+	depthFBO->clearAttachments();
 
 	meanFilter->resize(width, height);
+
+	glFinish();
 }
 
 void GLWidget::paintEvent   ( QPaintEvent * )
@@ -479,7 +496,6 @@ void GLWidget::paintGL ( )
 
         renderTime.start();
 
-
         if ( isIRESOpen_ )
         {
                 if ( isPaperDemo_ )
@@ -501,7 +517,6 @@ void GLWidget::paintGL ( )
 
                 //trackball_->render();
         }
-
 
         glFinish( );
 
@@ -655,6 +670,9 @@ void GLWidget::drawSecondaryStatic  ( ) const  // Draw only secondary Cells
 
         IRESCutawayStatic_->enable( );
 
+        // @TODO Accord with John McDonald from nvidia at http://youtu.be/-bCeNzgiJ8I?t=31m42s,
+        // this command is costly than just bind a Texture
+
         IRESCutawayStatic_->setUniform( "normals" , depthFBO->bindAttachment(1) );
 
         IRESCutawayStatic_->setUniform("min_property", reservoir_model_.static_min[reservoir_model_.current_static]  );
@@ -699,21 +717,6 @@ void GLWidget::drawSecondaryStatic  ( ) const  // Draw only secondary Cells
 
         depthFBO->unbindAttachments();
 
-        if ( reservoir_model_.showBorderLine )
-        {
-
-                glLineWidth( (float) borderLinesSize_ );
-                BorderLines_->enable ( );
-
-                BorderLines_->setUniform ( "ModelMatrix" , trackball_->getModelMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
-                BorderLines_->setUniform ( "ViewMatrix" , trackball_->getViewMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
-                BorderLines_->setUniform ( "ProjectionMatrix" , trackball_->getProjectionMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
-
-                reservoir_model_.drawFaces ( );
-
-                BorderLines_->disable ( );
-        }
-
 }
 
 void GLWidget::IRESCutawayStatic (  )
@@ -734,42 +737,42 @@ void GLWidget::IRESCutawayStatic (  )
                 }
                 else
                 {
-                        glClearColor ( 1.0 , 1.0 , 1.0 , 1.0 );
-                        glDepthFunc ( GL_LESS );
-                        glClearDepth ( 1.0f );
-                        glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-
-                        depthFBO->bind ( );
-
-                        glDrawBuffer ( GL_COLOR_ATTACHMENT0 );
-
-                        glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
-                        glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-
-                        glDepthFunc ( GL_GREATER );
-                        glClearDepth ( 0.0 );
-
-                        depthFBO->bind ( );
-
-                        glDrawBuffer ( GL_COLOR_ATTACHMENT0 );
-
-                        glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
-                        glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-
-                        glBindVertexArray ( vertexArray_Dummy );
-                        glDrawArrays ( GL_POINTS , 0 , 1 );
-                        glBindVertexArray ( 0 );
-
-                        glDrawBuffer ( GL_COLOR_ATTACHMENT0 + 1 );
-
-                        meanFilter->renderTexture ( depthFBO->bindAttachment ( 0 ) , meanFilterSize_ );
-
-                        depthFBO->unbindAll ( );
-
-                        glDrawBuffer ( GL_BACK );
-                        depthFBO->unbindAll ( );
-
-                        glDrawBuffer ( GL_BACK );
+//                        glClearColor ( 1.0 , 1.0 , 1.0 , 1.0 );
+//                        glDepthFunc ( GL_LESS );
+//                        glClearDepth ( 1.0f );
+//                        glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+//
+//                        depthFBO->bind ( );
+////
+////                        glDrawBuffer ( GL_COLOR_ATTACHMENT0 );
+////
+////                        glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
+////                        glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+////
+////                        glDepthFunc ( GL_GREATER );
+////                        glClearDepth ( 0.0 );
+////
+////                        depthFBO->bind ( );
+//
+//                        glDrawBuffer ( GL_COLOR_ATTACHMENT0 );
+//
+//                        glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
+//                        glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+//
+//                        glBindVertexArray ( vertexArray_Dummy );
+//                        glDrawArrays ( GL_POINTS , 0 , 1 );
+//                        glBindVertexArray ( 0 );
+//
+//                        glDrawBuffer ( GL_COLOR_ATTACHMENT0 + 1 );
+//
+//                        meanFilter->renderTexture ( depthFBO->bindAttachment ( 0 ) , meanFilterSize_ );
+//
+//                        depthFBO->unbindAll ( );
+//
+//                        glDrawBuffer ( GL_BACK );
+//                        depthFBO->unbindAll ( );
+//
+//                        glDrawBuffer ( GL_BACK );
                 }
 
 
@@ -790,22 +793,6 @@ void GLWidget::IRESCutawayStatic (  )
                 {
                         drawSecondaryStatic( );
 
-
-                        if ( reservoir_model_.showBorderLine )
-                        {
-
-                                glLineWidth( (float) borderLinesSize_ );
-                                BorderLines_->enable ( );
-
-                                BorderLines_->setUniform ( "ModelMatrix" , trackball_->getModelMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
-                                BorderLines_->setUniform ( "ViewMatrix" , trackball_->getViewMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
-                                BorderLines_->setUniform ( "ProjectionMatrix" , trackball_->getProjectionMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
-
-                                reservoir_model_.drawFaces ( );
-
-                                BorderLines_->disable ( );
-                        }
-
                 }
                 glFinish();
                 accumulateRenderingCutawayTime_ += (float)renderingCutawayTime_.elapsed();
@@ -813,6 +800,22 @@ void GLWidget::IRESCutawayStatic (  )
                 {
                         drawPrimaryStatic( );
 
+                }
+
+
+                if ( reservoir_model_.showBorderLine )
+                {
+
+                        glLineWidth( (float) borderLinesSize_ );
+                        BorderLines_->enable ( );
+
+                        BorderLines_->setUniform ( "ModelMatrix" , trackball_->getModelMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
+                        BorderLines_->setUniform ( "ViewMatrix" , trackball_->getViewMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
+                        BorderLines_->setUniform ( "ProjectionMatrix" , trackball_->getProjectionMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
+
+                        reservoir_model_.drawFaces ( );
+
+                        BorderLines_->disable ( );
                 }
 
 
@@ -839,12 +842,12 @@ void GLWidget::drawIRESCutawayDynamicSurface ( ) const
 {
 
         glDepthFunc ( GL_GREATER );
-        glClearDepth ( 0.0 );
-
+        glClearDepth ( -1.0 );
+//
         depthFBO->bind( );
-
+//
         glDrawBuffer(GL_COLOR_ATTACHMENT0);
-
+//
         glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
         glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
@@ -862,7 +865,9 @@ void GLWidget::drawIRESCutawayDynamicSurface ( ) const
         IRESCutawaySurfaceDynamic_->setUniform( "v7" , ply_primary_.box.box_min().x, ply_primary_.box.box_min().y,ply_primary_.box.box_max().z);
 
 
-        IRESCutawaySurfaceDynamic_->setUniform("move", (float) borderLinesSize_ );
+        IRESCutawaySurfaceDynamic_->setUniform("move_x", move_x);
+        IRESCutawaySurfaceDynamic_->setUniform("move_y", move_y);
+        IRESCutawaySurfaceDynamic_->setUniform("move_z", move_z);
         IRESCutawaySurfaceDynamic_->setUniform( "x" , volume_width );
         IRESCutawaySurfaceDynamic_->setUniform( "y" , volume_height );
         IRESCutawaySurfaceDynamic_->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
@@ -907,6 +912,10 @@ void GLWidget::drawPrimaryDynamic ( ) const
         IRESPrimaryDynamic_->setUniform("box_min", ply_primary_.box.box_min().x,ply_primary_.box.box_min().y,ply_primary_.box.box_min().z );
         IRESPrimaryDynamic_->setUniform("box_max", ply_primary_.box.box_max().x,ply_primary_.box.box_max().y,ply_primary_.box.box_max().z );
 
+        IRESPrimaryDynamic_->setUniform("move_x", move_x  );
+        IRESPrimaryDynamic_->setUniform("move_y", move_y  );
+        IRESPrimaryDynamic_->setUniform("move_z", move_z  );
+
         IRESPrimaryDynamic_->setUniform ( "max_property" , reservoir_model_.dynamic_properties[dynamic_property_index].max_[time_step] );
         IRESPrimaryDynamic_->setUniform ( "min_property" , reservoir_model_.dynamic_properties[dynamic_property_index].min_[time_step] );
 //
@@ -945,6 +954,9 @@ void GLWidget::drawSecondaryDynamic () const
         IRESCutawayDynamicCrust_->setUniform("min_property", reservoir_model_.dynamic_properties[dynamic_property_index].min_[time_step]  );
         IRESCutawayDynamicCrust_->setUniform("property_index", reservoir_model_.current_static );
         IRESCutawayDynamicCrust_->setUniform("time_step", time_step );
+
+        IRESCutawayDynamicCrust_->setUniform("Wall", wall_ );
+        IRESCutawayDynamicCrust_->setUniform("Line", line_ );
 
         IRESCutawayDynamicCrust_->setUniform("num_lights", (GLint) lights.size ( )  );
         IRESCutawayDynamicCrust_->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
@@ -1004,15 +1016,15 @@ void GLWidget::IRESCutawayDynamic ( ) const
 
                         depthFBO->bind( );
 
-                        glDrawBuffer(GL_COLOR_ATTACHMENT0);
-
-                        glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
-                        glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-
-                        glDepthFunc ( GL_GREATER );
-                        glClearDepth ( 0.0 );
-
-                        depthFBO->bind( );
+//                        glDrawBuffer(GL_COLOR_ATTACHMENT0);
+//
+//                        glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
+//                        glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+//
+//                        glDepthFunc ( GL_GREATER );
+//                        glClearDepth ( 0.0 );
+//
+//                        depthFBO->bind( );
 
                         glDrawBuffer(GL_COLOR_ATTACHMENT0);
 
@@ -1050,26 +1062,31 @@ void GLWidget::IRESCutawayDynamic ( ) const
                 if ( draw_secondary )
                 {
                         drawSecondaryDynamic( );
-                        if ( reservoir_model_.showBorderLine )
-                        {
-
-                                glLineWidth( (float) borderLinesSize_ );
-                                BorderLines_->enable ( );
-
-                                BorderLines_->setUniform ( "ModelMatrix" , trackball_->getModelMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
-                                BorderLines_->setUniform ( "ViewMatrix" , trackball_->getViewMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
-                                BorderLines_->setUniform ( "ProjectionMatrix" , trackball_->getProjectionMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
-
-                                reservoir_model_.drawFaces ( );
-
-                                BorderLines_->disable ( );
-                        }
                 }
-                }
+
                 if ( draw_primary )
                 {
-                        drawPrimaryDynamic();//PaperPly();
+                        if (isply_)
+                                PaperPly();
+                        else
+                                drawPrimaryDynamic();
                 }
+
+                if ( reservoir_model_.showBorderLine )
+                {
+
+                        glLineWidth( (float) borderLinesSize_ );
+                        BorderLines_->enable ( );
+
+                        BorderLines_->setUniform ( "ModelMatrix" , trackball_->getModelMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
+                        BorderLines_->setUniform ( "ViewMatrix" , trackball_->getViewMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
+                        BorderLines_->setUniform ( "ProjectionMatrix" , trackball_->getProjectionMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
+
+                        reservoir_model_.drawFaces ( );
+
+                        BorderLines_->disable ( );
+                }
+        }
 
 
 }
@@ -1172,7 +1189,7 @@ void GLWidget::drawBackGround ( ) const
 }
 
 
-void GLWidget::PaperDemo()
+void GLWidget::PaperDemo() const
 {
         if ( isIRESOpen_ )
         {
@@ -1192,7 +1209,8 @@ void GLWidget::PaperDemo()
                 }
                 if ( draw_primary )
                 {
-                        PaperPrimary( );
+
+                        PaperPly();//PaperPrimary( );
 
                 }
 
@@ -1220,7 +1238,7 @@ void GLWidget::PaperDemo()
         }
 }
 
-void GLWidget::PaperDrawCutawaySurface()
+void GLWidget::PaperDrawCutawaySurface() const
 {
 
 
@@ -1248,7 +1266,9 @@ void GLWidget::PaperDrawCutawaySurface()
         BurnsPrimarySetup_->setUniform( "v7" , ply_primary_.box.box_min().x, ply_primary_.box.box_min().y,ply_primary_.box.box_max().z);
 
 
-        BurnsPrimarySetup_->setUniform("move", (float) borderLinesSize_ );
+        BurnsPrimarySetup_->setUniform("move_x", move_x );
+        BurnsPrimarySetup_->setUniform("move_y", move_y );
+        BurnsPrimarySetup_->setUniform("move_z", move_z );
         BurnsPrimarySetup_->setUniform( "x" , volume_width );
         BurnsPrimarySetup_->setUniform( "y" , volume_height );
         BurnsPrimarySetup_->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
@@ -1276,7 +1296,7 @@ void GLWidget::PaperDrawCutawaySurface()
 
 }
 
-void GLWidget::PaperSecondary( )
+void GLWidget::PaperSecondary( ) const
 {
 
         glClearColor ( 1.0 , 1.0 , 1.0 , 1.0 );
@@ -1313,7 +1333,6 @@ void GLWidget::PaperSecondary( )
         BurnsSecondary_->disable( );
 
 
-        glActiveTexture(GL_TEXTURE0);
         glEnable(GL_BLEND);
         glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 
@@ -1331,14 +1350,13 @@ void GLWidget::PaperSecondary( )
 
                 BorderLines_->disable ( );
         }
+        glDisable(GL_BLEND);
+
 
 }
 
-void GLWidget::PaperPrimary( )
+void GLWidget::PaperPrimary( ) const
 {
-
-
-        drawBackGround();
 
         BurnsPrimary_->enable( );
 
@@ -1390,6 +1408,10 @@ void GLWidget::PaperPly ( ) const
 
         BurnsPly_->enable();
 
+        BurnsPly_->setUniform("move_x", move_x );
+        BurnsPly_->setUniform("move_y", move_y );
+        BurnsPly_->setUniform("move_z", move_z );
+
         BurnsPly_->setUniform("move", (float) borderLinesSize_ );
         BurnsPly_->setUniform("num_lights", (GLint) lights.size ( )  );
         BurnsPly_->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
@@ -1397,7 +1419,7 @@ void GLWidget::PaperPly ( ) const
         BurnsPly_->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
         BurnsPly_->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
 
-        ply_primary_.Draw ( );
+        ply_primary_.Draw();
 
         BurnsPly_->disable();
 
@@ -1446,7 +1468,7 @@ void GLWidget::gameLooping ( )
                         trackball_->setQuaternion(this->squad(sourcePosition_,sourcePositionTangent_,targetPositionTangent_,targetPosition_,time_steps_));
                         //trackball_->setQuaternion(this->slerp(sourcePosition_,targetPosition_,time_steps_,false));
 
-                        std::cout << " mTagent " << takes_[take_index_].keyframes_[takes_[take_index_].nextKeyframe_].coeffs() << std::endl;
+                        //std::cout << " mTagent " << takes_[take_index_].keyframes_[takes_[take_index_].nextKeyframe_].coeffs() << std::endl;
 
                         //time_steps_ += time_interval_;
 
@@ -1473,9 +1495,12 @@ void GLWidget::gameLooping ( )
 
                         float angular = sourcePosition_.angularDistance(targetPosition_);
 
-                        time_interval_ = 0.01/ angular;
+                        std::cout << "Angular Distance : " << angular << std::endl;
 
-                        time_steps_ = time_interval_;
+                        time_interval_ = 0.01;
+                                                                                                                                                        ;
+
+                        time_steps_ = 0.0f*time_interval_;
 
                         std::cout << " Angular Distance " << angular << std::endl;
 
@@ -1564,13 +1589,6 @@ void GLWidget::loadShaders ( )
 
                 RawModel_->initialize( );
 
-
-                BurnsPly_ = new Shader ("BurnsPly",
-                                      (shaderDirectory + "Demo/BurnsPrimary430.vert").toStdString(),
-                                      (shaderDirectory + "Demo/BurnsPrimary430.frag").toStdString(),
-                                       "",1);
-                BurnsPly_->initialize( );
-
                 BurnsPrimary_ = new Shader ("BurnsPrimary",
                                       (shaderDirectory + "Demo/BurnsPrimaryStatic.vert").toStdString(),
                                       (shaderDirectory + "Demo/BurnsPrimaryStatic.frag").toStdString(),
@@ -1658,6 +1676,14 @@ void GLWidget::loadShaders ( )
                                                        (shaderDirectory + "Dynamic/IRESPrimaryDynamic.frag").toStdString(),
                                                        (shaderDirectory + "Dynamic/IRESPrimaryDynamic.geom").toStdString(),1);
                 IRESPrimaryDynamic_->initialize();
+
+
+                BurnsPly_ = new Shader ("BurnsPly",
+                                       (shaderDirectory + "Demo/BurnsPrimary430.vert").toStdString(),
+                                       (shaderDirectory + "Demo/BurnsPrimary430.frag").toStdString(),
+                                        "",1);
+                BurnsPly_->initialize( );
+
 }
 /// KeyInput
 void GLWidget::processMultiKeys ( )
@@ -1731,6 +1757,31 @@ void GLWidget::keyPressEvent ( QKeyEvent * event )
 	{
 		loadShaders();
 	}
+	else if ( (event->modifiers() == Qt::ControlModifier ) && (event->key() == Qt::Key_W) )
+	{
+	        move_y += 0.1;
+	}
+        else if ( (event->modifiers() == Qt::ControlModifier ) && (event->key() == Qt::Key_S) )
+        {
+                move_y -= 0.1;
+        }
+        else if ( (event->modifiers() == Qt::ControlModifier ) && (event->key() == Qt::Key_D) )
+        {
+                move_x += 0.1;
+        }
+        else if ( (event->modifiers() == Qt::ControlModifier ) && (event->key() == Qt::Key_A) )
+        {
+                move_x -= 0.1;
+        }
+        else if ( (event->modifiers() == Qt::ControlModifier ) && (event->key() == Qt::Key_Q) )
+        {
+                move_z += 0.1;
+        }
+        else if ( (event->modifiers() == Qt::ControlModifier ) && (event->key() == Qt::Key_E) )
+        {
+                move_z -= 0.1;
+        }
+
         else if ( (event->modifiers() == Qt::ControlModifier ) && (event->key() == Qt::Key_S) )
         {
                 flush();
@@ -1748,6 +1799,18 @@ void GLWidget::keyPressEvent ( QKeyEvent * event )
 
                 update();
 	}
+        else if ( (event->modifiers() == Qt::ShiftModifier ) && (event->key() == Qt::Key_P) )
+        {
+                perspective_ = !perspective_;
+
+                float aspect = (float) width() / height();
+
+                if ( perspective_ )
+                        trackball_->usePerspectiveMatrix  ( 45.0f , aspect , 0.1 , 500.0f);
+                else
+                        trackball_->useOrthographicMatrix ( -1.0f*aspect , 1.0f*aspect , -1.0f , 1.0 , 0.1f , 500.0f );
+                //resizeGL(width(),height());
+        }
         else if ( event->key() == Qt::Key_1)
         {
                 take_index_ = 0;
@@ -1822,7 +1885,23 @@ void GLWidget::keyPressEvent ( QKeyEvent * event )
                 std::cout << " Size :" << takes_[take_index_].number_of_keyframes_ << std::endl;
                 std::cout << " Quaternion :" << takes_[take_index_].keyframes_[takes_[take_index_].number_of_keyframes_-1].coeffs() << std::endl;
         }
-	else
+        else if ( event->key() == Qt::Key_L)
+        {
+                isply_ = !isply_;
+        }else if ( event->key() == Qt::Key_Z)
+        {
+                if (wall_ == 0)
+                        wall_ = 1;
+                else
+                        wall_ = 0;
+        }else if ( event->key() == Qt::Key_X)
+        {
+                if (line_ == 0)
+                        line_ = 1;
+                else
+                        line_ = 0;
+        }
+   	else
 	{
 
 	        event->ignore();

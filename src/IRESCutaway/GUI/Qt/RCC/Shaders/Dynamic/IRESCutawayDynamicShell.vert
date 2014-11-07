@@ -60,10 +60,10 @@ void main(void)
         VertexOut.n[0] = vec4(normalMatrix * VertexOut.n[0].xyz,0.0);
         VertexOut.n[1] = vec4(normalMatrix * VertexOut.n[1].xyz,0.0);
 
-        VertexOut.eye[0] =  ModelMatrix * ViewMatrix * vec4(va);
-        VertexOut.eye[1] =  ModelMatrix * ViewMatrix * vec4(vb);
-        VertexOut.eye[2] =  ModelMatrix * ViewMatrix * vec4(vc);
-        VertexOut.eye[3] =  ModelMatrix * ViewMatrix * vec4(vd);
+        VertexOut.eye[0] =  ViewMatrix * ModelMatrix * vec4(va);
+        VertexOut.eye[1] =  ViewMatrix * ModelMatrix * vec4(vb);
+        VertexOut.eye[2] =  ViewMatrix * ModelMatrix * vec4(vc);
+        VertexOut.eye[3] =  ViewMatrix * ModelMatrix * vec4(vd);
 
         if (  ( faceType.x == 1.0 ) && (faceType.y == 0 || faults == 0 ) ) // Fault Faces
         {

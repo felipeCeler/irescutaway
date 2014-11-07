@@ -32,37 +32,39 @@ struct Face
 
 Face cutVolume[6];
 
+vec4 color[6];
+
 void byCentroid ( )
 {
 	for ( int i = 0; i < 6; i++)
 	{
 
-		if ( i == 2)
+		if ( (i == 2) )
 		  continue;
 
 		VertexOut.normal = cube[0].n[i];
-		VertexOut.color  = cube[0].color;
+		VertexOut.color  = color[i];
 
 
-                VertexOut.verticeEye  = ViewMatrix * cube[0].v[cutVolume[i].vertices[0]];
-                gl_Position = ProjectionMatrix *  VertexOut.verticeEye;
-		VertexOut.verticeProj = gl_Position;
+                VertexOut.verticeEye  = ViewMatrix * ModelMatrix * cube[0].v[cutVolume[i].vertices[0]];
+                VertexOut.verticeProj = ProjectionMatrix *  VertexOut.verticeEye;
+		gl_Position = VertexOut.verticeProj;
 		EmitVertex();
 
 
-                VertexOut.verticeEye  = ViewMatrix * cube[0].v[cutVolume[i].vertices[1]];
-                gl_Position = ProjectionMatrix * ModelMatrix * VertexOut.verticeEye;
-		VertexOut.verticeProj = gl_Position;
+                VertexOut.verticeEye  = ViewMatrix * ModelMatrix * cube[0].v[cutVolume[i].vertices[1]];
+                VertexOut.verticeProj = ProjectionMatrix *  VertexOut.verticeEye;
+                gl_Position = VertexOut.verticeProj;
 		EmitVertex();
 
-                VertexOut.verticeEye  = ViewMatrix * cube[0].v[cutVolume[i].vertices[3]];
-                gl_Position = ProjectionMatrix * ModelMatrix * VertexOut.verticeEye;
-		VertexOut.verticeProj = gl_Position;
+                VertexOut.verticeEye  = ViewMatrix * ModelMatrix * cube[0].v[cutVolume[i].vertices[3]];
+                VertexOut.verticeProj = ProjectionMatrix *  VertexOut.verticeEye;
+                gl_Position = VertexOut.verticeProj;
 		EmitVertex();
 
-                VertexOut.verticeEye  = ViewMatrix * cube[0].v[cutVolume[i].vertices[2]];
-                gl_Position = ProjectionMatrix * ModelMatrix * VertexOut.verticeEye;
-		VertexOut.verticeProj = gl_Position;
+                VertexOut.verticeEye  = ViewMatrix * ModelMatrix * cube[0].v[cutVolume[i].vertices[2]];
+                VertexOut.verticeProj = ProjectionMatrix *  VertexOut.verticeEye;
+                gl_Position = VertexOut.verticeProj;
 		EmitVertex();
 
 		EndPrimitive();
@@ -74,6 +76,12 @@ void byCentroid ( )
 void main(void)
 {
 
+        color[0] = vec4(1.0,0.0,0.0,1.0);
+        color[1] = vec4(1.0,0.0,0.0,1.0);
+        color[2] = vec4(1.0,0.0,0.0,1.0);
+        color[3] = vec4(0.0,1.0,0.0,1.0);
+        color[4] = vec4(1.0,0.0,0.0,1.0);
+        color[5] = vec4(1.0,0.0,0.0,1.0);
 
 	// top
 	cutVolume[0].vertices[0] = 0;
@@ -110,7 +118,7 @@ void main(void)
 }
 
 // FIXME O Quad Funfou.
-
+//#version 430 core
 //layout(points) in;
 //layout(triangle_strip, max_vertices = 4) out;
 //

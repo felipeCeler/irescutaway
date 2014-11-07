@@ -18,9 +18,10 @@ uniform vec3 lights[4];
 
 out vec4 outputColor;
 
+layout ( depth_less ) out float gl_FragDepth;
+
 void main(void)
 {
-
         vec3 newNormal = normalize(VertexIn.normal.xyz);
         vec3 newVert = VertexIn.vertice.xyz;
         vec4 color_t = VertexIn.color;
@@ -66,7 +67,7 @@ void main(void)
 
 
 
-        vec2 dist_neighbor[8] = {vec2(linesize,0), vec2(-linesize,0), vec2(0,linesize), vec2(0,-linesize),
+/*        vec2 dist_neighbor[8] = {vec2(linesize,0), vec2(-linesize,0), vec2(0,linesize), vec2(0,-linesize),
                                 vec2(-linesizediag,-linesizediag), vec2(-linesizediag,linesizediag), vec2(linesize,-linesize), vec2(linesizediag,-linesizediag)};
 
 //        // discard point in front of the cutaway surface
@@ -112,11 +113,13 @@ void main(void)
                         }
                 }
             }
-        }
+        }*/
 
         // for back faces use the normal of the cutaway surface (simulate a cut inside the cells)
         //if (backface) newNormal = -cutaway.xyz;
         //vec3 eye_dir = normalize ( -newVert.xyz );
+
+        //color_t = vec4(0.5,0.0,0.0,1.0);
 
         vec4 la = vec4(0.0);
         vec4 ld = vec4(0.0);
@@ -145,16 +148,18 @@ void main(void)
 //            outputColor = I * vec4(vec3(0.1), 1.0) + (1.0 - I) * ( color );
 //        }
         // cutaway border lines (front face intersection with cutaway)
-         if (I == 1)
+/*         if (I == 1)
         {   //outputColor = I * vec4(vec3(0.1), 1.0) + (1.0 - I) * ( color );
-            outputColor = I * vec4(vec3(1.0,1.0,1.0), 1.0) + (1.0 - I) * ( color );
+            outputColor = I * vec4(vec3(1.0,1.0,1.0), 1.0);
         }
         // lines outside cutaway (remaining front faces)
-        else
+        else*/
         {
 
 //              if (backface)
 //                      color.rgb += vec3(0.5);
             outputColor = I * vec4(vec3(0.0), 1.0) + (1.0 - I) * ( color );
         }
+
+         //outputColor = I * vec4(vec3(0.0), 1.0) + (1.0 - I) * ( color );
 }

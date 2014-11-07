@@ -67,7 +67,7 @@ class GLWidget: public QGLWidget
 		/// TODO Physics
 		void gameLooping    ( );
 		void fpsCounter     ( );
-		float benchmark      ( ){ return benchmark_;}
+		float benchmark     ( ){ return benchmark_;}
 		void loadShaders ( );
 		void openIRES_v2 ( const std::string& filename );
 		bool isIRESOpen  ( ) const;
@@ -106,7 +106,6 @@ class GLWidget: public QGLWidget
 		}
 
 		void freezeView ( );
-
 		// ! Raw IRES model    VIEWER F9
                         void drawIRESModel       ( );
                 // ! Paper Demo        VIEWER F10
@@ -121,11 +120,12 @@ class GLWidget: public QGLWidget
                                         std::cout << "Opened succefuly " << ply_primary_.TotalConnectedPoints << std::endl;
                                 }
                         }
+
                         void PaperPly ( ) const;
-                        void PaperDemo( );
-                        void PaperDrawCutawaySurface( );
-                        void PaperPrimary( );
-                        void PaperSecondary ( );
+                        void PaperDemo( ) const ;
+                        void PaperDrawCutawaySurface( ) const ;
+                        void PaperPrimary( ) const ;
+                        void PaperSecondary ( ) const;
 		// ! STATIC  VIEWER F11 Static Properties
                         void IRESCutawayStatic                  ( ) ;
                         void drawIRESCutawayStaticSurface       ( ) const; //
@@ -223,7 +223,7 @@ class GLWidget: public QGLWidget
 
 	signals:
 
-        void changed(const QMimeData *mimeData = 0);
+                void changed(const QMimeData *mimeData = 0);
 
 	public:
 		IRES::CornerPointGrid reservoir_model_;
@@ -328,6 +328,13 @@ class GLWidget: public QGLWidget
 		float volume_width;
 		float volume_height;
 
+                int wall_;
+                int line_;
+
+		float move_x;
+		float move_y;
+		float move_z;
+
                 int borderLinesSize_;  // Border Lines  Emilio's Algorithm
                 int meanFilterSize_;   // Mean Filter on the Image Cutaway.
 
@@ -345,7 +352,7 @@ class GLWidget: public QGLWidget
 		Eigen::Affine3f position_two;
 
 		Trackball * trackball_;
-
+		bool perspective_;
 		float orthoZoom;
 
 		bool zoom_start_;
@@ -363,6 +370,7 @@ class GLWidget: public QGLWidget
 		// Ply Models Emilio's No sense !
                 Model_PLY ply_primary_;
                 Model_PLY ply_secondary_;
+                bool isply_;
 
                 GLuint vertexBuffer_Dummy;
                 GLuint vertexArray_Dummy;
@@ -574,7 +582,7 @@ class GLWidget: public QGLWidget
                         void setPlay ( int i )
                         {
 
-                                if ( takes_[i].number_of_keyframes_ > 2 )
+                                if ( takes_[i].number_of_keyframes_ > 1 )
                                 {
                                          calculeTangents(i);
 
@@ -599,9 +607,9 @@ class GLWidget: public QGLWidget
 
                                                 takes_[i].nextKeyframe_++;
         //
-                                                time_interval_ = 0.01 / angular;
+                                                time_interval_ = 0.01;
 
-                                                time_steps_ = time_interval_;
+                                                time_steps_ = 0.0f*time_interval_;
         //
         //                                        std::cout << " mTagent " << takes_[i].tangents_[0].coeffs() << std::endl;
         //                                        std::cout << " mTagent " << takes_[i].tangents_[1].coeffs() << std::endl;

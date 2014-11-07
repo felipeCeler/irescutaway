@@ -220,6 +220,8 @@ int Model_PLY::Load(const char* filename)
 	glEnableVertexAttribArray ( 1 );
 	glVertexAttribPointer ( 1 , 3 , GL_FLOAT , GL_FALSE , 0 , 0 );
 
+	glBindVertexArray (0);
+
 	box.reset();
 
 	box.fromPointCloud( vertices.begin() , vertices.end() );

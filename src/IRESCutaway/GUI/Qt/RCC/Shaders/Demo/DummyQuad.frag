@@ -52,6 +52,8 @@ void main(void)
         //outputColor =  vec4 ( color );
         //outputColor =  vec4 ( 1.0, 0.0, 0.0, 1.0 );
 
+        discard;
+
         //outputColor = I * vec4 ( 0.0 , 0.0 , 0.0 , 1.0 ) + ( 1.0 - I ) * vec4 ( 0.7, 0.7, 0.7, 1.0 );;
         outputColor = I * vec4 ( 0.0 , 0.0 , 0.0 , 1.0 ) + ( 1.0 - I ) * color;
 }

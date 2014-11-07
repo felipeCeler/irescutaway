@@ -97,18 +97,30 @@ void main(void)
              ( dot(vec3(1.0,0.0,0.0),vd.xyz-vec3(displacement.z,0.0,0.0)) > 0.0))
              )
         {
-                VertexOut.v[0] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(va);
-                VertexOut.v[1] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(vb);
-                VertexOut.v[2] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(vc);
-                VertexOut.v[3] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(vd);
+                VertexOut.v[0] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(0);
+                VertexOut.v[1] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(0);
+                VertexOut.v[2] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(0);
+                VertexOut.v[3] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(0);
         }
         else
         {
-                VertexOut.v[0] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(0.0);
-                VertexOut.v[1] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(0.0);
-                VertexOut.v[2] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(0.0);
-                VertexOut.v[3] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(0.0);
+
+                if (  ( faceType.x == 1.0 ) && (faceType.y == 0 || faults == 0 )  )
+                {
+                        VertexOut.v[0] = ProjectionMatrix * ViewMatrix * ModelMatrix * vec4 ( va );
+                        VertexOut.v[1] = ProjectionMatrix * ViewMatrix * ModelMatrix * vec4 ( vb );
+                        VertexOut.v[2] = ProjectionMatrix * ViewMatrix * ModelMatrix * vec4 ( vc );
+                        VertexOut.v[3] = ProjectionMatrix * ViewMatrix * ModelMatrix * vec4 ( vd );
+
+                }else
+                {
+                        VertexOut.v[0] = ProjectionMatrix * ViewMatrix * ModelMatrix * vec4 ( 0.0 );
+                        VertexOut.v[1] = ProjectionMatrix * ViewMatrix * ModelMatrix * vec4 ( 0.0 );
+                        VertexOut.v[2] = ProjectionMatrix * ViewMatrix * ModelMatrix * vec4 ( 0.0 );
+                        VertexOut.v[3] = ProjectionMatrix * ViewMatrix * ModelMatrix * vec4 ( 0.0 );
+                }
         }
+
 
         gl_Position = vec4(va);
 }

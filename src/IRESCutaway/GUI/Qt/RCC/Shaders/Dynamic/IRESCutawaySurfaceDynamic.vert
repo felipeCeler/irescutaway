@@ -32,7 +32,9 @@ uniform int freeze;
 uniform float x;
 uniform float y;
 
-uniform float move;
+uniform float move_x;
+uniform float move_y;
+uniform float move_z;
 
 vec3 ext_x;
 vec3 ext_y;
@@ -51,9 +53,11 @@ void main()
 
         float scale = 0.5;
 
-        vec3 center_of_mass = (v0+v1+v2+v3+v4+v5+v6+v7) * 0.125;
+        vec3 move = vec3(move_x,move_y,move_z);
 
-        //center_of_mass += move*0.1;
+        vec3 center_of_mass = (8*move+(v0+v1+v2+v3+v4+v5+v6+v7)) * 0.125;
+
+        //center_of_mass += vec3(move_x,move_y,move_z);
 
         axis_x = vec4 (1.0,0.0,0.0,0.0);
         axis_y = vec4 (0.0,1.0,0.0,0.0);
@@ -61,7 +65,7 @@ void main()
         extends= vec4 ( abs(v3.x-v6.x), abs(v3.y-v6.y), abs(v3.z-v6.z), 0.0 );
         //extends= vec4 ( 0.1 , 0.1, 0.1, 0.0 );
 
-        extends *= 0.2;
+        extends *=  0.45;
 
 
         mat4 invView;

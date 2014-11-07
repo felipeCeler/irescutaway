@@ -41,6 +41,11 @@ uniform float max_range;
 
 uniform vec3 box_min;
 uniform vec3 box_max;
+
+uniform float move_x;
+uniform float move_y;
+uniform float move_z;
+
 uniform float paper;
 
 vec4 propertyColor (  )
@@ -64,10 +69,15 @@ vec4 propertyColor (  )
 
 bool intersect (  vec4 p )
 {
-        float s = 0.5;
-        return ( ( p.x >= box_min.x*s ) && ( p.x  < box_max.x*s ) &&
-                 ( p.y >= box_min.y*s ) && ( p.y  < box_max.y*s ) &&
-                 ( p.z >= box_min.z*s ) && ( p.z  < box_max.z*s ) );
+        float s =  0.8;
+                                                                                                                                        ;
+        vec3 b_min = (box_min*s + vec3(move_x,move_y,move_z));
+        vec3 b_max = (box_max*s + vec3(move_x,move_y,move_z));
+
+
+        return ( ( p.x >= b_min.x ) && ( p.x  < b_max.x ) &&
+                 ( p.y >= b_min.y ) && ( p.y  < b_max.y ) &&
+                 ( p.z >= b_min.z ) && ( p.z  < b_max.z ) );
 }
 
 bool isInside ( )

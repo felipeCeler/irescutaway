@@ -18,6 +18,12 @@ uniform vec2 WIN_SCALE;
 uniform int num_lights;
 uniform vec3 lights[4];
 
+uniform int Wall;
+uniform int Line;
+uniform int Cool;
+
+layout ( depth_less ) out float gl_FragDepth;
+
 void main(void)
 {
 
@@ -26,7 +32,7 @@ void main(void)
         vec4 color_t = VertexIn.color;
 
         float d = min(dist[0], min(dist[1], min(dist[2], dist[3])));
-        float I = exp2(-2.0 * d * d);
+        float Bias = exp2(-2.0 * d * d);
 
         bool backface = false;
         int linesize = 1;
@@ -41,7 +47,7 @@ void main(void)
             wire = true;
         }
 
-        //I = 0;
+        float I = 0;
 
 
         vec2 dist_neighbor[8] = {vec2(linesize,0), vec2(-linesize,0), vec2(0,linesize), vec2(0,-linesize),
@@ -57,6 +63,9 @@ void main(void)
         if ( newVert.z > cutaway.w ) {
             discard;
         }
+
+//        if ( cutaway.w == 1.0)
+//                discard;
 
         int size = 8;
 
@@ -90,12 +99,15 @@ void main(void)
             }
         }
 
-//        if ( (abs(newVert.z - (cutaway.w)) < 0.003) ) {
-//          I = 1;
-//        }
+        if ( (abs(newVert.z - (cutaway.w)) < 0.003) ) {
+          Bias = 1;
+        }
 
         // for back faces use the normal of the cutaway surface (simulate a cut inside the cells)
-        newNormal = -cutaway.xyz;
+        if ( Wall == 0 )
+                newNormal = -cutaway.xyz;
+        else
+                newNormal = cutaway.xyz;
         vec3 eye_dir = normalize ( -newVert.xyz );
 
         vec4 la = vec4(0.0);
@@ -103,12 +115,23 @@ void main(void)
         vec4 ls = vec4(0.0);
 
         // compute illumination for each light
+
+        vec3 lightz[4];
+
+        //color_t = vec4(0.0,0.0,0.5,1.0);
+
+        lightz[0] = vec3(0.0,1.0,0.0);
+        lightz[1] = vec3(0.0,0.0,1.0);
+        lightz[2] = vec3(0.0,0.0,0.0);
+        lightz[3] = vec3(0.0,1.0,0.0);
+
         for (int i = 0; i < num_lights; ++i) {
             vec3 light_dir = normalize(lights[i]);
             vec3 ref = normalize ( -reflect ( light_dir , newNormal ) );
+
             la += vec4 ( 0.3 / float(num_lights) );
             ld += color_t * (1.0 / float(num_lights)) * max ( 0.0 , abs(dot ( newNormal , light_dir ) ));
-            ls += color_t * 0.0 * pow ( max ( 0.0 , dot ( eye_dir , ref ) ) , 5.0 );
+            ls += color_t * (0.4 / float(num_lights)) * pow ( max ( 0.0 , dot ( eye_dir , ref ) ) , 5.0 );
         }
 
         vec4 color = la + ld + ls;
@@ -118,8 +141,10 @@ void main(void)
         //color = color_t;
 
 
+        if ( Line == 0 )
+                I = 0;
         // interior cutaway lines (back face intersection with cutaway)
-        if ( I == 1)
+        if ( I == 1 )
             outputColor = I * vec4(vec3(0.1), 1.0) + (1.0 - I) * ( color );
            //     outputColor = ( color );
         // cutaway border lines (front face intersection with cutaway)
@@ -133,7 +158,15 @@ void main(void)
         }
 
 
+        if ( Wall == 0 )
+        {
 
+//                        outputColor = I * vec4(vec3(0.1), 1.0) + (1.0 - I) * ( color );
+                        outputColor = Bias * vec4(vec3(0.1), 1.0) + (1.0 - Bias) * ( color );
+        }
+
+
+        //outputColor = I * vec4(vec3(0.0), 1.0) + (1.0 - I) * ( color );
 
 //                vec4 la = vec4(0.0);
 //                vec4 ld = vec4(0.0);
