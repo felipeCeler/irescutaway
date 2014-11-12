@@ -65,7 +65,7 @@ void main()
         extends= vec4 ( abs(v3.x-v6.x), abs(v3.y-v6.y), abs(v3.z-v6.z), 0.0 );
         //extends= vec4 ( 0.1 , 0.1, 0.1, 0.0 );
 
-        extends *=  0.45;
+        extends *=  0.15;
 
 
         mat4 invView;
@@ -80,6 +80,7 @@ void main()
         vec3 camera_up = normalize ( ( invView * vec4 ( 0.0 , 1.0 , 0.0 , 0.0 ) ).xyz );
         vec3 camera_dir = normalize ( camera_center - center_of_mass );
         vec3 camera_right = normalize ( cross ( camera_dir.xyz , camera_up.xyz ) );
+        //camera_up = normalize ( cross(camera_right, camera_dir) ).xyz );
 
 
         float ex = max ( max ( abs ( dot ( camera_right , axis_x.xyz * extends.x ) ) , abs ( dot ( camera_right , axis_y.xyz * extends.y ) ) ) , abs ( dot ( camera_right , axis_z.xyz * extends.z ) ) );

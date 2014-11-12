@@ -37,10 +37,10 @@ void GLWidget::initializeGL ( )
 
 	glEnable ( GL_TEXTURE_2D );
 
-	glEnable(GL_LINE_SMOOTH);
-	glEnable ( GL_MULTISAMPLE );
-
-	glHint(GL_MULTISAMPLE_FILTER_HINT_NV, GL_FASTEST);
+//	glEnable(GL_LINE_SMOOTH);
+//	glEnable ( GL_MULTISAMPLE );
+//
+//	glHint(GL_MULTISAMPLE_FILTER_HINT_NV, GL_FASTEST);
 
 	glClearColor ( 0.0 , 0.0 , 0.0 , 1.0 );
 	glDisable(GL_BLEND);
@@ -398,7 +398,7 @@ void GLWidget::resizeGL ( int width , int height )
 	// @Noob - http://math.hws.edu/graphicsnotes/c3/s5.html near plane can be negative on orthographic avoiding clipping by it.
 
 	if ( perspective_ )
-	        trackball_->usePerspectiveMatrix  ( 45.0f , aspect , 0.1 , 500.0f);
+	        trackball_->usePerspectiveMatrix  ( 45.0f , aspect , 1.0 , 500.0f);
 	else
 	        trackball_->useOrthographicMatrix ( -1.0f*aspect , 1.0f*aspect , -1.0f , 1.0 , 0.1f , 500.0f );
 
@@ -595,7 +595,6 @@ void GLWidget::drawIRESCutawayStaticSurface ( ) const
 	glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
 	glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-
 	IRESCutawaySurfaceStatic_->enable( );
 
 	IRESCutawaySurfaceStatic_->setUniform("min_range", min_range  );
@@ -623,13 +622,19 @@ void GLWidget::drawIRESCutawayStaticSurface ( ) const
 
 	glDrawBuffer(GL_COLOR_ATTACHMENT0+1);
 
-	meanFilter->renderTexture( depthFBO->bindAttachment(0),meanFilterSize_);
 
-	depthFBO->unbindAll();
+        glDisable(GL_DEPTH_TEST);
+        meanFilter->renderTexture( depthFBO->bindAttachment(0),meanFilterSize_);
+
+        depthFBO->unbindAll();
+
+        glEnable(GL_DEPTH_TEST);
 
 
 	glDrawBuffer(GL_BACK);
 
+	glFinish();
+	glFlush();
 
 }
 
@@ -838,19 +843,23 @@ void GLWidget::IRESCutawayStatic (  )
 }
 
 
-void GLWidget::drawIRESCutawayDynamicSurface ( ) const
+void GLWidget::drawIRESCutawayDynamicSurface ( )
 {
 
         glDepthFunc ( GL_GREATER );
-        glClearDepth ( -1.0 );
-//
+        glClearDepth ( 0.0 );
+
+
         depthFBO->bind( );
-//
+
         glDrawBuffer(GL_COLOR_ATTACHMENT0);
-//
+
         glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
         glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
+        //glDepthMask(GL_FALSE);
+
+//        glDisable(GL_DEPTH_TEST);
 
         IRESCutawaySurfaceDynamic_->enable( );
 
@@ -883,16 +892,17 @@ void GLWidget::drawIRESCutawayDynamicSurface ( ) const
 
         IRESCutawaySurfaceDynamic_->disable( );
 
-
         glDrawBuffer(GL_COLOR_ATTACHMENT0+1);
 
+        glDisable(GL_DEPTH_TEST);
         meanFilter->renderTexture( depthFBO->bindAttachment(0),meanFilterSize_);
 
         depthFBO->unbindAll();
 
-
+        glEnable(GL_DEPTH_TEST);
         glDrawBuffer(GL_BACK);
 
+        //glDepthMask(GL_TRUE);
 }
 
 void GLWidget::drawPrimaryDynamic ( ) const
@@ -941,7 +951,7 @@ void GLWidget::drawSecondaryDynamic () const
         glClearDepth ( 1.0f );
         glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-        drawBackGround ( );
+        //drawBackGround ( );
 
 
         // Interior Cells
@@ -996,7 +1006,7 @@ void GLWidget::drawSecondaryDynamic () const
 
 }
 
-void GLWidget::IRESCutawayDynamic ( ) const
+void GLWidget::IRESCutawayDynamic ( )
 {
 
         //      /// FIXME Conditions  - Primary and Secondary well defined.
@@ -1014,8 +1024,8 @@ void GLWidget::IRESCutawayDynamic ( ) const
                         glClearDepth ( 1.0f );
                         glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-                        depthFBO->bind( );
-
+//                        depthFBO->bind( );
+//
 //                        glDrawBuffer(GL_COLOR_ATTACHMENT0);
 //
 //                        glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
@@ -1028,7 +1038,7 @@ void GLWidget::IRESCutawayDynamic ( ) const
 
                         glDrawBuffer(GL_COLOR_ATTACHMENT0);
 
-                        glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
+                        glClearColor ( 1.0 , 1.0 , 1.0 , 1.0 );
                         glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
 
@@ -1052,7 +1062,7 @@ void GLWidget::IRESCutawayDynamic ( ) const
                 }
 
 
-                glClearColor ( 1.0 , 1.0 , 1.0 , 1.0 );
+                glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
                 glDepthFunc ( GL_LESS );
                 glClearDepth ( 1.0f );
                 glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
@@ -1806,9 +1816,11 @@ void GLWidget::keyPressEvent ( QKeyEvent * event )
                 float aspect = (float) width() / height();
 
                 if ( perspective_ )
-                        trackball_->usePerspectiveMatrix  ( 45.0f , aspect , 0.1 , 500.0f);
+                        trackball_->usePerspectiveMatrix  ( 45.0f , aspect , 1.0f , 5.0f);
                 else
                         trackball_->useOrthographicMatrix ( -1.0f*aspect , 1.0f*aspect , -1.0f , 1.0 , 0.1f , 500.0f );
+
+                depthFBO->clearAttachments();
                 //resizeGL(width(),height());
         }
         else if ( event->key() == Qt::Key_1)

@@ -15,7 +15,6 @@ in vec2 texcoord;
 
 uniform int pass;
 
-layout ( depth_greater ) out float gl_FragDepth;
 
 void main(void)
 {
@@ -39,13 +38,15 @@ void main(void)
 	vec4 color =    vec4 ( la.rgb + ld.xyz + ls.rgb , 1.0 ) ;
 
 
-//	if (gl_FrontFacing)
-//	{
+
+	//if (!gl_FrontFacing)
+	//{
 //		discard;
 //	}
 
-        //outputColor =  vec4 ( VertexOut.normal, 1.0);//VertexOut.color;
+        //outputColor =  vec4 ( VertexOut.normal, -0.75);//VertexOut.color;
         outputColor =  vec4 ( VertexOut.normal, VertexOut.verticeEye.z );//VertexOut.color;
+	//outputColor =  vec4 ( -VertexOut.verticeEye.z );//VertexOut.color;
 
 //	outputColor =  vec4(color);
 }

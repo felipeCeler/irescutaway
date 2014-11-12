@@ -159,6 +159,7 @@ void main(void)
 //              if (backface)
 //                      color.rgb += vec3(0.5);
             outputColor = I * vec4(vec3(0.0), 1.0) + (1.0 - I) * ( color );
+            discard;
         }
 
          //outputColor = I * vec4(vec3(0.0), 1.0) + (1.0 - I) * ( color );

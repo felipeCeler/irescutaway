@@ -59,13 +59,15 @@ void main(void)
         // cutaway normal = rgb, and cutaway depth in camera space = w
         vec4 cutaway = texelFetch( normals, ivec2(pixel_pos), 0 ).rgba;
 
+
+
         // discard point in front of the cutaway surface
         if ( newVert.z > cutaway.w ) {
             discard;
         }
 
-//        if ( cutaway.w == 1.0)
-//                discard;
+        //if ( cutaway.w == 0.0)
+        //        discard;
 
         int size = 8;
 
@@ -165,6 +167,12 @@ void main(void)
                         outputColor = Bias * vec4(vec3(0.1), 1.0) + (1.0 - Bias) * ( color );
         }
 
+        //if ( newVert.z > cutaway.x )
+        //        outputColor = vec4(vec3(abs(cutaway.z)*1.0), 1.0);
+        //else
+        //        outputColor = vec4(0.0, abs(newVert.z)*0.15, 1.0, 1.0);
+
+        //outputColor = vec4(vec3(abs(cutaway.w)*0.15), 1.0);
 
         //outputColor = I * vec4(vec3(0.0), 1.0) + (1.0 - I) * ( color );
 

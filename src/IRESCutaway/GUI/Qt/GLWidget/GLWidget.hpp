@@ -1,10 +1,12 @@
 #ifndef GLWIDGET_H
 #define GLWIDGET_H
 
-/// Ires Library
+/// IRES Library
 #include <ires/ires.h>
 /// Celer::Libraries
-	/// OpenGL
+/// OpenGL
+
+
 #include <GL/glew.h>
 #include <IRES/CornerPointGrid.hpp>
 #include <Loaders/Ply/PlyLoader.hpp>
@@ -139,8 +141,8 @@ class GLWidget: public QGLWidget
                         void changeProperty      ( const int property_index );
                         void changePropertyRange ( const double& min, const double& max, int property_index );
 		// ! DYNAMIC VIEWER F12 Dynamic Properties
-                        void IRESCutawayDynamic                    ( ) const;
-                        void drawIRESCutawayDynamicSurface         ( ) const;
+                        void IRESCutawayDynamic                    ( ) ;
+                        void drawIRESCutawayDynamicSurface         ( ) ;
                         void drawPrimaryDynamic                    ( ) const;
                         void drawSecondaryDynamic                  ( ) const;
 
