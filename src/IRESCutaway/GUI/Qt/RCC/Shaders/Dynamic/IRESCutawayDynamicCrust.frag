@@ -22,7 +22,10 @@ uniform int Wall;
 uniform int Line;
 uniform int Cool;
 
-layout ( depth_less ) out float gl_FragDepth;
+
+uniform mat4 ProjectionMatrix;
+
+const float nearPlane = 1.0;
 
 void main(void)
 {
@@ -77,29 +80,67 @@ void main(void)
 
        float aspect_ratio = (WIN_SCALE.x/WIN_SCALE.y);
 
-        for (int i = 0; i < size; ++i) {
-            if (I != 1)
-            {
-                // neighbor coordinate in range [0,1]
-                vec2 neighbor = (pixel_pos + dist_neighbor[i]) / vec2(textureSize(normals,0)).xy ;
+//        for (int i = 0; i < size; ++i) {
+//            if (I != 1)
+//            {
+//                // neighbor coordinate in range [0,1]
+//                vec2 neighbor = (pixel_pos + dist_neighbor[i]) / vec2(textureSize(normals,0)).xy ;
+//
+//                // depth of cutaway surface at neighbor pixel
+//                zsurface = texelFetch( normals, ivec2(pixel_pos + dist_neighbor[i]), 0 ).w;
+//
+//                // invert the orthographic projection (considering ortho planes are in range [-1,1]
+//                vec2 pixel = (neighbor*2.0 - vec2(1.0));
+//                pixel.x *= aspect_ratio;
+//
+//                // intersection ray from point in image plane with plane containing current 3D point
+//                // note that the denominator is dot(l,n), but the ray in ortho is just (0,0,1)
+//                zneighbor = (dot (newVert.xyz - vec3(pixel.xy, 0.0), newNormal.xyz)) / newNormal.z;
+//
+//                // if neighbor is in front of surface (was discarded), curent pixel is an edge pixel
+//                if (zneighbor > zsurface) {
+//                    I = 1;
+//                }
+//            }
+//        }
 
-                // depth of cutaway surface at neighbor pixel
-                zsurface = texelFetch( normals, ivec2(pixel_pos + dist_neighbor[i]), 0 ).w;
+       float frustum_h = nearPlane / ProjectionMatrix[0][0];
+       float frustum_v = nearPlane / ProjectionMatrix[1][1];
 
-                // invert the orthographic projection (considering ortho planes are in range [-1,1]
-                vec2 pixel = (neighbor*2.0 - vec2(1.0));
-                pixel.x *= aspect_ratio;
+       for (int i = 0; i < size; ++i)
+       {
+           if (I != 1)
+           {
+               // neighbor coordinate in range [0,1]
+               vec2 neighbor = (pixel_pos + dist_neighbor[i]) / vec2(textureSize(normals,0)).xy ;
 
-                // intersection ray from point in image plane with plane containing current 3D point
-                // note that the denominator is dot(l,n), but the ray in ortho is just (0,0,1)
-                zneighbor = (dot (newVert.xyz - vec3(pixel.xy, 0.0), newNormal.xyz)) / newNormal.z;
+               // depth of cutaway surface at neighbor pixel
+               zsurface = texelFetch( normals, ivec2(pixel_pos + dist_neighbor[i]), 0 ).w;
 
-                // if neighbor is in front of surface (was discarded), curent pixel is an edge pixel
-                if (zneighbor > zsurface) {
-                    I = 1;
-                }
-            }
-        }
+               // invert the orthographic projection (considering ortho planes are in range [-1,1]
+               vec3 pixel = vec3( vec2(neighbor*2.0 - vec2(1.0)), nearPlane);
+               pixel.x *= frustum_h;
+               pixel.y *= frustum_v;
+
+               vec3 ray =  normalize(pixel);
+
+               // intersection ray from point in image plane with plane containing current 3D point
+               // note that the denominator is dot(l,n), but the ray in ortho is just (0,0,1)
+
+               float dotln = dot (ray, newNormal);
+
+               zneighbor = dot ( (newVert.xyz - pixel.xyz), newNormal.xyz) / dotln;
+               zneighbor = (ray * zneighbor).z;
+
+               // if neighbor is in front of surface (was discarded), curent pixel is an edge pixel
+               if (zneighbor > zsurface)
+               {
+                   I = 1;
+                   break;
+               }
+           }
+       }
+
 
         if ( (abs(newVert.z - (cutaway.w)) < 0.003) ) {
           Bias = 1;
