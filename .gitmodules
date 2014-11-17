@@ -7,3 +7,6 @@
 [submodule "libs/Celer"]
 	path = libs/Celer
 	url = https://github.com/felipeCeler/celer-sources.git
+[submodule "libs/tucano"]
+	path = libs/tucano
+	url = https://github.com/LCG-UFRJ/tucano.git
