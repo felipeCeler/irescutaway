@@ -354,6 +354,8 @@ class GLWidget: public QGLWidget
 		Eigen::Affine3f position_two;
 
 		Trackball * trackball_;
+		/// Trackball for manipulating the camera.
+
 		bool perspective_;
 		float orthoZoom;
 
