@@ -107,6 +107,10 @@ void MainWindow::WidgetSignalSlotConnection( )
         connect(glWidget, SIGNAL(cutawayGenerationTime(const QString&)), ui->label_Generation_Slot, SLOT(setText(const QString&)));
         connect(glWidget, SIGNAL(renderingCutawayTime(const QString&)), ui->label_Rendering_Slot, SLOT(setText(const QString&)));
 
+        /// SSAO
+        connect(ui->dial_intensity, SIGNAL(sliderMoved(int)), glWidget, SLOT(intensitySSAO( const int )));
+        connect(ui->dial_blur, SIGNAL(sliderMoved(int)), glWidget, SLOT(blurSSAO( const int )));
+        connect(ui->dial_radius, SIGNAL(sliderMoved(int)), glWidget, SLOT(radiusSSAO( const int )));
 
 }
 

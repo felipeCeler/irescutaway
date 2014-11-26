@@ -527,7 +527,7 @@ namespace IRES
 		cuboidStatic.resize(index_cuboid);
 
 		std::size_t index_external = 0;
-		std::size_t index_internal = 0;
+		//std::size_t index_internal = 0;
 
 		for ( std::size_t i = 0; i < iresFaces_.size() ; i++ )
 		{

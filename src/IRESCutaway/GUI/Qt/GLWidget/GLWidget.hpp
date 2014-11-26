@@ -66,11 +66,31 @@ class GLWidget: public QGLWidget
 
 	public slots:
 
+	        /// SSAO
+                void intensitySSAO ( const int value )
+                {
+                        this->intensity = value;
+                        updateGL();
+                }
+
+                void blurSSAO ( const int value )
+                {
+                        this->blurRange = value;
+                        updateGL();
+                }
+
+                void radiusSSAO ( const int value )
+                {
+                        this->radius = (float)value;
+                        updateGL();
+                }
+
 		/// TODO Physics
 		void gameLooping    ( );
 		void fpsCounter     ( );
 		float benchmark     ( ){ return benchmark_;}
 		void loadShaders ( );
+		void reloadShaders ( );
 		void openIRES_v2 ( const std::string& filename );
 		bool isIRESOpen  ( ) const;
 
@@ -122,6 +142,7 @@ class GLWidget: public QGLWidget
                                         std::cout << "Opened succefuly " << ply_primary_.TotalConnectedPoints << std::endl;
                                 }
                         }
+
 
                         void PaperPly ( ) const;
                         void PaperDemo( ) const ;
@@ -260,6 +281,7 @@ class GLWidget: public QGLWidget
 		Shader*                         IRESCutawayStaticShell_;
                 Shader*                         IRESCutawayStatic_;
                 Shader*                         IRESPrimaryStatic_;
+                Shader*                         SSAOIRESPrimaryStatic_;
 
 		// ! DYNAMIC VIEWER F12 Dynamic Properties
 
@@ -311,6 +333,155 @@ class GLWidget: public QGLWidget
 		int min_J_;
 		int max_K_;
 		int min_K_;
+
+		/// SSAO From Tacano
+
+		    /// Framebuffer to store coord/normal buffer
+		    Framebuffer* fboSSAO;
+
+		    /// The per pixel AO computation shader
+		    Shader* ssaoShader;
+
+		    ///
+		    Shader* deferredShader;
+
+		    ///
+		    Shader* blurShader;
+
+		    /// A quad mesh for framebuffer rendering
+		    Mesh* quadSSAO;
+
+		    /// The ID defining the color attachment to which the depth texture is bound in the framebuffer.
+                    GLuint depthTextureID;
+
+                    /// The ID defining the color attachment to which the normal texture is bound in the framebuffer.
+                    GLuint normalTextureID;
+
+                    /// The ID defining the color attachment to which the color texture is bound in the framebuffer.
+                    GLuint colorTextureID;
+
+                    ///Noise texture dimension. It will be a noiseSize x noiseSize texture.
+                    int noise_size;
+                    ///Scale used to tile the noise texture through screen.
+                    Eigen::Vector2f noise_scale;
+
+                    ///Noise texture
+                    GLuint noiseTexture;
+
+                    ///Array of sample points generated inside a unit hemisphere around z axis.
+                    float *kernel;
+
+                    ///Number of sample points that will be used per fragment for occlusion computation.
+                    int numberOfSamples;
+
+                    ///Kernel radius. If the distance between a sample point and the point for which the occlusion is being computed is larger than radius, the occlusion for this sample will be neglected.
+                    float radius;
+
+		    /// Flag indicating wether blur shall be applied or not.
+		    bool apply_blur;
+
+		    /// Flag indicating if the mesh should be rendered only with ambient occlusion pass or with full illumination. If True, mesh will be rendered only with the ambient occlusion pass.
+		    bool displayAmbientPass;
+
+		    /// Number of neighbour pixels used in blurring. The blur will be applied to a blurRange x blurRange square around the current pixel. It's important to notice that blurRange must be an odd number.
+		    int blurRange;
+
+		    /// Global intensity value.
+		    int intensity;
+
+		    /// Global maximum distance value, distance in view space to consider a neighbor or not
+		    float max_dist;
+
+		    /// The ID defining the color attachment to which the blur texture is bound in the framebuffer.
+		    GLuint blurTextureID;
+
+
+
+		    ///Computes the noise scale factor, that will be used for tiling the noise texture through the screen.
+		    void computeNoiseScale (const Eigen::Vector2i &viewport_size)
+		    {
+		        noise_scale = Eigen::Vector2f(viewport_size[0]/(float)noise_size, viewport_size[1]/(float)noise_size);
+		    }
+
+		    /**
+		     * @brief Generates a sampling kernel with random 2D unormalized vectors in range [-1,1].
+		     */
+		    void generateKernel (void)
+		    {
+		        Eigen::Vector2f sample;
+		        kernel = new float[numberOfSamples * 2];
+
+		        float step = 2.0*M_PI/(float)numberOfSamples;
+
+		        // divide in numberOfSamples directions in the unit circle, and multiply each vector by a random radius
+		        for (int i = 1; i <= numberOfSamples; i++)
+		        {
+		            float r = pow(random(0.01, 1.0f),1.0);
+
+		            sample[0] = cos(step*i);
+		            sample[1] = sin(step*i);
+
+		            kernel[i*2+0] = r*sample[0];
+		            kernel[i*2+1] = r*sample[1];
+		        }
+		    }
+
+		    /**
+		     * @brief Generates a random noise texture.
+		     */
+		    void generateNoiseTexture (void)
+		    {
+
+		        GLfloat *noise = new GLfloat[noise_size*noise_size];
+
+		        for(int i = 0; i < noise_size*noise_size; i++)
+		        {
+		            noise[i] = random(0.0f,1.0f);
+		        }
+
+	                // TODO this is just the beginning
+	                // Create a texture as attachment
+	                if ( noiseTexture != 0 )
+	                {
+	                        glDeleteTextures ( 1 , &noiseTexture );
+	                }
+	                else
+	                {
+	                        glGenTextures ( 1 , &noiseTexture );
+	                }
+
+	                glBindTexture ( GL_TEXTURE_2D, noiseTexture );
+	                // Set basic parameters
+	                glTexParameteri ( GL_TEXTURE_2D , GL_TEXTURE_WRAP_S , GL_CLAMP_TO_EDGE );
+	                glTexParameteri ( GL_TEXTURE_2D , GL_TEXTURE_WRAP_T , GL_CLAMP_TO_EDGE );
+	                glTexParameteri ( GL_TEXTURE_2D , GL_TEXTURE_MIN_FILTER , GL_NEAREST );
+	                glTexParameteri ( GL_TEXTURE_2D , GL_TEXTURE_MAG_FILTER , GL_NEAREST );
+	                // Allocate memory
+	                glTexImage2D ( GL_TEXTURE_2D , 0 , GL_RGBA32F , noise_size , noise_size , 0 , GL_RGBA , GL_FLOAT , noise );
+
+	                glBindTexture ( GL_TEXTURE_2D, 0 );
+
+
+		        delete [] noise;
+		    }
+
+
+		    /**
+		     * @brief Generates a random number in range [min,max].
+		         * @param min The minimum value for random number generation.
+		         * @param max The maximum value for random number generation.
+		     */
+		    float random(float min, float max)
+		    {
+		        //srand ( time(NULL) );
+		        int random = rand();
+		        float ret = random / float(RAND_MAX);
+		        ret *= (max - min);
+		        ret += min;
+		        assert(ret >= min && ret <= max);
+		        return ret;
+		    }
+
 
 		// lights
 		std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f> >  lights;

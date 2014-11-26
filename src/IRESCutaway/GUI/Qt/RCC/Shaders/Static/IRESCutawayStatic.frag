@@ -71,8 +71,7 @@ void main(void)
         float frustum_v = 0.5 / ProjectionMatrix[1][1];
 
         //http://www.scratchapixel.com/lessons/3d-basic-lessons/lesson-7-intersecting-simple-shapes/ray-plane-and-ray-disk-intersection/
-        for (int i = 0; i < size; ++i)
-        {
+        for (int i = 0; i < size; ++i) {
             if (I != 1)
             {
                 // neighbor coordinate in range [0,1]
@@ -82,24 +81,24 @@ void main(void)
                 zsurface = texelFetch( normals, ivec2(pixel_pos + dist_neighbor[i]), 0 ).w;
 
                 // invert the orthographic projection (considering ortho planes are in range [-1,1]
-                vec3 pixel = vec3( vec2(neighbor*2.0 - vec2(1.0)), nearPlane);
-                pixel.x *= frustum_h;
-                pixel.y *= frustum_v;
-
-                vec3 ray =  normalize(pixel);
+                vec2 pixel = neighbor*2.0 - vec2(1.0);
+                pixel.x *= aspect_ratio;
 
                 // intersection ray from point in image plane with plane containing current 3D point
                 // note that the denominator is dot(l,n), but the ray in ortho is just (0,0,1)
-
-                float dotln = dot (ray, newNormal);
-
-                zneighbor = dot ( (newVert.xyz - pixel.xyz), newNormal.xyz) / dotln;
+                zneighbor = (dot (newVert.xyz - vec3(pixel.xy, 0.0), newNormal.xyz)) / newNormal.z;
 
                 // if neighbor is in front of surface (was discarded), curent pixel is an edge pixel
-                if (zneighbor > zsurface)
+                if ( backface)
                 {
-                    I = 1;
-                    break;
+                        if (zneighbor < zsurface) {
+                             I = 1;
+                        }
+                }else
+                {
+                        if (zneighbor > zsurface) {
+                             I = 1;
+                        }
                 }
             }
         }
@@ -121,7 +120,8 @@ void main(void)
         // uncomment to turn off illumination
         //color = color_t;
 
-        newNormal = -cutaway.xyz;
+        //newNormal = -cutaway.xyz;
+
          eye_dir = normalize ( -newVert.xyz );
 
           la = vec4(0.0);

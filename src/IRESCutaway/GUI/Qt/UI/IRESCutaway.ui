@@ -7,8 +7,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>728</width>
-    <height>979</height>
+    <width>1282</width>
+    <height>1006</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -47,7 +47,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>728</width>
+     <width>1282</width>
      <height>22</height>
     </rect>
    </property>
@@ -716,19 +716,287 @@
    </property>
   </widget>
   <widget class="QDockWidget" name="dockWidgetBeauty">
+   <property name="minimumSize">
+    <size>
+     <width>400</width>
+     <height>400</height>
+    </size>
+   </property>
    <property name="maximumSize">
     <size>
      <width>400</width>
-     <height>200</height>
+     <height>600</height>
     </size>
    </property>
    <attribute name="dockWidgetArea">
-    <number>1</number>
+    <number>2</number>
    </attribute>
    <widget class="QWidget" name="dockWidgetContents">
     <layout class="QVBoxLayout" name="verticalLayout_4">
      <item>
+      <widget class="QGroupBox" name="groupBox_3">
+       <property name="title">
+        <string>Ambient Occlusion - DJ set</string>
+       </property>
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <item>
+         <layout class="QVBoxLayout" name="verticalLayout_7">
+          <item>
+           <widget class="QLabel" name="label_2">
+            <property name="text">
+             <string>Intensity</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QDial" name="dial_intensity">
+            <property name="maximum">
+             <number>512</number>
+            </property>
+            <property name="value">
+             <number>64</number>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="invertedAppearance">
+             <bool>false</bool>
+            </property>
+            <property name="invertedControls">
+             <bool>false</bool>
+            </property>
+            <property name="wrapping">
+             <bool>true</bool>
+            </property>
+            <property name="notchesVisible">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSpinBox" name="spinBox">
+            <property name="frame">
+             <bool>true</bool>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+            <property name="buttonSymbols">
+             <enum>QAbstractSpinBox::PlusMinus</enum>
+            </property>
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <number>512</number>
+            </property>
+            <property name="singleStep">
+             <number>1</number>
+            </property>
+            <property name="value">
+             <number>64</number>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QVBoxLayout" name="verticalLayout_8">
+          <item>
+           <widget class="QLabel" name="label_3">
+            <property name="text">
+             <string>Blur Size</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QDial" name="dial_blur">
+            <property name="statusTip">
+             <string extracomment="Number of neighbour pixels used in blurring. The blur will be applied to a blurRange x blurRange square around the current pixel. It's important to notice that blurRange must be an odd number."/>
+            </property>
+            <property name="whatsThis">
+             <string extracomment="Number of neighbour pixels used in blurring. The blur will be applied to a blurRange x blurRange square around the current pixel. It's important to notice that blurRange must be an odd number."/>
+            </property>
+            <property name="autoFillBackground">
+             <bool>false</bool>
+            </property>
+            <property name="inputMethodHints">
+             <set>Qt::ImhNone</set>
+            </property>
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <number>15</number>
+            </property>
+            <property name="singleStep">
+             <number>2</number>
+            </property>
+            <property name="pageStep">
+             <number>3</number>
+            </property>
+            <property name="value">
+             <number>3</number>
+            </property>
+            <property name="tracking">
+             <bool>true</bool>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="invertedAppearance">
+             <bool>false</bool>
+            </property>
+            <property name="invertedControls">
+             <bool>false</bool>
+            </property>
+            <property name="wrapping">
+             <bool>true</bool>
+            </property>
+            <property name="notchesVisible">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSpinBox" name="spinBox_2">
+            <property name="wrapping">
+             <bool>false</bool>
+            </property>
+            <property name="frame">
+             <bool>true</bool>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+            <property name="buttonSymbols">
+             <enum>QAbstractSpinBox::PlusMinus</enum>
+            </property>
+            <property name="prefix">
+             <string extracomment="Number of neighbour pixels used in blurring. The blur will be applied to a blurRange x blurRange square around the current pixel. It's important to notice that blurRange must be an odd number."/>
+            </property>
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <number>15</number>
+            </property>
+            <property name="singleStep">
+             <number>2</number>
+            </property>
+            <property name="value">
+             <number>3</number>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QVBoxLayout" name="verticalLayout_9">
+          <item>
+           <widget class="QLabel" name="label_4">
+            <property name="text">
+             <string>Radius</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QDial" name="dial_radius">
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <number>60</number>
+            </property>
+            <property name="value">
+             <number>20</number>
+            </property>
+            <property name="wrapping">
+             <bool>true</bool>
+            </property>
+            <property name="notchesVisible">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSpinBox" name="spinBox_3">
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+            <property name="buttonSymbols">
+             <enum>QAbstractSpinBox::PlusMinus</enum>
+            </property>
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <number>60</number>
+            </property>
+            <property name="value">
+             <number>20</number>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QVBoxLayout" name="verticalLayout_10">
+          <item>
+           <widget class="QLabel" name="label_5">
+            <property name="text">
+             <string>Não sei</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QDial" name="dial_2">
+            <property name="wrapping">
+             <bool>true</bool>
+            </property>
+            <property name="notchesVisible">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSpinBox" name="spinBox_4">
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+            <property name="buttonSymbols">
+             <enum>QAbstractSpinBox::PlusMinus</enum>
+            </property>
+            <property name="value">
+             <number>20</number>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item>
       <widget class="QGroupBox" name="groupBox">
+       <property name="minimumSize">
+        <size>
+         <width>400</width>
+         <height>50</height>
+        </size>
+       </property>
        <property name="title">
         <string> Lines Properties</string>
        </property>
@@ -739,21 +1007,14 @@
         <property name="labelAlignment">
          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
         </property>
-        <item row="1" column="0">
+        <item row="2" column="0">
          <widget class="QLabel" name="labelMeanFilterSize">
           <property name="text">
            <string>Mean Filter Kernel Size</string>
           </property>
          </widget>
         </item>
-        <item row="2" column="0">
-         <widget class="QLabel" name="labelLineWith">
-          <property name="text">
-           <string>Border Line With</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="1">
+        <item row="2" column="1">
          <widget class="QGroupBox" name="groupBox_KernelSize">
           <property name="title">
            <string/>
@@ -800,7 +1061,14 @@
           </layout>
          </widget>
         </item>
-        <item row="2" column="1">
+        <item row="4" column="0">
+         <widget class="QLabel" name="labelLineWith">
+          <property name="text">
+           <string>Border Line With</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="1">
          <widget class="QGroupBox" name="groupBox_LineWith">
           <property name="title">
            <string/>
@@ -837,6 +1105,19 @@
         </item>
        </layout>
       </widget>
+     </item>
+     <item>
+      <spacer name="verticalSpacer_5">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>40</height>
+        </size>
+       </property>
+      </spacer>
      </item>
     </layout>
    </widget>
@@ -1214,6 +1495,7 @@
     <string>Ctrl+6</string>
    </property>
   </action>
+  <zorder>dockWidgetBrenchMarking</zorder>
  </widget>
  <resources>
   <include location="../RCC/Resources.qrc"/>
@@ -1232,22 +1514,6 @@
     <hint type="destinationlabel">
      <x>399</x>
      <y>299</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>action_Show_Static_Properties</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>dockWidgetStatic</receiver>
-   <slot>setVisible(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>199</x>
-     <y>317</y>
     </hint>
    </hints>
   </connection>
@@ -1278,24 +1544,8 @@
      <y>-1</y>
     </hint>
     <hint type="destinationlabel">
-     <x>199</x>
-     <y>763</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>action_Show_BrenchMark</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>dockWidgetBrenchMarking</receiver>
-   <slot>setVisible(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>399</x>
-     <y>950</y>
+     <x>1245</x>
+     <y>983</y>
     </hint>
    </hints>
   </connection>
@@ -1312,6 +1562,230 @@
     <hint type="destinationlabel">
      <x>363</x>
      <y>484</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>action_Show_BrenchMark</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>dockWidgetBrenchMarking</receiver>
+   <slot>setVisible(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>399</x>
+     <y>777</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>dial_intensity</sender>
+   <signal>sliderMoved(int)</signal>
+   <receiver>spinBox</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>947</x>
+     <y>514</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>929</x>
+     <y>612</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>spinBox</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>dial_intensity</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>970</x>
+     <y>617</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>966</x>
+     <y>554</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>dial_blur</sender>
+   <signal>sliderMoved(int)</signal>
+   <receiver>spinBox_2</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1050</x>
+     <y>522</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1037</x>
+     <y>610</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>spinBox_2</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>dial_blur</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1059</x>
+     <y>615</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1056</x>
+     <y>562</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>dial_radius</sender>
+   <signal>sliderMoved(int)</signal>
+   <receiver>spinBox_3</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1128</x>
+     <y>535</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1110</x>
+     <y>604</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>dial_2</sender>
+   <signal>sliderMoved(int)</signal>
+   <receiver>spinBox_4</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1202</x>
+     <y>530</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1198</x>
+     <y>616</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>spinBox_3</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>dial_radius</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1141</x>
+     <y>610</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1138</x>
+     <y>564</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>spinBox_4</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>dial_2</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1191</x>
+     <y>615</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1186</x>
+     <y>573</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>dockWidgetBeauty</sender>
+   <signal>visibilityChanged(bool)</signal>
+   <receiver>action_Show_Lines_Properties</receiver>
+   <slot>setChecked(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1081</x>
+     <y>700</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>dockWidgetStatic</sender>
+   <signal>visibilityChanged(bool)</signal>
+   <receiver>action_Show_Static_Properties</receiver>
+   <slot>setChecked(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>199</x>
+     <y>171</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>action_Show_Static_Properties</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>dockWidgetStatic</receiver>
+   <slot>setVisible(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>199</x>
+     <y>317</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>dockWidgetDynamic</sender>
+   <signal>visibilityChanged(bool)</signal>
+   <receiver>action_Show_Dynamic_Properties</receiver>
+   <slot>setChecked(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>199</x>
+     <y>471</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>dockWidgetBrenchMarking</sender>
+   <signal>visibilityChanged(bool)</signal>
+   <receiver>action_Show_BrenchMark</receiver>
+   <slot>setChecked(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>199</x>
+     <y>702</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
     </hint>
    </hints>
   </connection>

@@ -16,8 +16,8 @@ set( CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/build/bin/ )
 set( CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/build/bin/ )
 
 # C++ flags
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+## -Wno-unused-local-typedefs -Wunused-local-typedefs - For Eigen Boring Warning
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -Wunused-local-typedefs -Wno-unused-local-typedefs")
 set(CMAKE_BUILD_TYPE Debug)
 
 IF(MSVC)
@@ -26,7 +26,7 @@ ENDIF(MSVC)
 
 # End C++ flags
    
-# Do not remember what's the meaning of this  !
+# I do not remember what's the meaning of this  !
 add_definitions(${QT_DEFINITIONS} -Wall)
 
 ## - Libraris
