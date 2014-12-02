@@ -32,7 +32,7 @@ float ambientOcclusion (vec3 vert, vec3 normal)
     mat2 rotation = mat2(cos(noise), -sin(noise), sin(noise), cos(noise));
 
     float depth = abs(vert.z);
-    float max_v = 35.0;
+    float max_v = radius;
     // smaller radius for points farther away
     int rad = max(5, min(int(max_v), int(max_v/depth)));
     for (int i = 0; i <= numberOfSamples; ++i)
@@ -95,6 +95,8 @@ void main (void)
         vec4 specularLight = vec4(1.0) *  max(pow(dot(lightReflection, eyeDirection), shininess),0.0);
 
         //out_Color = occlusion*vec4(ambientLight.xyz + diffuseLight.xyz + specularLight.xyz, 1.0);
-        out_Color = occlusion*vec4(color);
+        //out_Color = occlusion*vec4(color);
+        out_Color = vec4(color.rgb,occlusion);
     }
 }
+

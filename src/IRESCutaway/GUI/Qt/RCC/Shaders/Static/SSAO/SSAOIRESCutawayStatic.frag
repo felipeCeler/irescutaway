@@ -1,6 +1,6 @@
 #version 430 core
 
-layout(location = 2) uniform sampler2D normal;
+layout(location = 2) uniform sampler2D cutawayTexture;
 layout(location = 3) uniform sampler2D vertex;
 
 in VertexData
@@ -17,13 +17,21 @@ uniform vec2 WIN_SCALE;
 uniform int num_lights;
 uniform vec3 lights[4];
 
+uniform int Wall;
+uniform int Line;
+uniform int Cool;
+uniform bool isPerspective_;
+
+
 uniform mat4 ProjectionMatrix;
 
-const float nearPlane = 1.0;
+uniform float nearPlane_;
+uniform float farPlane_;
 
 out vec4 out_Coords;
 out vec4 out_Normal;
 out vec4 out_Color;
+
 
 void main(void)
 {
@@ -54,7 +62,7 @@ void main(void)
         // make sure we are at the center of the pixel to make the right texture access
         vec2 pixel_pos = vec2(floor(gl_FragCoord.x), floor(gl_FragCoord.y)) + vec2(0.5);
         // cutaway normal = rgb, and cutaway depth in camera space = w
-        vec4 cutaway = texelFetch( normal, ivec2(pixel_pos), 0 ).rgba;
+        vec4 cutaway = texelFetch( cutawayTexture, ivec2(pixel_pos), 0 ).rgba;
         //newVert = texelFetch( vertex, ivec2(pixel_pos), 0 ).rgb;
 
         // discard point in front of the cutaway surface
@@ -68,46 +76,64 @@ void main(void)
         float zsurface = 0;
         float zneighbor = 0;
 
-       float aspect_ratio = (WIN_SCALE.x/WIN_SCALE.y);
+        float aspect_ratio = (WIN_SCALE.x/WIN_SCALE.y);
 
+        float frustum_h = nearPlane_ / ProjectionMatrix[0][0];
+        float frustum_v = nearPlane_ / ProjectionMatrix[1][1];
 
-        I = 0;
-
-        float frustum_h = 0.5 / ProjectionMatrix[0][0];
-        float frustum_v = 0.5 / ProjectionMatrix[1][1];
-
-        //http://www.scratchapixel.com/lessons/3d-basic-lessons/lesson-7-intersecting-simple-shapes/ray-plane-and-ray-disk-intersection/
         for (int i = 0; i < size; ++i) {
             if (I != 1)
             {
                 // neighbor coordinate in range [0,1]
-                vec2 neighbor = (pixel_pos + dist_neighbor[i]) / vec2(textureSize(normal,0)).xy ;
+                vec2 neighbor = (pixel_pos + dist_neighbor[i]) / vec2(textureSize(cutawayTexture,0)).xy ;
 
                 // depth of cutaway surface at neighbor pixel
-                zsurface = texelFetch( normal, ivec2(pixel_pos + dist_neighbor[i]), 0 ).w;
+                zsurface = texelFetch( cutawayTexture, ivec2(pixel_pos + dist_neighbor[i]), 0 ).w;
 
-                // invert the orthographic projection (considering ortho planes are in range [-1,1]
-                vec2 pixel = neighbor*2.0 - vec2(1.0);
-                pixel.x *= aspect_ratio;
 
-                // intersection ray from point in image plane with plane containing current 3D point
-                // note that the denominator is dot(l,n), but the ray in ortho is just (0,0,1)
-                zneighbor = (dot (newVert.xyz - vec3(pixel.xy, 0.0), newNormal.xyz)) / newNormal.z;
-
-                // if neighbor is in front of surface (was discarded), curent pixel is an edge pixel
-                if ( backface)
+                if ( isPerspective_ )
                 {
-                        if (zneighbor < zsurface) {
-                             I = 1;
-                        }
+                       // invert the projection
+                       vec3 pixel = vec3( vec2(neighbor*2.0 - vec2(1.0)), -nearPlane_);
+                       pixel.x *= frustum_h;
+                       pixel.y *= frustum_v;
+
+                       vec3 ray =  normalize(pixel);
+                       float dotln = dot (ray, newNormal);
+
+
+                       // intersection ray from point in image plane with plane containing current 3D point
+                       zneighbor = dot ( (newVert.xyz - pixel.xyz), newNormal.xyz) / dotln;
+
+                       // compute the distance in z axis from pixel to 3D plane, and add near plane distance
+                       // (z distance from origin to pixel)
+                       // -nearPlane to be compatible with newVert.z
+                       zneighbor = (ray * zneighbor).z - nearPlane_;
+
                 }else
                 {
-                        if (zneighbor > zsurface) {
-                             I = 1;
-                        }
+                        // invert the orthographic projection (considering ortho planes are in range [-1,1]
+                        vec2 pixel = (neighbor*2.0 - vec2(1.0));
+                        pixel.x *= frustum_h;
+                        pixel.y *= frustum_v;
+
+                        vec3 ray =  vec3(0.0,0.0,1.0);
+
+                        float dotln = dot (ray, newNormal);
+
+                        // intersection ray from point in image plane with plane containing current 3D point
+                        // note that the denominator is dot(l,n), but the ray in ortho is just (0,0,1)
+                        zneighbor = (dot (newVert.xyz - vec3(pixel.xy, 0.0), newNormal.xyz)) / dotln;
+                        zneighbor = (ray * zneighbor).z;
+                }
+
+                // if neighbor is in front of surface (was discarded), curent pixel is an edge pixel
+                if (zneighbor > zsurface) {
+                    I = 1;
                 }
             }
-        }
+         }
+
 
 //        if ( (abs(newVert.z - (cutaway.w)) < 0.009) ) {
 //          I = 1;

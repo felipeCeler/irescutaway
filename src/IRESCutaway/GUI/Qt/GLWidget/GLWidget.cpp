@@ -125,7 +125,7 @@ void GLWidget::initializeGL ( )
 	trackball_ = new Trackball();
 
 	nearPlane_ = 1.0f;
-        farPlane_  = 5.0f;
+        farPlane_  = 15.0f;
 
 	isPerspective_ = true;
 
@@ -818,15 +818,19 @@ void GLWidget::drawSecondaryStatic  ( ) const  // Draw only secondary Cells
 
         SSAOIRESCutawayStatic_->enable( );
 
-        // @TODO Accord with John McDonald from nvidia at http://youtu.be/-bCeNzgiJ8I?t=31m42s,
+        // @TODO According with John McDonald from nvidia at http://youtu.be/-bCeNzgiJ8I?t=31m42s,
         // this command is costly than just bind a Texture
 
-        SSAOIRESCutawayStatic_->setUniform( "normal" , depthFBO->bindAttachment(normalsSmoothID_) );
+        SSAOIRESCutawayStatic_->setUniform( "cutawayTexture" , depthFBO->bindAttachment(normalsSmoothID_) );
         SSAOIRESCutawayStatic_->setUniform( "vertex" , depthFBO->bindAttachment(verticesSmoothID_) );
 
         SSAOIRESCutawayStatic_->setUniform("min_property", reservoir_model_.static_min[reservoir_model_.current_static]  );
         SSAOIRESCutawayStatic_->setUniform("max_property", reservoir_model_.static_max[reservoir_model_.current_static]  );
         SSAOIRESCutawayStatic_->setUniform("property_index", reservoir_model_.current_static );
+
+        SSAOIRESCutawayStatic_->setUniform ( "isPerspective_" , isPerspective_ );
+        SSAOIRESCutawayStatic_->setUniform ( "nearPlane_" , nearPlane_ );
+        SSAOIRESCutawayStatic_->setUniform ( "farPlane_" , farPlane_ );
 
         SSAOIRESCutawayStatic_->setUniform("num_lights", (GLint) lights.size ( )  );
         SSAOIRESCutawayStatic_->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
@@ -844,7 +848,7 @@ void GLWidget::drawSecondaryStatic  ( ) const  // Draw only secondary Cells
 
         SSAOIRESCutawayStaticShell_->enable( );
 
-        SSAOIRESCutawayStaticShell_->setUniform( "normal" , depthFBO->bindAttachment(normalsSmoothID_) );
+        SSAOIRESCutawayStaticShell_->setUniform( "cutawayTexture" , depthFBO->bindAttachment(normalsSmoothID_) );
         SSAOIRESCutawayStaticShell_->setUniform( "vertex" , depthFBO->bindAttachment(verticesSmoothID_) );
 
         SSAOIRESCutawayStaticShell_->setUniform("min_property", reservoir_model_.static_min[reservoir_model_.current_static]  );
@@ -852,6 +856,10 @@ void GLWidget::drawSecondaryStatic  ( ) const  // Draw only secondary Cells
         SSAOIRESCutawayStaticShell_->setUniform("property_index", reservoir_model_.current_static );
         SSAOIRESCutawayStaticShell_->setUniform("faults", reservoir_model_.showFault );
         SSAOIRESCutawayStaticShell_->setUniform("justWireFrame", justWireFrame );
+
+        SSAOIRESCutawayStaticShell_->setUniform ( "isPerspective_" , isPerspective_ );
+        SSAOIRESCutawayStaticShell_->setUniform ( "nearPlane_" , nearPlane_ );
+        SSAOIRESCutawayStaticShell_->setUniform ( "farPlane_" , farPlane_ );
 
         SSAOIRESCutawayStaticShell_->setUniform("num_lights", (GLint) lights.size ( )  );
         SSAOIRESCutawayStaticShell_->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
@@ -957,39 +965,54 @@ void GLWidget::IRESCutawayStatic (  )
 
                         }
 
-                glDrawBuffer(GL_BACK);
+                //glDrawBuffer(GL_BACK);
 
                 glDisable(GL_DEPTH_TEST);
 
-                /// SEGUNDO PASSO
+                fboSSAO->bindRenderBuffer(blurTextureID);
 
-                ssaoShader->enable();
+                /// SEGUNDO PASSO
+                ssaoShaderStatic_->enable();
 
                 glActiveTexture(GL_TEXTURE0 + 7);
                 glBindTexture(GL_TEXTURE_2D, noiseTexture);
 
-                ssaoShader->setUniform("lightViewMatrix", trackball_->getProjectionMatrix().data(),4,GL_FALSE,1);
+                ssaoShaderStatic_->setUniform("lightViewMatrix", trackball_->getProjectionMatrix().data(),4,GL_FALSE,1);
 
-                ssaoShader->setUniform("noiseScale", noise_scale.x(),noise_scale.y());
+                ssaoShaderStatic_->setUniform("noiseScale", noise_scale.x(),noise_scale.y());
                 ssaoShader->setUniform("kernel", kernel, 2, numberOfSamples);
 
-                ssaoShader->setUniform("coordsTexture", fboSSAO->bindAttachment(depthTextureID));
-                ssaoShader->setUniform("normalTexture", fboSSAO->bindAttachment(normalTextureID));
-                ssaoShader->setUniform("colorTexture", fboSSAO->bindAttachment(colorTextureID));
-                ssaoShader->setUniform("displayAmbientPass", displayAmbientPass);
+                ssaoShaderStatic_->setUniform("coordsTexture", fboSSAO->bindAttachment(depthTextureID));
+                ssaoShaderStatic_->setUniform("normalTexture", fboSSAO->bindAttachment(normalTextureID));
+                ssaoShaderStatic_->setUniform("colorTexture", fboSSAO->bindAttachment(colorTextureID));
+                ssaoShaderStatic_->setUniform("displayAmbientPass", displayAmbientPass);
 
-                ssaoShader->setUniform("radius", radius);
-                ssaoShader->setUniform("intensity", (float)intensity);
-                ssaoShader->setUniform("max_dist", max_dist);
-                ssaoShader->setUniform("noiseTexture", 7);
+                std::cout << radius << std::endl;
+
+                ssaoShaderStatic_->setUniform("radius", radius);
+                ssaoShaderStatic_->setUniform("intensity", (float)intensity);
+                ssaoShaderStatic_->setUniform("max_dist", max_dist);
+                ssaoShaderStatic_->setUniform("noiseTexture", 7);
 
                 //Second pass mesh rendering:
                 quadSSAO->render();
 
-                ssaoShader->disable();
+                ssaoShaderStatic_->disable();
                 glBindTexture(GL_TEXTURE_2D, 0);
                 fboSSAO->unbindAll();
                 //fboSSAO->clearDepth();
+
+                glDrawBuffer(GL_BACK);
+
+                blurShaderStatic_->enable();
+
+                blurShaderStatic_->setUniform("blurTexture", fboSSAO->bindAttachment(blurTextureID));
+                blurShaderStatic_->setUniform("blurRange", blurRange);
+
+                quadSSAO->render();
+
+                blurShaderStatic_->disable();
+                fboSSAO->unbindAll();
 
                 glEnable(GL_DEPTH_TEST);
 
@@ -1831,10 +1854,12 @@ void GLWidget::reloadShaders ( )
         BurnsPly_->reloadShaders ( );
 
         // SSAO
-
         ssaoShader->reloadShaders ( );
         blurShader->reloadShaders ( );
         deferredShader->reloadShaders ( );
+
+        blurShaderStatic_->reloadShaders ( );
+        ssaoShaderStatic_->reloadShaders();
         SSAOIRESPrimaryStatic_->reloadShaders();
         SSAOIRESCutawayStatic_->reloadShaders();
         SSAOIRESCutawayStaticShell_->reloadShaders();
@@ -1999,6 +2024,19 @@ void GLWidget::loadShaders ( )
                                             "",1);
                 ssaoShader->initialize();
 
+
+                /// SSAO Saving color and occlusion
+                ssaoShaderStatic_ = new Shader ("ssaoShaderStatic_", (shaderDirectory + "Static/SSAO/ssao.vert").toStdString(),
+                                                                     (shaderDirectory + "Static/SSAO/ssao.frag").toStdString(),
+                                                                      "",1);
+                ssaoShaderStatic_->initialize();
+
+
+                blurShaderStatic_ = new Shader ("blurShaderStatic_", (shaderDirectory + "Static/SSAO/gaussianblurfilter.vert").toStdString(),
+                                                                     (shaderDirectory + "Static/SSAO/gaussianblurfilter.frag").toStdString(),
+                                                                      "",1);
+
+                blurShaderStatic_->initialize();
                 ///
                 deferredShader = new Shader ("deferredShader", (shaderDirectory + "SSAO/viewspacebuffer.vert").toStdString(),
                                                              (shaderDirectory + "SSAO/viewspacebuffer.frag").toStdString(),
@@ -2006,8 +2044,8 @@ void GLWidget::loadShaders ( )
                 deferredShader->initialize();
 
                 ///
-                blurShader = new Shader ("blurShader", (shaderDirectory + "SSAO/guassianblurfilter.vert").toStdString(),
-                                                         (shaderDirectory + "SSAO/guassianblurfilter.frag").toStdString(),
+                blurShader = new Shader ("blurShader", (shaderDirectory + "Static/SSAO/gaussianblurfilter.vert").toStdString(),
+                                                       (shaderDirectory + "Static/SSAO/gaussianblurfilter.frag").toStdString(),
                                                              "",1);
                 blurShader->initialize();
 

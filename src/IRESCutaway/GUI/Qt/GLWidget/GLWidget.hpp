@@ -299,6 +299,12 @@ class GLWidget: public QGLWidget
                 Shader* SSAOIRESCutawayStatic_;
                 Shader* SSAOIRESCutawayStaticShell_;
 
+                Shader* ssaoShaderStatic_;
+
+
+                Shader* blurShaderStatic_;
+                ///
+
                 // ! DYNAMIC VIEWER F12 Dynamic Properties
 
                 Shader* IRESCutawaySurfaceDynamic_;
