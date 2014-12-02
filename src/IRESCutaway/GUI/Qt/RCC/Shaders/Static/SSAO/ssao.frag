@@ -32,7 +32,7 @@ float ambientOcclusion (vec3 vert, vec3 normal)
     mat2 rotation = mat2(cos(noise), -sin(noise), sin(noise), cos(noise));
 
     float depth = abs(vert.z);
-    float max_v = radius;
+    float max_v = 35.0;
     // smaller radius for points farther away
     int rad = max(5, min(int(max_v), int(max_v/depth)));
     for (int i = 0; i <= numberOfSamples; ++i)
@@ -91,7 +91,7 @@ void main (void)
         vec4 color = texelFetch(colorTexture, ivec2(gl_FragCoord.xy), 0);
         vec4 ambientLight = vec4(0.5) * color;
 
-        vec4 diffuseLight = color * 0.4 * max(dot(lightDirection, -normal),0.0);
+        vec4 diffuseLight = color * 0.4 * max(dot(lightDirection, normal),0.0);
         vec4 specularLight = vec4(1.0) *  max(pow(dot(lightReflection, eyeDirection), shininess),0.0);
 
         //out_Color = occlusion*vec4(ambientLight.xyz + diffuseLight.xyz + specularLight.xyz, 1.0);

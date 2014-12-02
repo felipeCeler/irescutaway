@@ -1000,21 +1000,8 @@
        <property name="title">
         <string> Lines Properties</string>
        </property>
-       <layout class="QFormLayout" name="formLayout_3">
-        <property name="fieldGrowthPolicy">
-         <enum>QFormLayout::ExpandingFieldsGrow</enum>
-        </property>
-        <property name="labelAlignment">
-         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-        </property>
-        <item row="2" column="0">
-         <widget class="QLabel" name="labelMeanFilterSize">
-          <property name="text">
-           <string>Mean Filter Kernel Size</string>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="1">
+       <layout class="QGridLayout" name="gridLayout_2">
+        <item row="0" column="2">
          <widget class="QGroupBox" name="groupBox_KernelSize">
           <property name="title">
            <string/>
@@ -1026,25 +1013,6 @@
            <bool>false</bool>
           </property>
           <layout class="QHBoxLayout" name="horizontalLayout_GB_kernelSize">
-           <item>
-            <widget class="QSlider" name="horizontalSliderMeanFilterSize">
-             <property name="maximum">
-              <number>32</number>
-             </property>
-             <property name="singleStep">
-              <number>2</number>
-             </property>
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="tickPosition">
-              <enum>QSlider::TicksBelow</enum>
-             </property>
-             <property name="tickInterval">
-              <number>2</number>
-             </property>
-            </widget>
-           </item>
            <item>
             <widget class="QLabel" name="labelKernelSize">
              <property name="frameShape">
@@ -1061,14 +1029,14 @@
           </layout>
          </widget>
         </item>
-        <item row="4" column="0">
+        <item row="1" column="0">
          <widget class="QLabel" name="labelLineWith">
           <property name="text">
-           <string>Border Line With</string>
+           <string>Border Lines Size</string>
           </property>
          </widget>
         </item>
-        <item row="4" column="1">
+        <item row="1" column="2">
          <widget class="QGroupBox" name="groupBox_LineWith">
           <property name="title">
            <string/>
@@ -1078,22 +1046,6 @@
           </property>
           <layout class="QHBoxLayout" name="horizontalLayout_2">
            <item>
-            <widget class="QSlider" name="horizontalSliderLineWith">
-             <property name="maximum">
-              <number>10</number>
-             </property>
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="tickPosition">
-              <enum>QSlider::TicksBelow</enum>
-             </property>
-             <property name="tickInterval">
-              <number>1</number>
-             </property>
-            </widget>
-           </item>
-           <item>
             <widget class="QLabel" name="label">
              <property name="text">
               <string/>
@@ -1101,6 +1053,62 @@
             </widget>
            </item>
           </layout>
+         </widget>
+        </item>
+        <item row="2" column="0">
+         <widget class="QLabel" name="label_6">
+          <property name="text">
+           <string>Internal Line Size</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QLabel" name="labelMeanFilterSize">
+          <property name="text">
+           <string>Mean Filter Kernel Size</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1">
+         <widget class="QSlider" name="horizontalSlider">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QSlider" name="horizontalSliderLineWith">
+          <property name="maximum">
+           <number>10</number>
+          </property>
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="tickPosition">
+           <enum>QSlider::TicksBelow</enum>
+          </property>
+          <property name="tickInterval">
+           <number>1</number>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QSlider" name="horizontalSliderMeanFilterSize">
+          <property name="maximum">
+           <number>32</number>
+          </property>
+          <property name="singleStep">
+           <number>2</number>
+          </property>
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="tickPosition">
+           <enum>QSlider::TicksBelow</enum>
+          </property>
+          <property name="tickInterval">
+           <number>2</number>
+          </property>
          </widget>
         </item>
        </layout>

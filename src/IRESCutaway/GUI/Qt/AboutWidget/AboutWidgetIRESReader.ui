@@ -40,7 +40,7 @@
        <item>
         <widget class="QLabel" name="label_2">
          <property name="text">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Autor&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Felipe de Carvalho&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Autor&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Felipe de Carvalho&lt;/p&gt;&lt;p&gt;Ricardo Marroquim&lt;/p&gt;&lt;p&gt;Emílio Brazil&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="textFormat">
           <enum>Qt::AutoText</enum>

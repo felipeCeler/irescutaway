@@ -9,7 +9,8 @@ in VertexData
    vec3 normal;
 } VertexOut;
 
-out vec4 outputColor;
+out vec4 outputNormal;
+out vec4 outputVertex;
 
 in vec2 texcoord;
 
@@ -43,7 +44,8 @@ void main(void)
 //	}
 
         //outputColor =  vec4 ( VertexOut.normal, gl_FragCoord.z);//VertexOut.color;
-        outputColor =  vec4 (  VertexOut.normal, VertexOut.verticeEye.z);//VertexOut.color;
+        outputNormal =  vec4 (  newNormal, VertexOut.verticeEye.z);//VertexOut.color;
+        outputVertex =  vec4 (  newVert  , VertexOut.verticeEye.z);//VertexOut.color;
 
 	//outputColor =  VertexOut.color;
 }

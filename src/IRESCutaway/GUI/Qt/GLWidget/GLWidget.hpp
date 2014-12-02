@@ -296,6 +296,8 @@ class GLWidget: public QGLWidget
                 Shader* IRESCutawayStatic_;
                 Shader* IRESPrimaryStatic_;
                 Shader* SSAOIRESPrimaryStatic_;
+                Shader* SSAOIRESCutawayStatic_;
+                Shader* SSAOIRESCutawayStaticShell_;
 
                 // ! DYNAMIC VIEWER F12 Dynamic Properties
 
@@ -427,7 +429,7 @@ class GLWidget: public QGLWidget
                         // divide in numberOfSamples directions in the unit circle, and multiply each vector by a random radius
                         for ( int i = 1; i <= numberOfSamples; i++ )
                         {
-                                float r = pow ( random ( 0.01 , 1.0f ) , 1.0 );
+                                float r = random ( 0.01 , 1.0f );
 
                                 sample[0] = cos ( step * i );
                                 sample[1] = sin ( step * i );
@@ -491,19 +493,19 @@ class GLWidget: public QGLWidget
                         return ret;
                 }
 
-                // lights
+                /// Lights
                 std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f> > lights;
                 GLfloat * light_elements;
 
                 /// Normals in Camera Space outputNormals vec4( newNormal.xyz, 1.0 );
                 GLuint normalCutawayID_;
                 /// Vertices in Camera Space outputVertices vec3 (newVert.xyz, 1.0 );
-                GLuint vertexCutawayID_;
+                GLuint verticesCutawayID_;
                 /// Normals in Camera Space outputNormals vec4( newNormal.xyz, 1.0 );
                 GLuint normalsSmoothID_;
                 /// Vertices in Camera Space outputVertices vec3 (newVert.xyz, 1.0 );
-                GLuint vertexSmoothID_;
-
+                GLuint verticesSmoothID_;
+                /// Cutaway FrameBuffer
                 Framebuffer * depthFBO;
 
                 /// Smooth
@@ -543,7 +545,10 @@ class GLWidget: public QGLWidget
                 Trackball * trackball_;
                 /// Trackball for manipulating the camera.
 
-                bool perspective_;
+                float nearPlane_;
+                float farPlane_;
+
+                bool isPerspective_;
                 float orthoZoom;
 
                 bool zoom_start_;

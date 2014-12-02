@@ -16,9 +16,14 @@ uniform vec2 WIN_SCALE;
 uniform int num_lights;
 uniform vec3 lights[4];
 
-out vec4 outputColor;
+uniform bool isPerspective_;
 
-layout ( depth_less ) out float gl_FragDepth;
+uniform mat4 ProjectionMatrix;
+
+uniform float nearPlane_;
+uniform float farrPlane_;
+
+out vec4 outputColor;
 
 void main(void)
 {
@@ -49,25 +54,25 @@ void main(void)
 //              discard;
 
         // discard point in front of the cutaway surface
-        if ( newVert.z > cutaway.w ) {
-            if (newNormal.z >= 0.0 )
-            {
+        if ( newVert.z > cutaway.w )
+        {
+                if (newNormal.z >= 0.0 )
+                {
                   //if (dot(newNormal.xyz,cutaway.xyz)> 0)
                           discard;
-            }
+                }
         }
        else
         {
                 if ( newNormal.z < 0.0)
                 {
                          discard;//     backface = true;
-                 }
-//
+                }
         }
 
 
 
-/*        vec2 dist_neighbor[8] = {vec2(linesize,0), vec2(-linesize,0), vec2(0,linesize), vec2(0,-linesize),
+        vec2 dist_neighbor[8] = {vec2(linesize,0), vec2(-linesize,0), vec2(0,linesize), vec2(0,-linesize),
                                 vec2(-linesizediag,-linesizediag), vec2(-linesizediag,linesizediag), vec2(linesize,-linesize), vec2(linesizediag,-linesizediag)};
 
 //        // discard point in front of the cutaway surface
@@ -75,13 +80,16 @@ void main(void)
 //            discard;
 //        }
 
-        int size = 4;
+        int size = 8;
 
         // check the neighbors, we are only interested in border pixels (neighbors to discarded pixels)
         float zsurface = 0;
         float zneighbor = 0;
 
         float aspect_ratio = (WIN_SCALE.x/WIN_SCALE.y);
+
+        float frustum_h = nearPlane_ / ProjectionMatrix[0][0];
+        float frustum_v = nearPlane_ / ProjectionMatrix[1][1];
 
         for (int i = 0; i < size; ++i) {
             if (I != 1)
@@ -92,13 +100,35 @@ void main(void)
                 // depth of cutaway surface at neighbor pixel
                 zsurface = texelFetch( normals, ivec2(pixel_pos + dist_neighbor[i]), 0 ).w;
 
-                // invert the orthographic projection (considering ortho planes are in range [-1,1]
-                vec2 pixel = neighbor*2.0 - vec2(1.0);
-                pixel.x *= aspect_ratio;
 
-                // intersection ray from point in image plane with plane containing current 3D point
-                // note that the denominator is dot(l,n), but the ray in ortho is just (0,0,1)
-                zneighbor = (dot (newVert.xyz - vec3(pixel.xy, 0.0), newNormal.xyz)) / newNormal.z;
+                if ( isPerspective_ )
+                {
+                        // invert the projection
+                        vec3 pixel = vec3( vec2(neighbor*2.0 - vec2(1.0)), -nearPlane_);
+                        pixel.x *= frustum_h;
+                        pixel.y *= frustum_v;
+
+                        vec3 ray =  normalize(pixel);
+                        float dotln = dot (ray, newNormal);
+
+                        // intersection ray from point in image plane with plane containing current 3D point
+                        zneighbor = dot ( (newVert.xyz - pixel.xyz), newNormal.xyz) / dotln;
+
+                        // compute the distance in z axis from pixel to 3D plane, and add near plane distance
+                        // (z distance from origin to pixel)
+                        // -nearPlane to be compatible with newVert.z
+                        zneighbor = (ray * zneighbor).z - nearPlane_;
+                }else
+                {
+                        // invert the orthographic projection (considering ortho planes are in range [-1,1]
+                        vec2 pixel = neighbor*2.0 - vec2(1.0);
+                        pixel.x *= aspect_ratio;
+
+                        // intersection ray from point in image plane with plane containing current 3D point
+                        // note that the denominator is dot(l,n), but the ray in ortho is just (0,0,1)
+                        zneighbor = (dot (newVert.xyz - vec3(pixel.xy, 0.0), newNormal.xyz)) / newNormal.z;
+
+                }
 
                 // if neighbor is in front of surface (was discarded), curent pixel is an edge pixel
                 if ( backface)
@@ -113,11 +143,11 @@ void main(void)
                         }
                 }
             }
-        }*/
+        }
 
         // for back faces use the normal of the cutaway surface (simulate a cut inside the cells)
-        //if (backface) newNormal = -cutaway.xyz;
-        //vec3 eye_dir = normalize ( -newVert.xyz );
+        if (backface) newNormal = -cutaway.xyz;
+        vec3 eye_dir = normalize ( -newVert.xyz );
 
         //color_t = vec4(0.5,0.0,0.0,1.0);
 
@@ -141,25 +171,19 @@ void main(void)
         // uncomment to turn off illumination
         //color = color_t;
 
-        // interior cutaway lines (back face intersection with cutaway)
-//        if (backface && I == 1)
-//        {
-//              I = exp2(-2.0 * d * d);
-//            outputColor = I * vec4(vec3(0.1), 1.0) + (1.0 - I) * ( color );
-//        }
         // cutaway border lines (front face intersection with cutaway)
-/*         if (I == 1)
+         if (I == 1)
         {   //outputColor = I * vec4(vec3(0.1), 1.0) + (1.0 - I) * ( color );
             outputColor = I * vec4(vec3(1.0,1.0,1.0), 1.0);
         }
         // lines outside cutaway (remaining front faces)
-        else*/
+        else
         {
 
-//              if (backface)
-//                      color.rgb += vec3(0.5);
+              if (backface)
+                      color.rgb += vec3(0.5);
             outputColor = I * vec4(vec3(0.0), 1.0) + (1.0 - I) * ( color );
-            discard;
+            //discard;
         }
 
          //outputColor = I * vec4(vec3(0.0), 1.0) + (1.0 - I) * ( color );

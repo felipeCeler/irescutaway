@@ -11,7 +11,7 @@ flat            vec4 normal;
 } VertexIn;
 
 
-out vec4 outputColor;
+//out vec4 outputColor;
 
 uniform vec2 WIN_SCALE;
 uniform int num_lights;
@@ -20,6 +20,10 @@ uniform vec3 lights[4];
 uniform mat4 ProjectionMatrix;
 
 const float nearPlane = 1.0;
+
+out vec4 out_Coords;
+out vec4 out_Normal;
+out vec4 out_Color;
 
 void main(void)
 {
@@ -146,7 +150,11 @@ void main(void)
 
         // interior cutaway lines (back face intersection with cutaway)
 
-        outputColor = I * vec4 ( vec3 ( 0.1 ) , 1.0 ) + ( 1.0 - I ) * ( ( color ) );
+        //outputColor = I * vec4 ( vec3 ( 0.1 ) , 1.0 ) + ( 1.0 - I ) * ( ( color ) );
+
+        out_Coords = vec4 (newVert.xyz, 1.0);
+        out_Normal = vec4 (newNormal.xyz, 1.0);
+        out_Color = I * vec4 ( vec3 ( 0.1 ) , 1.0 ) + ( 1.0 - I ) * ( ( color ) );
 
 
 }

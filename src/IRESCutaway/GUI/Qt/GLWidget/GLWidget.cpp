@@ -123,8 +123,11 @@ void GLWidget::initializeGL ( )
         meanFilterSize_  = 0;
 
 	trackball_ = new Trackball();
-	perspective_ = true;
 
+	nearPlane_ = 1.0f;
+        farPlane_  = 5.0f;
+
+	isPerspective_ = true;
 
 	trackball_->initOpenGLMatrices();
 
@@ -132,7 +135,12 @@ void GLWidget::initializeGL ( )
 
 	enable_blend_ = 0;
 
-	depthFBO = new Framebuffer( width() , height(), 3 );
+	depthFBO = new Framebuffer( width() , height(), 4 );
+
+	normalCutawayID_ = 0;
+	verticesCutawayID_ = 1;
+	normalsSmoothID_ = 2;
+	verticesSmoothID_ =  3;
 
 	meanFilter = new MeanFilter( "Gaussian blur");
 	meanFilter->resize(width(), height());
@@ -425,11 +433,11 @@ void GLWidget::resizeGL ( int width , int height )
 
 	float aspect = (float) width / height;
 
-	// @Noob - http://math.hws.edu/graphicsnotes/c3/s5.html near plane can be negative on orthographic avoiding clipping by it.
+	/// @Noob - http://math.hws.edu/graphicsnotes/c3/s5.html near plane can be negative on orthographic avoiding clipping by it.
 
-	if ( perspective_ )
+	if ( isPerspective_ )
 	{
-	        trackball_->usePerspectiveMatrix  ( 45.0f , aspect , 1.0 , 500.0f);
+	        trackball_->usePerspectiveMatrix  ( 45.0f , aspect , nearPlane_ , farPlane_);
 	}
 	else
 	{
@@ -449,7 +457,7 @@ void GLWidget::resizeGL ( int width , int height )
 
 	std::cout << trackball_->getProjectionMatrix() << std::endl;
 
-	depthFBO = new Framebuffer( width , height, 3 );
+	depthFBO = new Framebuffer( width , height, 4 );
 	depthFBO->clearAttachments();
 
         fboSSAO = new Framebuffer( width , height, 4 );
@@ -632,7 +640,7 @@ void GLWidget::drawIRESCutawayStaticSurface ( ) const
 
 	depthFBO->bind( );
 
-	glDrawBuffer(GL_COLOR_ATTACHMENT0);
+	depthFBO->bindRenderBuffers(normalCutawayID_,verticesCutawayID_);
 
 	glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
 	glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
@@ -662,11 +670,11 @@ void GLWidget::drawIRESCutawayStaticSurface ( ) const
 
 	IRESCutawaySurfaceStatic_->disable( );
 
-	glDrawBuffer(GL_COLOR_ATTACHMENT0+1);
+	depthFBO->bindRenderBuffers(normalsSmoothID_, verticesSmoothID_);
 
 
         glDisable(GL_DEPTH_TEST);
-        meanFilter->renderTexture( depthFBO->bindAttachment(0),meanFilterSize_);
+        meanFilter->renderTexture( depthFBO->bindAttachment(normalCutawayID_),depthFBO->bindAttachment(verticesCutawayID_),meanFilterSize_);
 
         depthFBO->unbindAll();
 
@@ -708,8 +716,6 @@ void GLWidget::drawPrimaryStatic  ( ) const // Draw only primary   Cells
 //
 //        IRESPrimaryStatic_->disable( );
 
-        fboSSAO->clearAttachments();
-        fboSSAO->bindRenderBuffers(depthTextureID, normalTextureID, colorTextureID);
 
         SSAOIRESPrimaryStatic_->enable ( );
 
@@ -737,51 +743,20 @@ void GLWidget::drawPrimaryStatic  ( ) const // Draw only primary   Cells
         SSAOIRESPrimaryStatic_->disable ( );
 
         fboSSAO->unbindAll();
-        fboSSAO->clearDepth();
+        //fboSSAO->clearDepth();
 
-        glDrawBuffer(GL_BACK);
-
-        /// SEGUNDO PASSO
-
-        ssaoShader->enable();
-
-        glActiveTexture(GL_TEXTURE0 + 7);
-        glBindTexture(GL_TEXTURE_2D, noiseTexture);
-
-        ssaoShader->setUniform("lightViewMatrix", trackball_->getProjectionMatrix().data(),4,GL_FALSE,1);
-
-        ssaoShader->setUniform("noiseScale", noise_scale.x(),noise_scale.y());
-        ssaoShader->setUniform("kernel", kernel, 2, numberOfSamples);
-
-        ssaoShader->setUniform("coordsTexture", fboSSAO->bindAttachment(depthTextureID));
-        ssaoShader->setUniform("normalTexture", fboSSAO->bindAttachment(normalTextureID));
-        ssaoShader->setUniform("colorTexture", fboSSAO->bindAttachment(colorTextureID));
-        ssaoShader->setUniform("displayAmbientPass", displayAmbientPass);
-
-        ssaoShader->setUniform("radius", radius);
-        ssaoShader->setUniform("intensity", (float)intensity);
-        ssaoShader->setUniform("max_dist", max_dist);
-        ssaoShader->setUniform("noiseTexture", 7);
-
-        //Second pass mesh rendering:
-        quadSSAO->render();
-
-        ssaoShader->disable();
-        glBindTexture(GL_TEXTURE_2D, 0);
-        fboSSAO->unbindAll();
-        fboSSAO->clearDepth();
 
         // THIRD PASS
-        blurShader->enable();
-
-        blurShader->setUniform("blurTexture", fboSSAO->bindAttachment(blurTextureID));
-        blurShader->setUniform("blurRange", blurRange);
-
-        quadSSAO->render();
-
-        blurShader->disable();
-
-        fboSSAO->unbindAll();
+//        blurShader->enable();
+//
+//        blurShader->setUniform("blurTexture", fboSSAO->bindAttachment(blurTextureID));
+//        blurShader->setUniform("blurRange", blurRange);
+//
+//        quadSSAO->render();
+//
+//        blurShader->disable();
+//
+//        fboSSAO->unbindAll();
 
 }
 
@@ -790,52 +765,105 @@ void GLWidget::drawSecondaryStatic  ( ) const  // Draw only secondary Cells
 
         // Interior Cells
 
-        IRESCutawayStatic_->enable( );
+//        IRESCutawayStatic_->enable( );
+//
+//        // @TODO Accord with John McDonald from nvidia at http://youtu.be/-bCeNzgiJ8I?t=31m42s,
+//        // this command is costly than just bind a Texture
+//
+//        IRESCutawayStatic_->setUniform( "normal" , depthFBO->bindAttachment(normalsSmoothID_) );
+//        IRESCutawayStatic_->setUniform( "vertex" , depthFBO->bindAttachment(verticesSmoothID_) );
+//
+//        IRESCutawayStatic_->setUniform("min_property", reservoir_model_.static_min[reservoir_model_.current_static]  );
+//        IRESCutawayStatic_->setUniform("max_property", reservoir_model_.static_max[reservoir_model_.current_static]  );
+//        IRESCutawayStatic_->setUniform("property_index", reservoir_model_.current_static );
+//
+//        IRESCutawayStatic_->setUniform("num_lights", (GLint) lights.size ( )  );
+//        IRESCutawayStatic_->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
+//        IRESCutawayStatic_->setUniform("WIN_SCALE", (float) width ( ) , (float) height ( ) );
+//
+//        IRESCutawayStatic_->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
+//        IRESCutawayStatic_->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
+//        IRESCutawayStatic_->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
+//
+//        reservoir_model_.drawFaces( );
+//
+//        IRESCutawayStatic_->disable( );
+//
+//        // Surface Faces
+//
+//        IRESCutawayStaticShell_->enable( );
+//
+//        IRESCutawayStaticShell_->setUniform( "normal" , depthFBO->bindAttachment(normalsSmoothID_) );
+//        IRESCutawayStaticShell_->setUniform( "vertex" , depthFBO->bindAttachment(verticesSmoothID_) );
+//
+//        IRESCutawayStaticShell_->setUniform("min_property", reservoir_model_.static_min[reservoir_model_.current_static]  );
+//        IRESCutawayStaticShell_->setUniform("max_property", reservoir_model_.static_max[reservoir_model_.current_static]  );
+//        IRESCutawayStaticShell_->setUniform("property_index", reservoir_model_.current_static );
+//        IRESCutawayStaticShell_->setUniform("faults", reservoir_model_.showFault );
+//        IRESCutawayStaticShell_->setUniform("justWireFrame", justWireFrame );
+//
+//        IRESCutawayStaticShell_->setUniform("num_lights", (GLint) lights.size ( )  );
+//        IRESCutawayStaticShell_->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
+//        IRESCutawayStaticShell_->setUniform("WIN_SCALE", (float) width ( ) , (float) height ( ) );
+//
+//        IRESCutawayStaticShell_->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
+//        IRESCutawayStaticShell_->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
+//        IRESCutawayStaticShell_->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
+//
+//        reservoir_model_.drawFaces();
+//
+//        IRESCutawayStaticShell_->disable( );
+//
+//        depthFBO->unbindAttachments();
+
+        SSAOIRESCutawayStatic_->enable( );
 
         // @TODO Accord with John McDonald from nvidia at http://youtu.be/-bCeNzgiJ8I?t=31m42s,
         // this command is costly than just bind a Texture
 
-        IRESCutawayStatic_->setUniform( "normals" , depthFBO->bindAttachment(1) );
+        SSAOIRESCutawayStatic_->setUniform( "normal" , depthFBO->bindAttachment(normalsSmoothID_) );
+        SSAOIRESCutawayStatic_->setUniform( "vertex" , depthFBO->bindAttachment(verticesSmoothID_) );
 
-        IRESCutawayStatic_->setUniform("min_property", reservoir_model_.static_min[reservoir_model_.current_static]  );
-        IRESCutawayStatic_->setUniform("max_property", reservoir_model_.static_max[reservoir_model_.current_static]  );
-        IRESCutawayStatic_->setUniform("property_index", reservoir_model_.current_static );
+        SSAOIRESCutawayStatic_->setUniform("min_property", reservoir_model_.static_min[reservoir_model_.current_static]  );
+        SSAOIRESCutawayStatic_->setUniform("max_property", reservoir_model_.static_max[reservoir_model_.current_static]  );
+        SSAOIRESCutawayStatic_->setUniform("property_index", reservoir_model_.current_static );
 
-        IRESCutawayStatic_->setUniform("num_lights", (GLint) lights.size ( )  );
-        IRESCutawayStatic_->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
-        IRESCutawayStatic_->setUniform("WIN_SCALE", (float) width ( ) , (float) height ( ) );
+        SSAOIRESCutawayStatic_->setUniform("num_lights", (GLint) lights.size ( )  );
+        SSAOIRESCutawayStatic_->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
+        SSAOIRESCutawayStatic_->setUniform("WIN_SCALE", (float) width ( ) , (float) height ( ) );
 
-        IRESCutawayStatic_->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
-        IRESCutawayStatic_->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
-        IRESCutawayStatic_->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
+        SSAOIRESCutawayStatic_->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
+        SSAOIRESCutawayStatic_->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
+        SSAOIRESCutawayStatic_->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
 
         reservoir_model_.drawFaces( );
 
-        IRESCutawayStatic_->disable( );
+        SSAOIRESCutawayStatic_->disable( );
 
         // Surface Faces
 
-        IRESCutawayStaticShell_->enable( );
+        SSAOIRESCutawayStaticShell_->enable( );
 
-        IRESCutawayStaticShell_->setUniform ( "normals" , depthFBO->bindAttachment(1) );
+        SSAOIRESCutawayStaticShell_->setUniform( "normal" , depthFBO->bindAttachment(normalsSmoothID_) );
+        SSAOIRESCutawayStaticShell_->setUniform( "vertex" , depthFBO->bindAttachment(verticesSmoothID_) );
 
-        IRESCutawayStaticShell_->setUniform("min_property", reservoir_model_.static_min[reservoir_model_.current_static]  );
-        IRESCutawayStaticShell_->setUniform("max_property", reservoir_model_.static_max[reservoir_model_.current_static]  );
-        IRESCutawayStaticShell_->setUniform("property_index", reservoir_model_.current_static );
-        IRESCutawayStaticShell_->setUniform("faults", reservoir_model_.showFault );
-        IRESCutawayStaticShell_->setUniform("justWireFrame", justWireFrame );
+        SSAOIRESCutawayStaticShell_->setUniform("min_property", reservoir_model_.static_min[reservoir_model_.current_static]  );
+        SSAOIRESCutawayStaticShell_->setUniform("max_property", reservoir_model_.static_max[reservoir_model_.current_static]  );
+        SSAOIRESCutawayStaticShell_->setUniform("property_index", reservoir_model_.current_static );
+        SSAOIRESCutawayStaticShell_->setUniform("faults", reservoir_model_.showFault );
+        SSAOIRESCutawayStaticShell_->setUniform("justWireFrame", justWireFrame );
 
-        IRESCutawayStaticShell_->setUniform("num_lights", (GLint) lights.size ( )  );
-        IRESCutawayStaticShell_->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
-        IRESCutawayStaticShell_->setUniform("WIN_SCALE", (float) width ( ) , (float) height ( ) );
+        SSAOIRESCutawayStaticShell_->setUniform("num_lights", (GLint) lights.size ( )  );
+        SSAOIRESCutawayStaticShell_->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
+        SSAOIRESCutawayStaticShell_->setUniform("WIN_SCALE", (float) width ( ) , (float) height ( ) );
 
-        IRESCutawayStaticShell_->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
-        IRESCutawayStaticShell_->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
-        IRESCutawayStaticShell_->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
+        SSAOIRESCutawayStaticShell_->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
+        SSAOIRESCutawayStaticShell_->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
+        SSAOIRESCutawayStaticShell_->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
 
         reservoir_model_.drawFaces();
 
-        IRESCutawayStaticShell_->disable( );
+        SSAOIRESCutawayStaticShell_->disable( );
 
         depthFBO->unbindAttachments();
 
@@ -910,19 +938,60 @@ void GLWidget::IRESCutawayStatic (  )
 
                 drawBackGround( );
 
-                renderingCutawayTime_.start();
-                if ( draw_secondary )
-                {
-                        drawSecondaryStatic( );
+                // SSAO -- C&G
 
-                }
-                glFinish();
-                accumulateRenderingCutawayTime_ += (float)renderingCutawayTime_.elapsed();
-                if ( draw_primary )
-                {
-                        drawPrimaryStatic( );
+                fboSSAO->clearAttachments();
+                fboSSAO->bindRenderBuffers(depthTextureID, normalTextureID, colorTextureID);
 
-                }
+                        renderingCutawayTime_.start();
+                        if ( draw_secondary )
+                        {
+                                drawSecondaryStatic( );
+
+                        }
+                        glFinish();
+                        accumulateRenderingCutawayTime_ += (float)renderingCutawayTime_.elapsed();
+                        if ( draw_primary )
+                        {
+                                drawPrimaryStatic( );
+
+                        }
+
+                glDrawBuffer(GL_BACK);
+
+                glDisable(GL_DEPTH_TEST);
+
+                /// SEGUNDO PASSO
+
+                ssaoShader->enable();
+
+                glActiveTexture(GL_TEXTURE0 + 7);
+                glBindTexture(GL_TEXTURE_2D, noiseTexture);
+
+                ssaoShader->setUniform("lightViewMatrix", trackball_->getProjectionMatrix().data(),4,GL_FALSE,1);
+
+                ssaoShader->setUniform("noiseScale", noise_scale.x(),noise_scale.y());
+                ssaoShader->setUniform("kernel", kernel, 2, numberOfSamples);
+
+                ssaoShader->setUniform("coordsTexture", fboSSAO->bindAttachment(depthTextureID));
+                ssaoShader->setUniform("normalTexture", fboSSAO->bindAttachment(normalTextureID));
+                ssaoShader->setUniform("colorTexture", fboSSAO->bindAttachment(colorTextureID));
+                ssaoShader->setUniform("displayAmbientPass", displayAmbientPass);
+
+                ssaoShader->setUniform("radius", radius);
+                ssaoShader->setUniform("intensity", (float)intensity);
+                ssaoShader->setUniform("max_dist", max_dist);
+                ssaoShader->setUniform("noiseTexture", 7);
+
+                //Second pass mesh rendering:
+                quadSSAO->render();
+
+                ssaoShader->disable();
+                glBindTexture(GL_TEXTURE_2D, 0);
+                fboSSAO->unbindAll();
+                //fboSSAO->clearDepth();
+
+                glEnable(GL_DEPTH_TEST);
 
 
                 if ( reservoir_model_.showBorderLine )
@@ -1060,7 +1129,7 @@ void GLWidget::drawPrimaryDynamic ( ) const
 
 }
 
-void GLWidget::drawSecondaryDynamic () const
+void GLWidget::drawSecondaryDynamic ( ) const
 {
 
         glClearColor ( 1.0 , 1.0 , 1.0 , 1.0 );
@@ -1077,21 +1146,24 @@ void GLWidget::drawSecondaryDynamic () const
 
         IRESCutawayDynamicCrust_->setUniform( "normals" , depthFBO->bindAttachment(1) );
 
-        IRESCutawayDynamicCrust_->setUniform("max_property", reservoir_model_.dynamic_properties[dynamic_property_index].max_[time_step]  );
-        IRESCutawayDynamicCrust_->setUniform("min_property", reservoir_model_.dynamic_properties[dynamic_property_index].min_[time_step]  );
-        IRESCutawayDynamicCrust_->setUniform("property_index", reservoir_model_.current_static );
-        IRESCutawayDynamicCrust_->setUniform("time_step", time_step );
+        IRESCutawayDynamicCrust_->setUniform ( "max_property" , reservoir_model_.dynamic_properties[dynamic_property_index].max_[time_step] );
+        IRESCutawayDynamicCrust_->setUniform ( "min_property" , reservoir_model_.dynamic_properties[dynamic_property_index].min_[time_step] );
+        IRESCutawayDynamicCrust_->setUniform ( "property_index" , reservoir_model_.current_static );
+        IRESCutawayDynamicCrust_->setUniform ( "time_step" , time_step );
 
-        IRESCutawayDynamicCrust_->setUniform("Wall", wall_ );
-        IRESCutawayDynamicCrust_->setUniform("Line", line_ );
+        IRESCutawayDynamicCrust_->setUniform ( "Wall" , wall_ );
+        IRESCutawayDynamicCrust_->setUniform ( "Line" , line_ );
+        IRESCutawayDynamicCrust_->setUniform ( "isPerspective_" , isPerspective_ );
+        IRESCutawayDynamicCrust_->setUniform ( "nearPlane_" , nearPlane_ );
+        IRESCutawayDynamicCrust_->setUniform ( "farPlane_" , farPlane_ );
 
-        IRESCutawayDynamicCrust_->setUniform("num_lights", (GLint) lights.size ( )  );
-        IRESCutawayDynamicCrust_->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
-        IRESCutawayDynamicCrust_->setUniform("WIN_SCALE", (float) width ( ) , (float) height ( ) );
+        IRESCutawayDynamicCrust_->setUniform ( "num_lights" , (GLint) lights.size ( ) );
+        IRESCutawayDynamicCrust_->setUniform ( "lights[0]" , light_elements , 3 , (GLint) lights.size ( ) );
+        IRESCutawayDynamicCrust_->setUniform ( "WIN_SCALE" , (float) width ( ) , (float) height ( ) );
 
-        IRESCutawayDynamicCrust_->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
-        IRESCutawayDynamicCrust_->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
-        IRESCutawayDynamicCrust_->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
+        IRESCutawayDynamicCrust_->setUniform ( "ModelMatrix" , trackball_->getModelMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
+        IRESCutawayDynamicCrust_->setUniform ( "ViewMatrix" , trackball_->getViewMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
+        IRESCutawayDynamicCrust_->setUniform ( "ProjectionMatrix" , trackball_->getProjectionMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
 
         reservoir_model_.drawCuboid ( );
 
@@ -1104,8 +1176,11 @@ void GLWidget::drawSecondaryDynamic () const
 
         IRESCutawayDynamicShell_->setUniform ( "max_property" , reservoir_model_.dynamic_properties[dynamic_property_index].max_[time_step] );
         IRESCutawayDynamicShell_->setUniform ( "min_property" , reservoir_model_.dynamic_properties[dynamic_property_index].min_[time_step] );
-        IRESCutawayDynamicShell_->setUniform ("faults", reservoir_model_.showFault );
+        IRESCutawayDynamicShell_->setUniform ( "faults" , reservoir_model_.showFault );
 
+        IRESCutawayDynamicShell_->setUniform ( "isPerspective_" , isPerspective_ );
+        IRESCutawayDynamicShell_->setUniform ( "nearPlane_" , nearPlane_ );
+        IRESCutawayDynamicShell_->setUniform ( "farPlane_" , farPlane_ );
         IRESCutawayDynamicShell_->setUniform ( "num_lights" , (GLint) lights.size ( ) );
         IRESCutawayDynamicShell_->setUniform ( "lights[0]" , light_elements , 3 , (GLint) lights.size ( ) );
         IRESCutawayDynamicShell_->setUniform ( "WIN_SCALE" , (float) width ( ) , (float) height ( ) );
@@ -1761,6 +1836,8 @@ void GLWidget::reloadShaders ( )
         blurShader->reloadShaders ( );
         deferredShader->reloadShaders ( );
         SSAOIRESPrimaryStatic_->reloadShaders();
+        SSAOIRESCutawayStatic_->reloadShaders();
+        SSAOIRESCutawayStaticShell_->reloadShaders();
 
 }
 
@@ -1783,27 +1860,6 @@ void GLWidget::loadShaders ( )
 	shadersDir.cdUp ();
 	qDebug () << "Directory " << shadersDir.path ();
 
-
-	// SSAO
-
-        /// The per pixel AO computation shader
-
-        ssaoShader = new Shader ("ssaoShader", (shaderDirectory + "SSAO/ssao.vert").toStdString(),
-                                                 (shaderDirectory + "SSAO/ssao.frag").toStdString(),
-                                    "",1);
-        ssaoShader->initialize();
-
-        ///
-        deferredShader = new Shader ("deferredShader", (shaderDirectory + "SSAO/viewspacebuffer.vert").toStdString(),
-                                                     (shaderDirectory + "SSAO/viewspacebuffer.frag").toStdString(),
-                                                     "",1);
-        deferredShader->initialize();
-
-        ///
-        blurShader = new Shader ("blurShader", (shaderDirectory + "SSAO/guassianblurfilter.vert").toStdString(),
-                                                 (shaderDirectory + "SSAO/guassianblurfilter.frag").toStdString(),
-                                                     "",1);
-        blurShader->initialize();
 
 
         // Effects --
@@ -1934,6 +1990,27 @@ void GLWidget::loadShaders ( )
                                         "",1);
                 BurnsPly_->initialize( );
 
+                // SSAO
+
+                /// The per pixel AO computation shader
+
+                ssaoShader = new Shader ("ssaoShader", (shaderDirectory + "SSAO/ssao.vert").toStdString(),
+                                                         (shaderDirectory + "SSAO/ssao.frag").toStdString(),
+                                            "",1);
+                ssaoShader->initialize();
+
+                ///
+                deferredShader = new Shader ("deferredShader", (shaderDirectory + "SSAO/viewspacebuffer.vert").toStdString(),
+                                                             (shaderDirectory + "SSAO/viewspacebuffer.frag").toStdString(),
+                                                             "",1);
+                deferredShader->initialize();
+
+                ///
+                blurShader = new Shader ("blurShader", (shaderDirectory + "SSAO/guassianblurfilter.vert").toStdString(),
+                                                         (shaderDirectory + "SSAO/guassianblurfilter.frag").toStdString(),
+                                                             "",1);
+                blurShader->initialize();
+
                 /// SSAO Primary
 
                 SSAOIRESPrimaryStatic_ = new Shader ("IRESPrimaryStatic",
@@ -1942,6 +2019,23 @@ void GLWidget::loadShaders ( )
                                                 (shaderDirectory + "Static/SSAO/SSAOIRESPrimaryStatic.geom").toStdString(),1);
 
                 SSAOIRESPrimaryStatic_->initialize();
+
+                SSAOIRESCutawayStatic_ = new Shader ("SSAOIRESCutawayStatic_",
+                                                (shaderDirectory + "Static/SSAO/SSAOIRESCutawayStatic.vert").toStdString(),
+                                                (shaderDirectory + "Static/SSAO/SSAOIRESCutawayStatic.frag").toStdString(),
+                                                (shaderDirectory + "Static/SSAO/SSAOIRESCutawayStatic.geom").toStdString(),1);
+
+                SSAOIRESCutawayStatic_->initialize();
+
+                SSAOIRESCutawayStaticShell_ = new Shader ("SSAOIRESCutawayStaticShell_",
+                                                (shaderDirectory + "Static/SSAO/SSAOIRESCutawayStaticShell.vert").toStdString(),
+                                                (shaderDirectory + "Static/SSAO/SSAOIRESCutawayStaticShell.frag").toStdString(),
+                                                (shaderDirectory + "Static/SSAO/SSAOIRESCutawayStaticShell.geom").toStdString(),1);
+
+                SSAOIRESCutawayStaticShell_->initialize();
+
+
+
 
 }
 /// KeyInput
@@ -2060,17 +2154,19 @@ void GLWidget::keyPressEvent ( QKeyEvent * event )
 	}
         else if ( (event->modifiers() == Qt::ShiftModifier ) && (event->key() == Qt::Key_P) )
         {
-                perspective_ = !perspective_;
+                isPerspective_ = !isPerspective_;
 
                 float aspect = (float) width() / height();
 
-                if ( perspective_ )
-                        trackball_->usePerspectiveMatrix  ( 45.0f , aspect , 1.0f , 5.0f);
+                if ( isPerspective_ )
+                        trackball_->usePerspectiveMatrix  ( 45.0f , aspect , nearPlane_ , farPlane_ );
                 else
                         trackball_->useOrthographicMatrix ( -1.0f*aspect , 1.0f*aspect , -1.0f , 1.0 , 0.1f , 500.0f );
 
+                /// Clear All color/depth buffer from the current framebuffer
                 depthFBO->clearAttachments();
-                //resizeGL(width(),height());
+                fboSSAO->clearAttachments();
+
         }
         else if ( event->key() == Qt::Key_1)
         {
@@ -2303,8 +2399,15 @@ void GLWidget::wheelEvent ( QWheelEvent *event )
 	}
 	else
 	{
+	        int numDegrees = event->delta() / 8;
+	        int numSteps = numDegrees / 15;
 
+	        //if  ( ( event->delta ( ) > 0.0 ) && ( event->delta ( ) > 90.0 ) )
+	        {
+	                qDebug() << numDegrees;
+	        }
 	}
+	event->accept();
 
     update();
 
