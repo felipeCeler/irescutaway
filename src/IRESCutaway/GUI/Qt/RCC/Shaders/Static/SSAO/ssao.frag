@@ -96,6 +96,9 @@ void main (void)
 
         //out_Color = occlusion*vec4(ambientLight.xyz + diffuseLight.xyz + specularLight.xyz, 1.0);
         //out_Color = occlusion*vec4(color);
+
+        float depth = texelFetch(coordsTexture, ivec2(gl_FragCoord.xy), 0).w;
+        gl_FragDepth = depth;
         out_Color = vec4(color.rgb,occlusion);
     }
 }

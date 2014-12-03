@@ -743,7 +743,7 @@ void GLWidget::drawPrimaryStatic  ( ) const // Draw only primary   Cells
 
         SSAOIRESPrimaryStatic_->disable ( );
 
-        fboSSAO->unbindAll();
+        //fboSSAO->unbindAll();
         //fboSSAO->clearDepth();
 
 
@@ -966,6 +966,24 @@ void GLWidget::IRESCutawayStatic (  )
 
                         }
 
+                        if ( reservoir_model_.showBorderLine )
+                        {
+
+                                glLineWidth( (float) borderLinesSize_ );
+                                BorderLines_->enable ( );
+
+                                BorderLines_->setUniform ( "ModelMatrix" , trackball_->getModelMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
+                                BorderLines_->setUniform ( "ViewMatrix" , trackball_->getViewMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
+                                BorderLines_->setUniform ( "ProjectionMatrix" , trackball_->getProjectionMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
+
+                                reservoir_model_.drawFaces ( );
+
+                                BorderLines_->disable ( );
+                        }
+
+
+
+
                 //glDrawBuffer(GL_BACK);
 
                 glDisable(GL_DEPTH_TEST);
@@ -988,7 +1006,7 @@ void GLWidget::IRESCutawayStatic (  )
                 ssaoShaderStatic_->setUniform("colorTexture", fboSSAO->bindAttachment(colorTextureID));
                 ssaoShaderStatic_->setUniform("displayAmbientPass", displayAmbientPass);
 
-                std::cout << radius << std::endl;
+                //std::cout << radius << std::endl;
 
                 ssaoShaderStatic_->setUniform("radius", radius);
                 ssaoShaderStatic_->setUniform("intensity", (float)intensity);
@@ -1018,20 +1036,7 @@ void GLWidget::IRESCutawayStatic (  )
 
                 glEnable(GL_DEPTH_TEST);
 
-                if ( reservoir_model_.showBorderLine )
-                {
 
-                        glLineWidth( (float) borderLinesSize_ );
-                        BorderLines_->enable ( );
-
-                        BorderLines_->setUniform ( "ModelMatrix" , trackball_->getModelMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
-                        BorderLines_->setUniform ( "ViewMatrix" , trackball_->getViewMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
-                        BorderLines_->setUniform ( "ProjectionMatrix" , trackball_->getProjectionMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
-
-                        reservoir_model_.drawFaces ( );
-
-                        BorderLines_->disable ( );
-                }
 
                 if (cutawayPass_ >= 100.0)
                 {
@@ -1630,84 +1635,84 @@ void GLWidget::PaperPly ( ) const
 {
         /// FIXME Conditions - Just the model opened.
 
-//        BurnsPly_->enable();
-//
-//        BurnsPly_->setUniform("move_x", move_x );
-//        BurnsPly_->setUniform("move_y", move_y );
-//        BurnsPly_->setUniform("move_z", move_z );
-//
-//        BurnsPly_->setUniform("move", (float) borderLinesSize_ );
-//        BurnsPly_->setUniform("num_lights", (GLint) lights.size ( )  );
-//        BurnsPly_->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
-//        BurnsPly_->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
-//        BurnsPly_->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
-//        BurnsPly_->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
-//
-//        ply_primary_.Draw();
-//
-//        BurnsPly_->disable();
+        BurnsPly_->enable();
 
+        BurnsPly_->setUniform("move_x", move_x );
+        BurnsPly_->setUniform("move_y", move_y );
+        BurnsPly_->setUniform("move_z", move_z );
 
-        // Bind buffer to store coord, normal and color information
-        fboSSAO->clearAttachments();
-        fboSSAO->bindRenderBuffers(depthTextureID, normalTextureID, colorTextureID);
-
-        deferredShader->enable();
-        deferredShader->setUniform("projectionMatrix", trackball_->getProjectionMatrix().data(),4,GL_FALSE,1);
-        deferredShader->setUniform("modelMatrix",trackball_->getModelMatrix().data(),4,GL_FALSE,1);
-        deferredShader->setUniform("viewMatrix", trackball_->getViewMatrix().data(),4,GL_FALSE,1);
-        deferredShader->setUniform("lightViewMatrix", trackball_->getViewMatrix().data(),4,GL_FALSE,1);
-//      deferredShader->setUniform("has_color", mesh->hasAttribute("in_Color"));
+        BurnsPly_->setUniform("move", (float) borderLinesSize_ );
+        BurnsPly_->setUniform("num_lights", (GLint) lights.size ( )  );
+        BurnsPly_->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
+        BurnsPly_->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
+        BurnsPly_->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
+        BurnsPly_->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
 
         ply_primary_.Draw();
 
-        deferredShader->disable();
-        fboSSAO->unbindAll();
-        fboSSAO->clearDepth();
+        BurnsPly_->disable();
 
-        glDrawBuffer(GL_BACK);
 
-        /// SEGUNDO PASSO
-
-        ssaoShader->enable();
-
-        glActiveTexture(GL_TEXTURE0 + 7);
-        glBindTexture(GL_TEXTURE_2D, noiseTexture);
-
-        ssaoShader->setUniform("lightViewMatrix", trackball_->getProjectionMatrix().data(),4,GL_FALSE,1);
-
-        ssaoShader->setUniform("noiseScale", noise_scale.x(),noise_scale.y());
-        ssaoShader->setUniform("kernel", kernel, 2, numberOfSamples);
-
-        ssaoShader->setUniform("coordsTexture", fboSSAO->bindAttachment(depthTextureID));
-        ssaoShader->setUniform("normalTexture", fboSSAO->bindAttachment(normalTextureID));
-        ssaoShader->setUniform("colorTexture", fboSSAO->bindAttachment(colorTextureID));
-        ssaoShader->setUniform("displayAmbientPass", displayAmbientPass);
-
-        ssaoShader->setUniform("radius", radius);
-        ssaoShader->setUniform("intensity", (float)intensity);
-        ssaoShader->setUniform("max_dist", max_dist);
-        ssaoShader->setUniform("noiseTexture", 7);
-
-        //Second pass mesh rendering:
-        quadSSAO->render();
-
-        ssaoShader->disable();
-        glBindTexture(GL_TEXTURE_2D, 0);
-        fboSSAO->unbindAll();
-        fboSSAO->clearDepth();
-
-        // THIRD PASS
-        blurShader->enable();
-
-        blurShader->setUniform("blurTexture", fboSSAO->bindAttachment(blurTextureID));
-        blurShader->setUniform("blurRange", blurRange);
-
-        quadSSAO->render();
-
-        blurShader->disable();
-
-        fboSSAO->unbindAll();
+//        // Bind buffer to store coord, normal and color information
+//        fboSSAO->clearAttachments();
+//        fboSSAO->bindRenderBuffers(depthTextureID, normalTextureID, colorTextureID);
+//
+//        deferredShader->enable();
+//        deferredShader->setUniform("projectionMatrix", trackball_->getProjectionMatrix().data(),4,GL_FALSE,1);
+//        deferredShader->setUniform("modelMatrix",trackball_->getModelMatrix().data(),4,GL_FALSE,1);
+//        deferredShader->setUniform("viewMatrix", trackball_->getViewMatrix().data(),4,GL_FALSE,1);
+//        deferredShader->setUniform("lightViewMatrix", trackball_->getViewMatrix().data(),4,GL_FALSE,1);
+////      deferredShader->setUniform("has_color", mesh->hasAttribute("in_Color"));
+//
+//        ply_primary_.Draw();
+//
+//        deferredShader->disable();
+//        fboSSAO->unbindAll();
+//        fboSSAO->clearDepth();
+//
+//        glDrawBuffer(GL_BACK);
+//
+//        /// SEGUNDO PASSO
+//
+//        ssaoShader->enable();
+//
+//        glActiveTexture(GL_TEXTURE0 + 7);
+//        glBindTexture(GL_TEXTURE_2D, noiseTexture);
+//
+//        ssaoShader->setUniform("lightViewMatrix", trackball_->getProjectionMatrix().data(),4,GL_FALSE,1);
+//
+//        ssaoShader->setUniform("noiseScale", noise_scale.x(),noise_scale.y());
+//        ssaoShader->setUniform("kernel", kernel, 2, numberOfSamples);
+//
+//        ssaoShader->setUniform("coordsTexture", fboSSAO->bindAttachment(depthTextureID));
+//        ssaoShader->setUniform("normalTexture", fboSSAO->bindAttachment(normalTextureID));
+//        ssaoShader->setUniform("colorTexture", fboSSAO->bindAttachment(colorTextureID));
+//        ssaoShader->setUniform("displayAmbientPass", displayAmbientPass);
+//
+//        ssaoShader->setUniform("radius", radius);
+//        ssaoShader->setUniform("intensity", (float)intensity);
+//        ssaoShader->setUniform("max_dist", max_dist);
+//        ssaoShader->setUniform("noiseTexture", 7);
+//
+//        //Second pass mesh rendering:
+//        quadSSAO->render();
+//
+//        ssaoShader->disable();
+//        glBindTexture(GL_TEXTURE_2D, 0);
+//        fboSSAO->unbindAll();
+//        fboSSAO->clearDepth();
+//
+//        // THIRD PASS
+//        blurShader->enable();
+//
+//        blurShader->setUniform("blurTexture", fboSSAO->bindAttachment(blurTextureID));
+//        blurShader->setUniform("blurRange", blurRange);
+//
+//        quadSSAO->render();
+//
+//        blurShader->disable();
+//
+//        fboSSAO->unbindAll();
 
 }
 
