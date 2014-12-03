@@ -63,6 +63,7 @@ void GLWidget::initializeGL ( )
 	line_ = 0;
 
 	zoom_angle_ = 45.0f;
+	fovy_       = 45.0f;
 	orthoZoom   = 1.0f;
 
 	lights.push_back ( Eigen::Vector3f ( 0.5 , 0.5 , 1.0 ) );
@@ -431,17 +432,17 @@ void GLWidget::resizeGL ( int width , int height )
 {
 	glViewport ( 0 , 0 , width , height );
 
-	float aspect = (float) width / height;
+	aspect_ = (float) width / height;
 
 	/// @Noob - http://math.hws.edu/graphicsnotes/c3/s5.html near plane can be negative on orthographic avoiding clipping by it.
 
 	if ( isPerspective_ )
 	{
-	        trackball_->usePerspectiveMatrix  ( 45.0f , aspect , nearPlane_ , farPlane_);
+	        trackball_->usePerspectiveMatrix  ( 45.0f , aspect_ , nearPlane_ , farPlane_);
 	}
 	else
 	{
-	        trackball_->useOrthographicMatrix ( -1.0f*aspect , 1.0f*aspect , -1.0f , 1.0 , 0.1f , 500.0f );
+	        trackball_->useOrthographicMatrix ( -1.0f*aspect_ , 1.0f*aspect_ , -1.0f , 1.0 , 0.1f , 500.0f );
 	}
 
 
@@ -1013,9 +1014,9 @@ void GLWidget::IRESCutawayStatic (  )
 
                 blurShaderStatic_->disable();
                 fboSSAO->unbindAll();
+                //fboSSAO->clearDepth();
 
                 glEnable(GL_DEPTH_TEST);
-
 
                 if ( reservoir_model_.showBorderLine )
                 {
@@ -1031,7 +1032,6 @@ void GLWidget::IRESCutawayStatic (  )
 
                         BorderLines_->disable ( );
                 }
-
 
                 if (cutawayPass_ >= 100.0)
                 {
@@ -2197,7 +2197,7 @@ void GLWidget::keyPressEvent ( QKeyEvent * event )
                 float aspect = (float) width() / height();
 
                 if ( isPerspective_ )
-                        trackball_->usePerspectiveMatrix  ( 45.0f , aspect , nearPlane_ , farPlane_ );
+                        trackball_->usePerspectiveMatrix  ( fovy_ , aspect , nearPlane_ , farPlane_ );
                 else
                         trackball_->useOrthographicMatrix ( -1.0f*aspect , 1.0f*aspect , -1.0f , 1.0 , 0.1f , 500.0f );
 
@@ -2437,13 +2437,21 @@ void GLWidget::wheelEvent ( QWheelEvent *event )
 	}
 	else
 	{
-	        int numDegrees = event->delta() / 8;
-	        int numSteps = numDegrees / 15;
-
-	        //if  ( ( event->delta ( ) > 0.0 ) && ( event->delta ( ) > 90.0 ) )
-	        {
-	                qDebug() << numDegrees;
-	        }
+//	        if  ( event->delta ( ) > 0 )
+//	        {
+//                        if ( fovy_ < 90.0f )
+//                        {
+//                                fovy_ += 1.0;
+//                        }
+//	        }else
+//	        {
+//	                if ( fovy_ > 0.0f )
+//	                {
+//	                        fovy_ -= 1.0;
+//	                }
+//	        }
+//
+//	        trackball_->usePerspectiveMatrix  ( fovy_ , aspect_ , nearPlane_ , farPlane_ );
 	}
 	event->accept();
 

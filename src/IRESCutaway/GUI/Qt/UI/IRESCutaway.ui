@@ -1175,21 +1175,21 @@
         <item row="6" column="1">
          <widget class="QLabel" name="label_fps_slot">
           <property name="text">
-           <string>adasdas</string>
+           <string>0</string>
           </property>
          </widget>
         </item>
         <item row="5" column="1">
          <widget class="QLabel" name="label_Rendering_Slot">
           <property name="text">
-           <string>TextLabel</string>
+           <string>0</string>
           </property>
          </widget>
         </item>
         <item row="4" column="1">
          <widget class="QLabel" name="label_Generation_Slot">
           <property name="text">
-           <string>TextLabel</string>
+           <string>0</string>
           </property>
          </widget>
         </item>

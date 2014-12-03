@@ -300,8 +300,6 @@ class GLWidget: public QGLWidget
                 Shader* SSAOIRESCutawayStaticShell_;
 
                 Shader* ssaoShaderStatic_;
-
-
                 Shader* blurShaderStatic_;
                 ///
 
@@ -553,6 +551,8 @@ class GLWidget: public QGLWidget
 
                 float nearPlane_;
                 float farPlane_;
+                float fovy_;
+                float aspect_;
 
                 bool isPerspective_;
                 float orthoZoom;

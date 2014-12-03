@@ -179,9 +179,9 @@ void main(void)
         // lines outside cutaway (remaining front faces)
         else
         {
-
-              if (backface)
-                      color.rgb += vec3(0.5);
+//
+//              if (backface)
+//                      color.rgb += vec3(0.5);
             outputColor = I * vec4(vec3(0.0), 1.0) + (1.0 - I) * ( color );
             //discard;
         }
