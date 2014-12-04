@@ -639,8 +639,9 @@ void GLWidget::drawIRESCutawayStaticSurface ( ) const
 	glDepthFunc ( GL_GREATER );
 	glClearDepth ( 0.0 );
 
-	depthFBO->bind( );
-
+	/// OFFSCREEN Renderer
+	/// DRAW COLOR_BUFFER -->  glDrawBuffers(2,[normalCutawayID_,verticesCutawayID_]);
+	depthFBO->clearAttachments( );
 	depthFBO->bindRenderBuffers(normalCutawayID_,verticesCutawayID_);
 
 	glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
@@ -673,10 +674,9 @@ void GLWidget::drawIRESCutawayStaticSurface ( ) const
 
 	depthFBO->bindRenderBuffers(normalsSmoothID_, verticesSmoothID_);
 
-
         glDisable(GL_DEPTH_TEST);
-        meanFilter->renderTexture( depthFBO->bindAttachment(normalCutawayID_),depthFBO->bindAttachment(verticesCutawayID_),meanFilterSize_);
 
+        meanFilter->renderTexture( depthFBO->bindAttachment(normalCutawayID_),depthFBO->bindAttachment(verticesCutawayID_),meanFilterSize_);
         depthFBO->unbindAll();
 
         glEnable(GL_DEPTH_TEST);
@@ -888,8 +888,6 @@ void GLWidget::IRESCutawayStatic (  )
 //
                 cutawayGenerationTime_.start ();
 
-
-
                 if ( draw_cutaway_surface_ )
                 {
                         drawIRESCutawayStaticSurface ( );
@@ -938,8 +936,6 @@ void GLWidget::IRESCutawayStatic (  )
                 glFinish();
                 accumulateCutawayGenerationTime_ += (float)cutawayGenerationTime_.elapsed();
 
-
-
                 glClearColor ( 1.0 , 1.0 , 1.0 , 1.0 );
                 glDepthFunc(GL_LESS);
                 glClearDepth(1.0f);
@@ -949,6 +945,8 @@ void GLWidget::IRESCutawayStatic (  )
 
                 // SSAO -- C&G
 
+                /// OFFSCREEN Renderer
+                /// DRAW COLOR_BUFFER -->  glDrawBuffers(2,[depthTextureID, normalTextureID, colorTextureID]);
                 fboSSAO->clearAttachments();
                 fboSSAO->bindRenderBuffers(depthTextureID, normalTextureID, colorTextureID);
 
@@ -982,8 +980,6 @@ void GLWidget::IRESCutawayStatic (  )
                         }
 
 
-
-
                 //glDrawBuffer(GL_BACK);
 
                 glDisable(GL_DEPTH_TEST);
@@ -1006,8 +1002,6 @@ void GLWidget::IRESCutawayStatic (  )
                 ssaoShaderStatic_->setUniform("colorTexture", fboSSAO->bindAttachment(colorTextureID));
                 ssaoShaderStatic_->setUniform("displayAmbientPass", displayAmbientPass);
 
-                //std::cout << radius << std::endl;
-
                 ssaoShaderStatic_->setUniform("radius", radius);
                 ssaoShaderStatic_->setUniform("intensity", (float)intensity);
                 ssaoShaderStatic_->setUniform("max_dist", max_dist);
@@ -1018,8 +1012,8 @@ void GLWidget::IRESCutawayStatic (  )
 
                 ssaoShaderStatic_->disable();
                 glBindTexture(GL_TEXTURE_2D, 0);
-                fboSSAO->unbindAll();
-                //fboSSAO->clearDepth();
+                fboSSAO->unbindAll ( );
+                fboSSAO->clearDepth ( );
 
                 glDrawBuffer(GL_BACK);
 
@@ -1031,16 +1025,13 @@ void GLWidget::IRESCutawayStatic (  )
                 quadSSAO->render();
 
                 blurShaderStatic_->disable();
-                fboSSAO->unbindAll();
-                //fboSSAO->clearDepth();
+                fboSSAO->unbindAll( );
+                fboSSAO->clearDepth( );
 
                 glEnable(GL_DEPTH_TEST);
 
-
-
                 if (cutawayPass_ >= 100.0)
                 {
-
                         emit cutawayGenerationTime( QString::number( 1000.0f/(accumulateCutawayGenerationTime_*0.01f) ) ) ;
                         emit renderingCutawayTime( QString::number( 1000.0f/(accumulateRenderingCutawayTime_*0.01f) ) ) ;
                         accumulateCutawayGenerationTime_ = 0.0f;
