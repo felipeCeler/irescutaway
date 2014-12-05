@@ -25,6 +25,8 @@
 #include <algorithm>
 #include <iterator>
 #include <functional>
+/// Eigen with STL Containers - http://eigen.tuxfamily.org/dox-devel/group__TopicStlContainers.html
+#include <Eigen/StdVector>
 
 /// Qt 4.8
 #include <QtOpenGL/QGLWidget>
@@ -310,6 +312,9 @@ class GLWidget: public QGLWidget
                 Shader* IRESCutawayDynamicShell_;
                 Shader* IRESPrimaryDynamic_;
                 Shader* IRESCutawayDynamic_;
+                Shader* SSAOIRESPrimaryDynamic_;
+                Shader* SSAOIRESCutawayDynamic_;
+                Shader* SSAOIRESCutawayDynamicShell_;
 
                 QImage fbo;
                 float angle;
@@ -587,8 +592,8 @@ class GLWidget: public QGLWidget
 
                 struct Animation
                 {
-                                std::vector<Eigen::Quaternionf> keyframes_;
-                                std::vector<Eigen::Quaternionf> tangents_;
+                                std::vector<Eigen::Quaternionf,Eigen::aligned_allocator<Eigen::Quaternionf> > keyframes_;
+                                std::vector<Eigen::Quaternionf,Eigen::aligned_allocator<Eigen::Quaternionf> > tangents_;
                                 std::size_t nextKeyframe_;
                                 std::size_t number_of_keyframes_;
 
@@ -797,21 +802,21 @@ class GLWidget: public QGLWidget
                                         std::cout << " Angular Distance " << angular << std::endl;
 
                                         takes_[i].nextKeyframe_++;
-                                        //
+
                                         time_interval_ = 0.01;
 
                                         time_steps_ = 0.0f * time_interval_;
-                                        //
-                                        //                                        std::cout << " mTagent " << takes_[i].tangents_[0].coeffs() << std::endl;
-                                        //                                        std::cout << " mTagent " << takes_[i].tangents_[1].coeffs() << std::endl;
-                                        //                                        std::cout << " mTagent " << takes_[i].tangents_[2].coeffs() << std::endl;
-                                        //
-                                        //
-                                        //                                        std::cout << " Rot " << keyframes_[0].coeffs() << std::endl;
-                                        //                                        std::cout << " Rot " << keyframes_[1].coeffs() << std::endl;
-                                        //                                        std::cout << " Rot " << keyframes_[2].coeffs() << std::endl;
-                                        //
-                                        //                                        std::cout << " next --- " << nextKeyframe_ << std::endl;
+//
+//                                        std::cout << " mTagent " << takes_[i].tangents_[0].coeffs() << std::endl;
+//                                        std::cout << " mTagent " << takes_[i].tangents_[1].coeffs() << std::endl;
+//                                        std::cout << " mTagent " << takes_[i].tangents_[2].coeffs() << std::endl;
+//
+//
+//                                        std::cout << " Rot " << keyframes_[0].coeffs() << std::endl;
+//                                        std::cout << " Rot " << keyframes_[1].coeffs() << std::endl;
+//                                        std::cout << " Rot " << keyframes_[2].coeffs() << std::endl;
+//
+//                                        std::cout << " next --- " << nextKeyframe_ << std::endl;
                                 }
                         }
 

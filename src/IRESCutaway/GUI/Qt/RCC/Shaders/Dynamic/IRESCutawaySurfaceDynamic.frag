@@ -15,6 +15,8 @@ in vec2 texcoord;
 
 uniform int pass;
 
+out vec4 outputNormal;
+out vec4 outputVertex;
 
 void main(void)
 {
@@ -45,8 +47,11 @@ void main(void)
 //	}
 
         //outputColor =  vec4 ( VertexOut.normal, -0.75);//VertexOut.color;
-        outputColor =  vec4 ( VertexOut.normal, VertexOut.verticeEye.z );//VertexOut.color;
+//        outputColor =  vec4 ( VertexOut.normal, VertexOut.verticeEye.z );//VertexOut.color;
 	//outputColor =  vec4 ( -VertexOut.verticeEye.z );//VertexOut.color;
+
+        outputNormal =  vec4 (  newNormal, VertexOut.verticeEye.z);//VertexOut.color;
+        outputVertex =  vec4 (  newVert  , VertexOut.verticeEye.z);//VertexOut.color;
 
 //	outputColor =  vec4(color);
 }

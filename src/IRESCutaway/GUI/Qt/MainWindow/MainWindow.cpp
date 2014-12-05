@@ -120,7 +120,6 @@ void MainWindow::open( QString pFilename,bool who ) {
 
 	glWidget->openIRES_v2( pFilename.toLocal8Bit().constData() );
 
-
 	loadStatic ( );
         loadDynamic ( );
 
@@ -417,5 +416,5 @@ void MainWindow::on_doubleSpinMax_valueChanged  ( double i)
 
 void MainWindow::on_horizontalSliderMeanFilterSize_valueChanged  ( int i)
 {
-        ui->labelKernelSize->setText(QString::number(i));
+
 }

@@ -1,7 +1,7 @@
 #version 430 core
 
-layout(location = 0) uniform sampler2D cutawayTexture;
-//layout(pixel_center_integer) in vec4 gl_FragCoord;
+layout(location = 2) uniform sampler2D normal;
+layout(location = 3) uniform sampler2D vertex;
 
 in VertexData
 {
@@ -23,11 +23,14 @@ uniform int Line;
 uniform int Cool;
 uniform bool isPerspective_;
 
-
 uniform mat4 ProjectionMatrix;
 
 uniform float nearPlane_;
 uniform float farPlane_;
+
+out vec4 out_Coords;
+out vec4 out_Normal;
+out vec4 out_Color;
 
 void main(void)
 {
@@ -62,7 +65,7 @@ void main(void)
         // make sure we are at the center of the pixel to make the right texture access
         vec2 pixel_pos = vec2(floor(gl_FragCoord.x), floor(gl_FragCoord.y)) + vec2(0.5);
         // cutaway normal = rgb, and cutaway depth in camera space = w
-        vec4 cutaway = texelFetch( cutawayTexture, ivec2(pixel_pos), 0 ).rgba;
+        vec4 cutaway = texelFetch( normal, ivec2(pixel_pos), 0 ).rgba;
 
 
 
@@ -89,10 +92,10 @@ void main(void)
             if (I != 1)
             {
                 // neighbor coordinate in range [0,1]
-                vec2 neighbor = (pixel_pos + dist_neighbor[i]) / vec2(textureSize(cutawayTexture,0)).xy ;
+                vec2 neighbor = (pixel_pos + dist_neighbor[i]) / vec2(textureSize(normal,0)).xy ;
 
                 // depth of cutaway surface at neighbor pixel
-                zsurface = texelFetch( cutawayTexture, ivec2(pixel_pos + dist_neighbor[i]), 0 ).w;
+                zsurface = texelFetch( normal, ivec2(pixel_pos + dist_neighbor[i]), 0 ).w;
 
 
                 if ( isPerspective_ )
@@ -144,12 +147,12 @@ void main(void)
 //           if (I != 1)
 //           {
 //               // neighbor coordinate in range [0,1]
-//               vec2 neighbor = (pixel_pos + dist_neighbor[i]) / vec2(textureSize(cutawayTexture,0)).xy ;
-//               //vec2 neighbor = (pixel_pos) / vec2(textureSize(cutawayTexture,0)).xy ;
+//               vec2 neighbor = (pixel_pos + dist_neighbor[i]) / vec2(textureSize(normal,0)).xy ;
+//               //vec2 neighbor = (pixel_pos) / vec2(textureSize(normal,0)).xy ;
 //
 //               // depth of cutaway surface at neighbor pixel
-//               zsurface = texelFetch( cutawayTexture, ivec2(pixel_pos + dist_neighbor[i]), 0 ).w;
-//               //zsurface = texelFetch( cutawayTexture, ivec2(pixel_pos), 0 ).w;
+//               zsurface = texelFetch( normal, ivec2(pixel_pos + dist_neighbor[i]), 0 ).w;
+//               //zsurface = texelFetch( normal, ivec2(pixel_pos), 0 ).w;
 //
 //               // invert the projection
 //               vec3 pixel = vec3( vec2(neighbor*2.0 - vec2(1.0)), -nearPlane);
@@ -194,6 +197,8 @@ void main(void)
 
         // compute illumination for each light
 
+        newVert = texelFetch( vertex, ivec2(pixel_pos), 0 ).rgb;
+
         vec3 lightz[4];
 
         //color_t = vec4(0.0,0.0,0.5,1.0);
@@ -223,7 +228,13 @@ void main(void)
                 I = 0;
         // interior cutaway lines (back face intersection with cutaway)
         if ( I == 1 )
-            outputColor = I * vec4(vec3(0.1), 1.0) + (1.0 - I) * ( color );
+        {
+                out_Coords = vec4 (newVert.xyz, 1.0);
+                out_Normal = vec4 (newNormal.xyz, 1.0);
+                out_Color = I * vec4(vec3(0.1), 1.0) + (1.0 - I) * ( color );
+//                outputColor = I * vec4(vec3(0.1), 1.0) + (1.0 - I) * ( color );
+        }
+
            //     outputColor = ( color );
         // cutaway border lines (front face intersection with cutaway)
         // lines outside cutaway (remaining front faces)
@@ -232,16 +243,27 @@ void main(void)
 //                float d = min(dist[0], min(dist[1], min(dist[2], dist[3])));
 //                float I = exp2(-2.0 * d * d);
 //           outputColor = I * vec4(vec3(0.0), 1.0) + (1.0 - I) * ( color );
-           outputColor =  ( color );
+//           outputColor =  ( color );
+
+           out_Coords = vec4 (newVert.xyz, 1.0);
+           out_Normal = vec4 (newNormal.xyz, 1.0);
+           out_Color = ( color );
+
         }
 
 
         if ( Wall == 0 )
         {
 
-//                        outputColor = I * vec4(vec3(0.1), 1.0) + (1.0 - I) * ( color );
-                        outputColor = Bias * vec4(vec3(0.1), 1.0) + (1.0 - Bias) * ( color );
+//             outputColor = I * vec4(vec3(0.1), 1.0) + (1.0 - I) * ( color );
+//             outputColor = Bias * vec4(vec3(0.1), 1.0) + (1.0 - Bias) * ( color );
+
+             out_Coords = vec4 (newVert.xyz, 1.0);
+             out_Normal = vec4 (newNormal.xyz, 1.0);
+             out_Color = Bias * vec4(vec3(0.1), 1.0) + (1.0 - Bias) * ( color );
         }
+
+
 
         //if ( newVert.z > cutaway.x )
         //        outputColor = vec4(vec3(abs(cutaway.z)*1.0), 1.0);

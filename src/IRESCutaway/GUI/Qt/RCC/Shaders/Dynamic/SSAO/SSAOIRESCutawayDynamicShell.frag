@@ -1,13 +1,13 @@
 #version 430 core
 
-layout(location = 0) uniform sampler2D normal;
-layout(location = 1) uniform sampler2D vertex;
+layout(location = 2) uniform sampler2D normal;
+layout(location = 3) uniform sampler2D vertex;
 
 in VertexData
 {
-	vec4 vertice;
-    vec4 normal;
-	vec4 color;
+        vec4 vertice;
+   flat vec4 normal;
+        vec4 color;
 } VertexIn;
 
 noperspective in vec4 dist;
@@ -30,7 +30,6 @@ out vec4 out_Color;
 
 void main(void)
 {
-
         vec3 newNormal = normalize(VertexIn.normal.xyz);
         vec3 newVert = VertexIn.vertice.xyz;
         vec4 color_t = VertexIn.color;
@@ -46,30 +45,32 @@ void main(void)
         // cutaway normal = rgb, and cutaway depth in camera space = w
         vec4 cutaway = texelFetch( normal, ivec2(pixel_pos), 0 ).rgba;
 
+        //vec4 primary = texelFetch( primaryBuffer, ivec2(pixel_pos), 0 ).rgba;
+
 
 //        if ( newVert.z > primary.w )
-//        	discard;
+//              discard;
 
         if ( newNormal.z <= 0.0)
                 backface = true;
 //        else
-//        	discard;
+//              discard;
 
         // discard point in front of the cutaway surface
-        if ( newVert.z > cutaway.w ) {
-            if (newNormal.z >= 0.0 )
-            {
-        	  //if (dot(newNormal.xyz,cutaway.xyz)> 0)
-        		  discard;
-            }
+        if ( newVert.z > cutaway.w )
+        {
+                if (newNormal.z >= 0.0 )
+                {
+                  //if (dot(newNormal.xyz,cutaway.xyz)> 0)
+                          discard;
+                }
         }
        else
         {
-        	if ( newNormal.z < 0.0)
-        	{
-        		 discard;//	backface = true;
-        	 }
-//
+                if ( newNormal.z < 0.0)
+                {
+                         discard;//     backface = true;
+                }
         }
 
 
@@ -148,8 +149,10 @@ void main(void)
         }
 
         // for back faces use the normal of the cutaway surface (simulate a cut inside the cells)
-        //if (backface) newNormal = -cutaway.xyz;
-        //vec3 eye_dir = normalize ( -newVert.xyz );
+        if (backface) newNormal = -cutaway.xyz;
+        vec3 eye_dir = normalize ( -newVert.xyz );
+
+        //color_t = vec4(0.5,0.0,0.0,1.0);
 
         vec4 la = vec4(0.0);
         vec4 ld = vec4(0.0);
@@ -171,29 +174,24 @@ void main(void)
         // uncomment to turn off illumination
         //color = color_t;
 
-        // interior cutaway lines (back face intersection with cutaway)
-//        if (backface && I == 1)
-//        {
-//        	I = exp2(-2.0 * d * d);
-//            outputColor = I * vec4(vec3(0.1), 1.0) + (1.0 - I) * ( color );
-//        }
         // cutaway border lines (front face intersection with cutaway)
-         if (I == 1)
-        {   //outputColor = I * vec4(vec3(0.1), 1.0) + (1.0 - I) * ( color );
-            //outputColor = I * vec4(vec3(1.0,1.0,1.0), 1.0) + (1.0 - I) * ( color );
-            out_Coords = vec4 (newVert.xyz, gl_FragCoord.z);
-            out_Normal = vec4 (newNormal.xyz, 1.0);
-            out_Color = I * vec4(vec3(1.0,1.0,1.0), 1.0) + (1.0 - I) * ( color );
-        }
-        // lines outside cutaway (remaining front faces)
-        else
-        {
-//        	if (backface)
-//        		color.rgb += vec3(0.5);
-            //outputColor = I * vec4(vec3(0.0), 1.0) + (1.0 - I) * ( color );
-                out_Coords = vec4 (newVert.xyz, gl_FragCoord.z);
-                out_Normal = vec4 (newNormal.xyz, 1.0);
-                out_Color = I * vec4(vec3(0.0,0.0,0.0), 1.0) + (1.0 - I) * ( color );
+        if (I == 1)
+       {   //outputColor = I * vec4(vec3(0.1), 1.0) + (1.0 - I) * ( color );
+           //outputColor = I * vec4(vec3(1.0,1.0,1.0), 1.0) + (1.0 - I) * ( color );
+           out_Coords = vec4 (newVert.xyz, gl_FragCoord.z);
+           out_Normal = vec4 (newNormal.xyz, 1.0);
+           out_Color = I * vec4(vec3(1.0,1.0,1.0), 1.0) + (1.0 - I) * ( color );
+       }
+       // lines outside cutaway (remaining front faces)
+       else
+       {
+//              if (backface)
+//                      color.rgb += vec3(0.5);
+           //outputColor = I * vec4(vec3(0.0), 1.0) + (1.0 - I) * ( color );
+               out_Coords = vec4 (newVert.xyz, gl_FragCoord.z);
+               out_Normal = vec4 (newNormal.xyz, 1.0);
+               out_Color = I * vec4(vec3(0.0,0.0,0.0), 1.0) + (1.0 - I) * ( color );
 
-        }
+       }
+         //outputColor = I * vec4(vec3(0.0), 1.0) + (1.0 - I) * ( color );
 }

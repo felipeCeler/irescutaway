@@ -734,7 +734,7 @@
    <widget class="QWidget" name="dockWidgetContents">
     <layout class="QVBoxLayout" name="verticalLayout_4">
      <item>
-      <widget class="QGroupBox" name="groupBox_3">
+      <widget class="QGroupBox" name="groupBox_SSAO">
        <property name="title">
         <string>Ambient Occlusion - DJ set</string>
        </property>
@@ -953,7 +953,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QGroupBox" name="groupBox">
+      <widget class="QGroupBox" name="groupBox_Line">
        <property name="minimumSize">
         <size>
          <width>400</width>
@@ -964,60 +964,6 @@
         <string> Lines Properties</string>
        </property>
        <layout class="QGridLayout" name="gridLayout_2">
-        <item row="0" column="2">
-         <widget class="QGroupBox" name="groupBox_KernelSize">
-          <property name="title">
-           <string/>
-          </property>
-          <property name="flat">
-           <bool>true</bool>
-          </property>
-          <property name="checkable">
-           <bool>false</bool>
-          </property>
-          <layout class="QHBoxLayout" name="horizontalLayout_GB_kernelSize">
-           <item>
-            <widget class="QLabel" name="labelKernelSize">
-             <property name="frameShape">
-              <enum>QFrame::NoFrame</enum>
-             </property>
-             <property name="frameShadow">
-              <enum>QFrame::Raised</enum>
-             </property>
-             <property name="text">
-              <string>90</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
-        <item row="1" column="0">
-         <widget class="QLabel" name="labelLineWith">
-          <property name="text">
-           <string>Border Lines Size</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="2">
-         <widget class="QGroupBox" name="groupBox_LineWith">
-          <property name="title">
-           <string/>
-          </property>
-          <property name="flat">
-           <bool>true</bool>
-          </property>
-          <layout class="QHBoxLayout" name="horizontalLayout_2">
-           <item>
-            <widget class="QLabel" name="label">
-             <property name="text">
-              <string/>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
         <item row="2" column="0">
          <widget class="QLabel" name="label_6">
           <property name="text">
@@ -1032,13 +978,6 @@
           </property>
          </widget>
         </item>
-        <item row="2" column="1">
-         <widget class="QSlider" name="horizontalSlider">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-         </widget>
-        </item>
         <item row="1" column="1">
          <widget class="QSlider" name="horizontalSliderLineWith">
           <property name="maximum">
@@ -1048,10 +987,64 @@
            <enum>Qt::Horizontal</enum>
           </property>
           <property name="tickPosition">
-           <enum>QSlider::TicksBelow</enum>
+           <enum>QSlider::NoTicks</enum>
           </property>
           <property name="tickInterval">
            <number>1</number>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="2">
+         <widget class="QLabel" name="labelMeanFilterSize_Value">
+          <property name="minimumSize">
+           <size>
+            <width>28</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="sizeIncrement">
+           <size>
+            <width>0</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::StyledPanel</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Sunken</enum>
+          </property>
+          <property name="lineWidth">
+           <number>2</number>
+          </property>
+          <property name="midLineWidth">
+           <number>0</number>
+          </property>
+          <property name="text">
+           <string>0</string>
+          </property>
+          <property name="textFormat">
+           <enum>Qt::PlainText</enum>
+          </property>
+          <property name="scaledContents">
+           <bool>true</bool>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="labelLineWith">
+          <property name="text">
+           <string>Border Lines Size</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1">
+         <widget class="QSlider" name="horizontalSlider">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
           </property>
          </widget>
         </item>
@@ -1067,10 +1060,85 @@
            <enum>Qt::Horizontal</enum>
           </property>
           <property name="tickPosition">
-           <enum>QSlider::TicksBelow</enum>
+           <enum>QSlider::NoTicks</enum>
           </property>
           <property name="tickInterval">
            <number>2</number>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item>
+      <widget class="QGroupBox" name="groupBox_Color">
+       <property name="minimumSize">
+        <size>
+         <width>64</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="title">
+        <string>Shader Properties - Luminance</string>
+       </property>
+       <layout class="QGridLayout" name="gridLayout_3">
+        <item row="1" column="1">
+         <widget class="QSlider" name="horizontalSlider_SecondariesLuminance">
+          <property name="maximum">
+           <number>100</number>
+          </property>
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QSlider" name="horizontalSlider_PrimariesLuminance">
+          <property name="maximum">
+           <number>100</number>
+          </property>
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QLabel" name="label_Primaries">
+          <property name="text">
+           <string>Primaries </string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="label_Secondaries">
+          <property name="text">
+           <string>Secondaries</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="2">
+         <widget class="QLabel" name="label_Primaries_Value">
+          <property name="minimumSize">
+           <size>
+            <width>64</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>0</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="2">
+         <widget class="QLabel" name="label_Secondaries_Value">
+          <property name="text">
+           <string>0</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
           </property>
          </widget>
         </item>
@@ -1575,8 +1643,8 @@
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>970</x>
-     <y>617</y>
+     <x>1016</x>
+     <y>615</y>
     </hint>
     <hint type="destinationlabel">
      <x>966</x>
@@ -1623,12 +1691,12 @@
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1128</x>
-     <y>535</y>
+     <x>1260</x>
+     <y>585</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1110</x>
-     <y>604</y>
+     <x>1260</x>
+     <y>615</y>
     </hint>
    </hints>
   </connection>
@@ -1639,12 +1707,12 @@
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1141</x>
-     <y>610</y>
+     <x>1260</x>
+     <y>615</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1138</x>
-     <y>564</y>
+     <x>1260</x>
+     <y>585</y>
     </hint>
    </hints>
   </connection>
@@ -1725,6 +1793,54 @@
     <hint type="destinationlabel">
      <x>-1</x>
      <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>horizontalSliderMeanFilterSize</sender>
+   <signal>sliderMoved(int)</signal>
+   <receiver>labelMeanFilterSize_Value</receiver>
+   <slot>setNum(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1178</x>
+     <y>668</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1271</x>
+     <y>676</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>horizontalSlider_PrimariesLuminance</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>label_Primaries_Value</receiver>
+   <slot>setNum(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1126</x>
+     <y>772</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1213</x>
+     <y>779</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>horizontalSlider_SecondariesLuminance</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>label_Secondaries_Value</receiver>
+   <slot>setNum(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1121</x>
+     <y>799</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1189</x>
+     <y>798</y>
     </hint>
    </hints>
   </connection>

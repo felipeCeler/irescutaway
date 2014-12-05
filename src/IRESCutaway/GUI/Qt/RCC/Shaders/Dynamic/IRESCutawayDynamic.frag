@@ -1,6 +1,7 @@
 #version 430 core
 
-layout(location = 0) uniform sampler2D normals;
+layout(location = 2) uniform sampler2D normal;
+layout(location = 3) uniform sampler2D vertex;
 
 in VertexData
 {
@@ -45,7 +46,7 @@ void main(void)
         // make sure we are at the center of the pixel to make the right texture access
         vec2 pixel_pos = vec2(floor(gl_FragCoord.x), floor(gl_FragCoord.y)) + vec2(0.5);
         // cutaway normal = rgb, and cutaway depth in camera space = w
-        vec4 cutaway = texelFetch( normals, ivec2(pixel_pos), 0 ).rgba;
+        vec4 cutaway = texelFetch( normal, ivec2(pixel_pos), 0 ).rgba;
 
         // discard point in front of the cutaway surface
         if ( newVert.z > cutaway.w ) {
@@ -67,10 +68,10 @@ void main(void)
             if (I != 1)
             {
                 // neighbor coordinate in range [0,1]
-                vec2 neighbor = (pixel_pos + dist_neighbor[i]) / vec2(textureSize(normals,0)).xy ;
+                vec2 neighbor = (pixel_pos + dist_neighbor[i]) / vec2(textureSize(normal,0)).xy ;
 
                 // depth of cutaway surface at neighbor pixel
-                zsurface = texelFetch( normals, ivec2(pixel_pos + dist_neighbor[i]), 0 ).w;
+                zsurface = texelFetch( normal, ivec2(pixel_pos + dist_neighbor[i]), 0 ).w;
 
                 // invert the orthographic projection (considering ortho planes are in range [-1,1]
                 vec2 pixel = (neighbor*2.0 - vec2(1.0));
