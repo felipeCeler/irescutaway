@@ -719,7 +719,7 @@
    <property name="minimumSize">
     <size>
      <width>400</width>
-     <height>400</height>
+     <height>600</height>
     </size>
    </property>
    <property name="maximumSize">
@@ -1050,6 +1050,9 @@
         </item>
         <item row="0" column="1">
          <widget class="QSlider" name="horizontalSliderMeanFilterSize">
+          <property name="minimum">
+           <number>0</number>
+          </property>
           <property name="maximum">
            <number>32</number>
           </property>
@@ -1082,64 +1085,271 @@
         <string>Shader Properties - Luminance</string>
        </property>
        <layout class="QGridLayout" name="gridLayout_3">
-        <item row="1" column="1">
-         <widget class="QSlider" name="horizontalSlider_SecondariesLuminance">
-          <property name="maximum">
-           <number>100</number>
-          </property>
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="1">
-         <widget class="QSlider" name="horizontalSlider_PrimariesLuminance">
-          <property name="maximum">
-           <number>100</number>
-          </property>
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-         </widget>
-        </item>
         <item row="0" column="0">
-         <widget class="QLabel" name="label_Primaries">
-          <property name="text">
-           <string>Primaries </string>
+         <widget class="QGroupBox" name="groupBox_1_Shader">
+          <property name="title">
+           <string>Primaries</string>
           </property>
+          <layout class="QGridLayout" name="gridLayout_4">
+           <item row="0" column="0">
+            <widget class="QLabel" name="label_Primaries_Staturation">
+             <property name="text">
+              <string>Staturation</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QSlider" name="horizontalSlider_PrimariesSaturation">
+             <property name="maximum">
+              <number>100</number>
+             </property>
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="2">
+            <widget class="QLabel" name="label_Primaries_Value_Staturation">
+             <property name="minimumSize">
+              <size>
+               <width>24</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>0</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="3">
+            <widget class="QLabel" name="label_Primaries_Percent_Staturation">
+             <property name="text">
+              <string>%</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="label_Primaries_Luminance">
+             <property name="text">
+              <string>Luminance</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QSlider" name="horizontalSlider_PrimariesLuminance">
+             <property name="maximum">
+              <number>100</number>
+             </property>
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="2">
+            <widget class="QLabel" name="label_label_Primaries_Value_Luminance">
+             <property name="minimumSize">
+              <size>
+               <width>24</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>0</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="3">
+            <widget class="QLabel" name="label_Primaries_Percent_Luminance">
+             <property name="text">
+              <string>%</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </widget>
         </item>
         <item row="1" column="0">
-         <widget class="QLabel" name="label_Secondaries">
-          <property name="text">
+         <widget class="QGroupBox" name="groupBox_2_Shader">
+          <property name="title">
            <string>Secondaries</string>
           </property>
+          <layout class="QGridLayout" name="gridLayout_8">
+           <item row="0" column="0">
+            <widget class="QLabel" name="label_Secondaries_Staturation">
+             <property name="text">
+              <string>Staturation</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QSlider" name="horizontalSlider_SecondariesSaturation">
+             <property name="maximum">
+              <number>100</number>
+             </property>
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="2">
+            <widget class="QLabel" name="label_Secondaries_Value_Saturation">
+             <property name="minimumSize">
+              <size>
+               <width>24</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>0</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="3">
+            <widget class="QLabel" name="label_Secondaries_Percent_Saturation">
+             <property name="text">
+              <string>%</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="label_Secondaries_Luminance">
+             <property name="text">
+              <string>Luminance</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QSlider" name="horizontalSlider_SecondariesLuminance">
+             <property name="maximum">
+              <number>100</number>
+             </property>
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="2">
+            <widget class="QLabel" name="label_Secondaries_Value_Luminance">
+             <property name="minimumSize">
+              <size>
+               <width>24</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>0</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="3">
+            <widget class="QLabel" name="label_Secondaries_Percent_Luminance">
+             <property name="text">
+              <string>%</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </widget>
         </item>
-        <item row="0" column="2">
-         <widget class="QLabel" name="label_Primaries_Value">
-          <property name="minimumSize">
-           <size>
-            <width>64</width>
-            <height>0</height>
-           </size>
+        <item row="2" column="0">
+         <widget class="QGroupBox" name="groupBox_Sell_Shader">
+          <property name="title">
+           <string>Shell</string>
           </property>
-          <property name="text">
-           <string>0</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="2">
-         <widget class="QLabel" name="label_Secondaries_Value">
-          <property name="text">
-           <string>0</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
+          <layout class="QGridLayout" name="gridLayout_5">
+           <item row="0" column="0">
+            <widget class="QLabel" name="label_Shell_Staturation">
+             <property name="text">
+              <string>Staturation</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QSlider" name="horizontalSlider_ShellStaturation">
+             <property name="maximum">
+              <number>100</number>
+             </property>
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="2">
+            <widget class="QLabel" name="label_Shell_Value_Staturation">
+             <property name="minimumSize">
+              <size>
+               <width>24</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>0</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="3">
+            <widget class="QLabel" name="label_Shell_Percent_Staturation">
+             <property name="text">
+              <string>%</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="label_Shell_Luminance">
+             <property name="text">
+              <string>Luminance</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QSlider" name="horizontalSlider_ShellLuminance">
+             <property name="maximum">
+              <number>100</number>
+             </property>
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="2">
+            <widget class="QLabel" name="label_Shell_Value_Luminance">
+             <property name="minimumSize">
+              <size>
+               <width>24</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>0</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="3">
+            <widget class="QLabel" name="label_Shell_Percent_Luminance">
+             <property name="text">
+              <string>%</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </widget>
         </item>
        </layout>
@@ -1632,7 +1842,7 @@
     </hint>
     <hint type="destinationlabel">
      <x>929</x>
-     <y>612</y>
+     <y>572</y>
     </hint>
    </hints>
   </connection>
@@ -1644,11 +1854,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>1016</x>
-     <y>615</y>
+     <y>575</y>
     </hint>
     <hint type="destinationlabel">
      <x>966</x>
-     <y>554</y>
+     <y>530</y>
     </hint>
    </hints>
   </connection>
@@ -1664,7 +1874,7 @@
     </hint>
     <hint type="destinationlabel">
      <x>1037</x>
-     <y>610</y>
+     <y>570</y>
     </hint>
    </hints>
   </connection>
@@ -1676,11 +1886,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>1059</x>
-     <y>615</y>
+     <y>575</y>
     </hint>
     <hint type="destinationlabel">
      <x>1056</x>
-     <y>562</y>
+     <y>538</y>
     </hint>
    </hints>
   </connection>
@@ -1692,11 +1902,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>1260</x>
-     <y>585</y>
+     <y>545</y>
     </hint>
     <hint type="destinationlabel">
      <x>1260</x>
-     <y>615</y>
+     <y>575</y>
     </hint>
    </hints>
   </connection>
@@ -1708,11 +1918,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>1260</x>
-     <y>615</y>
+     <y>575</y>
     </hint>
     <hint type="destinationlabel">
      <x>1260</x>
-     <y>585</y>
+     <y>545</y>
     </hint>
    </hints>
   </connection>
@@ -1804,43 +2014,107 @@
    <hints>
     <hint type="sourcelabel">
      <x>1178</x>
-     <y>668</y>
+     <y>628</y>
     </hint>
     <hint type="destinationlabel">
      <x>1271</x>
-     <y>676</y>
+     <y>629</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>horizontalSlider_PrimariesSaturation</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>label_Primaries_Value_Staturation</receiver>
+   <slot>setNum(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1103</x>
+     <y>740</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1218</x>
+     <y>745</y>
     </hint>
    </hints>
   </connection>
   <connection>
    <sender>horizontalSlider_PrimariesLuminance</sender>
    <signal>valueChanged(int)</signal>
-   <receiver>label_Primaries_Value</receiver>
+   <receiver>label_label_Primaries_Value_Luminance</receiver>
    <slot>setNum(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1126</x>
-     <y>772</y>
+     <x>1088</x>
+     <y>758</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1213</x>
-     <y>779</y>
+     <x>1214</x>
+     <y>760</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>horizontalSlider_SecondariesSaturation</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>label_Secondaries_Value_Saturation</receiver>
+   <slot>setNum(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1058</x>
+     <y>814</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1214</x>
+     <y>815</y>
     </hint>
    </hints>
   </connection>
   <connection>
    <sender>horizontalSlider_SecondariesLuminance</sender>
    <signal>valueChanged(int)</signal>
-   <receiver>label_Secondaries_Value</receiver>
+   <receiver>label_Secondaries_Value_Luminance</receiver>
    <slot>setNum(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1121</x>
-     <y>799</y>
+     <x>1067</x>
+     <y>835</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1189</x>
-     <y>798</y>
+     <x>1215</x>
+     <y>839</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>horizontalSlider_ShellStaturation</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>label_Shell_Value_Staturation</receiver>
+   <slot>setNum(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1061</x>
+     <y>896</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1213</x>
+     <y>901</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>horizontalSlider_ShellLuminance</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>label_Shell_Value_Luminance</receiver>
+   <slot>setNum(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1058</x>
+     <y>917</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1218</x>
+     <y>917</y>
     </hint>
    </hints>
   </connection>

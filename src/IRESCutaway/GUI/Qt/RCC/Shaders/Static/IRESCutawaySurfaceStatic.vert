@@ -146,8 +146,8 @@ void main(void)
 		float ez = max ( max ( abs ( dot ( camera_dir , axis_x.xyz * extends.x ) ) , abs ( dot ( camera_dir , axis_y.xyz * extends.y ) ) ) , abs ( dot ( camera_dir , axis_z.xyz * extends.z ) ) );
 
 		ext_x = ( camera_right ) * ex;
-		ext_y = ( camera_up ) * ey;
-		ext_z = ( camera_dir ) * ez;
+		ext_y = ( camera_up ) * ey ;
+		ext_z = ( camera_dir ) * ez ;
 
 		float zfactor = 50.0;
 		v[0] = vec4 ( center_of_mass + ext_x + ext_y + zfactor * ext_z + x * ext_x + y * ext_y , 1.0 );

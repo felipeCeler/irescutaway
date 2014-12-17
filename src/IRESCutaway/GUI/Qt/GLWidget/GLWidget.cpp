@@ -521,7 +521,25 @@ void GLWidget::paintEvent   ( QPaintEvent * )
 
         p.setBrush ( gradient_ );
         p.drawRect ( width ( ) - relativeWidth , ( height ( ) - relativeHeight - relativeSpace * 6 ) , size_W , size_H * 6 );
+
+        pen.setWidth ( 2 );
+        p.setPen ( pen );
+
         int left = rect.left ( ) + rect.width ( ) + 10;
+
+
+        float minmax = reservoir_model_.static_max[reservoir_model_.current_static] - reservoir_model_.static_min[reservoir_model_.current_static];
+
+        float minStatic = 1.0-((min_range-reservoir_model_.static_min[reservoir_model_.current_static])/minmax);
+
+        float maxStatic = 1.0-((max_range-reservoir_model_.static_min[reservoir_model_.current_static])/minmax);
+
+        // Min
+        p.drawText ( rect.left ( ) -30 , rect.top ( ) + rect.height ( )*minStatic +10 , "Min" );
+        p.drawLine ( width ( ) - relativeWidth - 4 , ( height ( ) - relativeHeight + 1 - relativeSpace*6*(1.0-minStatic)  ),width ( ) - relativeWidth+14, ( height ( ) - relativeHeight + 1 - relativeSpace*6* (1.0-minStatic)  ));        // Max
+        // Max
+        p.drawText ( rect.left ( ) -30 , rect.top ( ) + rect.height ( )*maxStatic  , "Max" );
+        p.drawLine ( width ( ) - relativeWidth - 4 , ( height ( ) - relativeHeight + 1 - relativeSpace*6*(1.0-maxStatic)  ),width ( ) - relativeWidth+14 , ( height ( ) - relativeHeight + 1 - relativeSpace*6* (1.0-maxStatic)  ));
 
         p.drawText ( left , rect.top ( ) , "100.0%" );
         p.drawText ( left , rect.top ( ) + rect.height ( ) / 2 , "50.0%" );
@@ -697,6 +715,9 @@ void GLWidget::drawPrimaryStatic  ( ) const // Draw only primary   Cells
         SSAOIRESPrimaryStatic_->setUniform ( "num_lights" , (GLint) lights.size ( ) );
         SSAOIRESPrimaryStatic_->setUniform ( "lights[0]" , light_elements , 3 , (GLint) lights.size ( ) );
         SSAOIRESPrimaryStatic_->setUniform ( "WIN_SCALE" , (float) width ( ) , (float) height ( ) );
+        /// Shader Intensity
+        SSAOIRESPrimaryStatic_->setUniform ( "saturation_" , this->saturationPrimaries_);
+        SSAOIRESPrimaryStatic_->setUniform ( "luminance_"  , this->luminancePrimaries_);
 
         SSAOIRESPrimaryStatic_->setUniform ( "min_range" , min_range );
         SSAOIRESPrimaryStatic_->setUniform ( "max_range" , max_range );
@@ -731,6 +752,10 @@ void GLWidget::drawSecondaryStatic  ( ) const  // Draw only secondary Cells
         SSAOIRESCutawayStatic_->setUniform( "normal" , depthFBO->bindAttachment(normalsSmoothID_) );
         SSAOIRESCutawayStatic_->setUniform( "vertex" , depthFBO->bindAttachment(verticesSmoothID_) );
 
+        /// Shader Intensity
+        SSAOIRESCutawayStatic_->setUniform ( "saturation_" , this->saturationSecondaries_);
+        SSAOIRESCutawayStatic_->setUniform ( "luminance_"  , this->luminanceSecondaries_);
+
         SSAOIRESCutawayStatic_->setUniform("min_property", reservoir_model_.static_min[reservoir_model_.current_static]  );
         SSAOIRESCutawayStatic_->setUniform("max_property", reservoir_model_.static_max[reservoir_model_.current_static]  );
         SSAOIRESCutawayStatic_->setUniform("property_index", reservoir_model_.current_static );
@@ -757,6 +782,10 @@ void GLWidget::drawSecondaryStatic  ( ) const  // Draw only secondary Cells
 
         SSAOIRESCutawayStaticShell_->setUniform( "normal" , depthFBO->bindAttachment(normalsSmoothID_) );
         SSAOIRESCutawayStaticShell_->setUniform( "vertex" , depthFBO->bindAttachment(verticesSmoothID_) );
+
+        /// Shader Intensity
+        SSAOIRESCutawayStaticShell_->setUniform ( "saturation_" , this->saturationShell_);
+        SSAOIRESCutawayStaticShell_->setUniform ( "luminance_"  , this->luminanceShell_);
 
         SSAOIRESCutawayStaticShell_->setUniform("min_property", reservoir_model_.static_min[reservoir_model_.current_static]  );
         SSAOIRESCutawayStaticShell_->setUniform("max_property", reservoir_model_.static_max[reservoir_model_.current_static]  );
@@ -980,37 +1009,41 @@ void GLWidget::drawPrimaryDynamic ( ) const
 {
 
 
-        IRESPrimaryDynamic_->enable( );
+        SSAOIRESPrimaryDynamic_->enable( );
 
-        IRESPrimaryDynamic_->setUniform("num_lights", (GLint) lights.size ( )  );
-        IRESPrimaryDynamic_->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
-        IRESPrimaryDynamic_->setUniform("WIN_SCALE", (float) width ( ) , (float) height ( ) );
+        SSAOIRESPrimaryDynamic_->setUniform("num_lights", (GLint) lights.size ( )  );
+        SSAOIRESPrimaryDynamic_->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
+        SSAOIRESPrimaryDynamic_->setUniform("WIN_SCALE", (float) width ( ) , (float) height ( ) );
 
-        IRESPrimaryDynamic_->setUniform("min_range", min_range  );
-        IRESPrimaryDynamic_->setUniform("max_range", max_range  );
+        SSAOIRESPrimaryDynamic_->setUniform("min_range", min_range  );
+        SSAOIRESPrimaryDynamic_->setUniform("max_range", max_range  );
 
-        IRESPrimaryDynamic_->setUniform("paper", 1.0  );
-        IRESPrimaryDynamic_->setUniform("box_min", ply_primary_.box.box_min().x,ply_primary_.box.box_min().y,ply_primary_.box.box_min().z );
-        IRESPrimaryDynamic_->setUniform("box_max", ply_primary_.box.box_max().x,ply_primary_.box.box_max().y,ply_primary_.box.box_max().z );
+        /// Shader Intensity
+        SSAOIRESPrimaryDynamic_->setUniform ( "saturation_" , this->saturationPrimaries_);
+        SSAOIRESPrimaryDynamic_->setUniform ( "luminance_"  , this->luminancePrimaries_);
 
-        IRESPrimaryDynamic_->setUniform("move_x", move_x  );
-        IRESPrimaryDynamic_->setUniform("move_y", move_y  );
-        IRESPrimaryDynamic_->setUniform("move_z", move_z  );
+        SSAOIRESPrimaryDynamic_->setUniform("paper", 1.0  );
+        SSAOIRESPrimaryDynamic_->setUniform("box_min", ply_primary_.box.box_min().x,ply_primary_.box.box_min().y,ply_primary_.box.box_min().z );
+        SSAOIRESPrimaryDynamic_->setUniform("box_max", ply_primary_.box.box_max().x,ply_primary_.box.box_max().y,ply_primary_.box.box_max().z );
 
-        IRESPrimaryDynamic_->setUniform ( "max_property" , reservoir_model_.dynamic_properties[dynamic_property_index].max_[time_step] );
-        IRESPrimaryDynamic_->setUniform ( "min_property" , reservoir_model_.dynamic_properties[dynamic_property_index].min_[time_step] );
+        SSAOIRESPrimaryDynamic_->setUniform("move_x", move_x  );
+        SSAOIRESPrimaryDynamic_->setUniform("move_y", move_y  );
+        SSAOIRESPrimaryDynamic_->setUniform("move_z", move_z  );
+
+        SSAOIRESPrimaryDynamic_->setUniform ( "max_property" , reservoir_model_.dynamic_properties[dynamic_property_index].max_[time_step] );
+        SSAOIRESPrimaryDynamic_->setUniform ( "min_property" , reservoir_model_.dynamic_properties[dynamic_property_index].min_[time_step] );
 //
 //        IRESPrimaryDynamic_->setUniform("min_property", reservoir_model_.static_min[reservoir_model_.current_static]  );
 //        IRESPrimaryDynamic_->setUniform("max_property", reservoir_model_.static_max[reservoir_model_.current_static]  );
 //        IRESPrimaryDynamic_->setUniform("property_index", reservoir_model_.current_static );
 
-        IRESPrimaryDynamic_->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
-        IRESPrimaryDynamic_->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
-        IRESPrimaryDynamic_->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
+        SSAOIRESPrimaryDynamic_->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
+        SSAOIRESPrimaryDynamic_->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
+        SSAOIRESPrimaryDynamic_->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
 
         reservoir_model_.drawCuboid ( );
 
-        IRESPrimaryDynamic_->disable( );
+        SSAOIRESPrimaryDynamic_->disable( );
 
 }
 
@@ -1036,6 +1069,10 @@ void GLWidget::drawSecondaryDynamic ( ) const
         SSAOIRESCutawayDynamic_->setUniform ( "min_property" , reservoir_model_.dynamic_properties[dynamic_property_index].min_[time_step] );
         SSAOIRESCutawayDynamic_->setUniform ( "property_index" , reservoir_model_.current_static );
         SSAOIRESCutawayDynamic_->setUniform ( "time_step" , time_step );
+
+        /// Shader Intensity
+        SSAOIRESCutawayDynamic_->setUniform ( "saturation_" , this->saturationSecondaries_);
+        SSAOIRESCutawayDynamic_->setUniform ( "luminance_"  , this->luminanceSecondaries_);
 
         SSAOIRESCutawayDynamic_->setUniform ( "Wall" , wall_ );
         SSAOIRESCutawayDynamic_->setUniform ( "Line" , line_ );
@@ -1064,6 +1101,10 @@ void GLWidget::drawSecondaryDynamic ( ) const
         SSAOIRESCutawayDynamicShell_->setUniform ( "max_property" , reservoir_model_.dynamic_properties[dynamic_property_index].max_[time_step] );
         SSAOIRESCutawayDynamicShell_->setUniform ( "min_property" , reservoir_model_.dynamic_properties[dynamic_property_index].min_[time_step] );
         SSAOIRESCutawayDynamicShell_->setUniform ( "faults" , reservoir_model_.showFault );
+
+        /// Shader Intensity
+        SSAOIRESCutawayDynamicShell_->setUniform ( "saturation_" , this->saturationShell_);
+        SSAOIRESCutawayDynamicShell_->setUniform ( "luminance_"  , this->luminanceShell_);
 
         SSAOIRESCutawayDynamicShell_->setUniform ( "isPerspective_" , isPerspective_ );
         SSAOIRESCutawayDynamicShell_->setUniform ( "nearPlane_" , nearPlane_ );
@@ -1705,6 +1746,8 @@ void GLWidget::fpsCounter ( )
 void GLWidget::reloadShaders ( )
 {
         // Effects --
+        meanFilter->reloadShaders();
+
         BorderLines_->reloadShaders ( );
         xtoon_texture_viewer->reloadShaders ( );
         BackGround_->reloadShaders ( );
@@ -1748,6 +1791,10 @@ void GLWidget::reloadShaders ( )
         SSAOIRESPrimaryDynamic_->reloadShaders();
         SSAOIRESCutawayDynamic_->reloadShaders();
         SSAOIRESCutawayDynamicShell_->reloadShaders();
+
+        std::cout << "---" << std::endl;
+
+        std::cout << trackball_->getViewMatrix().matrix() << std::endl;
 
 }
 

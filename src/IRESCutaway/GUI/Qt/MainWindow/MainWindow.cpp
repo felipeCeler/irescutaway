@@ -31,7 +31,7 @@ MainWindow::MainWindow ( QMainWindow *parent ) :
 
 	fps->setText("fps 60s");
 
-	ui->statusBar->addPermanentWidget(fps,0);
+	//ui->statusBar->addPermanentWidget(fps,0);
 
 	WidgetSignalSlotConnection( );
 
@@ -106,6 +106,16 @@ void MainWindow::WidgetSignalSlotConnection( )
 
         connect(glWidget, SIGNAL(cutawayGenerationTime(const QString&)), ui->label_Generation_Slot, SLOT(setText(const QString&)));
         connect(glWidget, SIGNAL(renderingCutawayTime(const QString&)), ui->label_Rendering_Slot, SLOT(setText(const QString&)));
+
+        /// Shader
+        connect(ui->horizontalSlider_PrimariesSaturation, SIGNAL(valueChanged(int)), glWidget, SLOT(saturationPrimaries( const int )));
+        connect(ui->horizontalSlider_PrimariesLuminance, SIGNAL(valueChanged(int)), glWidget, SLOT(luminancePrimaries( const int )));
+
+        connect(ui->horizontalSlider_SecondariesSaturation, SIGNAL(valueChanged(int)), glWidget, SLOT(saturationSecondaries( const int )));
+        connect(ui->horizontalSlider_SecondariesLuminance, SIGNAL(valueChanged(int)), glWidget, SLOT(luminanceSecondaries( const int )));
+
+        connect(ui->horizontalSlider_ShellStaturation, SIGNAL(valueChanged(int)), glWidget, SLOT(saturationShell( const int )));
+        connect(ui->horizontalSlider_ShellLuminance, SIGNAL(valueChanged(int)), glWidget, SLOT(luminanceShell( const int )));
 
         /// SSAO
         connect(ui->dial_intensity, SIGNAL(sliderMoved(int)), glWidget, SLOT(intensitySSAO( const int )));
@@ -343,7 +353,7 @@ void MainWindow::on_pushButton_Reset_IJK_clicked( )
 
 void MainWindow::on_action_Load_Shaders_triggered()
 {
-	glWidget->loadShaders();
+	glWidget->reloadShaders( );
 }
 
 

@@ -51,7 +51,7 @@ vec4 extends;
 void main()
 {
 
-        float scale = 0.5;
+        float scale = 0.1;
 
         vec3 move = vec3(move_x,move_y,move_z);
 
@@ -65,7 +65,7 @@ void main()
         extends= vec4 ( abs(v3.x-v6.x), abs(v3.y-v6.y), abs(v3.z-v6.z), 0.0 );
         //extends= vec4 ( 0.1 , 0.1, 0.1, 0.0 );
 
-        extends *=  0.375;
+        extends *=  0.4;
 
 
         mat4 invView;

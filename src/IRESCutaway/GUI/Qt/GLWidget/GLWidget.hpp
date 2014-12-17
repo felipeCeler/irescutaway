@@ -66,23 +66,59 @@ class GLWidget: public QGLWidget
 
         public slots:
 
+                /// Shader
+                void saturationPrimaries ( const int value )
+                {
+                        this->saturationPrimaries_ = static_cast<float>(value);
+                        update ( );
+                }
+                void luminancePrimaries ( const int value )
+                {
+                        this->luminancePrimaries_ = static_cast<float>(value);
+
+                        std::cout << this->luminancePrimaries_ <<  std::endl;
+                        update ( );
+                }
+                void saturationSecondaries ( const int value )
+                {
+                        this->saturationSecondaries_ = static_cast<float>(value);
+                        update ( );
+                }
+                void luminanceSecondaries ( const int value )
+                {
+                        this->luminanceSecondaries_ = static_cast<float>(value);
+                        update ( );
+                }
+                void saturationShell ( const int value )
+                {
+                        this->saturationShell_ = static_cast<float>(value);
+                        update ( );
+                }
+                void luminanceShell ( const int value )
+                {
+                        this->luminanceShell_ = static_cast<float>(value);
+                        update ( );
+                }
+
+
+
                 /// SSAO
                 void intensitySSAO ( const int value )
                 {
                         this->intensity = value;
-                        updateGL ( );
+                        update ( );
                 }
 
                 void blurSSAO ( const int value )
                 {
                         this->blurRange = value;
-                        updateGL ( );
+                        update ( );
                 }
 
                 void radiusSSAO ( const int value )
                 {
                         this->radius = (float) value;
-                        updateGL ( );
+                        update ( );
                 }
 
                 /// TODO Physics
@@ -316,6 +352,19 @@ class GLWidget: public QGLWidget
                 Shader* SSAOIRESCutawayDynamic_;
                 Shader* SSAOIRESCutawayDynamicShell_;
 
+                /// Saturation Intensity
+                float saturationPrimaries_;
+                float saturationSecondaries_;
+                float saturationShell_;
+                /// Luminance Intensity
+                float luminancePrimaries_;
+                float luminanceSecondaries_;
+                float luminanceShell_;
+
+
+
+
+
                 QImage fbo;
                 float angle;
                 float zoom_angle_;
@@ -438,7 +487,7 @@ class GLWidget: public QGLWidget
                         // divide in numberOfSamples directions in the unit circle, and multiply each vector by a random radius
                         for ( int i = 1; i <= numberOfSamples; i++ )
                         {
-                                float r = random ( 0.01 , 1.0f );
+                                float r = random ( 0.1 , 1.0f );
 
                                 sample[0] = cos ( step * i );
                                 sample[1] = sin ( step * i );

@@ -16,17 +16,108 @@ uniform vec2 WIN_SCALE;
 uniform int num_lights;
 uniform vec3 lights[4];
 
+/// Saturation Intensity
+uniform float saturation_;
+/// Luminance Intensity
+uniform float luminance_;
+
+
+/// If True, change the projection matrix to perspective otherwise orthographic
 uniform bool isPerspective_;
-
 uniform mat4 ProjectionMatrix;
-
+/// From Perspective projection
 uniform float nearPlane_;
-uniform float farrPlane_;
+uniform float farPlane_;
 
-///out vec4 outputColor;
+/// SSAO output Buffers
 out vec4 out_Coords;
 out vec4 out_Normal;
 out vec4 out_Color;
+
+vec3 RGB2HSL(vec3 color)
+{
+        vec3 hsl; // init to 0 to avoid warnings ? (and reverse if + remove first part)
+
+        float fmin = min(min(color.r, color.g), color.b); //Min. value of RGB
+        float fmax = max(max(color.r, color.g), color.b); //Max. value of RGB
+        float delta = fmax - fmin; //Delta RGB value
+
+        hsl.z = (fmax + fmin) / 2.0; // Luminance
+
+        if (delta == 0.0)        //This is a gray, no chroma...
+        {
+                hsl.x = 0.0;    // Hue
+                hsl.y = 0.0;    // Saturation
+        }
+        else //Chromatic data...
+        {
+                if (hsl.z < 0.5)
+                        hsl.y = delta / (fmax + fmin); // Saturation
+                else
+                        hsl.y = delta / (2.0 - fmax - fmin); // Saturation
+
+                float deltaR = (((fmax - color.r) / 6.0) + (delta / 2.0)) / delta;
+                float deltaG = (((fmax - color.g) / 6.0) + (delta / 2.0)) / delta;
+                float deltaB = (((fmax - color.b) / 6.0) + (delta / 2.0)) / delta;
+
+                if (color.r == fmax )
+                        hsl.x = deltaB - deltaG; // Hue
+                else if (color.g == fmax)
+                        hsl.x = (1.0 / 3.0) + deltaR - deltaB; // Hue
+                else if (color.b == fmax)
+                        hsl.x = (2.0 / 3.0) + deltaG - deltaR; // Hue
+
+                if (hsl.x < 0.0)
+                        hsl.x += 1.0; // Hue
+                else if (hsl.x > 1.0)
+                        hsl.x -= 1.0; // Hue
+        }
+
+        return hsl;
+}
+
+float HueToRGB(float f1, float f2, float hue)
+{
+        if (hue < 0.0)
+                hue += 1.0;
+        else if (hue > 1.0)
+                hue -= 1.0;
+        float res;
+        if ((6.0 * hue) < 1.0)
+                res = f1 + (f2 - f1) * 6.0 * hue;
+        else if ((2.0 * hue) < 1.0)
+                res = f2;
+        else if ((3.0 * hue) < 2.0)
+                res = f1 + (f2 - f1) * ((2.0 / 3.0) - hue) * 6.0;
+        else
+                res = f1;
+        return res;
+}
+
+vec3 HSLToRGB(vec3 hsl)
+{
+        vec3 rgb;
+
+        if (hsl.y == 0.0)
+                rgb = vec3(hsl.z); // Luminance
+        else
+        {
+                float f2;
+
+                if (hsl.z < 0.5)
+                        f2 = hsl.z * (1.0 + hsl.y);
+                else
+                        f2 = (hsl.z + hsl.y) - (hsl.y * hsl.z);
+
+                float f1 = 2.0 * hsl.z - f2;
+
+                rgb.r = HueToRGB(f1, f2, hsl.x + (1.0/3.0));
+                rgb.g = HueToRGB(f1, f2, hsl.x);
+                rgb.b= HueToRGB(f1, f2, hsl.x - (1.0/3.0));
+        }
+
+        return rgb;
+}
 
 void main(void)
 {
@@ -148,8 +239,24 @@ void main(void)
             }
         }
 
+
+        float z = gl_FragCoord.z;
+        float w = gl_FragCoord.w;
+        float deep = (2.0 * nearPlane_) / (farPlane_ +nearPlane_ - z * (farPlane_ - nearPlane_));
+
+        float C = 0.001;
+
+        z = exp2(-2.0 * z * z);
+
+        //I= 0;
+
+        vec3 depth_visualization = vec3(z,z,z);
+
         // for back faces use the normal of the cutaway surface (simulate a cut inside the cells)
-        if (backface) newNormal = -cutaway.xyz;
+        if (backface) {
+                //newNormal = -cutaway.xyz;
+        }
+
         vec3 eye_dir = normalize ( -newVert.xyz );
 
         //color_t = vec4(0.5,0.0,0.0,1.0);
@@ -161,10 +268,10 @@ void main(void)
         // compute illumination for each light
         for (int i = 0; i < num_lights; ++i) {
             vec3 light_dir = normalize(lights[i]);
-            //vec3 ref = normalize ( -reflect ( light_dir , newNormal ) );
+            vec3 ref = normalize ( -reflect ( light_dir , newNormal ) );
             la += vec4 ( 0.3 / float(num_lights) );
             ld += color_t * (1.0 / float(num_lights)) * max ( 0.0 , abs(dot ( newNormal , light_dir ) ));
-            //ls += color_t * 0.0 * pow ( max ( 0.0 , dot ( eye_dir , ref ) ) , 5.0 );
+            ls += color_t * 0.1 * pow ( max ( 0.0 , dot ( eye_dir , ref ) ) , 5.0 );
         }
 
 
@@ -185,8 +292,17 @@ void main(void)
        // lines outside cutaway (remaining front faces)
        else
        {
-//              if (backface)
-//                      color.rgb += vec3(0.5);
+               if (backface)
+               {
+
+                           vec3 hsl = RGB2HSL(color.rgb);
+
+                           hsl.g *= 1.0 + (saturation_-50) / 50.0;
+                           hsl.b *= 1.0 + (luminance_-50)  / 50.0;
+
+                           color.rgb = HSLToRGB(hsl);
+                           //color.rgb = depth_visualization;
+               }
            //outputColor = I * vec4(vec3(0.0), 1.0) + (1.0 - I) * ( color );
                out_Coords = vec4 (newVert.xyz, gl_FragCoord.z);
                out_Normal = vec4 (newNormal.xyz, 1.0);

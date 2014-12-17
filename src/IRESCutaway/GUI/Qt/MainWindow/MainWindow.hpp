@@ -20,6 +20,8 @@ class MainWindow: public QMainWindow
 
 		void keyPressEvent ( QKeyEvent * event );
 
+		GLWidget *              glWidget;
+
 	public slots:
 
 		// Camera Slots
@@ -50,16 +52,24 @@ class MainWindow: public QMainWindow
 
 		void on_horizontalSliderMeanFilterSize_valueChanged  ( int i);
 
+//		void on_horizontalSlider_PrimariesLuminance_valueChanged  ( int i );
+//		void on_horizontalSlider_PrimariesSaturation_valueChanged  ( int i );
+//
+//		void on_horizontalSlider_SecondariesLuminance_valueChanged  ( int i );
+//		void on_horizontalSlider_SecondariesStaturation_valueChanged  ( int i);
+//
+//                void on_horizontalSlider_SellLuminance_valueChanged  ( int i );
+//                void on_horizontalSlider_SellStaturation_valueChanged  ( int i );
+
 		//
 		void WidgetSignalSlotConnection();
 		void setFullScreen ();
+
 
 	private:
 
 
 		bool                    showfullScreen_;
-
-		GLWidget *              glWidget;
 
 		AboutWidgetIRESReader * aboutIRESReader;
 

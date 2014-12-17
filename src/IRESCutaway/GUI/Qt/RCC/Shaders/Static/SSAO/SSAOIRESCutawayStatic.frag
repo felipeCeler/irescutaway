@@ -1,6 +1,8 @@
 #version 430 core
 
+/// Cutaway Texture  vec4(nx,ny,nz, v.z)
 layout(location = 2) uniform sampler2D normal;
+/// Point from the vertex vec4(vx,vy,vz, vz)
 layout(location = 3) uniform sampler2D vertex;
 
 in VertexData
@@ -18,20 +20,23 @@ uniform vec3 lights[4];
 uniform int Wall;
 uniform int Line;
 uniform int Cool;
+
+/// If True, change the projection matrix to perspective otherwise orthographic
 uniform bool isPerspective_;
-
-
 uniform mat4 ProjectionMatrix;
-
+/// From Perspective projection
 uniform float nearPlane_;
 uniform float farPlane_;
 
+/// SSAO output Buffers
 out vec4 out_Coords;
 out vec4 out_Normal;
 out vec4 out_Color;
 
-
-
+/// Saturation Intensity
+uniform float saturation_;
+/// Luminance Intensity
+uniform float luminance_;
 
 vec3 RGB2HSL(vec3 color)
 {
@@ -266,7 +271,8 @@ void main(void)
 
         vec3 hsl = RGB2HSL(color.rgb);
 
-        hsl.g *= 0.7;
+        hsl.g *= 1.0 + (saturation_-50) / 50.0;
+        hsl.b *= 1.0 + (luminance_-50)  / 50.0;
 
         color.rgb = HSLToRGB(hsl);
 
