@@ -330,9 +330,8 @@ class GLWidget: public QGLWidget
                 // ! DYNAMIC VIEWER F10 Static Properties
 
                 Shader* IRESCutawaySurfaceStatic_;
-                Shader* IRESCutawayStaticShell_;
-                Shader* IRESCutawayStatic_;
-                Shader* IRESPrimaryStatic_;
+
+
                 Shader* SSAOIRESPrimaryStatic_;
                 Shader* SSAOIRESCutawayStatic_;
                 Shader* SSAOIRESCutawayStaticShell_;
@@ -344,10 +343,7 @@ class GLWidget: public QGLWidget
                 // ! DYNAMIC VIEWER F12 Dynamic Properties
 
                 Shader* IRESCutawaySurfaceDynamic_;
-                Shader* IRESCutawayDynamicCrust_;
-                Shader* IRESCutawayDynamicShell_;
-                Shader* IRESPrimaryDynamic_;
-                Shader* IRESCutawayDynamic_;
+
                 Shader* SSAOIRESPrimaryDynamic_;
                 Shader* SSAOIRESCutawayDynamic_;
                 Shader* SSAOIRESCutawayDynamicShell_;

@@ -7,8 +7,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1282</width>
-    <height>1006</height>
+    <width>830</width>
+    <height>923</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -47,8 +47,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1282</width>
-     <height>22</height>
+     <width>830</width>
+     <height>18</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -1374,14 +1374,14 @@
   <widget class="QDockWidget" name="dockWidgetBrenchMarking">
    <property name="minimumSize">
     <size>
-     <width>235</width>
-     <height>150</height>
+     <width>255</width>
+     <height>277</height>
     </size>
    </property>
    <property name="maximumSize">
     <size>
      <width>400</width>
-     <height>150</height>
+     <height>300</height>
     </size>
    </property>
    <attribute name="dockWidgetArea">
@@ -1397,10 +1397,56 @@
        <property name="flat">
         <bool>true</bool>
        </property>
-       <layout class="QFormLayout" name="formLayout_7">
-        <property name="fieldGrowthPolicy">
-         <enum>QFormLayout::ExpandingFieldsGrow</enum>
-        </property>
+       <layout class="QGridLayout" name="gridLayout_6">
+        <item row="4" column="0">
+         <widget class="QLabel" name="label_Rendering">
+          <property name="text">
+           <string>Rendering Time:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0">
+         <widget class="QLabel" name="label_NumberOfCells">
+          <property name="text">
+           <string>Number of Cells:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="1">
+         <widget class="QLabel" name="label_Rendering_Slot">
+          <property name="text">
+           <string>0</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0">
+         <widget class="QLabel" name="label_Generation">
+          <property name="text">
+           <string>Generation Time:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="1">
+         <widget class="QLabel" name="label_Generation_Slot">
+          <property name="text">
+           <string>0</string>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="0">
+         <widget class="QLabel" name="label_fps">
+          <property name="text">
+           <string>Total Time:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="1">
+         <widget class="QLabel" name="label_fps_slot">
+          <property name="text">
+           <string>0</string>
+          </property>
+         </widget>
+        </item>
         <item row="0" column="0">
          <widget class="QLabel" name="label_ModelName">
           <property name="text">
@@ -1411,61 +1457,12 @@
         <item row="0" column="1">
          <widget class="QLabel" name="label_ModelNameSlot">
           <property name="text">
-           <string/>
+           <string>0</string>
           </property>
          </widget>
         </item>
-        <item row="1" column="0">
-         <widget class="QLabel" name="label_NumberOfCells">
-          <property name="text">
-           <string>Number of Cells:</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="1">
+        <item row="2" column="1">
          <widget class="QLabel" name="label_NumberOfCellsSlot">
-          <property name="text">
-           <string/>
-          </property>
-         </widget>
-        </item>
-        <item row="4" column="0">
-         <widget class="QLabel" name="label_Generation">
-          <property name="text">
-           <string>Generation Time:</string>
-          </property>
-         </widget>
-        </item>
-        <item row="5" column="0">
-         <widget class="QLabel" name="label_Rendering">
-          <property name="text">
-           <string>Rendering Time:</string>
-          </property>
-         </widget>
-        </item>
-        <item row="6" column="0">
-         <widget class="QLabel" name="label_fps">
-          <property name="text">
-           <string>Total Time:</string>
-          </property>
-         </widget>
-        </item>
-        <item row="6" column="1">
-         <widget class="QLabel" name="label_fps_slot">
-          <property name="text">
-           <string>0</string>
-          </property>
-         </widget>
-        </item>
-        <item row="5" column="1">
-         <widget class="QLabel" name="label_Rendering_Slot">
-          <property name="text">
-           <string>0</string>
-          </property>
-         </widget>
-        </item>
-        <item row="4" column="1">
-         <widget class="QLabel" name="label_Generation_Slot">
           <property name="text">
            <string>0</string>
           </property>

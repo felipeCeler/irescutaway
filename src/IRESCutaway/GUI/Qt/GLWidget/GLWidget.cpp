@@ -45,7 +45,7 @@ void GLWidget::initializeGL ( )
 	glClearColor ( 0.0 , 0.0 , 0.0 , 1.0 );
 	glDisable(GL_BLEND);
 
-	setMinimumSize ( 800 , 800 );
+	setMinimumSize ( 640 , 480 );
 	setSizePolicy ( QSizePolicy::MinimumExpanding , QSizePolicy::MinimumExpanding );
 	/// Key event to GLWidget not o MainWindow ! | @QtDocumentation
 	setFocus ( );
@@ -1050,14 +1050,6 @@ void GLWidget::drawPrimaryDynamic ( ) const
 void GLWidget::drawSecondaryDynamic ( ) const
 {
 
-//        glClearColor ( 1.0 , 1.0 , 1.0 , 1.0 );
-//        glDepthFunc ( GL_LESS );
-//        glClearDepth ( 1.0f );
-//        glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-
-        //drawBackGround ( );
-
-
         // Interior Cells
 
         SSAOIRESCutawayDynamic_->enable( );
@@ -1761,18 +1753,19 @@ void GLWidget::reloadShaders ( )
         DummyQuad_->reloadShaders ( );
 
         // ! DYNAMIC VIEWER F11 Static PropertieswayStatic"
-        IRESCutawaySurfaceStatic_->reloadShaders ( );
-        IRESCutawayStaticShell_->reloadShaders ( );
-        IRESCutawayStatic_->reloadShaders ( );
-        IRESPrimaryStatic_->reloadShaders ( );
+                IRESCutawaySurfaceStatic_->reloadShaders ( );
+
+                SSAOIRESPrimaryStatic_->reloadShaders();
+                SSAOIRESCutawayStatic_->reloadShaders();
+                SSAOIRESCutawayStaticShell_->reloadShaders();
 
         // ! DYNAMIC VIEWER F12 Dynamic Properties
+                IRESCutawaySurfaceDynamic_->reloadShaders ( );
 
-        IRESCutawayDynamic_->reloadShaders ( );
-        IRESCutawaySurfaceDynamic_->reloadShaders ( );
-        IRESCutawayDynamicCrust_->reloadShaders ( );
-        IRESCutawayDynamicShell_->reloadShaders ( );
-        IRESPrimaryDynamic_->reloadShaders ( );
+                SSAOIRESPrimaryDynamic_->reloadShaders();
+                SSAOIRESCutawayDynamic_->reloadShaders();
+                SSAOIRESCutawayDynamicShell_->reloadShaders();
+
 
         BurnsPly_->reloadShaders ( );
 
@@ -1783,18 +1776,6 @@ void GLWidget::reloadShaders ( )
 
         blurShaderStatic_->reloadShaders ( );
         ssaoShaderStatic_->reloadShaders();
-
-        SSAOIRESPrimaryStatic_->reloadShaders();
-        SSAOIRESCutawayStatic_->reloadShaders();
-        SSAOIRESCutawayStaticShell_->reloadShaders();
-
-        SSAOIRESPrimaryDynamic_->reloadShaders();
-        SSAOIRESCutawayDynamic_->reloadShaders();
-        SSAOIRESCutawayDynamicShell_->reloadShaders();
-
-        std::cout << "---" << std::endl;
-
-        std::cout << trackball_->getViewMatrix().matrix() << std::endl;
 
 }
 
@@ -1886,34 +1867,6 @@ void GLWidget::loadShaders ( )
                                                       (shaderDirectory + "Static/IRESCutawaySurfaceStatic.geom").toStdString(),1);
                 IRESCutawaySurfaceStatic_->initialize( );
 
-                IRESCutawayStaticShell_ = new Shader ("IRESCutawayStaticShell",
-                                                     (shaderDirectory + "Static/IRESCutawayStaticShell.vert").toStdString(),
-                                                     (shaderDirectory + "Static/IRESCutawayStaticShell.frag").toStdString(),
-                                                     (shaderDirectory + "Static/IRESCutawayStaticShell.geom").toStdString(),1);
-                IRESCutawayStaticShell_->initialize();
-
-                IRESCutawayStatic_ = new Shader ("IRESCutawayStatic",
-                                                (shaderDirectory + "Static/IRESCutawayStatic.vert").toStdString(),
-                                                (shaderDirectory + "Static/IRESCutawayStatic.frag").toStdString(),
-                                                (shaderDirectory + "Static/IRESCutawayStatic.geom").toStdString()
-                                                 ,1);
-                IRESCutawayStatic_->initialize();
-
-                IRESPrimaryStatic_ = new Shader ("IRESPrimaryStatic",
-                                                (shaderDirectory + "Static/IRESPrimaryStatic.vert").toStdString(),
-                                                (shaderDirectory + "Static/IRESPrimaryStatic.frag").toStdString(),
-                                                (shaderDirectory + "Static/IRESPrimaryStatic.geom").toStdString(),1);
-
-                IRESPrimaryStatic_->initialize();
-
-
-        // ! DYNAMIC VIEWER F12 Dynamic Properties
-
-                IRESCutawayDynamic_ = new Shader ("IRESCutawayDynamic",
-                                                (shaderDirectory + "Dynamic/IRESCutawayDynamic.vert").toStdString(),
-                                                (shaderDirectory + "Dynamic/IRESCutawayDynamic.frag").toStdString(),
-                                                "",1);
-                IRESCutawayDynamic_->initialize();
 
                 IRESCutawaySurfaceDynamic_ = new Shader ("IRESCutawaySurfaceDynamic",
                                                        (shaderDirectory + "Dynamic/IRESCutawaySurfaceDynamic.vert").toStdString(),
@@ -1921,24 +1874,7 @@ void GLWidget::loadShaders ( )
                                                        (shaderDirectory + "Dynamic/IRESCutawaySurfaceDynamic.geom").toStdString(),1);
                 IRESCutawaySurfaceDynamic_->initialize();
 
-                IRESCutawayDynamicCrust_ = new Shader ("IRESCutawayDynamicCrust",
-                                                       (shaderDirectory + "Dynamic/IRESCutawayDynamicCrust.vert").toStdString(),
-                                                       (shaderDirectory + "Dynamic/IRESCutawayDynamicCrust.frag").toStdString(),
-                                                       (shaderDirectory + "Dynamic/IRESCutawayDynamicCrust.geom").toStdString(),1);
-                IRESCutawayDynamicCrust_->initialize();
 
-
-                IRESCutawayDynamicShell_ = new Shader ("IRESCutawayDynamicShell",
-                                                       (shaderDirectory + "Dynamic/IRESCutawayDynamicShell.vert").toStdString(),
-                                                       (shaderDirectory + "Dynamic/IRESCutawayDynamicShell.frag").toStdString(),
-                                                       (shaderDirectory + "Dynamic/IRESCutawayDynamicShell.geom").toStdString(),1);
-                IRESCutawayDynamicShell_->initialize();
-
-                IRESPrimaryDynamic_ = new Shader ("IRESPrimaryDynamic",
-                                                       (shaderDirectory + "Dynamic/IRESPrimaryDynamic.vert").toStdString(),
-                                                       (shaderDirectory + "Dynamic/IRESPrimaryDynamic.frag").toStdString(),
-                                                       (shaderDirectory + "Dynamic/IRESPrimaryDynamic.geom").toStdString(),1);
-                IRESPrimaryDynamic_->initialize();
 
 
                 BurnsPly_ = new Shader ("BurnsPly",
