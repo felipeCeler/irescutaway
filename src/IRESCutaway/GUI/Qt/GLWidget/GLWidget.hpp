@@ -1,12 +1,13 @@
 #ifndef GLWIDGET_H
 #define GLWIDGET_H
 
+/// OpenGL
+#include <GL/glew.h>
+
 /// IRES Library
 #include <ires/ires.h>
-/// Celer::Libraries
-/// OpenGL
 
-#include <GL/glew.h>
+/// Celer::Libraries
 #include <IRES/CornerPointGrid.hpp>
 #include <Loaders/Ply/PlyLoader.hpp>
 
@@ -28,16 +29,22 @@
 /// Eigen with STL Containers - http://eigen.tuxfamily.org/dox-devel/group__TopicStlContainers.html
 #include <Eigen/StdVector>
 
-/// Qt 4.8
-#include <QtOpenGL/QGLWidget>
-#include <QtGui/QMdiSubWindow>
-#include <QtCore/QTimer>
-#include <QtCore/QTimeLine>
-#include <QtCore/QFile>
-#include <QtCore/QSet>
-#include <QtCore/QMimeData>
-#include <QtCore/QTime>
-#include <QtCore/QElapsedTimer>
+/// Qt 5.5
+#include <QGLWidget>
+#include <QMdiSubWindow>
+#include <QTimer>
+#include <QTimeLine>
+#include <QFile>
+#include <QDir>
+#include <QDebug>
+#include <QSet>
+#include <QMimeData>
+#include <QTime>
+#include <QMouseEvent>
+#include <QKeyEvent>
+#include <QElapsedTimer>
+#include <QApplication>
+#include <QProcess>
 
 class GLWidget: public QGLWidget
 {

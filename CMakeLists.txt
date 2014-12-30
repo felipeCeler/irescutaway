@@ -27,7 +27,7 @@ ENDIF(MSVC)
 # End C++ flags
    
 # I do not remember what's the meaning of this  !
-add_definitions(${QT_DEFINITIONS} -Wall)
+# add_definitions(${QT_DEFINITIONS} -Wall)
 
 ## - Libraris
 add_subdirectory(libs/Ires)

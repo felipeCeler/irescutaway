@@ -7,12 +7,16 @@ set(QT_WRAP_CPP true)
 set(QT_WRAP_UI true)
 
 # find needed packages
-find_package(Qt4 REQUIRED)
+##find_package(Qt4 REQUIRED)
+
+find_package(Qt5OpenGL REQUIRED)
+find_package(Qt5Widgets REQUIRED)
+
 find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
 find_package(Eigen REQUIRED)
 
-INCLUDE(${QT_USE_FILE})
+#INCLUDE(${QT_USE_FILE})
 
 
 include_directories(
@@ -22,16 +26,19 @@ include_directories(
 		${CMAKE_SOURCE_DIR}/libs/Ires
 		## - LCG/include
 		${CMAKE_SOURCE_DIR}/libs/LCG
-        ##- Qt     
-        ${QT_INCLUDE_DIR}
-        ${QT_QTCORE_INCLUDE_DIR}
-        ${QT_QTGUI_INCLUDE_DIR}
-        ${QT_QTOPENGL_INCLUDE_DIR}
+        ## - Qt4     
+#        ${QT_INCLUDE_DIR}
+#        ${QT_QTCORE_INCLUDE_DIR}
+#        ${QT_QTGUI_INCLUDE_DIR}
+#        ${QT_QTOPENGL_INCLUDE_DIR}
         ##- OpenGL 
         ${GLEW_INCLUDE_DIR}
         ${OPENGL_INCLUDE_DIR}
         ## - Eigen
         ${EIGEN_INCLUDE_DIR}
+        ## - Qt5
+        ${Qt5Widgets_INCLUDE_DIRS}
+        ${Qt5OpenGL_INCLUDE_DIRS}
         )
 
 include_directories (
@@ -79,9 +86,13 @@ set( UI_SOURCES GUI/Qt/UI/${CMAKE_PROJECT_NAME}.ui GUI/Qt/AboutWidget/AboutWidge
 
 set(RCC_SOURCES GUI/Qt/RCC/Resources.qrc)
 
-QT4_WRAP_CPP( MOC_SOURCES ${MOC_HEADERS})
-QT4_WRAP_UI (UI_HEADERS ${UI_SOURCES})
-QT4_ADD_RESOURCES(RCC_HEADERS ${RCC_SOURCES})
+QT5_WRAP_CPP( MOC_SOURCES ${MOC_HEADERS})
+QT5_WRAP_UI (UI_HEADERS ${UI_SOURCES})
+QT5_ADD_RESOURCES(RCC_HEADERS ${RCC_SOURCES})
+
+#QT4_WRAP_CPP( MOC_SOURCES ${MOC_HEADERS})
+#QT4_WRAP_UI (UI_HEADERS ${UI_SOURCES})
+#QT4_ADD_RESOURCES(RCC_HEADERS ${RCC_SOURCES})
 
 IF(WIN32)
 	ADD_EXECUTABLE(${CMAKE_PROJECT_NAME} WIN32 ${${PROJECT_NAME}_SOURCES} ${${PROJECT_NAME}_HEADERS} ${MOC_SOURCES} ${UI_HEADERS} ${RCC_HEADERS})
@@ -89,7 +100,9 @@ ELSE(WIN32)
 	ADD_EXECUTABLE(${CMAKE_PROJECT_NAME} ${${PROJECT_NAME}_SOURCES} ${${PROJECT_NAME}_HEADERS} ${MOC_SOURCES} ${UI_HEADERS} ${RCC_HEADERS})	
 ENDIF(WIN32)
               
-TARGET_LINK_LIBRARIES(${CMAKE_PROJECT_NAME} ${QT_LIBRARIES} ${QT_QTMAIN_LIBRARY} ${OPENGL_LIBRARIES}  ${GLEW_LIBRARY} IresReader CelerMath CelerPhysics CelerScene CelerOpenGL)
+#TARGET_LINK_LIBRARIES(${CMAKE_PROJECT_NAME} ${QT_LIBRARIES} ${QT_QTMAIN_LIBRARY} ${OPENGL_LIBRARIES}  ${GLEW_LIBRARY} IresReader CelerMath CelerPhysics CelerScene CelerOpenGL)
+
+TARGET_LINK_LIBRARIES(${CMAKE_PROJECT_NAME}   Qt5::OpenGL Qt5::Widgets ${OPENGL_LIBRARIES}  ${GLEW_LIBRARY} IresReader CelerMath CelerPhysics CelerScene CelerOpenGL)
 
 # Do a better solution. This one is Ungly !!!
 SET (SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/GUI/Qt/RCC/Shaders")

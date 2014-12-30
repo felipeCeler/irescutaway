@@ -1,13 +1,16 @@
 #ifndef _MYMAINWINDOW_
 #define _MYMAINWINDOW_
 
-#include <QtGui/QtGui>
-#include <QMessageBox>
-
-#include "ui_IRESCutaway.h"
-
 #include <GUI/Qt/GLWidget/GLWidget.hpp>
 #include <GUI/Qt/AboutWidget/AboutWidgetIRESReader.hpp>
+
+//#include <QtGui>
+#include <QMessageBox>
+#include <QFileDialog>
+#include <QDebug>
+#include <iostream>
+
+#include "ui_IRESCutaway.h"
 
 class MainWindow: public QMainWindow
 {

@@ -8,7 +8,7 @@
 #ifndef ABOUTWIDGETIRESREADER_HPP_
 #define ABOUTWIDGETIRESREADER_HPP_
 
-#include <QtGui/QDialog>
+#include <QDialog>
 
 #include "ui_AboutWidgetIRESReader.h"
 

@@ -1,6 +1,7 @@
-#include <QtGui/QtGui>
-
 #include <GUI/Qt/GLWidget/GLWidget.hpp>
+
+//#include <QtGui>
+
 // Se quiser usar QPainter Ver exemplo no QT demo - Manda Qt em wave animation !!!
 
 GLWidget::GLWidget ( const QGLFormat& format , QWidget* parent , const QGLWidget* shareWidget , Qt::WindowFlags f ) :

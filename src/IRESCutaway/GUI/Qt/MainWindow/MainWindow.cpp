@@ -1,9 +1,6 @@
-#include <QtGui>
-#include <QtGui/QInputDialog>
-#include <iostream>
-
 #include <GUI/Qt/MainWindow/MainWindow.hpp>
 
+//#include <QtGui>
 
 MainWindow::MainWindow ( QMainWindow *parent ) :
 	QMainWindow ( parent )
