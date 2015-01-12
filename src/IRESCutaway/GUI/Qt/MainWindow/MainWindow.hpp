@@ -45,6 +45,9 @@ class MainWindow: public QMainWindow
 
 		void on_doubleSpinMin_valueChanged  ( double i);
 		void on_doubleSpinMax_valueChanged  ( double i);
+
+                void on_doubleSpinMin_Dynamic_valueChanged  ( double i);
+                void on_doubleSpinMax_Dynamic_valueChanged  ( double i);
 		//
 		void changeProperty ( );
 

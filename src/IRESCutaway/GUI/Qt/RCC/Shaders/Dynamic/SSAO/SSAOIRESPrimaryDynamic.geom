@@ -25,7 +25,6 @@ struct Face
         int     vertices[4];
 };
 
-
 // For while, all transformations come from the Celer::Camera.
 uniform mat4 ModelMatrix;
 uniform mat4 ViewMatrix;
@@ -130,7 +129,6 @@ void main(void)
         faces[5].vertices[1] = 3;
         faces[5].vertices[2] = 4;
         faces[5].vertices[3] = 7;
-
 
         renderCube(cube[0].color);
 

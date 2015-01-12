@@ -55,6 +55,7 @@ set( ${PROJECT_NAME}_SOURCES App/main.cpp
     						 GUI/Qt/MainWindow/MainWindow.cpp
     						 GUI/Qt/AboutWidget/AboutWidgetIRESReader.cpp
     						 GUI/Qt/GLWidget/GLWidget.cpp
+    						 GUI/Qt/GLWidget/GLAnimation.cpp
     						 IRES/CornerPointGrid.cpp    						 
     						 IRES/Block.cpp
     						 Loaders/Ply/PlyLoader.cpp

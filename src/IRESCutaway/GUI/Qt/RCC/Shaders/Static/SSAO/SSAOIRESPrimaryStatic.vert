@@ -22,16 +22,16 @@ uniform mat4 ModelMatrix;
 uniform mat4 ViewMatrix;
 uniform mat4 ProjectionMatrix;
 
-uniform float min_property;
-uniform float max_property;
+uniform float min_property_static;
+uniform float max_property_static;
 
 uniform int property_index;
 
 uniform int faults;
 
 
-uniform float min_range;
-uniform float max_range;
+uniform float min_range_static;
+uniform float max_range_static;
 
 
 uniform vec3 box_min;
@@ -41,7 +41,7 @@ uniform float paper;
 vec4 propertyColor (  )
 {
 
-        float normalized_color = ( static_properties[property_index] - min_property ) / ( max_property - min_property );
+        float normalized_color = ( static_properties[property_index] - min_property_static ) / ( max_property_static - min_property_static );
 
         float fourValue = 4 * normalized_color;
         float red   = min(fourValue - 1.5, -fourValue + 4.5);
@@ -86,7 +86,7 @@ bool isPrimary (  )
         {
                return isInside();
 
-        }else if ( static_properties[property_index] > min_range && static_properties[property_index] < max_range )
+        }else if ( static_properties[property_index] > min_range_static && static_properties[property_index] < max_range_static )
         {
                 return true;
         }

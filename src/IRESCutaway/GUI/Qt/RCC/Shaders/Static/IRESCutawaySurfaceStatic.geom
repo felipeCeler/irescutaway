@@ -37,9 +37,6 @@ void byCentroid ( )
 	for ( int i = 0; i < 6; i++)
 	{
 
-		if ( i == 2)
-		  continue;
-
 		VertexOut.normal = cube[0].n[i];
 		VertexOut.color  = cube[0].color;
 

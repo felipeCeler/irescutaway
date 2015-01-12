@@ -18,12 +18,28 @@ out vec4 outputColor;
 void main(void)
 {
 
+        float d = min(dist[0], min(dist[1], min(dist[2], dist[3])));
+        float I = exp2(-2.0 * d * d);
+
         vec3 newNormal = normalize(VertexIn.normal.xyz);
         vec3 newVert = VertexIn.vertice.xyz;
         vec4 color_t = VertexIn.color;
 
-        float d = min(dist[0], min(dist[1], min(dist[2], dist[3])));
-        float I = exp2(-2.0 * d * d);
+        if ( color_t.a > 2)
+        {
+                color_t.rgb = vec3 ( 0.0 , 1.0 , 0.0 );
+        }
+        else
+        {
+                if ( color_t.a == 0.0 )
+                {
+                        color_t.rgb = vec3 ( 1.0 , 0.0 , 0.0 );
+                }
+                else
+                {
+                        color_t.rgb = vec3 ( 0.0 , 0.0 , 1.0 );
+                }
+        }
 
         vec4 la = vec4(0.0);
         vec4 ld = vec4(0.0);
@@ -38,10 +54,8 @@ void main(void)
             //ls += color_t * 0.0 * pow ( max ( 0.0 , dot ( eye_dir , ref ) ) , 5.0 );
         }
 
-
         vec4 color = la + ld + ls;
         color.a = 1.0;
-
 
         outputColor = I * vec4(vec3(0.0), 1.0) + (1.0 - I) * ( color );
 

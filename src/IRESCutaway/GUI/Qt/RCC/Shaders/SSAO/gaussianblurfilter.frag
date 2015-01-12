@@ -21,6 +21,8 @@ void main (void)
     if (pixel == vec4(0.0))
         discard;
 
+    vec3 color = pixel.rgb;
+
     ivec2 offset;
     for(int i = -(blurRange-1)/2 ; i <= (blurRange-1)/2 ; i++)
     {
@@ -31,7 +33,7 @@ void main (void)
             pixel = texelFetch(blurTexture, texCoord + offset, 0);
 
             //weight *= pixel.a;
-            result += pixel.rgb * weight;
+            result += pixel.a * weight;
             weightSum += weight;
         }
     }
@@ -39,7 +41,7 @@ void main (void)
     result /= weightSum;
 
     //result = texelFetch(blurTexture, texCoord, 0).xyz;
-    //out_Color = vec4(result, 1.0);
-    out_Color = vec4(0.0,1.0,0.0, 1.0);
+    out_Color = vec4(result*color.rgb, 1.0);
+    //out_Color = vec4(0.0,1.0,0.0, 1.0);
 
 }

@@ -297,7 +297,7 @@ namespace IRES
 				int size_of_vertice = 4 * sizeof(float);
 				int size_of_struct  = 8 * size_of_vertice;
 
-				// @link - http://www.opengl.org/wiki/Vertex_Specification
+				//! @link - http://www.opengl.org/wiki/Vertex_Specification
 				// Assign for vertex attribute location 0 - 8 on point of the cuboid
 				for ( int location = 0 ; location < 8 ; location++)
 				{
@@ -325,7 +325,7 @@ namespace IRES
 	                        int size_of_vertice_face = 4 * sizeof(float);
 	                        int size_of_struct_face  = 4 * size_of_vertice_face;
 
-				// @link - http://www.opengl.org/wiki/Vertex_Specification
+				//! @link - http://www.opengl.org/wiki/Vertex_Specification
 				// Assign for vertex attribute location 0 - 4 on point of the face
 	                        for ( int location = 0 ; location < 4 ; location++)
 	                        {
@@ -352,8 +352,6 @@ namespace IRES
                         //cuboids.clear();
                         //faces.clear();
                         //faceType.clear();
-
-                        //internalFaces.clear();
 
 	                loadStaticProperties  ( );
 	                loadDynamicProperties ( );

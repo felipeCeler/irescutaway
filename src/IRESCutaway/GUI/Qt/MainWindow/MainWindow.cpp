@@ -28,7 +28,7 @@ MainWindow::MainWindow ( QMainWindow *parent ) :
 
 	fps->setText("fps 60s");
 
-	//ui->statusBar->addPermanentWidget(fps,0);
+	ui->statusBar->addPermanentWidget(fps,0);
 
 	WidgetSignalSlotConnection( );
 
@@ -76,6 +76,10 @@ void MainWindow::WidgetSignalSlotConnection( )
         CutawayTypeGroup->addAction ( ui->action_IRES_Cutaway );
         CutawayTypeGroup->addAction ( ui->action_IRES_Cutaway_Static );
         CutawayTypeGroup->addAction ( ui->action_IRES_Cutaway_Dynamic );
+
+        // New Feature Mixing Properties
+
+        connect(ui->radioButton_Static,           SIGNAL(toggled(bool)), glWidget, SLOT(property_type(bool)));
 
         // Rendering Type
         connect(ui->action_Paper_Demo,           SIGNAL(toggled(bool)), glWidget, SLOT(setPaperDemoVisibility(bool)));
@@ -140,7 +144,7 @@ void MainWindow::loadStatic( )
                 QString title ( reinterpret_cast<char*>(glWidget->reservoir_model_.header_v2_.title) );
 
                 ui->simulatorName->setText (  title );
-                ui->label_ModelNameSlot->setText ( title );
+                ui->simulatorNameDynamic->setText ( title );
                 ui->label_NumberOfCellsSlot->setText( QString::number( glWidget->reservoir_model_.number_of_blocks_ ) );
 
                 updateDoubleSpinMax( 0 );
@@ -183,8 +187,6 @@ void MainWindow::loadDynamic( )
 	{
 
 		QString title ( reinterpret_cast<char*>(glWidget->reservoir_model_.header_v2_.title) );
-
-		ui->labelSimulatorDynamic->setText (  title );
 
 		updateDynamicDoubleSpinMin( 0 );
 		updateDynamicDoubleSpinMax( 0 );
@@ -283,7 +285,7 @@ void MainWindow::changeProperty()
 
 	if ( glWidget->isIRESOpen( ))
 	{
-		glWidget->changePropertyRange( ui->doubleSpinMin->value(), ui->doubleSpinMax->value(), ui->comboBoxProperty->currentIndex() );
+		glWidget->changePropertyRangeStatic( ui->doubleSpinMin->value(), ui->doubleSpinMax->value(), ui->comboBoxProperty->currentIndex() );
 	}
 }
 
@@ -400,7 +402,7 @@ void MainWindow::on_doubleSpinMin_valueChanged  ( double i)
 {
 	if ( glWidget->isIRESOpen( ))
 	{
-		glWidget->changePropertyRange( ui->doubleSpinMin->value(), ui->doubleSpinMax->value(), ui->comboBoxProperty->currentIndex() );
+		glWidget->changePropertyRangeStatic( ui->doubleSpinMin->value(), ui->doubleSpinMax->value(), ui->comboBoxProperty->currentIndex() );
 
 	}else
 	{
@@ -413,12 +415,38 @@ void MainWindow::on_doubleSpinMax_valueChanged  ( double i)
 
 	if ( glWidget->isIRESOpen( )  )
 	{
-		glWidget->changePropertyRange( ui->doubleSpinMin->value(), ui->doubleSpinMax->value(), ui->comboBoxProperty->currentIndex() );
+		glWidget->changePropertyRangeStatic( ui->doubleSpinMin->value(), ui->doubleSpinMax->value(), ui->comboBoxProperty->currentIndex() );
 		//std::cout << "doubleSpinMax ::::::::::::: " << ui->doubleSpinMin->value() << std::endl;
 	}else
 	{
 		//msgBox.setText("First of all. Open a file my friend !!  ");
 	}
+}
+
+void MainWindow::on_doubleSpinMin_Dynamic_valueChanged  ( double i)
+{
+        if ( glWidget->isIRESOpen( ))
+        {
+                glWidget->changePropertyRangeDynamic( ui->doubleSpinMin_Dynamic->value(), ui->doubleSpinMax_Dynamic->value() );
+                std::cout << "doubleSpinMin ::::::::::::: " << ui->doubleSpinMin_Dynamic->value() << std::endl;
+
+        }else
+        {
+                //msgBox.setText("First of all. Open a file my friend !!  ");
+        }
+}
+
+void MainWindow::on_doubleSpinMax_Dynamic_valueChanged  ( double i)
+{
+
+        if ( glWidget->isIRESOpen( )  )
+        {
+                glWidget->changePropertyRangeDynamic( ui->doubleSpinMin_Dynamic->value(), ui->doubleSpinMax_Dynamic->value() );
+                std::cout << "doubleSpinMax ::::::::::::: " << ui->doubleSpinMax_Dynamic->value() << std::endl;
+        }else
+        {
+                //msgBox.setText("First of all. Open a file my friend !!  ");
+        }
 }
 
 void MainWindow::on_horizontalSliderMeanFilterSize_valueChanged  ( int i)

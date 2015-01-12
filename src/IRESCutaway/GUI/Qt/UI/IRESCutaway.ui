@@ -7,8 +7,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>830</width>
-    <height>923</height>
+    <width>1388</width>
+    <height>1083</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -47,8 +47,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>830</width>
-     <height>18</height>
+     <width>1388</width>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -87,6 +87,7 @@
     <addaction name="separator"/>
     <addaction name="action_Show_Static_Properties"/>
     <addaction name="action_Show_Dynamic_Properties"/>
+    <addaction name="action_Show_Effects"/>
     <addaction name="action_Show_Lines_Properties"/>
     <addaction name="action_Show_BrenchMark"/>
     <addaction name="separator"/>
@@ -104,6 +105,7 @@
     <addaction name="separator"/>
     <addaction name="action_Freeze_View"/>
     <addaction name="action_Full_Screen"/>
+    <addaction name="separator"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuTools"/>
@@ -471,10 +473,16 @@
    </widget>
   </widget>
   <widget class="QDockWidget" name="dockWidgetDynamic">
+   <property name="minimumSize">
+    <size>
+     <width>315</width>
+     <height>450</height>
+    </size>
+   </property>
    <property name="maximumSize">
     <size>
      <width>400</width>
-     <height>300</height>
+     <height>450</height>
     </size>
    </property>
    <attribute name="dockWidgetArea">
@@ -695,6 +703,35 @@
       </widget>
      </item>
      <item>
+      <widget class="QGroupBox" name="groupBox">
+       <property name="title">
+        <string>Mixing Property</string>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayout_10">
+        <item>
+         <widget class="QRadioButton" name="radioButton_Dynamic">
+          <property name="text">
+           <string>Dynamic</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="radioButton_Static">
+          <property name="text">
+           <string>Static</string>
+          </property>
+          <property name="checked">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item>
       <spacer name="verticalSpacer_2">
        <property name="orientation">
         <enum>Qt::Vertical</enum>
@@ -738,6 +775,12 @@
        <property name="title">
         <string>Ambient Occlusion - DJ set</string>
        </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+       <property name="checked">
+        <bool>false</bool>
+       </property>
        <layout class="QHBoxLayout" name="horizontalLayout">
         <item>
          <layout class="QVBoxLayout" name="verticalLayout_7">
@@ -757,7 +800,7 @@
              <number>512</number>
             </property>
             <property name="value">
-             <number>64</number>
+             <number>25</number>
             </property>
             <property name="orientation">
              <enum>Qt::Vertical</enum>
@@ -797,7 +840,7 @@
              <number>1</number>
             </property>
             <property name="value">
-             <number>64</number>
+             <number>25</number>
             </property>
            </widget>
           </item>
@@ -842,7 +885,7 @@
              <number>3</number>
             </property>
             <property name="value">
-             <number>3</number>
+             <number>25</number>
             </property>
             <property name="tracking">
              <bool>true</bool>
@@ -891,7 +934,7 @@
              <number>2</number>
             </property>
             <property name="value">
-             <number>3</number>
+             <number>20</number>
             </property>
            </widget>
           </item>
@@ -918,7 +961,7 @@
              <number>60</number>
             </property>
             <property name="value">
-             <number>20</number>
+             <number>45</number>
             </property>
             <property name="wrapping">
              <bool>true</bool>
@@ -943,7 +986,7 @@
              <number>60</number>
             </property>
             <property name="value">
-             <number>20</number>
+             <number>45</number>
             </property>
            </widget>
           </item>
@@ -1083,6 +1126,12 @@
        </property>
        <property name="title">
         <string>Shader Properties - Luminance</string>
+       </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+       <property name="checked">
+        <bool>false</bool>
        </property>
        <layout class="QGridLayout" name="gridLayout_3">
         <item row="0" column="0">
@@ -1400,6 +1449,9 @@
        <layout class="QGridLayout" name="gridLayout_6">
         <item row="4" column="0">
          <widget class="QLabel" name="label_Rendering">
+          <property name="statusTip">
+           <string extracomment="Cutaway Generation and Rendering Time"/>
+          </property>
           <property name="text">
            <string>Rendering Time:</string>
           </property>
@@ -1421,6 +1473,9 @@
         </item>
         <item row="3" column="0">
          <widget class="QLabel" name="label_Generation">
+          <property name="statusTip">
+           <string extracomment="Cutaway Surface Generation. Primary cells selection and Renderization"/>
+          </property>
           <property name="text">
            <string>Generation Time:</string>
           </property>
@@ -1483,6 +1538,73 @@
         </size>
        </property>
       </spacer>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="dockWidget_Effects">
+   <property name="minimumSize">
+    <size>
+     <width>264</width>
+     <height>123</height>
+    </size>
+   </property>
+   <property name="maximumSize">
+    <size>
+     <width>400</width>
+     <height>150</height>
+    </size>
+   </property>
+   <property name="allowedAreas">
+    <set>Qt::LeftDockWidgetArea|Qt::RightDockWidgetArea</set>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>1</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents_3">
+    <layout class="QVBoxLayout" name="verticalLayout_11">
+     <item>
+      <widget class="QGroupBox" name="groupBox_Effects">
+       <property name="title">
+        <string>Effects</string>
+       </property>
+       <property name="flat">
+        <bool>false</bool>
+       </property>
+       <layout class="QFormLayout" name="formLayout_3">
+        <item row="1" column="0">
+         <widget class="QCheckBox" name="checkBox_InternalLines">
+          <property name="text">
+           <string>Internal Lines</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QCheckBox" name="checkBox_ContourLines">
+          <property name="text">
+           <string>Contour Lines</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QCheckBox" name="checkBox_Luminance">
+          <property name="text">
+           <string>Luminance</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QCheckBox" name="checkBox_SSAO">
+          <property name="whatsThis">
+           <string extracomment="Turn On and Off the SSAO Effect. For more see -- View -&gt; Show Line Properites"/>
+          </property>
+          <property name="text">
+           <string>SSAO</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
      </item>
     </layout>
    </widget>
@@ -1594,7 +1716,7 @@
     <string>Freeze View</string>
    </property>
    <property name="shortcut">
-    <string>Alt+Shift+S</string>
+    <string>Alt+Shift+F</string>
    </property>
   </action>
   <action name="action_IRES_Cutaway">
@@ -1679,7 +1801,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Show Lines Properties</string>
+    <string>Show Effects Editor</string>
    </property>
   </action>
   <action name="action_Open_PLY">
@@ -1741,7 +1863,19 @@
     <string>Ctrl+6</string>
    </property>
   </action>
+  <action name="action_Show_Effects">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show Effects</string>
+   </property>
+  </action>
   <zorder>dockWidgetBrenchMarking</zorder>
+  <zorder>dockWidget_Effects</zorder>
  </widget>
  <resources>
   <include location="../RCC/Resources.qrc"/>
@@ -1790,8 +1924,8 @@
      <y>-1</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1245</x>
-     <y>983</y>
+     <x>1387</x>
+     <y>1060</y>
     </hint>
    </hints>
   </connection>
@@ -1823,7 +1957,7 @@
     </hint>
     <hint type="destinationlabel">
      <x>399</x>
-     <y>777</y>
+     <y>1060</y>
     </hint>
    </hints>
   </connection>
@@ -1834,12 +1968,12 @@
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>947</x>
-     <y>514</y>
+     <x>1122</x>
+     <y>622</y>
     </hint>
     <hint type="destinationlabel">
-     <x>929</x>
-     <y>572</y>
+     <x>1122</x>
+     <y>652</y>
     </hint>
    </hints>
   </connection>
@@ -1850,12 +1984,12 @@
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1016</x>
-     <y>575</y>
+     <x>1122</x>
+     <y>652</y>
     </hint>
     <hint type="destinationlabel">
-     <x>966</x>
-     <y>530</y>
+     <x>1122</x>
+     <y>622</y>
     </hint>
    </hints>
   </connection>
@@ -1866,12 +2000,12 @@
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1050</x>
-     <y>522</y>
+     <x>1244</x>
+     <y>622</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1037</x>
-     <y>570</y>
+     <x>1244</x>
+     <y>652</y>
     </hint>
    </hints>
   </connection>
@@ -1882,12 +2016,12 @@
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1059</x>
-     <y>575</y>
+     <x>1244</x>
+     <y>652</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1056</x>
-     <y>538</y>
+     <x>1244</x>
+     <y>622</y>
     </hint>
    </hints>
   </connection>
@@ -1898,12 +2032,12 @@
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1260</x>
-     <y>545</y>
+     <x>1366</x>
+     <y>622</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1260</x>
-     <y>575</y>
+     <x>1366</x>
+     <y>652</y>
     </hint>
    </hints>
   </connection>
@@ -1914,12 +2048,12 @@
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1260</x>
-     <y>575</y>
+     <x>1366</x>
+     <y>652</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1260</x>
-     <y>545</y>
+     <x>1366</x>
+     <y>622</y>
     </hint>
    </hints>
   </connection>
@@ -1930,8 +2064,8 @@
    <slot>setChecked(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1081</x>
-     <y>700</y>
+     <x>1387</x>
+     <y>1060</y>
     </hint>
     <hint type="destinationlabel">
      <x>-1</x>
@@ -1995,7 +2129,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>199</x>
-     <y>702</y>
+     <y>1060</y>
     </hint>
     <hint type="destinationlabel">
      <x>-1</x>
@@ -2010,12 +2144,12 @@
    <slot>setNum(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1178</x>
-     <y>628</y>
+     <x>1351</x>
+     <y>706</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1271</x>
-     <y>629</y>
+     <x>1385</x>
+     <y>706</y>
     </hint>
    </hints>
   </connection>
@@ -2026,12 +2160,12 @@
    <slot>setNum(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1103</x>
-     <y>740</y>
+     <x>1309</x>
+     <y>822</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1218</x>
-     <y>745</y>
+     <x>1339</x>
+     <y>822</y>
     </hint>
    </hints>
   </connection>
@@ -2042,12 +2176,12 @@
    <slot>setNum(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1088</x>
-     <y>758</y>
+     <x>1309</x>
+     <y>843</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1214</x>
-     <y>760</y>
+     <x>1339</x>
+     <y>843</y>
     </hint>
    </hints>
   </connection>
@@ -2058,12 +2192,12 @@
    <slot>setNum(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1058</x>
-     <y>814</y>
+     <x>1309</x>
+     <y>900</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1214</x>
-     <y>815</y>
+     <x>1339</x>
+     <y>900</y>
     </hint>
    </hints>
   </connection>
@@ -2074,12 +2208,12 @@
    <slot>setNum(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1067</x>
-     <y>835</y>
+     <x>1309</x>
+     <y>921</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1215</x>
-     <y>839</y>
+     <x>1339</x>
+     <y>921</y>
     </hint>
    </hints>
   </connection>
@@ -2090,12 +2224,12 @@
    <slot>setNum(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1061</x>
-     <y>896</y>
+     <x>1309</x>
+     <y>978</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1213</x>
-     <y>901</y>
+     <x>1339</x>
+     <y>978</y>
     </hint>
    </hints>
   </connection>
@@ -2106,12 +2240,92 @@
    <slot>setNum(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1058</x>
-     <y>917</y>
+     <x>1309</x>
+     <y>999</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1218</x>
-     <y>917</y>
+     <x>1339</x>
+     <y>999</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>checkBox_Luminance</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>groupBox_Color</receiver>
+   <slot>setChecked(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>208</x>
+     <y>95</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>999</x>
+     <y>789</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>checkBox_SSAO</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>groupBox_SSAO</receiver>
+   <slot>setChecked(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>69</x>
+     <y>86</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1003</x>
+     <y>532</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>groupBox_SSAO</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>checkBox_SSAO</receiver>
+   <slot>setChecked(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>999</x>
+     <y>585</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>41</x>
+     <y>91</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>groupBox_Color</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>checkBox_Luminance</receiver>
+   <slot>setChecked(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>998</x>
+     <y>836</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>167</x>
+     <y>93</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>action_Show_Effects</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>dockWidget_Effects</receiver>
+   <slot>setVisible(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>693</x>
+     <y>83</y>
     </hint>
    </hints>
   </connection>

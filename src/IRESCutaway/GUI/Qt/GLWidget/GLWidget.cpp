@@ -59,6 +59,7 @@ void GLWidget::initializeGL ( )
 
 	isIRESOpen_ = 0;
 	time_step   = 0;
+	property_type_ = 0;
 
 	wall_ = 0;
 	line_ = 0;
@@ -98,16 +99,6 @@ void GLWidget::initializeGL ( )
 
 	renderingPass = 0.0f;
 	accumulateRenderingTimes = 0.0f;
-
-	delta_time.start();
-
-	updateTimer_.setSingleShot ( false );
-	connect ( &updateTimer_ , SIGNAL ( timeout ( ) ) , this , SLOT ( gameLooping ( ) ) );
-	updateTimer_.start(20);
-
-	fpsTimer_.setSingleShot ( false );
-	connect ( &fpsTimer_ , SIGNAL ( timeout ( ) ) , this , SLOT ( fpsCounter( ) ) );
-	fpsTimer_.start ( 1000 );
 
 	freezeView_ = 0;
 
@@ -206,31 +197,10 @@ void GLWidget::initializeGL ( )
         quadSSAO = new Mesh();
         quadSSAO->createQuad();
 
+        isply_          = false;
 
-       // Animation Controls
-                //Timer Animation
-
-                fps             = 0;
-                videoSequence   = 0;
-                frames.resize ( 4000 );
-                // Quaternion Slerp
-
-                sourcePosition_ = Eigen::Quaternionf ( 0.0 , 1.0 , 0.0 , 0.0 );
-                sourcePosition_.normalize ( );
-
-                targetPosition_ = Eigen::Quaternionf ( 0.0 , 0.0 , 0.0 , 1.0 );
-                targetPosition_.normalized ( );
-
-
-                number_of_takes_ = 0;
-                take_index_ = 0;
-
-                takes_.resize(10,Animation());
-
-                time_steps_     = 0.0;
-
-                play_           = false;
-                isply_          = false;
+        /// From libQGLViewer
+        AnimationInitializer( );
 
 }
 
@@ -277,8 +247,6 @@ void GLWidget::dropEvent(QDropEvent *event)
 		QImage image 			= QImage(text);
 		QImage imageOpenGL = QGLWidget::convertToGLFormat( image );
 
-
-
 		// TODO this is just the beginning
 		// Create a texture as attachment
 		if ( xtoon_texture_ != 0 )
@@ -319,13 +287,23 @@ bool GLWidget::isIRESOpen ( ) const
 	return isIRESOpen_;
 }
 
-void GLWidget::changePropertyRange ( const double& minRange, const double& maxRange, int property_index )
+void GLWidget::changePropertyRangeStatic ( const double& minRange, const double& maxRange, int property_index )
 {
 
-	min_range = minRange;
-	max_range = maxRange;
+	min_range_static_ = minRange;
+	max_range_static_ = maxRange;
 
 	reservoir_model_.current_static = property_index;
+
+    update();
+
+}
+
+void GLWidget::changePropertyRangeDynamic ( const double& minRange, const double& maxRange)
+{
+
+        min_range_dynamic_ = minRange;
+        max_range_dynamic_ = maxRange;
 
     update();
 
@@ -528,12 +506,11 @@ void GLWidget::paintEvent   ( QPaintEvent * )
 
         int left = rect.left ( ) + rect.width ( ) + 10;
 
-
         float minmax = reservoir_model_.static_max[reservoir_model_.current_static] - reservoir_model_.static_min[reservoir_model_.current_static];
 
-        float minStatic = 1.0-((min_range-reservoir_model_.static_min[reservoir_model_.current_static])/minmax);
+        float minStatic = 1.0-((min_range_static_-reservoir_model_.static_min[reservoir_model_.current_static])/minmax);
 
-        float maxStatic = 1.0-((max_range-reservoir_model_.static_min[reservoir_model_.current_static])/minmax);
+        float maxStatic = 1.0-((max_range_static_-reservoir_model_.static_min[reservoir_model_.current_static])/minmax);
 
         // Min
         p.drawText ( rect.left ( ) -30 , rect.top ( ) + rect.height ( )*minStatic +10 , "Min" );
@@ -632,21 +609,6 @@ void GLWidget::paintGL ( )
 }
 
 
-void GLWidget::flush()
-{
-
-        for (std::size_t index = 0; index < videoSequence; index++)
-        {
-                frames[index].save("frame"+QString::number(index)+".tif","TIFF",100);
-        }
-
-        QProcess _process;
-        _process.start(QString("echo"), QStringList("-la"));
-        _process.waitForFinished();
-
-
-}
-
 /// For DropArea's implementation, we clear invoke clear() and then accept the proposed event.
 /// The clear() function sets the text in DropArea to "<drop content>" and sets the backgroundRole to
 /// QPalette::Dark. Lastly, it emits the changed() signal.
@@ -668,10 +630,10 @@ void GLWidget::drawIRESCutawayStaticSurface ( ) const
 
 	IRESCutawaySurfaceStatic_->enable( );
 
-	IRESCutawaySurfaceStatic_->setUniform("min_range", min_range  );
-	IRESCutawaySurfaceStatic_->setUniform("max_range", max_range  );
-	IRESCutawaySurfaceStatic_->setUniform("min_property", reservoir_model_.static_min[reservoir_model_.current_static]  );
-	IRESCutawaySurfaceStatic_->setUniform("max_property", reservoir_model_.static_max[reservoir_model_.current_static]  );
+	IRESCutawaySurfaceStatic_->setUniform("min_range_static", min_range_static_  );
+	IRESCutawaySurfaceStatic_->setUniform("max_range_static", max_range_static_  );
+	IRESCutawaySurfaceStatic_->setUniform("min_property_static", reservoir_model_.static_min[reservoir_model_.current_static]  );
+	IRESCutawaySurfaceStatic_->setUniform("max_property_static", reservoir_model_.static_max[reservoir_model_.current_static]  );
 	IRESCutawaySurfaceStatic_->setUniform("property_index", reservoir_model_.current_static );
 
 	IRESCutawaySurfaceStatic_->setUniform("paper", 1.0  );
@@ -720,15 +682,15 @@ void GLWidget::drawPrimaryStatic  ( ) const // Draw only primary   Cells
         SSAOIRESPrimaryStatic_->setUniform ( "saturation_" , this->saturationPrimaries_);
         SSAOIRESPrimaryStatic_->setUniform ( "luminance_"  , this->luminancePrimaries_);
 
-        SSAOIRESPrimaryStatic_->setUniform ( "min_range" , min_range );
-        SSAOIRESPrimaryStatic_->setUniform ( "max_range" , max_range );
+        SSAOIRESPrimaryStatic_->setUniform ( "min_range_static" , min_range_static_ );
+        SSAOIRESPrimaryStatic_->setUniform ( "max_range_static" , max_range_static_ );
 
         SSAOIRESPrimaryStatic_->setUniform ( "paper" , 1.0 );
         SSAOIRESPrimaryStatic_->setUniform ( "box_min" , ply_primary_.box.box_min ( ).x , ply_primary_.box.box_min ( ).y , ply_primary_.box.box_min ( ).z );
         SSAOIRESPrimaryStatic_->setUniform ( "box_max" , ply_primary_.box.box_max ( ).x , ply_primary_.box.box_max ( ).y , ply_primary_.box.box_max ( ).z );
 
-        SSAOIRESPrimaryStatic_->setUniform ( "min_property" , reservoir_model_.static_min[reservoir_model_.current_static] );
-        SSAOIRESPrimaryStatic_->setUniform ( "max_property" , reservoir_model_.static_max[reservoir_model_.current_static] );
+        SSAOIRESPrimaryStatic_->setUniform ( "min_property_static" , reservoir_model_.static_min[reservoir_model_.current_static] );
+        SSAOIRESPrimaryStatic_->setUniform ( "max_property_static" , reservoir_model_.static_max[reservoir_model_.current_static] );
         SSAOIRESPrimaryStatic_->setUniform ( "property_index" , reservoir_model_.current_static );
 
         SSAOIRESPrimaryStatic_->setUniform ( "ModelMatrix" , trackball_->getModelMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
@@ -888,44 +850,44 @@ void GLWidget::IRESCutawayStatic (  )
                 fboSSAO->bindRenderBuffer(blurTextureID);
 
                 /// SEGUNDO PASSO
-                ssaoShaderStatic_->enable();
+                ssaoShader_->enable();
 
                 glActiveTexture(GL_TEXTURE0 + 7);
                 glBindTexture(GL_TEXTURE_2D, noiseTexture);
 
-                ssaoShaderStatic_->setUniform("lightViewMatrix", trackball_->getProjectionMatrix().data(),4,GL_FALSE,1);
+                ssaoShader_->setUniform("lightViewMatrix", trackball_->getProjectionMatrix().data(),4,GL_FALSE,1);
 
-                ssaoShaderStatic_->setUniform("noiseScale", noise_scale.x(),noise_scale.y());
-                ssaoShader->setUniform("kernel", kernel, 2, numberOfSamples);
+                ssaoShader_->setUniform("noiseScale", noise_scale.x(),noise_scale.y());
+                ssaoShader_->setUniform("kernel", kernel, 2, numberOfSamples);
 
-                ssaoShaderStatic_->setUniform("coordsTexture", fboSSAO->bindAttachment(depthTextureID));
-                ssaoShaderStatic_->setUniform("normalTexture", fboSSAO->bindAttachment(normalTextureID));
-                ssaoShaderStatic_->setUniform("colorTexture", fboSSAO->bindAttachment(colorTextureID));
-                ssaoShaderStatic_->setUniform("displayAmbientPass", displayAmbientPass);
+                ssaoShader_->setUniform("coordsTexture", fboSSAO->bindAttachment(depthTextureID));
+                ssaoShader_->setUniform("normalTexture", fboSSAO->bindAttachment(normalTextureID));
+                ssaoShader_->setUniform("colorTexture", fboSSAO->bindAttachment(colorTextureID));
+                ssaoShader_->setUniform("displayAmbientPass", displayAmbientPass);
 
-                ssaoShaderStatic_->setUniform("radius", radius);
-                ssaoShaderStatic_->setUniform("intensity", (float)intensity);
-                ssaoShaderStatic_->setUniform("max_dist", max_dist);
-                ssaoShaderStatic_->setUniform("noiseTexture", 7);
+                ssaoShader_->setUniform("radius", radius);
+                ssaoShader_->setUniform("intensity", (float)intensity);
+                ssaoShader_->setUniform("max_dist", max_dist);
+                ssaoShader_->setUniform("noiseTexture", 7);
 
                 //Second pass mesh rendering:
                 quadSSAO->render();
 
-                ssaoShaderStatic_->disable();
+                ssaoShader_->disable();
                 glBindTexture(GL_TEXTURE_2D, 0);
                 fboSSAO->unbindAll ( );
                 fboSSAO->clearDepth ( );
 
                 glDrawBuffer(GL_BACK);
 
-                blurShaderStatic_->enable();
+                blurShader_->enable();
 
-                blurShaderStatic_->setUniform("blurTexture", fboSSAO->bindAttachment(blurTextureID));
-                blurShaderStatic_->setUniform("blurRange", blurRange);
+                blurShader_->setUniform("blurTexture", fboSSAO->bindAttachment(blurTextureID));
+                blurShader_->setUniform("blurRange", blurRange);
 
                 quadSSAO->render();
 
-                blurShaderStatic_->disable();
+                blurShader_->disable();
                 fboSSAO->unbindAll( );
                 fboSSAO->clearDepth( );
 
@@ -964,32 +926,74 @@ void GLWidget::drawIRESCutawayDynamicSurface ( )
 
         IRESCutawaySurfaceDynamic_->enable( );
 
-        IRESCutawaySurfaceDynamic_->setUniform( "v0" , ply_primary_.box.box_min().x, ply_primary_.box.box_max().y,ply_primary_.box.box_max().z);
-        IRESCutawaySurfaceDynamic_->setUniform( "v1" , ply_primary_.box.box_min().x, ply_primary_.box.box_max().y,ply_primary_.box.box_min().z);
-        IRESCutawaySurfaceDynamic_->setUniform( "v2" , ply_primary_.box.box_max().x, ply_primary_.box.box_max().y,ply_primary_.box.box_min().z);
-        IRESCutawaySurfaceDynamic_->setUniform( "v3" , ply_primary_.box.box_max().x, ply_primary_.box.box_max().y,ply_primary_.box.box_max().z);
+//        IRESCutawaySurfaceDynamic_->setUniform( "v0" , ply_primary_.box.box_min().x, ply_primary_.box.box_max().y,ply_primary_.box.box_max().z);
+//        IRESCutawaySurfaceDynamic_->setUniform( "v1" , ply_primary_.box.box_min().x, ply_primary_.box.box_max().y,ply_primary_.box.box_min().z);
+//        IRESCutawaySurfaceDynamic_->setUniform( "v2" , ply_primary_.box.box_max().x, ply_primary_.box.box_max().y,ply_primary_.box.box_min().z);
+//        IRESCutawaySurfaceDynamic_->setUniform( "v3" , ply_primary_.box.box_max().x, ply_primary_.box.box_max().y,ply_primary_.box.box_max().z);
+//
+//        IRESCutawaySurfaceDynamic_->setUniform( "v4" , ply_primary_.box.box_max().x, ply_primary_.box.box_min().y,ply_primary_.box.box_max().z);
+//        IRESCutawaySurfaceDynamic_->setUniform( "v5" , ply_primary_.box.box_max().x, ply_primary_.box.box_min().y,ply_primary_.box.box_min().z);
+//        IRESCutawaySurfaceDynamic_->setUniform( "v6" , ply_primary_.box.box_min().x, ply_primary_.box.box_min().y,ply_primary_.box.box_min().z);
+//        IRESCutawaySurfaceDynamic_->setUniform( "v7" , ply_primary_.box.box_min().x, ply_primary_.box.box_min().y,ply_primary_.box.box_max().z);
 
-        IRESCutawaySurfaceDynamic_->setUniform( "v4" , ply_primary_.box.box_max().x, ply_primary_.box.box_min().y,ply_primary_.box.box_max().z);
-        IRESCutawaySurfaceDynamic_->setUniform( "v5" , ply_primary_.box.box_max().x, ply_primary_.box.box_min().y,ply_primary_.box.box_min().z);
-        IRESCutawaySurfaceDynamic_->setUniform( "v6" , ply_primary_.box.box_min().x, ply_primary_.box.box_min().y,ply_primary_.box.box_min().z);
-        IRESCutawaySurfaceDynamic_->setUniform( "v7" , ply_primary_.box.box_min().x, ply_primary_.box.box_min().y,ply_primary_.box.box_max().z);
 
+//        IRESCutawaySurfaceDynamic_->setUniform("move_x", move_x);
+//        IRESCutawaySurfaceDynamic_->setUniform("move_y", move_y);
+//        IRESCutawaySurfaceDynamic_->setUniform("move_z", move_z);
+//        IRESCutawaySurfaceDynamic_->setUniform( "x" , volume_width );
+//        IRESCutawaySurfaceDynamic_->setUniform( "y" , volume_height );
+//        IRESCutawaySurfaceDynamic_->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
+//        IRESCutawaySurfaceDynamic_->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
+//        IRESCutawaySurfaceDynamic_->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
+//
+//        IRESCutawaySurfaceDynamic_->setUniform ("freeze", freezeView_ );
+//        IRESCutawaySurfaceDynamic_->setUniform ("FreezeViewMatrix",freeze_viewmatrix_.data ( ),4, GL_FALSE, 1 );
 
-        IRESCutawaySurfaceDynamic_->setUniform("move_x", move_x);
-        IRESCutawaySurfaceDynamic_->setUniform("move_y", move_y);
-        IRESCutawaySurfaceDynamic_->setUniform("move_z", move_z);
+        IRESCutawaySurfaceDynamic_->setUniform("num_lights", (GLint) lights.size ( )  );
+        IRESCutawaySurfaceDynamic_->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
+        IRESCutawaySurfaceDynamic_->setUniform("WIN_SCALE", (float) width ( ) , (float) height ( ) );
+
+        /// Shader Intensity
+        IRESCutawaySurfaceDynamic_->setUniform ( "saturation_" , this->saturationPrimaries_);
+        IRESCutawaySurfaceDynamic_->setUniform ( "luminance_"  , this->luminancePrimaries_);
+
+        IRESCutawaySurfaceDynamic_->setUniform("paper", 1.0  );
+        IRESCutawaySurfaceDynamic_->setUniform("property_type", property_type_  );
+        IRESCutawaySurfaceDynamic_->setUniform("box_min", ply_primary_.box.box_min().x,ply_primary_.box.box_min().y,ply_primary_.box.box_min().z );
+        IRESCutawaySurfaceDynamic_->setUniform("box_max", ply_primary_.box.box_max().x,ply_primary_.box.box_max().y,ply_primary_.box.box_max().z );
+
+        IRESCutawaySurfaceDynamic_->setUniform("move_x", move_x  );
+        IRESCutawaySurfaceDynamic_->setUniform("move_y", move_y  );
+        IRESCutawaySurfaceDynamic_->setUniform("move_z", move_z  );
+
         IRESCutawaySurfaceDynamic_->setUniform( "x" , volume_width );
         IRESCutawaySurfaceDynamic_->setUniform( "y" , volume_height );
+
+        IRESCutawaySurfaceDynamic_->setUniform("min_range_static", min_range_static_  );
+        IRESCutawaySurfaceDynamic_->setUniform("max_range_static", max_range_static_  );
+
+        IRESCutawaySurfaceDynamic_->setUniform("min_range_dynamic", min_range_dynamic_  );
+        IRESCutawaySurfaceDynamic_->setUniform("max_range_dynamic", max_range_dynamic_  );
+
+        IRESCutawaySurfaceDynamic_->setUniform ( "max_property_dynamic" , reservoir_model_.dynamic_properties[dynamic_property_index].max_[time_step] );
+        IRESCutawaySurfaceDynamic_->setUniform ( "min_property_dynamic" , reservoir_model_.dynamic_properties[dynamic_property_index].min_[time_step] );
+
+        IRESCutawaySurfaceDynamic_->setUniform("min_property_static", reservoir_model_.static_min[reservoir_model_.current_static]  );
+        SSAOIRESPrimaryDynamic_->setUniform("max_property_static", reservoir_model_.static_max[reservoir_model_.current_static]  );
+        IRESCutawaySurfaceDynamic_->setUniform("property_index", reservoir_model_.current_static );
+
         IRESCutawaySurfaceDynamic_->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
         IRESCutawaySurfaceDynamic_->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
         IRESCutawaySurfaceDynamic_->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
-
         IRESCutawaySurfaceDynamic_->setUniform ("freeze", freezeView_ );
         IRESCutawaySurfaceDynamic_->setUniform ("FreezeViewMatrix",freeze_viewmatrix_.data ( ),4, GL_FALSE, 1 );
 
-        glBindVertexArray(vertexArray_Dummy);
-                glDrawArrays(GL_POINTS,0,1);
-        glBindVertexArray(0);
+
+//        glBindVertexArray(vertexArray_Dummy);
+//                glDrawArrays(GL_POINTS,0,1);
+//        glBindVertexArray(0);
+
+        reservoir_model_.drawCuboid ( );
 
         IRESCutawaySurfaceDynamic_->disable( );
 
@@ -1016,14 +1020,12 @@ void GLWidget::drawPrimaryDynamic ( ) const
         SSAOIRESPrimaryDynamic_->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
         SSAOIRESPrimaryDynamic_->setUniform("WIN_SCALE", (float) width ( ) , (float) height ( ) );
 
-        SSAOIRESPrimaryDynamic_->setUniform("min_range", min_range  );
-        SSAOIRESPrimaryDynamic_->setUniform("max_range", max_range  );
-
         /// Shader Intensity
         SSAOIRESPrimaryDynamic_->setUniform ( "saturation_" , this->saturationPrimaries_);
         SSAOIRESPrimaryDynamic_->setUniform ( "luminance_"  , this->luminancePrimaries_);
 
         SSAOIRESPrimaryDynamic_->setUniform("paper", 1.0  );
+        SSAOIRESPrimaryDynamic_->setUniform("property_type", property_type_  );
         SSAOIRESPrimaryDynamic_->setUniform("box_min", ply_primary_.box.box_min().x,ply_primary_.box.box_min().y,ply_primary_.box.box_min().z );
         SSAOIRESPrimaryDynamic_->setUniform("box_max", ply_primary_.box.box_max().x,ply_primary_.box.box_max().y,ply_primary_.box.box_max().z );
 
@@ -1031,12 +1033,18 @@ void GLWidget::drawPrimaryDynamic ( ) const
         SSAOIRESPrimaryDynamic_->setUniform("move_y", move_y  );
         SSAOIRESPrimaryDynamic_->setUniform("move_z", move_z  );
 
-        SSAOIRESPrimaryDynamic_->setUniform ( "max_property" , reservoir_model_.dynamic_properties[dynamic_property_index].max_[time_step] );
-        SSAOIRESPrimaryDynamic_->setUniform ( "min_property" , reservoir_model_.dynamic_properties[dynamic_property_index].min_[time_step] );
-//
-//        IRESPrimaryDynamic_->setUniform("min_property", reservoir_model_.static_min[reservoir_model_.current_static]  );
-//        IRESPrimaryDynamic_->setUniform("max_property", reservoir_model_.static_max[reservoir_model_.current_static]  );
-//        IRESPrimaryDynamic_->setUniform("property_index", reservoir_model_.current_static );
+        SSAOIRESPrimaryDynamic_->setUniform("min_range_static", min_range_static_  );
+        SSAOIRESPrimaryDynamic_->setUniform("max_range_static", max_range_static_  );
+
+        SSAOIRESPrimaryDynamic_->setUniform("min_range_dynamic", min_range_dynamic_  );
+        SSAOIRESPrimaryDynamic_->setUniform("max_range_dynamic", max_range_dynamic_  );
+
+        SSAOIRESPrimaryDynamic_->setUniform ( "max_property_dynamic" , reservoir_model_.dynamic_properties[dynamic_property_index].max_[time_step] );
+        SSAOIRESPrimaryDynamic_->setUniform ( "min_property_dynamic" , reservoir_model_.dynamic_properties[dynamic_property_index].min_[time_step] );
+
+        SSAOIRESPrimaryDynamic_->setUniform("min_property_static", reservoir_model_.static_min[reservoir_model_.current_static]  );
+        SSAOIRESPrimaryDynamic_->setUniform("max_property_static", reservoir_model_.static_max[reservoir_model_.current_static]  );
+        SSAOIRESPrimaryDynamic_->setUniform("property_index", reservoir_model_.current_static );
 
         SSAOIRESPrimaryDynamic_->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
         SSAOIRESPrimaryDynamic_->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
@@ -1058,10 +1066,19 @@ void GLWidget::drawSecondaryDynamic ( ) const
         SSAOIRESCutawayDynamic_->setUniform( "normal" , depthFBO->bindAttachment(normalsSmoothID_) );
         SSAOIRESCutawayDynamic_->setUniform( "vertex" , depthFBO->bindAttachment(verticesSmoothID_) );
 
-        SSAOIRESCutawayDynamic_->setUniform ( "max_property" , reservoir_model_.dynamic_properties[dynamic_property_index].max_[time_step] );
-        SSAOIRESCutawayDynamic_->setUniform ( "min_property" , reservoir_model_.dynamic_properties[dynamic_property_index].min_[time_step] );
-        SSAOIRESCutawayDynamic_->setUniform ( "property_index" , reservoir_model_.current_static );
-        SSAOIRESCutawayDynamic_->setUniform ( "time_step" , time_step );
+        SSAOIRESCutawayDynamic_->setUniform("min_range_static", min_range_static_  );
+        SSAOIRESCutawayDynamic_->setUniform("max_range_static", max_range_static_  );
+
+        SSAOIRESCutawayDynamic_->setUniform("min_range_dynamic", min_range_dynamic_  );
+        SSAOIRESCutawayDynamic_->setUniform("max_range_dynamic", max_range_dynamic_  );
+
+        SSAOIRESCutawayDynamic_->setUniform ( "max_property_dynamic" , reservoir_model_.dynamic_properties[dynamic_property_index].max_[time_step] );
+        SSAOIRESCutawayDynamic_->setUniform ( "min_property_dynamic" , reservoir_model_.dynamic_properties[dynamic_property_index].min_[time_step] );
+
+        SSAOIRESCutawayDynamic_->setUniform("min_property_static", reservoir_model_.static_min[reservoir_model_.current_static]  );
+        SSAOIRESCutawayDynamic_->setUniform("max_property_static", reservoir_model_.static_max[reservoir_model_.current_static]  );
+        SSAOIRESCutawayDynamic_->setUniform("property_index", reservoir_model_.current_static );
+        SSAOIRESCutawayDynamic_->setUniform("property_type", property_type_  );
 
         /// Shader Intensity
         SSAOIRESCutawayDynamic_->setUniform ( "saturation_" , this->saturationSecondaries_);
@@ -1184,44 +1201,44 @@ void GLWidget::IRESCutawayDynamic ( )
                  fboSSAO->bindRenderBuffer(blurTextureID);
 
                  /// SEGUNDO PASSO
-                 ssaoShaderStatic_->enable();
+                 ssaoShader_->enable();
 
                  glActiveTexture(GL_TEXTURE0 + 7);
                  glBindTexture(GL_TEXTURE_2D, noiseTexture);
 
-                 ssaoShaderStatic_->setUniform("lightViewMatrix", trackball_->getProjectionMatrix().data(),4,GL_FALSE,1);
+                 ssaoShader_->setUniform("lightViewMatrix", trackball_->getProjectionMatrix().data(),4,GL_FALSE,1);
 
-                 ssaoShaderStatic_->setUniform("noiseScale", noise_scale.x(),noise_scale.y());
-                 ssaoShader->setUniform("kernel", kernel, 2, numberOfSamples);
+                 ssaoShader_->setUniform("noiseScale", noise_scale.x(),noise_scale.y());
+                 ssaoShader_->setUniform("kernel", kernel, 2, numberOfSamples);
 
-                 ssaoShaderStatic_->setUniform("coordsTexture", fboSSAO->bindAttachment(depthTextureID));
-                 ssaoShaderStatic_->setUniform("normalTexture", fboSSAO->bindAttachment(normalTextureID));
-                 ssaoShaderStatic_->setUniform("colorTexture", fboSSAO->bindAttachment(colorTextureID));
-                 ssaoShaderStatic_->setUniform("displayAmbientPass", displayAmbientPass);
+                 ssaoShader_->setUniform("coordsTexture", fboSSAO->bindAttachment(depthTextureID));
+                 ssaoShader_->setUniform("normalTexture", fboSSAO->bindAttachment(normalTextureID));
+                 ssaoShader_->setUniform("colorTexture", fboSSAO->bindAttachment(colorTextureID));
+                 ssaoShader_->setUniform("displayAmbientPass", displayAmbientPass);
 
-                 ssaoShaderStatic_->setUniform("radius", radius);
-                 ssaoShaderStatic_->setUniform("intensity", (float)intensity);
-                 ssaoShaderStatic_->setUniform("max_dist", max_dist);
-                 ssaoShaderStatic_->setUniform("noiseTexture", 7);
+                 ssaoShader_->setUniform("radius", radius);
+                 ssaoShader_->setUniform("intensity", (float)intensity);
+                 ssaoShader_->setUniform("max_dist", max_dist);
+                 ssaoShader_->setUniform("noiseTexture", 7);
 
                  //Second pass mesh rendering:
                  quadSSAO->render();
 
-                 ssaoShaderStatic_->disable();
+                 ssaoShader_->disable();
                  glBindTexture(GL_TEXTURE_2D, 0);
                  fboSSAO->unbindAll ( );
                  fboSSAO->clearDepth ( );
 
                  glDrawBuffer(GL_BACK);
 
-                 blurShaderStatic_->enable();
+                 blurShader_->enable();
 
-                 blurShaderStatic_->setUniform("blurTexture", fboSSAO->bindAttachment(blurTextureID));
-                 blurShaderStatic_->setUniform("blurRange", blurRange);
+                 blurShader_->setUniform("blurTexture", fboSSAO->bindAttachment(blurTextureID));
+                 blurShader_->setUniform("blurRange", blurRange);
 
                  quadSSAO->render();
 
-                 blurShaderStatic_->disable();
+                 blurShader_->disable();
                  fboSSAO->unbindAll( );
                  fboSSAO->clearDepth( );
 
@@ -1251,12 +1268,34 @@ void GLWidget::drawIRESModel ( )
 
         RawModel_->enable( );
 
-        RawModel_->setUniform("min_property", reservoir_model_.static_min[reservoir_model_.current_static]  );
-        RawModel_->setUniform("max_property", reservoir_model_.static_max[reservoir_model_.current_static]  );
+        /// Shader Intensity
+        RawModel_->setUniform ( "saturation_" , this->saturationPrimaries_);
+        RawModel_->setUniform ( "luminance_"  , this->luminancePrimaries_);
+
+        RawModel_->setUniform("paper", 1.0  );
+        RawModel_->setUniform("property_type", property_type_  );
+        RawModel_->setUniform("box_min", ply_primary_.box.box_min().x,ply_primary_.box.box_min().y,ply_primary_.box.box_min().z );
+        RawModel_->setUniform("box_max", ply_primary_.box.box_max().x,ply_primary_.box.box_max().y,ply_primary_.box.box_max().z );
+
+        RawModel_->setUniform("move_x", move_x  );
+        RawModel_->setUniform("move_y", move_y  );
+        RawModel_->setUniform("move_z", move_z  );
+
+        RawModel_->setUniform("min_range_static", min_range_static_  );
+        RawModel_->setUniform("max_range_static", max_range_static_  );
+
+        RawModel_->setUniform("min_range_dynamic", min_range_dynamic_  );
+        RawModel_->setUniform("max_range_dynamic", max_range_dynamic_  );
+
+        RawModel_->setUniform ("max_property_dynamic" , reservoir_model_.dynamic_properties[dynamic_property_index].max_[time_step] );
+        RawModel_->setUniform ("min_property_dynamic" , reservoir_model_.dynamic_properties[dynamic_property_index].min_[time_step] );
+
+        RawModel_->setUniform("min_property_static", reservoir_model_.static_min[reservoir_model_.current_static]  );
+        RawModel_->setUniform("max_property_static", reservoir_model_.static_max[reservoir_model_.current_static]  );
         RawModel_->setUniform("property_index", reservoir_model_.current_static );
-        RawModel_->setUniform("faults", reservoir_model_.showFault );
+
         RawModel_->setUniform("justWireFrame", justWireFrame );
-        RawModel_->setUniform("displacement", displacement[0],displacement[1],displacement[2] );
+        RawModel_->setUniform("faults", reservoir_model_.showFault );
 
         RawModel_->setUniform("num_lights", (GLint) lights.size ( )  );
         RawModel_->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
@@ -1503,8 +1542,11 @@ void GLWidget::PaperPrimary( ) const
         BurnsPrimary_->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
         BurnsPrimary_->setUniform("WIN_SCALE", (float) width ( ) , (float) height ( ) );
 
-        BurnsPrimary_->setUniform("min_range", min_range  );
-        BurnsPrimary_->setUniform("max_range", max_range  );
+        BurnsPrimary_->setUniform("min_range_static", min_range_static_  );
+        BurnsPrimary_->setUniform("max_range_static", max_range_static_  );
+
+        BurnsPrimary_->setUniform("min_range_dynamic", min_range_dynamic_  );
+        BurnsPrimary_->setUniform("max_range_dynamic", max_range_dynamic_  );
 
         BurnsPrimary_->setUniform("paper", 1.0  );
         BurnsPrimary_->setUniform("box_min", ply_primary_.box.box_min().x,ply_primary_.box.box_min().y,ply_primary_.box.box_min().z );
@@ -1628,114 +1670,6 @@ void GLWidget::PaperPly ( ) const
 }
 
 
-float GLWidget::clamp(float x, float a, float b)
-
-{
-
-    return x < a ? a : (x > b ? b : x);
-
-}
-
-float GLWidget::smoothstep(float x)
-{
-
-        if (x > 1)
-            x = 1.0;
-       else if (x < 0)
-            x = 0.0;
-        // Evaluate polynomial
-      return (x*x*x) * (x * (x * 6 - 15) + 10);
-
-}
-
-void GLWidget::gameLooping ( )
-{
-
-        if ( zoom_start_ )
-        {
-                if ( zoom_increment_ > 0)
-                        trackball_->increaseZoom ( 1.01 );
-                else
-                        trackball_->decreaseZoom( 1.01 );
-                update();
-        }
-
-        //
-        if ( play_ )
-        {
-
-                if ( time_steps_ <= 1.0 )
-                {
-//                        std::cout << "fps :" << time_steps_  << std::endl;
-                        trackball_->setQuaternion(this->squad(sourcePosition_,sourcePositionTangent_,targetPositionTangent_,targetPosition_,time_steps_));
-                        //trackball_->setQuaternion(this->slerp(sourcePosition_,targetPosition_,time_steps_,false));
-
-                        //std::cout << " mTagent " << takes_[take_index_].keyframes_[takes_[take_index_].nextKeyframe_].coeffs() << std::endl;
-
-                        //time_steps_ += time_interval_;
-
-                        time_steps_ += time_interval_;
-
-                        update();
-
-                }
-                else if ( takes_[take_index_].nextKeyframe_ < takes_[take_index_].number_of_keyframes_-1 )
-                {
-//                        std::cout << " nextKeyFrame " << nextKeyframe_ << std::endl;
-//
-//                        std::cout << " mTagent " << takes_[take_index_].tangents_[nextKeyframe_].coeffs() << std::endl;
-//                        std::cout << " Rot " << keyframes_[nextKeyframe_].coeffs() << std::endl;
-
-
-                        takes_[take_index_].nextKeyframe_++;
-
-                        sourcePosition_ = targetPosition_;
-                        targetPosition_ = takes_[take_index_].keyframes_[takes_[take_index_].nextKeyframe_];
-
-                        sourcePositionTangent_ = targetPositionTangent_;
-                        targetPositionTangent_ = takes_[take_index_].tangents_[takes_[take_index_].nextKeyframe_];
-
-                        float angular = sourcePosition_.angularDistance(targetPosition_);
-
-                        std::cout << "Angular Distance : " << angular << std::endl;
-
-                        time_interval_ = 0.01;
-                                                                                                                                                        ;
-
-                        time_steps_ = 0.0f*time_interval_;
-
-                        std::cout << " Angular Distance " << angular << std::endl;
-
-//                        sourcePosition_.normalize();
-//                        targetPosition_.normalize();
-//
-//                        sourcePositionTangent_.normalize();
-//                        targetPositionTangent_.normalize();
-
-                }
-                else
-                {
-
-                        play_ = false;
-                        takes_[take_index_].nextKeyframe_ = 0;
-//                        std::cout << " Angular Distance " << angular << std::endl;
-                }
-
-        }
-
-
-     fps++;
-
-}
-
-void GLWidget::fpsCounter ( )
-{
-        //std::cout << "fps :" << fps  << std::endl;
-	fps = 0;
-
-	delta_time.restart();
-}
-
 void GLWidget::reloadShaders ( )
 {
         // Effects --
@@ -1745,7 +1679,6 @@ void GLWidget::reloadShaders ( )
         xtoon_texture_viewer->reloadShaders ( );
         BackGround_->reloadShaders ( );
         // Paper Demo
-        RawShell_->reloadShaders ( );
         RawModel_->reloadShaders ( );
 
         BurnsPrimary_->reloadShaders ( );
@@ -1771,44 +1704,49 @@ void GLWidget::reloadShaders ( )
         BurnsPly_->reloadShaders ( );
 
         // SSAO
-        ssaoShader->reloadShaders ( );
-        blurShader->reloadShaders ( );
+        ssaoShader_->reloadShaders ( );
+        blurShader_->reloadShaders ( );
         deferredShader->reloadShaders ( );
 
-        blurShaderStatic_->reloadShaders ( );
-        ssaoShaderStatic_->reloadShaders();
+        blurShader_->reloadShaders ( );
+        ssaoShader_->reloadShaders();
 
 }
 
 void GLWidget::loadShaders ( )
 {
+        //! Binary absolute location
 	QDir shadersDir = QDir ( qApp->applicationDirPath ( ) );
+
+	//! Debug Verion: to load the update shaders
+        qDebug () << "Directory " << shadersDir.path ();
+        shadersDir.cdUp ();
+        shadersDir.cdUp ();
+        shadersDir.cdUp ();
+        qDebug () << "Directory " << shadersDir.path ();
 
 	#if defined(_WIN32) || defined(_WIN64) // Windows Directory Style
 	/* Do windows stuff */
-	QString shaderDirectory ("D:\\Workspace\\IRESCutaway\\src\\IRESCutaway\\GUI\\Qt\\RCC\\Shaders\\");
+	        QString shaderDirectory (shadersDir.path ()+"\\src\\IRESCutaway\\GUI\\Qt\\RCC\\Shaders\\");
 	#elif defined(__linux__)               // Linux Directory Style
 	/* Do linux stuff */
-        //QString shaderDirectory ("/home/ricardomarroquim/devel/irescutaway/src/IRESCutaway/GUI/Qt/RCC/Shaders/");
-	QString shaderDirectory ("/media/d/Workspace/IRESCutaway/src/IRESCutaway/GUI/Qt/RCC/Shaders/");
+	        QString shaderDirectory (shadersDir.path ()+"/src/IRESCutaway/GUI/Qt/RCC/Shaders/");
 	#else
 	/* Error, both can't be defined or undefined same time */
+	        std::cout <<  "Operate System not supported !"
+                halt();
 	#endif
 
-	qDebug () << "Directory " << shadersDir.path ();
-	shadersDir.cdUp ();
-	qDebug () << "Directory " << shadersDir.path ();
-
-
-
-        // Effects --
-                BorderLines_ = new Shader ("Border Lines", (shaderDirectory + "BorderLines.vert").toStdString(),
-                                            (shaderDirectory + "BorderLines.frag").toStdString(),
-                                            (shaderDirectory + "BorderLines.geom").toStdString(),1);
+        //! Effects --
+                BorderLines_ = new Shader ("Border Lines",
+                                          (shaderDirectory + "BorderLines.vert").toStdString(),
+                                          (shaderDirectory + "BorderLines.frag").toStdString(),
+                                          (shaderDirectory + "BorderLines.geom").toStdString(),1);
                 BorderLines_->initialize();
 
-                xtoon_texture_viewer = new Shader  ("xtoon_texture", (shaderDirectory + "xtoon_texture.vert").toStdString(),
-                                                              (shaderDirectory + "xtoon_texture.frag").toStdString(),"",1);
+                xtoon_texture_viewer = new Shader ("xtoon_texture",
+                                                  (shaderDirectory + "xtoon_texture.vert").toStdString(),
+                                                  (shaderDirectory + "xtoon_texture.frag").toStdString(),"",1);
                 xtoon_texture_viewer->initialize( );
 
                 meanFilter->setShadersDir( shaderDirectory.toStdString() );
@@ -1817,15 +1755,7 @@ void GLWidget::loadShaders ( )
                 BackGround_ = new Shader  ("BackGround", (shaderDirectory + "BackGround.vert").toStdString(),
                                          (shaderDirectory + "BackGround.frag").toStdString(),"",1);
                 BackGround_->initialize( );
-        // Paper Demo
-
-
-                RawShell_ = new Shader ("Shell",
-                                         (shaderDirectory + "RawShell.vert").toStdString(),
-                                         (shaderDirectory + "RawShell.frag").toStdString(),
-                                          "",1);
-
-                RawShell_->initialize( );
+        //! Paper Demo
 
                 RawModel_ = new Shader ("Raw Model",
                                          (shaderDirectory + "RawModel.vert").toStdString(),
@@ -1861,7 +1791,7 @@ void GLWidget::loadShaders ( )
                                         (shaderDirectory + "Demo/DummyQuad.geom").toStdString(),1);
                 DummyQuad_->initialize( );
 
-       // ! DYNAMIC VIEWER F11 Static PropertieswayStatic"
+       //! DYNAMIC VIEWER F11 Static PropertieswayStatic"
                 IRESCutawaySurfaceStatic_ = new Shader ("IRESCutawaySurfaceStatic",
                                                       (shaderDirectory + "Static/IRESCutawaySurfaceStatic.vert").toStdString(),
                                                       (shaderDirectory + "Static/IRESCutawaySurfaceStatic.frag").toStdString(),
@@ -1884,41 +1814,28 @@ void GLWidget::loadShaders ( )
                                         "",1);
                 BurnsPly_->initialize( );
 
-                // SSAO
+        //! SSAO
 
                 /// The per pixel AO computation shader
 
-                ssaoShader = new Shader ("ssaoShader", (shaderDirectory + "SSAO/ssao.vert").toStdString(),
-                                                         (shaderDirectory + "SSAO/ssao.frag").toStdString(),
+                ssaoShader_ = new Shader ("ssaoShader",
+                                         (shaderDirectory + "SSAO/ssao.vert").toStdString(),
+                                         (shaderDirectory + "SSAO/ssao.frag").toStdString(),
                                             "",1);
-                ssaoShader->initialize();
+                ssaoShader_->initialize();
 
 
-                /// SSAO Saving color and occlusion
-                ssaoShaderStatic_ = new Shader ("ssaoShaderStatic_", (shaderDirectory + "Static/SSAO/ssao.vert").toStdString(),
-                                                                     (shaderDirectory + "Static/SSAO/ssao.frag").toStdString(),
-                                                                      "",1);
-                ssaoShaderStatic_->initialize();
-
-
-                blurShaderStatic_ = new Shader ("blurShaderStatic_", (shaderDirectory + "Static/SSAO/gaussianblurfilter.vert").toStdString(),
-                                                                     (shaderDirectory + "Static/SSAO/gaussianblurfilter.frag").toStdString(),
-                                                                      "",1);
-
-                blurShaderStatic_->initialize();
-                ///
                 deferredShader = new Shader ("deferredShader", (shaderDirectory + "SSAO/viewspacebuffer.vert").toStdString(),
                                                              (shaderDirectory + "SSAO/viewspacebuffer.frag").toStdString(),
                                                              "",1);
                 deferredShader->initialize();
 
-                ///
-                blurShader = new Shader ("blurShader", (shaderDirectory + "Static/SSAO/gaussianblurfilter.vert").toStdString(),
-                                                       (shaderDirectory + "Static/SSAO/gaussianblurfilter.frag").toStdString(),
+                blurShader_ = new Shader ("blurShader", (shaderDirectory + "SSAO/gaussianblurfilter.vert").toStdString(),
+                                                       (shaderDirectory + "SSAO/gaussianblurfilter.frag").toStdString(),
                                                              "",1);
-                blurShader->initialize();
+                blurShader_->initialize();
 
-                /// SSAO STATIC
+                //! SSAO STATIC
 
                 SSAOIRESPrimaryStatic_ = new Shader ("IRESPrimaryStatic",
                                                 (shaderDirectory + "Static/SSAO/SSAOIRESPrimaryStatic.vert").toStdString(),
@@ -1941,7 +1858,7 @@ void GLWidget::loadShaders ( )
 
                 SSAOIRESCutawayStaticShell_->initialize();
 
-                /// SSAO Primary
+                //! SSAO Dynamic
 
                 SSAOIRESPrimaryDynamic_ = new Shader ("IRESPrimaryDynamic",
                                                 (shaderDirectory + "Dynamic/SSAO/SSAOIRESPrimaryDynamic.vert").toStdString(),
@@ -2397,11 +2314,11 @@ void GLWidget::setCutawaySurfaceVisibility( bool visibility )
         update();
 }
 
-void GLWidget::freezeView( )
+void GLWidget::freezeView ( )
 {
-	freezeView_ = !freezeView_;
-    if (freezeView_) {
-        freeze_viewmatrix_ = trackball_->getViewMatrix().matrix();
-    }
-
+        freezeView_ = !freezeView_;
+        if ( freezeView_ )
+        {
+                freeze_viewmatrix_ = trackball_->getViewMatrix ( ).matrix ( );
+        }
 }

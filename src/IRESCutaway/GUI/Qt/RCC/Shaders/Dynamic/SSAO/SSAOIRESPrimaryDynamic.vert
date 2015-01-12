@@ -31,12 +31,19 @@ uniform mat4 ModelMatrix;
 uniform mat4 ViewMatrix;
 uniform mat4 ProjectionMatrix;
 
-uniform float min_property;
-uniform float max_property;
-uniform int property_index;
+uniform float min_property_dynamic;
+uniform float max_property_dynamic;
+uniform float min_property_static;
+uniform float max_property_static;
 
-uniform float min_range;
-uniform float max_range;
+uniform int property_index;
+uniform int property_type;
+
+uniform float min_range_static;
+uniform float max_range_static;
+
+uniform float min_range_dynamic;
+uniform float max_range_dynamic;
 
 
 uniform vec3 box_min;
@@ -48,10 +55,20 @@ uniform float move_z;
 
 uniform float paper;
 
-vec4 propertyColor (  )
+vec4 propertyColor ( )
 {
 
-        float normalized_color = ( dynamic_properties - min_property ) / ( max_property - min_property );
+        vec4 color              = vec4 ( 1.0f , 1.0f , 1.0f , 1.0f );
+        float normalized_color  = 0.0f;
+
+        if ( property_type == 0 )
+        {
+                normalized_color = ( dynamic_properties - min_property_dynamic ) / ( max_property_dynamic - min_property_dynamic );
+        }
+        else
+        {
+                normalized_color = ( static_properties[property_index] - min_property_static ) / ( max_property_static - min_property_static );
+        }
 
         float fourValue = 4 * normalized_color;
         float red   = min(fourValue - 1.5, -fourValue + 4.5);
@@ -62,7 +79,7 @@ vec4 propertyColor (  )
         green   = max(0.0f, min(green, 1.0f));
         blue    = max(0.0f, min(blue, 1.0f));
 
-        vec4 color = vec4 ( red , green , blue , 1.0f );
+        color = vec4 ( red , green , blue , 1.0f );
 
         return color;
 }
@@ -102,16 +119,24 @@ bool isInside ( )
 bool isPrimary (  )
 {
 
-        if (paper == 1.0 )
-        {
-               return isInside();
+//        if (paper == 0.0 )
+//        {
+//               return isInside();
+//
+//
+//        }
 
-        }else if ( static_properties[property_index] > min_range && static_properties[property_index] < max_range )
-        {
-                return true;
-        }
-        return false;
-
+        return ( ( dynamic_properties > min_range_dynamic) && ( dynamic_properties < max_range_dynamic ));
+//        if ( property_type == 0 )
+//        {
+//                return ( ( dynamic_properties > min_range_dynamic) && ( dynamic_properties < max_range_dynamic ));
+//
+//        }else
+//        {
+//                return ( ( static_properties[property_index] > min_range_static) && ( static_properties[property_index] < max_range_static ));
+//        }
+//
+//        return false;
 }
 
 void main(void)
