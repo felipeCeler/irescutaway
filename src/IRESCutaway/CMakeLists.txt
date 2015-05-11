@@ -6,8 +6,7 @@ set(QT_USE_QTGUI true)
 set(QT_WRAP_CPP true)
 set(QT_WRAP_UI true)
 
-# find needed packages
-##find_package(Qt4 REQUIRED)
+
 
 find_package(Qt5OpenGL REQUIRED)
 find_package(Qt5Widgets REQUIRED)
@@ -15,6 +14,7 @@ find_package(Qt5Widgets REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
 find_package(Eigen REQUIRED)
+
 
 #INCLUDE(${QT_USE_FILE})
 

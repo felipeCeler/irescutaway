@@ -90,6 +90,9 @@ void MainWindow::WidgetSignalSlotConnection( )
         connect(ui->action_Show_Primary_Cells,   SIGNAL(toggled(bool)), glWidget, SLOT(setPrimaryVisibility(bool)));
         connect(ui->action_Show_Secondary_Cells, SIGNAL(toggled(bool)), glWidget, SLOT(setSecondaryVisibility(bool)));
         connect(ui->action_Show_Cutaway_Surface, SIGNAL(toggled(bool)), glWidget, SLOT(setCutawaySurfaceVisibility(bool)));
+        connect(ui->action_Flush, SIGNAL(triggered( )), glWidget, SLOT(flush()));
+
+
 
         // Feature Visibility
 
@@ -107,6 +110,12 @@ void MainWindow::WidgetSignalSlotConnection( )
 
         connect(glWidget, SIGNAL(cutawayGenerationTime(const QString&)), ui->label_Generation_Slot, SLOT(setText(const QString&)));
         connect(glWidget, SIGNAL(renderingCutawayTime(const QString&)), ui->label_Rendering_Slot, SLOT(setText(const QString&)));
+
+        connect(glWidget, SIGNAL(renderingSSAOBlurTime(const QString&)), ui->label_SSAOBlur_Slot, SLOT(setText(const QString&)));
+        connect(glWidget, SIGNAL(renderingMeanFilterTime(const QString&)), ui->label_MeanFilter_Slot, SLOT(setText(const QString&)));
+
+        connect(glWidget, SIGNAL(primariesPorcentage(const QString&)), ui->label_Primaries_Slot, SLOT(setText(const QString&)));
+
 
         /// Shader
         connect(ui->horizontalSlider_PrimariesSaturation, SIGNAL(valueChanged(int)), glWidget, SLOT(saturationPrimaries( const int )));

@@ -77,7 +77,6 @@ namespace IRES
 
 			};
 
-
 			std::vector<CornerPointGrid::Dynamic_Property>  dynamic_properties;
 
 			std::vector<CornerPointGrid::Static_Property >  static_porperties;
@@ -92,7 +91,9 @@ namespace IRES
 
 			void 	createBuffers 	 	( );
 			void 	drawFaces  	 	( ) const;
+			void    drawIndexFaces          ( const std::size_t& size ) const;
 			void 	drawCuboid 	 	( ) const;
+			void    drawIndexCuboids        ( const std::size_t& size ) const;
 		        void    drawInternalFaces       ( ) const;
 
 			void 	loadStaticProperties 	( );
@@ -149,7 +150,9 @@ namespace IRES
 			GLuint vertexArrayCuboids;   	 	// 1 Vertex Array
 
 				std::vector<float> cuboids;
-				GLuint vertexBufferCuboidGeometry; // 1 Vertex Buffer with 8 vertex which defines a Cuboid
+				GLuint vertexBufferCuboidGeometry;  // 1 Vertex Buffer with 8 vertex which defines a Cuboid
+				std::vector<GLuint> indexCuboids;
+				GLuint indexBufferCuboid; // 1 Elements Buffer o reduce the overload draw
 
 				std::vector<float> cuboidStatic;   /// property x = Modified Block Volume
 				GLuint vertexBufferCuboidStatic;   ///          y = Porosity
@@ -169,6 +172,9 @@ namespace IRES
 				std::vector<float> faces;
 				GLuint 		   vertexBufferFaceGeometry;
 
+                                std::vector<GLuint> indexFaces;
+                                GLuint indexBufferFace; // 1 Element Array Buffer Buffer to reduce the overload draw
+
 
 				std::vector<float> faceType; 	   /// vec4 ( isShell, isFault, isBorder , 0.0 );
 				GLuint 		   vertexBufferFaceType;
@@ -181,6 +187,14 @@ namespace IRES
 
 			std::vector<ires::Face>   iresFaces_;
 			std::size_t 		  faceCount;
+
+
+			/// -- GL_ARRAY_ELEMENT Buffer
+
+			std::vector<GLuint> primaryIndices;
+			std::vector<GLuint> secundaryIndices;
+			std::vector<GLuint> shellIndices;
+
 
 	};
 

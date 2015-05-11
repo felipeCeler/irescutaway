@@ -1,7 +1,9 @@
+#include <GUI/Qt/MainWindow/MainWindow.hpp>
+
+
 #include <QApplication>
 #include <iostream>
 
-#include <GUI/Qt/MainWindow/MainWindow.hpp>
 
 int main ( int argc , char *argv[] )
 {

@@ -94,10 +94,20 @@ void GLWidget::initializeGL ( )
 
 	cluster = 0;
         cutawayPass_ = 0.0;
-        accumulateCutawayGenerationTime_ = 0.0;
-        accumulateRenderingCutawayTime_ = 0.0;
+        accumulateCutawayGenerationTime_ = 0.0f;
+        accumulateRenderingCutawayTime_ = 0.0f;
+        accumulateSSAOBlurTime_ = 0.0f;
+        accumulateMeanFilterTime_ = 0.0f;
 
-	renderingPass = 0.0f;
+        renderPass_ = 5000;
+
+        cutawayGenerationTimes_.resize(renderPass_);
+        renderingCutawayTimes_.resize(renderPass_);
+        SSAOBlurCutawayTimes_.resize(renderPass_);
+        MeanFilterTimes_.resize(renderPass_);
+
+	renderPass_ = 0;
+
 	accumulateRenderingTimes = 0.0f;
 
 	freezeView_ = 0;
@@ -292,6 +302,50 @@ void GLWidget::changePropertyRangeStatic ( const double& minRange, const double&
 
 	min_range_static_ = minRange;
 	max_range_static_ = maxRange;
+
+	std::size_t total = reservoir_model_.iresFaces_.size();
+
+	primaries_face = 0;
+	primaries_cuboid = 0;
+
+////	for ( std::size_t i = 0; i < reservoir_model_.cuboidStatic.size(); i++)
+////	{
+////	        if ( (minRange < reservoir_model_.cuboidStatic[i]) && ( reservoir_model_.cuboidStatic[i] <= maxRange) )
+////	        {
+////	                primaries++;
+////	        }
+////	}
+
+        for ( std::size_t i = 0; i < reservoir_model_.number_of_blocks_; i++)
+        {
+                if ( (minRange < reservoir_model_.static_porperties[reservoir_model_.static_indices[0]].values_[i]) && ( reservoir_model_.static_porperties[reservoir_model_.static_indices[0]].values_[i] <= maxRange) )
+                {
+                        reservoir_model_.indexCuboids[primaries_cuboid] = i;
+                        primaries_cuboid++;
+                }
+        }
+
+        for ( std::size_t i = 0; i < reservoir_model_.iresFaces_.size(); i++)
+        {
+                if ( (minRange < reservoir_model_.static_porperties[reservoir_model_.static_indices[0]].values_[reservoir_model_.iresFaces_[i].id]) && ( reservoir_model_.static_porperties[reservoir_model_.static_indices[0]].values_[reservoir_model_.iresFaces_[i].id] <= maxRange) )
+                {
+                        reservoir_model_.indexFaces[primaries_face] = i;
+                        primaries_face++;
+                }
+        }
+
+        glBindBuffer ( GL_ELEMENT_ARRAY_BUFFER, reservoir_model_.indexBufferFace);
+        glBufferData ( GL_ELEMENT_ARRAY_BUFFER, primaries_face * sizeof(reservoir_model_.indexFaces[0]), &reservoir_model_.indexFaces[0], GL_STATIC_DRAW );
+
+        glBindBuffer ( GL_ELEMENT_ARRAY_BUFFER, reservoir_model_.indexBufferCuboid);
+        glBufferData ( GL_ELEMENT_ARRAY_BUFFER, primaries_cuboid * sizeof(reservoir_model_.indexCuboids[0]), &reservoir_model_.indexCuboids[0], GL_STATIC_DRAW );
+
+        glFinish();
+
+        std::cout << "primaries++" << primaries_cuboid << std::endl;
+        std::cout << "primaries++" << primaries_face << std::endl;
+
+	emit primariesPorcentage(QString::number(((float)primaries_face/(float)total)*100));
 
 	reservoir_model_.current_static = property_index;
 
@@ -569,7 +623,7 @@ void GLWidget::paintGL ( )
 
         // std::cout << " 1 shot " <<  trackball_->getQuaternion().coeffs() <<  std::endl;
 
-        if (renderingPass > 200.0)
+        if (renderingPass > 2.0)
         {
                 averageFPS = accumulateRenderingTimes / renderingPass;
                 renderingPass = 0.0f;
@@ -580,7 +634,7 @@ void GLWidget::paintGL ( )
                 accumulateRenderingTimes += renderTime.elapsed();
         }
 
-        emit fpsChanged( QString::number( 1000/averageFPS ) );
+        emit fpsChanged( QString::number( averageFPS ) );
 
         fps++;
 
@@ -614,7 +668,7 @@ void GLWidget::paintGL ( )
 /// QPalette::Dark. Lastly, it emits the changed() signal.
 /// Real Looping
 
-void GLWidget::drawIRESCutawayStaticSurface ( ) const
+void GLWidget::drawIRESCutawayStaticSurface ( )
 {
 
 	glDepthFunc ( GL_GREATER );
@@ -627,6 +681,8 @@ void GLWidget::drawIRESCutawayStaticSurface ( ) const
 
 	glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
 	glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
+	cutawayGenerationTime_.start ();
 
 	IRESCutawaySurfaceStatic_->enable( );
 
@@ -649,17 +705,23 @@ void GLWidget::drawIRESCutawayStaticSurface ( ) const
 	IRESCutawaySurfaceStatic_->setUniform ("freeze", freezeView_ );
 	IRESCutawaySurfaceStatic_->setUniform ("FreezeViewMatrix",freeze_viewmatrix_.data ( ),4, GL_FALSE, 1 );
 
-	reservoir_model_.drawCuboid ( );
+	reservoir_model_.drawCuboid ( );//reservoir_model_.drawIndexCuboids (primaries_cuboid);
 
 	IRESCutawaySurfaceStatic_->disable( );
+
+        glFinish();
+        accumulateCutawayGenerationTime_ += (float)cutawayGenerationTime_.elapsed();
 
 	depthFBO->bindRenderBuffers(normalsSmoothID_, verticesSmoothID_);
 
         glDisable(GL_DEPTH_TEST);
 
+        renderingMeanFilterTime_.start();
         meanFilter->renderTexture( depthFBO->bindAttachment(normalCutawayID_),depthFBO->bindAttachment(verticesCutawayID_),meanFilterSize_);
         depthFBO->unbindAll();
 
+        glFinish( );
+        accumulateMeanFilterTime_ += (float)renderingMeanFilterTime_.elapsed();
         glEnable(GL_DEPTH_TEST);
 
 
@@ -735,7 +797,7 @@ void GLWidget::drawSecondaryStatic  ( ) const  // Draw only secondary Cells
         SSAOIRESCutawayStatic_->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
         SSAOIRESCutawayStatic_->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
 
-        reservoir_model_.drawFaces( );
+        reservoir_model_.drawFaces( );//reservoir_model_.drawIndexFaces(reservoir_model_.faceCount);//reservoir_model_.drawFaces( );
 
         SSAOIRESCutawayStatic_->disable( );
 
@@ -768,7 +830,7 @@ void GLWidget::drawSecondaryStatic  ( ) const  // Draw only secondary Cells
         SSAOIRESCutawayStaticShell_->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
         SSAOIRESCutawayStaticShell_->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
 
-        reservoir_model_.drawFaces();
+        reservoir_model_.drawFaces();//reservoir_model_.drawIndexFaces(reservoir_model_.faceCount);
 
         SSAOIRESCutawayStaticShell_->disable( );
 
@@ -784,8 +846,6 @@ void GLWidget::IRESCutawayStatic (  )
         if ( isIRESOpen_ )
         {
 //
-                cutawayGenerationTime_.start ();
-
                 if ( draw_cutaway_surface_ )
                 {
                         drawIRESCutawayStaticSurface ( );
@@ -794,10 +854,6 @@ void GLWidget::IRESCutawayStatic (  )
                 {
                         depthFBO->clearAttachments( );
                 }
-
-
-                glFinish();
-                accumulateCutawayGenerationTime_ += (float)cutawayGenerationTime_.elapsed();
 
                 glClearColor ( 1.0 , 1.0 , 1.0 , 1.0 );
                 glDepthFunc(GL_LESS);
@@ -820,13 +876,13 @@ void GLWidget::IRESCutawayStatic (  )
 
                         }
                         glFinish();
-                        accumulateRenderingCutawayTime_ += (float)renderingCutawayTime_.elapsed();
+
                         if ( draw_primary )
                         {
                                 drawPrimaryStatic( );
 
                         }
-
+                        accumulateRenderingCutawayTime_ += (float)renderingCutawayTime_.elapsed();
                         if ( reservoir_model_.showBorderLine )
                         {
 
@@ -850,6 +906,7 @@ void GLWidget::IRESCutawayStatic (  )
                 fboSSAO->bindRenderBuffer(blurTextureID);
 
                 /// SEGUNDO PASSO
+                renderingSSAOBlurTime_.start();
                 ssaoShader_->enable();
 
                 glActiveTexture(GL_TEXTURE0 + 7);
@@ -887,24 +944,47 @@ void GLWidget::IRESCutawayStatic (  )
 
                 quadSSAO->render();
 
+                glFinish( );
+                accumulateSSAOBlurTime_ += (float)renderingSSAOBlurTime_.elapsed();
+
                 blurShader_->disable();
                 fboSSAO->unbindAll( );
                 fboSSAO->clearDepth( );
 
                 glEnable(GL_DEPTH_TEST);
 
-                if (cutawayPass_ >= 100.0)
-                {
-                        emit cutawayGenerationTime( QString::number( 1000.0f/(accumulateCutawayGenerationTime_*0.01f) ) ) ;
-                        emit renderingCutawayTime( QString::number( 1000.0f/(accumulateRenderingCutawayTime_*0.01f) ) ) ;
-                        accumulateCutawayGenerationTime_ = 0.0f;
-                        accumulateRenderingCutawayTime_ = 0.0f;
-                        cutawayPass_ = 0.0f;
+//                if (play_)
+//                {
+                        if ( cutawayPass_ == 1.0f )
+                        {
+                                emit cutawayGenerationTime ( QString::number ( ( accumulateCutawayGenerationTime_/cutawayPass_ ) ) );
+                                emit renderingCutawayTime ( QString::number ( ( accumulateRenderingCutawayTime_/cutawayPass_ ) ) );
+                                emit renderingSSAOBlurTime ( QString::number ( ( accumulateSSAOBlurTime_/cutawayPass_ ) ) );
+                                emit renderingMeanFilterTime ( QString::number ( ( accumulateMeanFilterTime_/cutawayPass_ ) ) );
 
-                }else
-                {
-                        cutawayPass_ += 1.0f;
-                }
+//                                cutawayGenerationTimes_[renderPass_] = accumulateCutawayGenerationTime_/cutawayPass_;
+//                                renderingCutawayTimes_[renderPass_] = accumulateRenderingCutawayTime_/cutawayPass_;
+//                                SSAOBlurCutawayTimes_[renderPass_] = accumulateSSAOBlurTime_/cutawayPass_;
+//                                MeanFilterTimes_[renderPass_] = accumulateMeanFilterTime_/cutawayPass_;
+
+                                std::cout << "accumulateCutawayGenerationTime_" << accumulateCutawayGenerationTime_/cutawayPass_ << std::endl ;
+                                std::cout << "accumulateRenderingCutawayTime_" << accumulateRenderingCutawayTime_/cutawayPass_ << std::endl ;
+
+                                accumulateCutawayGenerationTime_ = 0.0f;
+                                accumulateRenderingCutawayTime_ = 0.0f;
+                                accumulateSSAOBlurTime_ = 0.0f;
+                                accumulateMeanFilterTime_ = 0.0f;
+                                cutawayPass_ = 0.0f;
+                                renderPass_++;
+                        }
+                        else
+                        {
+                                cutawayPass_ += 1.0f;
+                        }
+//                }else
+//                {
+//
+//                }
         }
 
 }
@@ -1098,38 +1178,38 @@ void GLWidget::drawSecondaryDynamic ( ) const
         SSAOIRESCutawayDynamic_->setUniform ( "ViewMatrix" , trackball_->getViewMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
         SSAOIRESCutawayDynamic_->setUniform ( "ProjectionMatrix" , trackball_->getProjectionMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
 
-        reservoir_model_.drawCuboid ( );
+        reservoir_model_.drawFaces();
 
         SSAOIRESCutawayDynamic_->disable( );
 
 
-        SSAOIRESCutawayDynamicShell_->enable( );
-
-        SSAOIRESCutawayDynamicShell_->setUniform( "normal" , depthFBO->bindAttachment(normalsSmoothID_) );
-        SSAOIRESCutawayDynamicShell_->setUniform( "vertex" , depthFBO->bindAttachment(verticesSmoothID_) );
-
-        SSAOIRESCutawayDynamicShell_->setUniform ( "max_property" , reservoir_model_.dynamic_properties[dynamic_property_index].max_[time_step] );
-        SSAOIRESCutawayDynamicShell_->setUniform ( "min_property" , reservoir_model_.dynamic_properties[dynamic_property_index].min_[time_step] );
-        SSAOIRESCutawayDynamicShell_->setUniform ( "faults" , reservoir_model_.showFault );
-
-        /// Shader Intensity
-        SSAOIRESCutawayDynamicShell_->setUniform ( "saturation_" , this->saturationShell_);
-        SSAOIRESCutawayDynamicShell_->setUniform ( "luminance_"  , this->luminanceShell_);
-
-        SSAOIRESCutawayDynamicShell_->setUniform ( "isPerspective_" , isPerspective_ );
-        SSAOIRESCutawayDynamicShell_->setUniform ( "nearPlane_" , nearPlane_ );
-        SSAOIRESCutawayDynamicShell_->setUniform ( "farPlane_" , farPlane_ );
-        SSAOIRESCutawayDynamicShell_->setUniform ( "num_lights" , (GLint) lights.size ( ) );
-        SSAOIRESCutawayDynamicShell_->setUniform ( "lights[0]" , light_elements , 3 , (GLint) lights.size ( ) );
-        SSAOIRESCutawayDynamicShell_->setUniform ( "WIN_SCALE" , (float) width ( ) , (float) height ( ) );
-
-        SSAOIRESCutawayDynamicShell_->setUniform ( "ModelMatrix" , trackball_->getModelMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
-        SSAOIRESCutawayDynamicShell_->setUniform ( "ViewMatrix" , trackball_->getViewMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
-        SSAOIRESCutawayDynamicShell_->setUniform ( "ProjectionMatrix" , trackball_->getProjectionMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
-
-        reservoir_model_.drawFaces( );
-
-        SSAOIRESCutawayDynamicShell_->disable( );
+//        SSAOIRESCutawayDynamicShell_->enable( );
+//
+//        SSAOIRESCutawayDynamicShell_->setUniform( "normal" , depthFBO->bindAttachment(normalsSmoothID_) );
+//        SSAOIRESCutawayDynamicShell_->setUniform( "vertex" , depthFBO->bindAttachment(verticesSmoothID_) );
+//
+//        SSAOIRESCutawayDynamicShell_->setUniform ( "max_property" , reservoir_model_.dynamic_properties[dynamic_property_index].max_[time_step] );
+//        SSAOIRESCutawayDynamicShell_->setUniform ( "min_property" , reservoir_model_.dynamic_properties[dynamic_property_index].min_[time_step] );
+//        SSAOIRESCutawayDynamicShell_->setUniform ( "faults" , reservoir_model_.showFault );
+//
+//        /// Shader Intensity
+//        SSAOIRESCutawayDynamicShell_->setUniform ( "saturation_" , this->saturationShell_);
+//        SSAOIRESCutawayDynamicShell_->setUniform ( "luminance_"  , this->luminanceShell_);
+//
+//        SSAOIRESCutawayDynamicShell_->setUniform ( "isPerspective_" , isPerspective_ );
+//        SSAOIRESCutawayDynamicShell_->setUniform ( "nearPlane_" , nearPlane_ );
+//        SSAOIRESCutawayDynamicShell_->setUniform ( "farPlane_" , farPlane_ );
+//        SSAOIRESCutawayDynamicShell_->setUniform ( "num_lights" , (GLint) lights.size ( ) );
+//        SSAOIRESCutawayDynamicShell_->setUniform ( "lights[0]" , light_elements , 3 , (GLint) lights.size ( ) );
+//        SSAOIRESCutawayDynamicShell_->setUniform ( "WIN_SCALE" , (float) width ( ) , (float) height ( ) );
+//
+//        SSAOIRESCutawayDynamicShell_->setUniform ( "ModelMatrix" , trackball_->getModelMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
+//        SSAOIRESCutawayDynamicShell_->setUniform ( "ViewMatrix" , trackball_->getViewMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
+//        SSAOIRESCutawayDynamicShell_->setUniform ( "ProjectionMatrix" , trackball_->getProjectionMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
+//
+//        reservoir_model_.drawFaces( );
+//
+//        SSAOIRESCutawayDynamicShell_->disable( );
 
 
         depthFBO->unbindAttachments();
@@ -1170,13 +1250,13 @@ void GLWidget::IRESCutawayDynamic ( )
                                  drawSecondaryDynamic( );
                          }
 
-                         if ( draw_primary )
-                         {
-                                 if (isply_)
-                                         PaperPly();
-                                 else
-                                         drawPrimaryDynamic();
-                         }
+//                         if ( draw_primary )
+//                         {
+//                                 if (isply_)
+//                                         PaperPly();
+//                                 else
+//                                         drawPrimaryDynamic();
+//                         }
 
                          if ( reservoir_model_.showBorderLine )
                          {
@@ -1257,6 +1337,8 @@ void GLWidget::IRESCutawayDynamic ( )
 //
 //}
 
+
+/// F10
 void GLWidget::drawIRESModel ( )
 {
         glClearColor ( 1.0 , 1.0 , 1.0 , 1.0 );
@@ -1305,7 +1387,7 @@ void GLWidget::drawIRESModel ( )
         RawModel_->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
         RawModel_->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
 
-        reservoir_model_.drawFaces();
+        reservoir_model_.drawIndexFaces(primaries_face);
 
         RawModel_->disable( );
 
@@ -1604,68 +1686,6 @@ void GLWidget::PaperPly ( ) const
         ply_primary_.Draw();
 
         BurnsPly_->disable();
-
-
-//        // Bind buffer to store coord, normal and color information
-//        fboSSAO->clearAttachments();
-//        fboSSAO->bindRenderBuffers(depthTextureID, normalTextureID, colorTextureID);
-//
-//        deferredShader->enable();
-//        deferredShader->setUniform("projectionMatrix", trackball_->getProjectionMatrix().data(),4,GL_FALSE,1);
-//        deferredShader->setUniform("modelMatrix",trackball_->getModelMatrix().data(),4,GL_FALSE,1);
-//        deferredShader->setUniform("viewMatrix", trackball_->getViewMatrix().data(),4,GL_FALSE,1);
-//        deferredShader->setUniform("lightViewMatrix", trackball_->getViewMatrix().data(),4,GL_FALSE,1);
-////      deferredShader->setUniform("has_color", mesh->hasAttribute("in_Color"));
-//
-//        ply_primary_.Draw();
-//
-//        deferredShader->disable();
-//        fboSSAO->unbindAll();
-//        fboSSAO->clearDepth();
-//
-//        glDrawBuffer(GL_BACK);
-//
-//        /// SEGUNDO PASSO
-//
-//        ssaoShader->enable();
-//
-//        glActiveTexture(GL_TEXTURE0 + 7);
-//        glBindTexture(GL_TEXTURE_2D, noiseTexture);
-//
-//        ssaoShader->setUniform("lightViewMatrix", trackball_->getProjectionMatrix().data(),4,GL_FALSE,1);
-//
-//        ssaoShader->setUniform("noiseScale", noise_scale.x(),noise_scale.y());
-//        ssaoShader->setUniform("kernel", kernel, 2, numberOfSamples);
-//
-//        ssaoShader->setUniform("coordsTexture", fboSSAO->bindAttachment(depthTextureID));
-//        ssaoShader->setUniform("normalTexture", fboSSAO->bindAttachment(normalTextureID));
-//        ssaoShader->setUniform("colorTexture", fboSSAO->bindAttachment(colorTextureID));
-//        ssaoShader->setUniform("displayAmbientPass", displayAmbientPass);
-//
-//        ssaoShader->setUniform("radius", radius);
-//        ssaoShader->setUniform("intensity", (float)intensity);
-//        ssaoShader->setUniform("max_dist", max_dist);
-//        ssaoShader->setUniform("noiseTexture", 7);
-//
-//        //Second pass mesh rendering:
-//        quadSSAO->render();
-//
-//        ssaoShader->disable();
-//        glBindTexture(GL_TEXTURE_2D, 0);
-//        fboSSAO->unbindAll();
-//        fboSSAO->clearDepth();
-//
-//        // THIRD PASS
-//        blurShader->enable();
-//
-//        blurShader->setUniform("blurTexture", fboSSAO->bindAttachment(blurTextureID));
-//        blurShader->setUniform("blurRange", blurRange);
-//
-//        quadSSAO->render();
-//
-//        blurShader->disable();
-//
-//        fboSSAO->unbindAll();
 
 }
 

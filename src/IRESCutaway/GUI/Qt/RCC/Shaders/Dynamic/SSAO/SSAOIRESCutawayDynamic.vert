@@ -1,26 +1,27 @@
-#version 430
+#version 430 core
 
-layout(location = 0) in vec4 v0;
-layout(location = 1) in vec4 v1;
-layout(location = 2) in vec4 v2;
-layout(location = 3) in vec4 v3;
-layout(location = 4) in vec4 v4;
-layout(location = 5) in vec4 v5;
-layout(location = 6) in vec4 v6;
-layout(location = 7) in vec4 v7;
+layout(location = 0) in vec4 va;
+layout(location = 1) in vec4 vb;
+layout(location = 2) in vec4 vc;
+layout(location = 3) in vec4 vd;
 
-layout(location = 8) in vec4 static_properties;
-layout(location = 9) in float dynamic_properties;
+layout(location = 4) in vec4 faceType;
+
+layout(location = 5) in vec4 static_properties;
+layout(location = 6) in float dynamic_properties;
 
 
-/// FIXME - Do research and understand the best away to align data on Shader.
-out CubeData
+
+out VertexData
 {
-		vec4 v[8];
-                vec4 n[12];
-		vec4 color;
-} cube;
+    vec4 v[4];
+    vec4 n[2];
+    vec4 eye[4];
+flat    vec4 color;
 
+} VertexOut;
+
+// For while, all transformations come from the Celer::Camera.
 uniform mat4 ModelMatrix;
 uniform mat4 ViewMatrix;
 uniform mat4 ProjectionMatrix;
@@ -41,6 +42,8 @@ uniform float min_range_dynamic;
 uniform float max_range_dynamic;
 
 uniform int time_step;
+
+uniform int faults;
 
 
 vec4 propertyColor ( int type )
@@ -98,61 +101,48 @@ bool isPrimary (  )
 void main(void)
 {
 
-		// We revert the vertices order to fit in the triangle strip pipeline
-		// Triangle strips request vertices in zig-zag order.
+        VertexOut.n[0] = vec4(normalize(cross(vb.xyz-va.xyz, vd.xyz-va.xyz)),0.0);
+        VertexOut.n[1] = vec4(normalize(cross(vc.xyz-vb.xyz, vd.xyz-vb.xyz)),0.0);
 
-		// Top
-		cube.v[4] = v4;
-		cube.v[5] = v5;
-		cube.v[7] = v7;
-		cube.v[6] = v6;
-		// Bottom
-		cube.v[0] = v0;
-		cube.v[3] = v3;
-		cube.v[1] = v1;
-		cube.v[2] = v2;
+        mat3 normalMatrix = mat3(inverse(transpose((ModelMatrix*ViewMatrix))));
 
+        VertexOut.n[0] = vec4(normalMatrix * VertexOut.n[0].xyz,0.0);
+        VertexOut.n[1] = vec4(normalMatrix * VertexOut.n[1].xyz,0.0);
 
+        VertexOut.eye[0] =  ModelMatrix * ViewMatrix * vec4(va);
+        VertexOut.eye[1] =  ModelMatrix * ViewMatrix * vec4(vb);
+        VertexOut.eye[2] =  ModelMatrix * ViewMatrix * vec4(vc);
+        VertexOut.eye[3] =  ModelMatrix * ViewMatrix * vec4(vd);
 
+        VertexOut.color  =  propertyColor ( property_type );
 
-                if ( isPrimary() )
+        if ( (isPrimary() ) )
+        {
+                VertexOut.color.a = 0.0;
+        }
+        else
+        {
+                VertexOut.color.a = 1.0;
+
+                if ( (faceType.x == 1.0) )
                 {
-                        cube.color = propertyColor( property_type );
-                        cube.color.w = 1.0;
-                }else
-                {
-                        cube.color  = propertyColor ( 0 ) ;
-                        cube.color.w = 0.0;
+                        VertexOut.color.a += 1.0;
                 }
+        }
 
-                mat3 normalMatrix = mat3(inverse(transpose((ModelMatrix*ViewMatrix))));
+        if ( faceType.x == 3.0 )
+        {
+                VertexOut.v[0] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(0.0);
+                VertexOut.v[1] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(0.0);
+                VertexOut.v[2] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(0.0);
+                VertexOut.v[3] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(0.0);
+        }else
+        {
+                VertexOut.v[0] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(va);
+                VertexOut.v[1] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(vb);
+                VertexOut.v[2] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(vc);
+                VertexOut.v[3] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(vd);
+        }
 
-                // for each quad, keeprs the normal (from each triangle pair) that has higher z (avoids bad
-                // backface classification in frag shader)
-
-                // top
-                cube.n[0] = vec4 ( normalize( normalMatrix * cross( (cube.v[5]-cube.v[4]).xyz , (cube.v[7]-cube.v[4]).xyz )),0.0);
-                cube.n[6]  = vec4 ( normalize( normalMatrix * cross( (cube.v[7]-cube.v[6]).xyz , (cube.v[5]-cube.v[6]).xyz )),0.0);
-
-                // bottom
-                cube.n[1]  = vec4 ( normalize( normalMatrix * cross( (cube.v[3]-cube.v[0]).xyz , (cube.v[1]-cube.v[0]).xyz )),0.0);
-                cube.n[7] = vec4 ( normalize( normalMatrix * cross( (cube.v[1]-cube.v[2]).xyz , (cube.v[3]-cube.v[2]).xyz )),0.0);
-
-                // front
-                cube.n[2] = vec4 ( normalize( normalMatrix * cross( (cube.v[0]-cube.v[4]).xyz , (cube.v[5]-cube.v[4]).xyz )),0.0);
-                cube.n[8]  = vec4 ( normalize( normalMatrix * cross( (cube.v[5]-cube.v[1]).xyz , (cube.v[0]-cube.v[1]).xyz )),0.0);
-
-                // back
-                cube.n[3] = vec4 ( normalize( normalMatrix * cross( (cube.v[3]-cube.v[2]).xyz , (cube.v[6]-cube.v[2]).xyz )),0.0);
-                cube.n[9]  = vec4 ( normalize( normalMatrix * cross( (cube.v[6]-cube.v[7]).xyz , (cube.v[3]-cube.v[7]).xyz )),0.0);
-
-                // left
-                cube.n[4] = vec4 ( normalize( normalMatrix * cross( (cube.v[2]-cube.v[1]).xyz , (cube.v[5]-cube.v[1]).xyz )),0.0);
-                cube.n[10]  = vec4 ( normalize( normalMatrix * cross( (cube.v[5]-cube.v[6]).xyz , (cube.v[2]-cube.v[6]).xyz )),0.0);
-
-                // right
-                cube.n[5] = vec4 ( normalize( normalMatrix * cross( (cube.v[4]-cube.v[0]).xyz , (cube.v[3]-cube.v[0]).xyz )),0.0);
-                cube.n[11]  = vec4 ( normalize( normalMatrix * cross( (cube.v[3]-cube.v[7]).xyz , (cube.v[4]-cube.v[7]).xyz )),0.0);
-
-		gl_Position =  v0;
+        gl_Position = vec4(va);
 }

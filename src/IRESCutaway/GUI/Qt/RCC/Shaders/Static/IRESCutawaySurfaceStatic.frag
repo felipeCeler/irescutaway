@@ -43,6 +43,7 @@ void main(void)
 //		discard;
 //	}
 
+
         //outputColor =  vec4 ( VertexOut.normal, gl_FragCoord.z);//VertexOut.color;
         outputNormal =  vec4 (  newNormal, VertexOut.verticeEye.z);//VertexOut.color;
         outputVertex =  vec4 (  newVert  , VertexOut.verticeEye.z);//VertexOut.color;

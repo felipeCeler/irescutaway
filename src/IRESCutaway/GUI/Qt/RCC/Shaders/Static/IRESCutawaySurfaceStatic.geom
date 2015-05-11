@@ -34,37 +34,37 @@ Face cutVolume[6];
 
 void byCentroid ( )
 {
-	for ( int i = 0; i < 6; i++)
-	{
+        if ( cube[0].color.r == 1.0 )
+        {
+                for ( int i = 0; i < 6; i++ )
+                {
 
-		VertexOut.normal = cube[0].n[i];
-		VertexOut.color  = cube[0].color;
+                        VertexOut.normal = cube[0].n[i];
+                        VertexOut.color = cube[0].color;
 
+                        VertexOut.verticeEye = ViewMatrix * cube[0].v[cutVolume[i].vertices[0]];
+                        gl_Position = ProjectionMatrix * VertexOut.verticeEye;
+                        VertexOut.verticeProj = gl_Position;
+                        EmitVertex ( );
 
-                VertexOut.verticeEye  = ViewMatrix * cube[0].v[cutVolume[i].vertices[0]];
-                gl_Position = ProjectionMatrix *  VertexOut.verticeEye;
-		VertexOut.verticeProj = gl_Position;
-		EmitVertex();
+                        VertexOut.verticeEye = ViewMatrix * cube[0].v[cutVolume[i].vertices[1]];
+                        gl_Position = ProjectionMatrix * ModelMatrix * VertexOut.verticeEye;
+                        VertexOut.verticeProj = gl_Position;
+                        EmitVertex ( );
 
+                        VertexOut.verticeEye = ViewMatrix * cube[0].v[cutVolume[i].vertices[3]];
+                        gl_Position = ProjectionMatrix * ModelMatrix * VertexOut.verticeEye;
+                        VertexOut.verticeProj = gl_Position;
+                        EmitVertex ( );
 
-                VertexOut.verticeEye  = ViewMatrix * cube[0].v[cutVolume[i].vertices[1]];
-                gl_Position = ProjectionMatrix * ModelMatrix * VertexOut.verticeEye;
-		VertexOut.verticeProj = gl_Position;
-		EmitVertex();
+                        VertexOut.verticeEye = ViewMatrix * cube[0].v[cutVolume[i].vertices[2]];
+                        gl_Position = ProjectionMatrix * ModelMatrix * VertexOut.verticeEye;
+                        VertexOut.verticeProj = gl_Position;
+                        EmitVertex ( );
 
-                VertexOut.verticeEye  = ViewMatrix * cube[0].v[cutVolume[i].vertices[3]];
-                gl_Position = ProjectionMatrix * ModelMatrix * VertexOut.verticeEye;
-		VertexOut.verticeProj = gl_Position;
-		EmitVertex();
-
-                VertexOut.verticeEye  = ViewMatrix * cube[0].v[cutVolume[i].vertices[2]];
-                gl_Position = ProjectionMatrix * ModelMatrix * VertexOut.verticeEye;
-		VertexOut.verticeProj = gl_Position;
-		EmitVertex();
-
-		EndPrimitive();
-
-	}
+                        EndPrimitive ( );
+                }
+        }
 }
 
 

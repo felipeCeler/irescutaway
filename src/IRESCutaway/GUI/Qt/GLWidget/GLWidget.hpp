@@ -76,6 +76,7 @@ class GLWidget: public QGLWidget
                 /// TODO Physics
                 void gameLooping ( );
                 void fpsCounter ( );
+                void flush ( );
 
                 void property_type ( bool isStatic )
                 {
@@ -221,7 +222,7 @@ class GLWidget: public QGLWidget
                 void PaperSecondary ( ) const;
                 // ! STATIC  VIEWER F11 Static Properties
                 void IRESCutawayStatic ( );
-                void drawIRESCutawayStaticSurface ( ) const; //
+                void drawIRESCutawayStaticSurface ( ); //
                 void drawSecondaryStatic ( ) const; // Draw only secondary Cells
                 void drawPrimaryStatic ( ) const; // Draw only primary   Cells
 
@@ -290,6 +291,9 @@ class GLWidget: public QGLWidget
                 void fpsChanged ( const QString& );
                 void cutawayGenerationTime ( const QString& );
                 void renderingCutawayTime ( const QString& );
+                void renderingSSAOBlurTime ( const QString& );
+                void renderingMeanFilterTime ( const QString& );
+                void primariesPorcentage ( const QString& );
 
         protected:
                 void dragEnterEvent ( QDragEnterEvent *event );
@@ -306,6 +310,9 @@ class GLWidget: public QGLWidget
 
                 float min_range_static_;
                 float max_range_static_;
+                std::size_t primaries_cuboid;
+                std::size_t primaries_face;
+
 
                 float min_range_dynamic_;
                 float max_range_dynamic_;
@@ -375,10 +382,21 @@ class GLWidget: public QGLWidget
 
                 QTime cutawayGenerationTime_;
                 float accumulateCutawayGenerationTime_;
+                std::vector<float> cutawayGenerationTimes_;
                 QTime renderingCutawayTime_;
                 float accumulateRenderingCutawayTime_;
+                std::vector<float> renderingCutawayTimes_;
+                QTime renderingSSAOBlurTime_;
+                float accumulateSSAOBlurTime_;
+                std::vector<float> SSAOBlurCutawayTimes_;
+                QTime renderingMeanFilterTime_;
+                float accumulateMeanFilterTime_;
+                std::vector<float> MeanFilterTimes_;
 
                 float cutawayPass_;
+
+                std::size_t renderPass_;
+
 
                 int fps;
                 float benchmark_;
@@ -626,7 +644,6 @@ class GLWidget: public QGLWidget
                 Eigen::Vector3f displacement;
                 Eigen::Vector3f max_displacement;
 
-                void flush ( );
                 // Animation Controls
                 long unsigned int videoSequence;
                 std::vector<QImage> frames;
@@ -708,3 +725,4 @@ class GLWidget: public QGLWidget
 };
 
 #endif
+

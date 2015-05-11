@@ -37,12 +37,15 @@ namespace IRES
 		// Cuboid
 		glGenVertexArrays ( 1, &vertexArrayCuboids );
 			glGenBuffers ( 1, &vertexBufferCuboidGeometry );  // Geometry
-			glGenBuffers ( 1, &vertexBufferCuboidStatic ); // Cube Property
+			glGenBuffers ( 1, &vertexBufferCuboidStatic );    // Cube Property
+			glGenBuffers ( 1 ,&indexBufferCuboid);  // Indices
 
 		// Face Features
 		glGenVertexArrays ( 1, &vertexArrayFaces );
 			glGenBuffers ( 1, &vertexBufferFaceGeometry );   // Geometry
 			glGenBuffers ( 1, &vertexBufferFaceStatic ); // Face Properties
+			glGenBuffers ( 1 ,&indexBufferFace);  // Indices
+
 
 		isInitialized = 1;
 
@@ -148,9 +151,9 @@ namespace IRES
 			faces.clear();
 			faceType.clear();
 			// Geometry
-			faces.resize 	     ( iresFaces_.size ( ) * 16 );
+			faces.resize 	     ( iresFaces_.size ( ) * 2 * 16 );
 			// Attributes
-			faceType.resize      ( iresFaces_.size ( ) * 4  );
+			faceType.resize      ( iresFaces_.size ( ) * 2 * 4  );
 
 			faceCount = 0;
 
@@ -190,8 +193,19 @@ namespace IRES
                                 float V 		       = faceCorner[ 6*iresFaces_[i].id + pos ];
                                 float F 		       = faceFault[ 6*iresFaces_[i].id + pos ];
 
-                                // F == 0 no fault
-                                // F == 1 fault
+                                // Face Type[0] = Shell or Internal
+                                // Face Type[1] = Fault
+                                        // F == 0 no fault
+                                        // F == 1 fault
+                                // Face Type[2] = Border Lines
+                                // Face Type[3] = Face Position
+                                        //   NOTDEFINED = -100000000 ,
+                                        //           BOTTOM = 0 ,
+                                        //           TOP    = 1 ,
+                                        //           LEFT   = 2 ,
+                                        //           RIGHT  = 3 ,
+                                        //           FRONT  = 4 ,
+                                        //           BACK   = 5
 
                                 faceType[faceCount*4]   = static_cast<float> (iresFaces_[i].isExtern);
                                 faceType[faceCount*4+1] = F;
@@ -285,8 +299,18 @@ namespace IRES
 			}
 
 			cuboids.resize    (stride_32);
+			// Element Array Buffer
+			indexCuboids.resize( cuboidCount );
+			std::iota (indexCuboids.begin(),indexCuboids.end(),0);
+
+
 			faces.resize(faceCount * 16);
 			faceType.resize(faceCount * 4 );
+
+                        // Element Array Buffer
+                        indexFaces.resize( faceCount );
+                        std::iota (indexFaces.begin(),indexFaces.end(),0);
+
 
 			glBindVertexArray ( vertexArrayCuboids );
 
@@ -311,6 +335,9 @@ namespace IRES
 
 				glEnableVertexAttribArray(8);
 				glVertexAttribPointer(8, 4, GL_FLOAT, GL_FALSE, 0, 0);
+
+				glBindBuffer ( GL_ELEMENT_ARRAY_BUFFER, indexBufferCuboid);
+				glBufferData ( GL_ELEMENT_ARRAY_BUFFER, indexCuboids.size() * sizeof(indexCuboids[0]), &indexCuboids[0], GL_STATIC_DRAW );
 
 
 			glBindVertexArray(0);
@@ -345,6 +372,9 @@ namespace IRES
                                 glEnableVertexAttribArray(5);
                                 glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
+                                glBindBuffer ( GL_ELEMENT_ARRAY_BUFFER, indexBufferFace);
+                                glBufferData ( GL_ELEMENT_ARRAY_BUFFER, indexFaces.size() * sizeof(indexFaces[0]), &indexFaces[0], GL_STATIC_DRAW );
+
 	                glBindVertexArray(0);
 
 	                glFinish();
@@ -363,14 +393,33 @@ namespace IRES
 		glBindVertexArray ( vertexArrayFaces );
 		glDrawArrays 	  ( GL_POINTS , 0 , this->faceCount );
 		glBindVertexArray ( 0 );
+
 	}
+
+        void CornerPointGrid::drawIndexFaces   ( const std::size_t& size ) const
+        {
+                glBindVertexArray ( vertexArrayFaces );
+
+                glDrawElements( GL_POINTS , size ,GL_UNSIGNED_INT, 0);
+
+                glBindVertexArray ( 0 );
+        }
 
 	void CornerPointGrid::drawCuboid ( ) const
 	{
-		glBindVertexArray ( this->vertexArrayCuboids );
+		glBindVertexArray ( vertexArrayCuboids );
 		glDrawArrays      ( GL_POINTS , 0 , this->cuboidCount );
 		glBindVertexArray ( 0 );
 	}
+
+        void CornerPointGrid::drawIndexCuboids   ( const std::size_t& size ) const
+        {
+                glBindVertexArray ( vertexArrayCuboids );
+
+                glDrawElements( GL_POINTS , size ,GL_UNSIGNED_INT, 0);
+
+                glBindVertexArray ( 0 );
+        }
 
 	void CornerPointGrid::loadDynamicProperties (  )
 	{

@@ -74,45 +74,15 @@ vec4 propertyColor ( in float min_range, in float max_range, in int index )
 	return color;
 }
 
-bool intersect ( in vec4 p )
-{
-        return ( ( p.x >= box_min.x ) && ( p.x  < box_max.x ) &&
-                 ( p.y >= box_min.y ) && ( p.y  < box_max.y ) &&
-                 ( p.z  >= box_min.z ) && ( p.z  < box_max.z ) );
-}
-
-bool isInside ( )
-{
-        if ( intersect(v0) &&
-             intersect(v1) &&
-             intersect(v2) &&
-             intersect(v3) &&
-             intersect(v4) &&
-             intersect(v5) &&
-             intersect(v6) &&
-             intersect(v7)
-            )
-        {
-                return true;
-        }
-
-        return false;
-}
-
-
 bool isPrimary (  )
 {
 
-        if (paper == 0.0 )
-        {
-               return isInside();
-
-        }else if ( static_properties[property_index] > min_range_static && static_properties[property_index] < max_range_static )
+        if ( static_properties[property_index] > min_range_static && static_properties[property_index] < max_range_static )
         {
                 return true;
         }
-        return false;
 
+        return false;
 }
 
 void main(void)
@@ -197,12 +167,15 @@ void main(void)
 
 		cube.n[0] = normal_top;
 		cube.n[1] = normal_bottom;
-		cube.n[2] = -normal_front;
+		cube.n[2] = normal_front;
 		cube.n[3] = normal_back;
 		cube.n[4] = normal_right;
 		cube.n[5] = normal_left;
 
+		cube.color = vec4(1.0,0.0,0.0,1.0);
+
 		gl_Position = vec4 ( v[0] );
+
 	}else
 	{
 		cube.v[0] = vec4(0.0);
@@ -221,6 +194,8 @@ void main(void)
 		cube.n[3] = vec3(0.0);
 		cube.n[4] = vec3(0.0);
 		cube.n[5] = vec3(0.0);
+
+		cube.color = vec4(0.0,1.0,0.0,1.0);
 
 		gl_Position = vec4(0.0);
 	}

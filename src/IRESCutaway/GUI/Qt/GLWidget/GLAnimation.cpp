@@ -28,7 +28,7 @@ void GLWidget::AnimationInitializer ( )
 
         updateTimer_.setSingleShot ( false );
         connect ( &updateTimer_ , SIGNAL ( timeout ( ) ) , this , SLOT ( gameLooping ( ) ) );
-        updateTimer_.start(20);
+        updateTimer_.start(0);
 
         fpsTimer_.setSingleShot ( false );
         connect ( &fpsTimer_ , SIGNAL ( timeout ( ) ) , this , SLOT ( fpsCounter( ) ) );
@@ -38,14 +38,36 @@ void GLWidget::AnimationInitializer ( )
 void GLWidget::flush()
 {
 
-        for (std::size_t index = 0; index < videoSequence; index++)
+//        for (std::size_t index = 0; index < videoSequence; index++)
+//        {
+//                frames[index].save("frame"+QString::number(index)+".tif","TIFF",100);
+//        }
+//
+//        QProcess _process;
+//        _process.start(QString("echo"), QStringList("-la"));
+//        _process.waitForFinished();
+
+        ofstream Morison_File ( "RenderingTimes.csv" );         //Opening file to print info to
+        //Morison_File << "Genertation;Rendering;SSAO;MeanFilter" << endl;          //Headings for file
+        float F;
+        for ( std::size_t t = 0; t < renderPass_; t++ )
         {
-                frames[index].save("frame"+QString::number(index)+".tif","TIFF",100);
+
+                Morison_File << cutawayGenerationTimes_[t] << ";"
+                             << renderingCutawayTimes_[t] << ";"
+                             << SSAOBlurCutawayTimes_[t] << ";"
+                             << MeanFilterTimes_[t] <<  ";" << "\n";
+
         }
 
-        QProcess _process;
-        _process.start(QString("echo"), QStringList("-la"));
-        _process.waitForFinished();
+        Morison_File.close ( );
+
+        renderPass_ = 0;
+
+        cutawayGenerationTimes_.clear();
+        renderingCutawayTimes_.clear();
+        SSAOBlurCutawayTimes_.clear();
+        MeanFilterTimes_.clear();
 
 
 }
@@ -203,6 +225,7 @@ void GLWidget::setPlay ( int index )
 
                 play_ = !play_;
 
+
                 if ( !play_ )
                 {
                         takes_[index].nextKeyframe_ = 0;
@@ -217,7 +240,7 @@ void GLWidget::setPlay ( int index )
 
                         float angular = sourcePosition_.angularDistance ( targetPosition_ );
 
-                        std::cout << " Angular Distance " << angular << std::endl;
+                        //std::cout << " Angular Distance " << angular << std::endl;
 
                         takes_[index].nextKeyframe_++;
 
@@ -279,14 +302,14 @@ void GLWidget::gameLooping ( )
 
                         float angular = sourcePosition_.angularDistance(targetPosition_);
 
-                        std::cout << "Angular Distance : " << angular << std::endl;
+                        //std::cout << "Angular Distance : " << angular << std::endl;
 
                         time_interval_ = 0.01;
                                                                                                                                                         ;
 
                         time_steps_ = 0.0f*time_interval_;
 
-                        std::cout << " Angular Distance " << angular << std::endl;
+                        //std::cout << " Angular Distance " << angular << std::endl;
 
 //                        sourcePosition_.normalize();
 //                        targetPosition_.normalize();
@@ -304,7 +327,7 @@ void GLWidget::gameLooping ( )
                 }
 
         }
-
+        update();
 
      fps++;
 
