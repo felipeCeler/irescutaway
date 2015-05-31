@@ -189,13 +189,6 @@ namespace IRES
 			std::size_t 		  faceCount;
 
 
-			/// -- GL_ARRAY_ELEMENT Buffer
-
-			std::vector<GLuint> primaryIndices;
-			std::vector<GLuint> secundaryIndices;
-			std::vector<GLuint> shellIndices;
-
-
 	};
 
 } /* namespace IRES */

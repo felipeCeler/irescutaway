@@ -96,6 +96,7 @@ void GLWidget::initializeGL ( )
         cutawayPass_ = 0.0;
         accumulateCutawayGenerationTime_ = 0.0f;
         accumulateRenderingCutawayTime_ = 0.0f;
+        accumulateRenderingPrimaryTime_ = 0.0f;
         accumulateSSAOBlurTime_ = 0.0f;
         accumulateMeanFilterTime_ = 0.0f;
 
@@ -103,6 +104,7 @@ void GLWidget::initializeGL ( )
 
         cutawayGenerationTimes_.resize(renderPass_);
         renderingCutawayTimes_.resize(renderPass_);
+        renderingPrimaryTimes_.resize(renderPass_);
         SSAOBlurCutawayTimes_.resize(renderPass_);
         MeanFilterTimes_.resize(renderPass_);
 
@@ -162,7 +164,7 @@ void GLWidget::initializeGL ( )
 
 	// BenchMarking
 
-	trackball_->decreaseZoom( 5.05 );
+	trackball_->decreaseZoom( 3.05 );
 
 	glGenVertexArrays (1, &vertexArray_Dummy);
 	        glGenBuffers(1,&vertexBuffer_Dummy);
@@ -308,23 +310,22 @@ void GLWidget::changePropertyRangeStatic ( const double& minRange, const double&
 	primaries_face = 0;
 	primaries_cuboid = 0;
 
-////	for ( std::size_t i = 0; i < reservoir_model_.cuboidStatic.size(); i++)
-////	{
-////	        if ( (minRange < reservoir_model_.cuboidStatic[i]) && ( reservoir_model_.cuboidStatic[i] <= maxRange) )
-////	        {
-////	                primaries++;
-////	        }
-////	}
+	int invalid = 0;
 
-        for ( std::size_t i = 0; i < reservoir_model_.number_of_blocks_; i++)
+        for ( std::size_t i = 0; i < reservoir_model_.cuboidStatic.size(); i+=4 )
         {
-                if ( (minRange < reservoir_model_.static_porperties[reservoir_model_.static_indices[0]].values_[i]) && ( reservoir_model_.static_porperties[reservoir_model_.static_indices[0]].values_[i] <= maxRange) )
+                if ( ( minRange < reservoir_model_.cuboidStatic[i] ) && ( reservoir_model_.cuboidStatic[i] <= maxRange ) )
                 {
-                        reservoir_model_.indexCuboids[primaries_cuboid] = i;
+                        reservoir_model_.indexCuboids[primaries_cuboid] = i/4;
                         primaries_cuboid++;
                 }
-        }
+                else
+                {
+                        invalid++;
+                }
 
+        }
+//
         for ( std::size_t i = 0; i < reservoir_model_.iresFaces_.size(); i++)
         {
                 if ( (minRange < reservoir_model_.static_porperties[reservoir_model_.static_indices[0]].values_[reservoir_model_.iresFaces_[i].id]) && ( reservoir_model_.static_porperties[reservoir_model_.static_indices[0]].values_[reservoir_model_.iresFaces_[i].id] <= maxRange) )
@@ -333,17 +334,18 @@ void GLWidget::changePropertyRangeStatic ( const double& minRange, const double&
                         primaries_face++;
                 }
         }
-
+//
         glBindBuffer ( GL_ELEMENT_ARRAY_BUFFER, reservoir_model_.indexBufferFace);
         glBufferData ( GL_ELEMENT_ARRAY_BUFFER, primaries_face * sizeof(reservoir_model_.indexFaces[0]), &reservoir_model_.indexFaces[0], GL_STATIC_DRAW );
 
         glBindBuffer ( GL_ELEMENT_ARRAY_BUFFER, reservoir_model_.indexBufferCuboid);
         glBufferData ( GL_ELEMENT_ARRAY_BUFFER, primaries_cuboid * sizeof(reservoir_model_.indexCuboids[0]), &reservoir_model_.indexCuboids[0], GL_STATIC_DRAW );
-
+//
         glFinish();
 
-        std::cout << "primaries++" << primaries_cuboid << std::endl;
+        std::cout << "primaries++ Cuboid" << primaries_cuboid << std::endl;
         std::cout << "primaries++" << primaries_face << std::endl;
+        std::cout << "invalid" << invalid << std::endl;
 
 	emit primariesPorcentage(QString::number(((float)primaries_face/(float)total)*100));
 
@@ -682,7 +684,7 @@ void GLWidget::drawIRESCutawayStaticSurface ( )
 	glClearColor ( 0.0 , 0.0 , 0.0 , 0.0 );
 	glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-	cutawayGenerationTime_.start ();
+	cutawayGenerationTime_.restart ();
 
 	IRESCutawaySurfaceStatic_->enable( );
 
@@ -705,7 +707,7 @@ void GLWidget::drawIRESCutawayStaticSurface ( )
 	IRESCutawaySurfaceStatic_->setUniform ("freeze", freezeView_ );
 	IRESCutawaySurfaceStatic_->setUniform ("FreezeViewMatrix",freeze_viewmatrix_.data ( ),4, GL_FALSE, 1 );
 
-	reservoir_model_.drawCuboid ( );//reservoir_model_.drawIndexCuboids (primaries_cuboid);
+	reservoir_model_.drawIndexCuboids (primaries_cuboid);//reservoir_model_.drawCuboid ( );
 
 	IRESCutawaySurfaceStatic_->disable( );
 
@@ -759,7 +761,7 @@ void GLWidget::drawPrimaryStatic  ( ) const // Draw only primary   Cells
         SSAOIRESPrimaryStatic_->setUniform ( "ViewMatrix" , trackball_->getViewMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
         SSAOIRESPrimaryStatic_->setUniform ( "ProjectionMatrix" , trackball_->getProjectionMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
 
-        reservoir_model_.drawFaces ( );
+        reservoir_model_.drawIndexFaces(primaries_face);//reservoir_model_.drawFaces ( );
 
         SSAOIRESPrimaryStatic_->disable ( );
 
@@ -797,7 +799,7 @@ void GLWidget::drawSecondaryStatic  ( ) const  // Draw only secondary Cells
         SSAOIRESCutawayStatic_->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
         SSAOIRESCutawayStatic_->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
 
-        reservoir_model_.drawFaces( );//reservoir_model_.drawIndexFaces(reservoir_model_.faceCount);//reservoir_model_.drawFaces( );
+        reservoir_model_.drawFaces( );//reservoir_model_.drawIndexFaces(reservoir_model_.faceCount);
 
         SSAOIRESCutawayStatic_->disable( );
 
@@ -876,13 +878,15 @@ void GLWidget::IRESCutawayStatic (  )
 
                         }
                         glFinish();
+                        accumulateRenderingCutawayTime_ += (float)renderingCutawayTime_.elapsed();
 
+                        renderingPrimaryTime_.start();
                         if ( draw_primary )
                         {
                                 drawPrimaryStatic( );
 
                         }
-                        accumulateRenderingCutawayTime_ += (float)renderingCutawayTime_.elapsed();
+
                         if ( reservoir_model_.showBorderLine )
                         {
 
@@ -897,6 +901,7 @@ void GLWidget::IRESCutawayStatic (  )
 
                                 BorderLines_->disable ( );
                         }
+                        accumulateRenderingPrimaryTime_ += (float)renderingPrimaryTime_.elapsed();
 
 
                 //glDrawBuffer(GL_BACK);
@@ -962,16 +967,18 @@ void GLWidget::IRESCutawayStatic (  )
                                 emit renderingSSAOBlurTime ( QString::number ( ( accumulateSSAOBlurTime_/cutawayPass_ ) ) );
                                 emit renderingMeanFilterTime ( QString::number ( ( accumulateMeanFilterTime_/cutawayPass_ ) ) );
 
-//                                cutawayGenerationTimes_[renderPass_] = accumulateCutawayGenerationTime_/cutawayPass_;
-//                                renderingCutawayTimes_[renderPass_] = accumulateRenderingCutawayTime_/cutawayPass_;
-//                                SSAOBlurCutawayTimes_[renderPass_] = accumulateSSAOBlurTime_/cutawayPass_;
-//                                MeanFilterTimes_[renderPass_] = accumulateMeanFilterTime_/cutawayPass_;
+                                cutawayGenerationTimes_[renderPass_] = accumulateCutawayGenerationTime_/cutawayPass_;
+                                renderingCutawayTimes_[renderPass_] = accumulateRenderingCutawayTime_/cutawayPass_;
+                                renderingPrimaryTimes_[renderPass_] = accumulateRenderingPrimaryTime_/cutawayPass_;
+                                SSAOBlurCutawayTimes_[renderPass_] = accumulateSSAOBlurTime_/cutawayPass_;
+                                MeanFilterTimes_[renderPass_] = accumulateMeanFilterTime_/cutawayPass_;
 
-                                std::cout << "accumulateCutawayGenerationTime_" << accumulateCutawayGenerationTime_/cutawayPass_ << std::endl ;
-                                std::cout << "accumulateRenderingCutawayTime_" << accumulateRenderingCutawayTime_/cutawayPass_ << std::endl ;
+//                                std::cout << "accumulateCutawayGenerationTime_" << accumulateCutawayGenerationTime_/cutawayPass_ << std::endl ;
+//                                std::cout << "accumulateRenderingCutawayTime_" << accumulateRenderingCutawayTime_/cutawayPass_ << std::endl ;
 
                                 accumulateCutawayGenerationTime_ = 0.0f;
                                 accumulateRenderingCutawayTime_ = 0.0f;
+                                accumulateRenderingPrimaryTime_ = 0.0f;
                                 accumulateSSAOBlurTime_ = 0.0f;
                                 accumulateMeanFilterTime_ = 0.0f;
                                 cutawayPass_ = 0.0f;

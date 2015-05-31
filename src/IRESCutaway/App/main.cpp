@@ -41,6 +41,7 @@ int main ( int argc , char *argv[] )
         form->ui->horizontalSliderLineWith->setValue(2);
 
 
+
 //
 //	form->changeProperty();
 

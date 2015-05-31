@@ -34,8 +34,7 @@ Face cutVolume[6];
 
 void byCentroid ( )
 {
-        if ( cube[0].color.r == 1.0 )
-        {
+
                 for ( int i = 0; i < 6; i++ )
                 {
 
@@ -64,7 +63,6 @@ void byCentroid ( )
 
                         EndPrimitive ( );
                 }
-        }
 }
 
 

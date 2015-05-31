@@ -386,6 +386,9 @@ class GLWidget: public QGLWidget
                 QTime renderingCutawayTime_;
                 float accumulateRenderingCutawayTime_;
                 std::vector<float> renderingCutawayTimes_;
+                QTime renderingPrimaryTime_;
+                float accumulateRenderingPrimaryTime_;
+                std::vector<float> renderingPrimaryTimes_;
                 QTime renderingSSAOBlurTime_;
                 float accumulateSSAOBlurTime_;
                 std::vector<float> SSAOBlurCutawayTimes_;
