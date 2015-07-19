@@ -901,6 +901,7 @@ void GLWidget::IRESCutawayStatic (  )
 
                                 BorderLines_->disable ( );
                         }
+                        glFinish();
                         accumulateRenderingPrimaryTime_ += (float)renderingPrimaryTime_.elapsed();
 
 
@@ -964,6 +965,7 @@ void GLWidget::IRESCutawayStatic (  )
                         {
                                 emit cutawayGenerationTime ( QString::number ( ( accumulateCutawayGenerationTime_/cutawayPass_ ) ) );
                                 emit renderingCutawayTime ( QString::number ( ( accumulateRenderingCutawayTime_/cutawayPass_ ) ) );
+                                emit renderingPrimaryTime ( QString::number ( ( accumulateRenderingPrimaryTime_/cutawayPass_ ) ) );
                                 emit renderingSSAOBlurTime ( QString::number ( ( accumulateSSAOBlurTime_/cutawayPass_ ) ) );
                                 emit renderingMeanFilterTime ( QString::number ( ( accumulateMeanFilterTime_/cutawayPass_ ) ) );
 

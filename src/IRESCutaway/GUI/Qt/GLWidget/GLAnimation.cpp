@@ -55,6 +55,7 @@ void GLWidget::flush()
 
                 Morison_File << cutawayGenerationTimes_[t] << ";"
                              << renderingCutawayTimes_[t] << ";"
+                             << renderingPrimaryTimes_[t] << ";"
                              << SSAOBlurCutawayTimes_[t] << ";"
                              << MeanFilterTimes_[t] <<  ";" << "\n";
 

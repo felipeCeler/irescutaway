@@ -110,6 +110,7 @@ void MainWindow::WidgetSignalSlotConnection( )
 
         connect(glWidget, SIGNAL(cutawayGenerationTime(const QString&)), ui->label_Generation_Slot, SLOT(setText(const QString&)));
         connect(glWidget, SIGNAL(renderingCutawayTime(const QString&)), ui->label_Rendering_Slot, SLOT(setText(const QString&)));
+        connect(glWidget, SIGNAL(renderingPrimaryTime(const QString&)), ui->label_Primary_Time_Slot, SLOT(setText(const QString&)));
 
         connect(glWidget, SIGNAL(renderingSSAOBlurTime(const QString&)), ui->label_SSAOBlur_Slot, SLOT(setText(const QString&)));
         connect(glWidget, SIGNAL(renderingMeanFilterTime(const QString&)), ui->label_MeanFilter_Slot, SLOT(setText(const QString&)));

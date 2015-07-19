@@ -1502,14 +1502,14 @@
           </property>
          </widget>
         </item>
-        <item row="7" column="0">
+        <item row="8" column="0">
          <widget class="QLabel" name="label_fps">
           <property name="text">
            <string>Total Time:</string>
           </property>
          </widget>
         </item>
-        <item row="7" column="1">
+        <item row="8" column="1">
          <widget class="QLabel" name="label_fps_slot">
           <property name="text">
            <string>0</string>
@@ -1537,29 +1537,43 @@
           </property>
          </widget>
         </item>
-        <item row="5" column="0">
+        <item row="6" column="0">
          <widget class="QLabel" name="label_SSAOBlur">
           <property name="text">
            <string>SSAO + Blur</string>
           </property>
          </widget>
         </item>
-        <item row="5" column="1">
+        <item row="6" column="1">
          <widget class="QLabel" name="label_SSAOBlur_Slot">
           <property name="text">
            <string>0</string>
           </property>
          </widget>
         </item>
-        <item row="6" column="0">
+        <item row="7" column="0">
          <widget class="QLabel" name="label_MeanFilter">
           <property name="text">
            <string>Mean Filter</string>
           </property>
          </widget>
         </item>
-        <item row="6" column="1">
+        <item row="7" column="1">
          <widget class="QLabel" name="label_MeanFilter_Slot">
+          <property name="text">
+           <string>0</string>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="0">
+         <widget class="QLabel" name="label_Primary_Time">
+          <property name="text">
+           <string>Primary Time</string>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="1">
+         <widget class="QLabel" name="label_Primary_Time_Slot">
           <property name="text">
            <string>0</string>
           </property>

@@ -291,6 +291,7 @@ class GLWidget: public QGLWidget
                 void fpsChanged ( const QString& );
                 void cutawayGenerationTime ( const QString& );
                 void renderingCutawayTime ( const QString& );
+                void renderingPrimaryTime ( const QString& );
                 void renderingSSAOBlurTime ( const QString& );
                 void renderingMeanFilterTime ( const QString& );
                 void primariesPorcentage ( const QString& );
