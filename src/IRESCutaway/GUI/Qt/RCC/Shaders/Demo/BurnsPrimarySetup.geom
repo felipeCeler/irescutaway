@@ -12,7 +12,7 @@ in CubeData
         vec4 v[8];
         vec3 n[6];
         vec4 color;
-} cube[1];
+} cube[];
 
 
 out VertexData

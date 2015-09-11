@@ -1,4 +1,4 @@
-#version 430 core
+#version 450 core
 
 layout( points ) in;
 layout( triangle_strip, max_vertices=4 ) out;
@@ -7,13 +7,14 @@ uniform vec2 WIN_SCALE;
 
 noperspective out vec4 dist;
 
+
 in VertexData
 {
             vec4 v[4];
             vec4 n[2];
             vec4 eye[4];
             vec4 color;
-} VertexIn[4];
+} VertexIn[];
 
 
 out VertexData

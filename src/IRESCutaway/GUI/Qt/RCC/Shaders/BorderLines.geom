@@ -15,7 +15,7 @@ in VertexData
 	    vec4 eye[4];
 	    vec4 color;
 	    vec4  faceType;
-} VertexIn[1];
+} VertexIn[];
 
 
 out VertexData

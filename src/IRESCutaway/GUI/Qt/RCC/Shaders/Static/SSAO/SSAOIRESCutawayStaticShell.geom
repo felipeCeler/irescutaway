@@ -1,4 +1,4 @@
-#version 430 core
+#version 450 core
 
 layout( points ) in;
 layout( triangle_strip, max_vertices=4 ) out;
@@ -13,13 +13,13 @@ in VertexData
 	    vec4 n[2];
 	    vec4 eye[4];
 	    vec4 color;
-} VertexIn[4];
+} VertexIn[];
 
 
 out VertexData
 {
 	vec4 vertice;
-        vec4 normal;
+    vec4 normal;
 	vec4 color;
 } VertexOut;
 

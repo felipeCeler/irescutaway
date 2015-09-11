@@ -761,7 +761,7 @@ void GLWidget::drawPrimaryStatic  ( ) const // Draw only primary   Cells
         SSAOIRESPrimaryStatic_->setUniform ( "ViewMatrix" , trackball_->getViewMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
         SSAOIRESPrimaryStatic_->setUniform ( "ProjectionMatrix" , trackball_->getProjectionMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
 
-        reservoir_model_.drawIndexFaces(primaries_face);//reservoir_model_.drawFaces ( );
+        reservoir_model_.drawFaces ( );//reservoir_model_.drawIndexFaces(primaries_face);
 
         SSAOIRESPrimaryStatic_->disable ( );
 
@@ -807,6 +807,8 @@ void GLWidget::drawSecondaryStatic  ( ) const  // Draw only secondary Cells
 
         SSAOIRESCutawayStaticShell_->enable( );
 
+        std::cout << " SSAOIRESCutawayStaticShell_->getShaderProgram()" << SSAOIRESCutawayStaticShell_->getShaderProgram() << std::endl;
+
         SSAOIRESCutawayStaticShell_->setUniform( "normal" , depthFBO->bindAttachment(normalsSmoothID_) );
         SSAOIRESCutawayStaticShell_->setUniform( "vertex" , depthFBO->bindAttachment(verticesSmoothID_) );
 
@@ -817,7 +819,7 @@ void GLWidget::drawSecondaryStatic  ( ) const  // Draw only secondary Cells
         SSAOIRESCutawayStaticShell_->setUniform("min_property", reservoir_model_.static_min[reservoir_model_.current_static]  );
         SSAOIRESCutawayStaticShell_->setUniform("max_property", reservoir_model_.static_max[reservoir_model_.current_static]  );
         SSAOIRESCutawayStaticShell_->setUniform("property_index", reservoir_model_.current_static );
-        SSAOIRESCutawayStaticShell_->setUniform("faults", reservoir_model_.showFault );
+        SSAOIRESCutawayStaticShell_->setUniform("faults" ,(GLint)(reservoir_model_.showFault) );
         SSAOIRESCutawayStaticShell_->setUniform("justWireFrame", justWireFrame );
 
         SSAOIRESCutawayStaticShell_->setUniform ( "isPerspective_" , isPerspective_ );
@@ -1227,8 +1229,7 @@ void GLWidget::drawSecondaryDynamic ( ) const
 
 void GLWidget::IRESCutawayDynamic ( )
 {
-
-        //      /// FIXME Conditions  - Primary and Secondary well defined.
+        /// FIXME Conditions  - Primary and Secondary well defined.
 
         if ( isIRESOpen_ )
         {
@@ -1249,7 +1250,7 @@ void GLWidget::IRESCutawayDynamic ( )
 
                 drawBackGround( );
 
-                /// OFFSCREEN Renderer
+                 /// OFFSCREEN Renderer
                  /// DRAW COLOR_BUFFER -->  glDrawBuffers(2,[depthTextureID, normalTextureID, colorTextureID]);
                  fboSSAO->clearAttachments();
                  fboSSAO->bindRenderBuffers(depthTextureID, normalTextureID, colorTextureID);
@@ -1356,37 +1357,8 @@ void GLWidget::drawIRESModel ( )
         drawBackGround( );
 
         // Surface Faces
-
         RawModel_->enable( );
-
-        /// Shader Intensity
-        RawModel_->setUniform ( "saturation_" , this->saturationPrimaries_);
-        RawModel_->setUniform ( "luminance_"  , this->luminancePrimaries_);
-
-        RawModel_->setUniform("paper", 1.0  );
-        RawModel_->setUniform("property_type", property_type_  );
-        RawModel_->setUniform("box_min", ply_primary_.box.box_min().x,ply_primary_.box.box_min().y,ply_primary_.box.box_min().z );
-        RawModel_->setUniform("box_max", ply_primary_.box.box_max().x,ply_primary_.box.box_max().y,ply_primary_.box.box_max().z );
-
-        RawModel_->setUniform("move_x", move_x  );
-        RawModel_->setUniform("move_y", move_y  );
-        RawModel_->setUniform("move_z", move_z  );
-
-        RawModel_->setUniform("min_range_static", min_range_static_  );
-        RawModel_->setUniform("max_range_static", max_range_static_  );
-
-        RawModel_->setUniform("min_range_dynamic", min_range_dynamic_  );
-        RawModel_->setUniform("max_range_dynamic", max_range_dynamic_  );
-
-        RawModel_->setUniform ("max_property_dynamic" , reservoir_model_.dynamic_properties[dynamic_property_index].max_[time_step] );
-        RawModel_->setUniform ("min_property_dynamic" , reservoir_model_.dynamic_properties[dynamic_property_index].min_[time_step] );
-
-        RawModel_->setUniform("min_property_static", reservoir_model_.static_min[reservoir_model_.current_static]  );
-        RawModel_->setUniform("max_property_static", reservoir_model_.static_max[reservoir_model_.current_static]  );
-        RawModel_->setUniform("property_index", reservoir_model_.current_static );
-
-        RawModel_->setUniform("justWireFrame", justWireFrame );
-        RawModel_->setUniform("faults", reservoir_model_.showFault );
+        //std::cout << " RawModel_->getShaderProgram() " << RawModel_->getShaderProgram() << std::endl;
 
         RawModel_->setUniform("num_lights", (GLint) lights.size ( )  );
         RawModel_->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
@@ -1396,7 +1368,7 @@ void GLWidget::drawIRESModel ( )
         RawModel_->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
         RawModel_->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
 
-        reservoir_model_.drawIndexFaces(primaries_face);
+        reservoir_model_.drawFaces();//drawIndexFaces(primaries_face);
 
         RawModel_->disable( );
 
@@ -1474,13 +1446,11 @@ void GLWidget::PaperDemo() const
 
                 if ( draw_secondary )
                 {
-                        PaperSecondary( );
+                        //PaperSecondary( );
                 }
                 if ( draw_primary )
                 {
-
-                        PaperPly();//PaperPrimary( );
-
+                		PaperPrimary( );//PaperPly();
                 }
 
                 glActiveTexture(GL_TEXTURE0);
@@ -1772,18 +1742,26 @@ void GLWidget::loadShaders ( )
                                           (shaderDirectory + "BorderLines.frag").toStdString(),
                                           (shaderDirectory + "BorderLines.geom").toStdString(),1);
                 BorderLines_->initialize();
+                std::cout << " BorderLines_ " << BorderLines_->getShaderProgram() << std::endl;
 
                 xtoon_texture_viewer = new Shader ("xtoon_texture",
                                                   (shaderDirectory + "xtoon_texture.vert").toStdString(),
                                                   (shaderDirectory + "xtoon_texture.frag").toStdString(),"",1);
                 xtoon_texture_viewer->initialize( );
 
+                std::cout << " xtoon_texture_viewer " << xtoon_texture_viewer->getShaderProgram() << std::endl;
+
                 meanFilter->setShadersDir( shaderDirectory.toStdString() );
                 meanFilter->initialize( );
+
+                //std::cout << " meanFilter " << meanFilter->getShaderProgram() << std::endl;
 
                 BackGround_ = new Shader  ("BackGround", (shaderDirectory + "BackGround.vert").toStdString(),
                                          (shaderDirectory + "BackGround.frag").toStdString(),"",1);
                 BackGround_->initialize( );
+
+                std::cout << " BackGround_ " << BackGround_->getShaderProgram() << std::endl;
+
         //! Paper Demo
 
                 RawModel_ = new Shader ("Raw Model",
@@ -1792,6 +1770,7 @@ void GLWidget::loadShaders ( )
                                          (shaderDirectory + "RawModel.geom").toStdString(),1);
 
                 RawModel_->initialize( );
+                std::cout << " RawModel_ " << RawModel_->getShaderProgram() << std::endl;
 
                 BurnsPrimary_ = new Shader ("BurnsPrimary",
                                       (shaderDirectory + "Demo/BurnsPrimaryStatic.vert").toStdString(),
@@ -1800,12 +1779,14 @@ void GLWidget::loadShaders ( )
 
 
                 BurnsPrimary_->initialize( );
+                std::cout << " BurnsPrimary_ " << BurnsPrimary_->getShaderProgram() << std::endl;
 
                 BurnsPrimarySetup_ = new Shader ("BurnsPrimarySetup",
                                                 (shaderDirectory + "Demo/BurnsPrimarySetup.vert").toStdString(),
                                                 (shaderDirectory + "Demo/BurnsPrimarySetup.frag").toStdString(),
                                                 (shaderDirectory + "Demo/BurnsPrimarySetup.geom").toStdString(),1);
                 BurnsPrimarySetup_->initialize( );
+                std::cout << " BurnsPrimarySetup_ " << BurnsPrimarySetup_->getShaderProgram() << std::endl;
 
                 BurnsSecondary_ = new Shader ("BurnsSecondary",
                                          (shaderDirectory + "Demo/BurnsSecondary.vert").toStdString(),
@@ -1813,27 +1794,28 @@ void GLWidget::loadShaders ( )
                                          (shaderDirectory + "Demo/BurnsSecondary.geom").toStdString(),1);
 
                 BurnsSecondary_->initialize( );
+                std::cout << " BurnsSecondary_ " << BurnsSecondary_->getShaderProgram() << std::endl;
 
                 DummyQuad_ = new Shader ("DummyQuad",
                                         (shaderDirectory + "Demo/DummyQuad.vert").toStdString(),
                                         (shaderDirectory + "Demo/DummyQuad.frag").toStdString(),
                                         (shaderDirectory + "Demo/DummyQuad.geom").toStdString(),1);
                 DummyQuad_->initialize( );
-
+                std::cout << " DummyQuad_ " << DummyQuad_->getShaderProgram() << std::endl;
        //! DYNAMIC VIEWER F11 Static PropertieswayStatic"
                 IRESCutawaySurfaceStatic_ = new Shader ("IRESCutawaySurfaceStatic",
                                                       (shaderDirectory + "Static/IRESCutawaySurfaceStatic.vert").toStdString(),
                                                       (shaderDirectory + "Static/IRESCutawaySurfaceStatic.frag").toStdString(),
                                                       (shaderDirectory + "Static/IRESCutawaySurfaceStatic.geom").toStdString(),1);
                 IRESCutawaySurfaceStatic_->initialize( );
-
+                std::cout << " IRESCutawaySurfaceStatic_ " << IRESCutawaySurfaceStatic_->getShaderProgram() << std::endl;
 
                 IRESCutawaySurfaceDynamic_ = new Shader ("IRESCutawaySurfaceDynamic",
                                                        (shaderDirectory + "Dynamic/IRESCutawaySurfaceDynamic.vert").toStdString(),
                                                        (shaderDirectory + "Dynamic/IRESCutawaySurfaceDynamic.frag").toStdString(),
                                                        (shaderDirectory + "Dynamic/IRESCutawaySurfaceDynamic.geom").toStdString(),1);
                 IRESCutawaySurfaceDynamic_->initialize();
-
+                std::cout << " IRESCutawaySurfaceDynamic_ " << IRESCutawaySurfaceDynamic_->getShaderProgram() << std::endl;
 
 
 
@@ -1842,7 +1824,7 @@ void GLWidget::loadShaders ( )
                                        (shaderDirectory + "Demo/BurnsPrimary430.frag").toStdString(),
                                         "",1);
                 BurnsPly_->initialize( );
-
+                std::cout << " BurnsPly_ " << BurnsPly_->getShaderProgram() << std::endl;
         //! SSAO
 
                 /// The per pixel AO computation shader
@@ -1852,18 +1834,19 @@ void GLWidget::loadShaders ( )
                                          (shaderDirectory + "SSAO/ssao.frag").toStdString(),
                                             "",1);
                 ssaoShader_->initialize();
-
+                std::cout << " ssaoShader_ " << ssaoShader_->getShaderProgram() << std::endl;
 
                 deferredShader = new Shader ("deferredShader", (shaderDirectory + "SSAO/viewspacebuffer.vert").toStdString(),
                                                              (shaderDirectory + "SSAO/viewspacebuffer.frag").toStdString(),
                                                              "",1);
                 deferredShader->initialize();
+                std::cout << " deferredShader " << deferredShader->getShaderProgram() << std::endl;
 
                 blurShader_ = new Shader ("blurShader", (shaderDirectory + "SSAO/gaussianblurfilter.vert").toStdString(),
                                                        (shaderDirectory + "SSAO/gaussianblurfilter.frag").toStdString(),
                                                              "",1);
                 blurShader_->initialize();
-
+                std::cout << " blurShader_ " << blurShader_->getShaderProgram() << std::endl;
                 //! SSAO STATIC
 
                 SSAOIRESPrimaryStatic_ = new Shader ("IRESPrimaryStatic",
@@ -1872,6 +1855,7 @@ void GLWidget::loadShaders ( )
                                                 (shaderDirectory + "Static/SSAO/SSAOIRESPrimaryStatic.geom").toStdString(),1);
 
                 SSAOIRESPrimaryStatic_->initialize();
+                std::cout << " SSAOIRESPrimaryStatic_ " << SSAOIRESPrimaryStatic_->getShaderProgram() << std::endl;
 
                 SSAOIRESCutawayStatic_ = new Shader ("SSAOIRESCutawayStatic_",
                                                 (shaderDirectory + "Static/SSAO/SSAOIRESCutawayStatic.vert").toStdString(),
@@ -1879,6 +1863,7 @@ void GLWidget::loadShaders ( )
                                                 (shaderDirectory + "Static/SSAO/SSAOIRESCutawayStatic.geom").toStdString(),1);
 
                 SSAOIRESCutawayStatic_->initialize();
+                std::cout << " SSAOIRESCutawayStatic_ " << SSAOIRESCutawayStatic_->getShaderProgram() << std::endl;
 
                 SSAOIRESCutawayStaticShell_ = new Shader ("SSAOIRESCutawayStaticShell_",
                                                 (shaderDirectory + "Static/SSAO/SSAOIRESCutawayStaticShell.vert").toStdString(),
@@ -1886,6 +1871,7 @@ void GLWidget::loadShaders ( )
                                                 (shaderDirectory + "Static/SSAO/SSAOIRESCutawayStaticShell.geom").toStdString(),1);
 
                 SSAOIRESCutawayStaticShell_->initialize();
+                std::cout << " SSAOIRESCutawayStaticShell_ " << SSAOIRESCutawayStaticShell_->getShaderProgram() << std::endl;
 
                 //! SSAO Dynamic
 
@@ -1895,6 +1881,7 @@ void GLWidget::loadShaders ( )
                                                 (shaderDirectory + "Dynamic/SSAO/SSAOIRESPrimaryDynamic.geom").toStdString(),1);
 
                 SSAOIRESPrimaryDynamic_->initialize();
+                std::cout << " SSAOIRESPrimaryDynamic_ " << SSAOIRESPrimaryDynamic_->getShaderProgram() << std::endl;
 
                 SSAOIRESCutawayDynamic_ = new Shader ("SSAOIRESCutawayDynamic",
                                                 (shaderDirectory + "Dynamic/SSAO/SSAOIRESCutawayDynamic.vert").toStdString(),
@@ -1902,6 +1889,7 @@ void GLWidget::loadShaders ( )
                                                 (shaderDirectory + "Dynamic/SSAO/SSAOIRESCutawayDynamic.geom").toStdString(),1);
 
                 SSAOIRESCutawayDynamic_->initialize();
+                std::cout << " SSAOIRESCutawayDynamic_ " << SSAOIRESCutawayDynamic_->getShaderProgram() << std::endl;
 
                 SSAOIRESCutawayDynamicShell_ = new Shader ("SSAOIRESCutawayDynamicShell_",
                                                 (shaderDirectory + "Dynamic/SSAO/SSAOIRESCutawayDynamicShell.vert").toStdString(),
@@ -1909,6 +1897,7 @@ void GLWidget::loadShaders ( )
                                                 (shaderDirectory + "Dynamic/SSAO/SSAOIRESCutawayDynamicShell.geom").toStdString(),1);
 
                 SSAOIRESCutawayDynamicShell_->initialize();
+                std::cout << " SSAOIRESCutawayDynamicShell_ " << SSAOIRESCutawayDynamicShell_->getShaderProgram() << std::endl;
 
 
 

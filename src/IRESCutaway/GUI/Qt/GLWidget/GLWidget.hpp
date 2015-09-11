@@ -10,7 +10,6 @@
 /// Celer::Libraries
 #include <IRES/CornerPointGrid.hpp>
 #include <Loaders/Ply/PlyLoader.hpp>
-
 /// LCG Library
 #include <shaderlib/trackball.hpp>
 #include <shaderlib/framebuffer.hpp>

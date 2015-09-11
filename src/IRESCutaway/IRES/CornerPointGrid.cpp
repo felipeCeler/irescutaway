@@ -44,6 +44,7 @@ namespace IRES
 		glGenVertexArrays ( 1, &vertexArrayFaces );
 			glGenBuffers ( 1, &vertexBufferFaceGeometry );   // Geometry
 			glGenBuffers ( 1, &vertexBufferFaceStatic ); // Face Properties
+			glGenBuffers ( 1, &vertexBufferFaceType ); // Face Properties
 			glGenBuffers ( 1 ,&indexBufferFace);  // Indices
 
 
@@ -360,11 +361,12 @@ namespace IRES
 	                                glVertexAttribPointer(location, 4, GL_FLOAT, GL_FALSE, size_of_struct_face , reinterpret_cast<void*>(size_of_vertice_face * location));
 	                        }
 
+
                                 glBindBuffer ( GL_ARRAY_BUFFER, vertexBufferFaceType);
                                 glBufferData ( GL_ARRAY_BUFFER , faceType.size( ) * sizeof(faceType[0]) , &faceType[0] , GL_STATIC_DRAW );
 
-                                glEnableVertexAttribArray(4);
                                 glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, 0, 0);
+                                glEnableVertexAttribArray(4);
 
                                 glBindBuffer ( GL_ARRAY_BUFFER, vertexBufferFaceStatic);
                                 glBufferData ( GL_ARRAY_BUFFER , faceStatic.size( ) * sizeof(faceStatic[0]) , &faceStatic[0] , GL_STATIC_DRAW );
@@ -598,9 +600,9 @@ namespace IRES
 		glBufferData ( GL_ARRAY_BUFFER , faceStatic.size( ) * sizeof(faceStatic[0]) , &faceStatic[0] , GL_STATIC_DRAW );
 		glBindBuffer ( GL_ARRAY_BUFFER, 0);
 
-                glFinish();
+        glFinish();
 
-                //faceStatic.clear();
+       //faceStatic.clear();
 	}
 
 } /* namespace ires */

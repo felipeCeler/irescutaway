@@ -1,4 +1,4 @@
-#version 430 core
+#version 450 core
 
 layout(location = 0) uniform sampler2D normal;
 layout(location = 1) uniform sampler2D vertex;

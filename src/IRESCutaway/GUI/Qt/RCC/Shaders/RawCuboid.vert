@@ -54,6 +54,6 @@ vec4 propertyColor ( in float min_range, in float max_range, in int index )
 void main(void)
 {
 
-
+	gl_position = v0;
 
 }

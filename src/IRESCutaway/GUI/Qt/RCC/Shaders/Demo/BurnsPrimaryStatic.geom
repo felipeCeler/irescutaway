@@ -18,7 +18,7 @@ in CubeData
         vec4 n[12];
         vec4 color;
 
-} cube[1];
+} cube[];
 
 struct Face
 {

@@ -13,7 +13,7 @@ in VertexData
             vec4 n[2];
             vec4 eye[4];
 flat        vec4 color;
-} VertexIn[4];
+} VertexIn[];
 
 
 out VertexData

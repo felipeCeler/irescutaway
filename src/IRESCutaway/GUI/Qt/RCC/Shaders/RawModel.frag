@@ -1,4 +1,4 @@
-#version 430 core
+#version 450 core
 
 in VertexData
 {
@@ -24,22 +24,6 @@ void main(void)
         vec3 newNormal = normalize(VertexIn.normal.xyz);
         vec3 newVert = VertexIn.vertice.xyz;
         vec4 color_t = VertexIn.color;
-
-        if ( color_t.a > 2)
-        {
-                color_t.rgb = vec3 ( 0.0 , 1.0 , 0.0 );
-        }
-        else
-        {
-                if ( color_t.a == 0.0 )
-                {
-                        color_t.rgb = vec3 ( 1.0 , 0.0 , 0.0 );
-                }
-                else
-                {
-                        color_t.rgb = vec3 ( 0.0 , 0.0 , 1.0 );
-                }
-        }
 
         vec4 la = vec4(0.0);
         vec4 ld = vec4(0.0);

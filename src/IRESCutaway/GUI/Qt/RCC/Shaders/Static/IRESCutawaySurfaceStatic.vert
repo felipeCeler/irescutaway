@@ -106,7 +106,7 @@ void main(void)
                 ext_y = ( camera_up ) * ey ;
                 ext_z = ( camera_dir ) * ez ;
 
-                float zfactor = 12.0;
+                float zfactor = 50.0;
                 v[0] = vec4 ( center_of_mass + ext_x + ext_y + zfactor * ext_z + x * ext_x + y * ext_y , 1.0 );
                 v[1] = vec4 ( center_of_mass + ext_x + ext_y - ext_z , 1.0 );
                 v[2] = vec4 ( center_of_mass - ext_x + ext_y - ext_z , 1.0 );

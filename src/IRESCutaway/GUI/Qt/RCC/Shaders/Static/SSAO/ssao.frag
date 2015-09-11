@@ -1,5 +1,5 @@
 #version 430
-#define numberOfSamples 64
+#define numberOfSamples 16
 
 out vec4 out_Color;
 
