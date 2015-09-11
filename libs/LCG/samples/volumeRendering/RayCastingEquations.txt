@@ -1,0 +1,15 @@
+				
+
+				Inicio				
+				opacity= d_TransferFunction[TF(R,G,opacidade)];
+				tAcc= (1.0-opacity);
+				cAccR= d_TransferFunction[TF(R,G,corR)] * opacity;
+				cAccG= d_TransferFunction[TF(R,G,corG)] * opacity;
+				cAccB= d_TransferFunction[TF(R,G,corB)] * opacity;
+
+				iteração
+				opacity= d_TransferFunction[TF(R,G,opacidade)];
+				cAccR+= d_TransferFunction[TF(R,G,corR)] * opacityCur * tAcc;
+				cAccG+= d_TransferFunction[TF(R,G,corG)] * opacityCur * tAcc;
+				cAccB+= d_TransferFunction[TF(R,G,corB)] * opacityCur * tAcc;
+				tAcc*= (1.0 - opacity);

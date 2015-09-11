@@ -1,0 +1,29 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libires", "ires\ires.vcxproj", "{04CD75F0-D702-4107-9084-3A41CD388954}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test", "test\test.vcxproj", "{22486F19-15DB-4409-809D-D03F9DFDC619}"
+	ProjectSection(ProjectDependencies) = postProject
+		{04CD75F0-D702-4107-9084-3A41CD388954} = {04CD75F0-D702-4107-9084-3A41CD388954}
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{04CD75F0-D702-4107-9084-3A41CD388954}.Debug|Win32.ActiveCfg = Debug|Win32
+		{04CD75F0-D702-4107-9084-3A41CD388954}.Debug|Win32.Build.0 = Debug|Win32
+		{04CD75F0-D702-4107-9084-3A41CD388954}.Release|Win32.ActiveCfg = Release|Win32
+		{04CD75F0-D702-4107-9084-3A41CD388954}.Release|Win32.Build.0 = Release|Win32
+		{22486F19-15DB-4409-809D-D03F9DFDC619}.Debug|Win32.ActiveCfg = Debug|Win32
+		{22486F19-15DB-4409-809D-D03F9DFDC619}.Debug|Win32.Build.0 = Debug|Win32
+		{22486F19-15DB-4409-809D-D03F9DFDC619}.Release|Win32.ActiveCfg = Release|Win32
+		{22486F19-15DB-4409-809D-D03F9DFDC619}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

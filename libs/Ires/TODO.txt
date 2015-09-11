@@ -1,0 +1,11 @@
+********************************
+** IRESv2 TODO list
+********************************
+
+-- Create a make or cmake for mac os X
+OK -- Test V2.1
+-- Create a Dynamic Propierty Genarator
+-- Include Face propierties
+-- Include General Propierties
+-- Include the information of valid/non-valid block
+

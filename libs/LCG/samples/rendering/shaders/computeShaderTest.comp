@@ -1,0 +1,15 @@
+#version 430
+
+uniform sampler2D sampleTexture;
+uniform image2D finalImage;
+
+layout (local_size_x = 1, local_size_y = 1) in;
+
+void main() {
+
+	ivec2 imageTexCoord = ivec2(gl_GlobalInvocationID.xy);
+	vec2 samplerTexCoord = vec2(gl_GlobalInvocationID.x/float(gl_NumWorkGroups.x), gl_GlobalInvocationID.y/float(gl_NumWorkGroups.y));
+	vec4 finalColor = texture(sampleTexture,samplerTexCoord).gbra;
+	imageStore(finalImage, imageTexCoord, finalColor);
+
+}
