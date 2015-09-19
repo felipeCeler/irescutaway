@@ -146,6 +146,7 @@ void GLWidget::initializeGL ( )
 	verticesCutawayID_ = 1;
 	normalsSmoothID_ = 2;
 	verticesSmoothID_ =  3;
+	silhouetteID_	  = 4;
 
 	meanFilter = new MeanFilter( "Gaussian blur");
 	meanFilter->resize(width(), height());
@@ -739,6 +740,8 @@ void GLWidget::drawPrimaryStatic  ( ) const // Draw only primary   Cells
 
         SSAOIRESPrimaryStatic_->enable ( );
 
+        SSAOIRESPrimaryStatic_->setUniform ("vertex" , depthFBO->bindAttachment(verticesCutawayID_));
+
         SSAOIRESPrimaryStatic_->setUniform ( "num_lights" , (GLint) lights.size ( ) );
         SSAOIRESPrimaryStatic_->setUniform ( "lights[0]" , light_elements , 3 , (GLint) lights.size ( ) );
         SSAOIRESPrimaryStatic_->setUniform ( "WIN_SCALE" , (float) width ( ) , (float) height ( ) );
@@ -764,6 +767,8 @@ void GLWidget::drawPrimaryStatic  ( ) const // Draw only primary   Cells
         reservoir_model_.drawFaces ( );//reservoir_model_.drawIndexFaces(primaries_face);
 
         SSAOIRESPrimaryStatic_->disable ( );
+
+        depthFBO->unbindAll();
 
 }
 
@@ -807,7 +812,7 @@ void GLWidget::drawSecondaryStatic  ( ) const  // Draw only secondary Cells
 
         SSAOIRESCutawayStaticShell_->enable( );
 
-        std::cout << " SSAOIRESCutawayStaticShell_->getShaderProgram()" << SSAOIRESCutawayStaticShell_->getShaderProgram() << std::endl;
+//        std::cout << " SSAOIRESCutawayStaticShell_->getShaderProgram()" << SSAOIRESCutawayStaticShell_->getShaderProgram() << std::endl;
 
         SSAOIRESCutawayStaticShell_->setUniform( "normal" , depthFBO->bindAttachment(normalsSmoothID_) );
         SSAOIRESCutawayStaticShell_->setUniform( "vertex" , depthFBO->bindAttachment(verticesSmoothID_) );

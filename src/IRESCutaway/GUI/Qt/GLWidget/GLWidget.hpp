@@ -580,6 +580,8 @@ class GLWidget: public QGLWidget
                 GLuint normalsSmoothID_;
                 /// Vertices in Camera Space outputVertices vec3 (newVert.xyz, 1.0 );
                 GLuint verticesSmoothID_;
+                /// Silhouette Rendering
+                GLuint silhouetteID_;
                 /// Cutaway FrameBuffer
                 Framebuffer * depthFBO;
 

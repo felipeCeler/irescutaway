@@ -1,5 +1,7 @@
 #version 430 core
 
+layout(location = 1) uniform sampler2D vertex;
+
 in VertexData
 {
 	vec4 vertice;
@@ -119,6 +121,12 @@ void main(void)
 
         vec3 eye_dir = normalize ( -newVert.xyz );
 
+
+//        // discard point in front of the cutaway surface
+//        if ( newVert.z > cutaway.w ) {
+//            discard;
+//        }
+
         float d = min(dist[0], min(dist[1], min(dist[2], dist[3])));
         float I = exp2(-0.7 * d * d);
 
@@ -148,6 +156,39 @@ void main(void)
         hsl.b *= 1.0 + (luminance_-50)  / 50.0;
 
         color.rgb = HSLToRGB(hsl);
+
+
+ 	   // Add the pixels which make up our window to the pixel array.
+
+//
+//        // make sure we are at the center of the pixel to make the right texture access
+//        vec2 pixel_pos = vec2(floor(gl_FragCoord.x), floor(gl_FragCoord.y)) + vec2(0.5);
+//        // cutaway normal = rgb, and cutaway depth in camera space = w
+//        vec4 cutaway = texelFetch( normal, ivec2(pixel_pos), 0 ).rgba;
+
+        int size = 4;
+        vec4 back = vec4(0.0,0.0,0.0,0.0);
+
+
+        // make sure we are at the center of the pixel to make the right texture access
+        vec2 pixel_pos = vec2(floor(gl_FragCoord.x), floor(gl_FragCoord.y)) + vec2(0.5);
+        // cutaway normal = rgb, and cutaway depth in camera space = w
+
+
+		for (int dX = -size; dX <= size; ++dX) {
+			for (int dY = -size; dY <= size; ++dY) {
+				vec2 offset = vec2(float(dX), float(dY));
+
+				// If a pixel in the window is located at (x+dX, y+dY), put it at index (dX + R)(2R + 1) + (dY + R) of the
+				// pixel array. This will fill the pixel array, with the top left pixel of the window at pixel[0] and the
+				// bottom right pixel of the window at pixel[N-1].
+				back = texelFetch(vertex, ivec2(gl_FragCoord.st+offset), 0).rgba;
+
+				if ((back.a < 50.0)) {
+					color = vec4(1.0, 0.0, 0.0, 1.0);
+				}
+			}
+		}
 
         out_Coords = vec4 (newVert.xyz, 1.0);
         out_Normal = vec4 (newNormal.xyz, 1.0);
