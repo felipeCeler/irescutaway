@@ -22,12 +22,16 @@ uniform mat4 ModelMatrix;
 uniform mat4 ViewMatrix;
 uniform mat4 ProjectionMatrix;
 
-uniform float min_property;
-uniform float max_property;
+uniform float min_property_static;
+uniform float max_property_static;
 
 uniform int property_index;
 
 uniform int faults;
+
+uniform float min_range_static;
+uniform float max_range_static;
+
 
 uniform vec3 displacement;
 
@@ -35,7 +39,7 @@ uniform vec3 displacement;
 vec4 propertyColor (  )
 {
 
-        float normalized_color = ( static_properties[property_index] - min_property ) / ( max_property - min_property );
+        float normalized_color = ( static_properties[property_index] - min_property_static ) / ( max_property_static - min_property_static );
 
         float fourValue = 4 * normalized_color;
         float red   = min(fourValue - 1.5, -fourValue + 4.5);
@@ -50,6 +54,7 @@ vec4 propertyColor (  )
 
         return color;
 }
+
 
 void main(void)
 {
@@ -69,13 +74,10 @@ void main(void)
 
         VertexOut.color  =  propertyColor (  );
 
-
-        {
-                VertexOut.v[0] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(va);
-                VertexOut.v[1] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(vb);
-                VertexOut.v[2] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(vc);
-                VertexOut.v[3] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(vd);
-        }
+        VertexOut.v[0] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(va);
+        VertexOut.v[1] = ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(vb);
+        VertexOut.v[2] = ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(vc);
+        VertexOut.v[3] = ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(vd);
 
 
         gl_Position = vec4(va);

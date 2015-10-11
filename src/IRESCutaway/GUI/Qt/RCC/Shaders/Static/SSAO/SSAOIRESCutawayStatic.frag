@@ -157,7 +157,7 @@ void main(void)
         //newVert = texelFetch( vertex, ivec2(pixel_pos), 0 ).rgb;
 
         // discard point in front of the cutaway surface
-        if ( newVert.z > cutaway.w ) {
+        if ( (newVert.z > cutaway.w) ) {
             discard;
         }
 
@@ -275,6 +275,8 @@ void main(void)
         hsl.b *= 1.0 + (luminance_-50)  / 50.0;
 
         color.rgb = HSLToRGB(hsl);
+
+        //color.a = VertexIn.color.a;
 
         out_Coords = vec4 (newVert.xyz, 1.0);
         out_Normal = vec4 (newNormal.xyz, 1.0);

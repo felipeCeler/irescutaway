@@ -224,6 +224,7 @@ class GLWidget: public QGLWidget
                 void drawIRESCutawayStaticSurface ( ); //
                 void drawSecondaryStatic ( ) const; // Draw only secondary Cells
                 void drawPrimaryStatic ( ) const; // Draw only primary   Cells
+                void drawPrimaryStaticSilhouette() const;
 
                 void setPrimaryVisibility ( bool );
                 void setSecondaryVisibility ( bool );
@@ -347,6 +348,7 @@ class GLWidget: public QGLWidget
                 Shader* IRESCutawaySurfaceStatic_;
 
 
+                Shader* SSAOIRESPrimaryStaticSilhouette_;
                 Shader* SSAOIRESPrimaryStatic_;
                 Shader* SSAOIRESCutawayStatic_;
                 Shader* SSAOIRESCutawayStaticShell_;

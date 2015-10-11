@@ -140,7 +140,7 @@ void GLWidget::initializeGL ( )
 
 	enable_blend_ = 0;
 
-	depthFBO = new Framebuffer( width() , height(), 4 );
+	depthFBO = new Framebuffer( width() , height(), 5 );
 
 	normalCutawayID_ = 0;
 	verticesCutawayID_ = 1;
@@ -494,7 +494,7 @@ void GLWidget::resizeGL ( int width , int height )
 
 	std::cout << trackball_->getProjectionMatrix() << std::endl;
 
-	depthFBO = new Framebuffer( width , height, 4 );
+	depthFBO = new Framebuffer( width , height, 5 );
 	depthFBO->clearAttachments();
 
         fboSSAO = new Framebuffer( width , height, 4 );
@@ -735,12 +735,51 @@ void GLWidget::drawIRESCutawayStaticSurface ( )
 
 }
 
+void GLWidget::drawPrimaryStaticSilhouette  ( ) const // Draw only primary   Cells
+{
+
+		depthFBO->bindRenderBuffer(silhouetteID_);
+
+        SSAOIRESPrimaryStaticSilhouette_->enable ( );
+
+        SSAOIRESPrimaryStaticSilhouette_->setUniform ( "num_lights" , (GLint) lights.size ( ) );
+        SSAOIRESPrimaryStaticSilhouette_->setUniform ( "lights[0]" , light_elements , 3 , (GLint) lights.size ( ) );
+        SSAOIRESPrimaryStaticSilhouette_->setUniform ( "WIN_SCALE" , (float) width ( ) , (float) height ( ) );
+        /// Shader Intensity
+        SSAOIRESPrimaryStaticSilhouette_->setUniform ( "saturation_" , this->saturationPrimaries_);
+        SSAOIRESPrimaryStaticSilhouette_->setUniform ( "luminance_"  , this->luminancePrimaries_);
+
+        SSAOIRESPrimaryStaticSilhouette_->setUniform ( "min_range_static" , min_range_static_ );
+        SSAOIRESPrimaryStaticSilhouette_->setUniform ( "max_range_static" , max_range_static_ );
+
+        SSAOIRESPrimaryStaticSilhouette_->setUniform ( "paper" , 1.0 );
+        SSAOIRESPrimaryStaticSilhouette_->setUniform ( "box_min" , ply_primary_.box.box_min ( ).x , ply_primary_.box.box_min ( ).y , ply_primary_.box.box_min ( ).z );
+        SSAOIRESPrimaryStaticSilhouette_->setUniform ( "box_max" , ply_primary_.box.box_max ( ).x , ply_primary_.box.box_max ( ).y , ply_primary_.box.box_max ( ).z );
+
+        SSAOIRESPrimaryStaticSilhouette_->setUniform ( "min_property_static" , reservoir_model_.static_min[reservoir_model_.current_static] );
+        SSAOIRESPrimaryStaticSilhouette_->setUniform ( "max_property_static" , reservoir_model_.static_max[reservoir_model_.current_static] );
+        SSAOIRESPrimaryStaticSilhouette_->setUniform ( "property_index" , reservoir_model_.current_static );
+
+        SSAOIRESPrimaryStaticSilhouette_->setUniform ( "ModelMatrix" , trackball_->getModelMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
+        SSAOIRESPrimaryStaticSilhouette_->setUniform ( "ViewMatrix" , trackball_->getViewMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
+        SSAOIRESPrimaryStaticSilhouette_->setUniform ( "ProjectionMatrix" , trackball_->getProjectionMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
+
+        reservoir_model_.drawFaces ( );//reservoir_model_.drawIndexFaces(primaries_face);
+
+        SSAOIRESPrimaryStaticSilhouette_->disable ( );
+
+        depthFBO->unbindAll();
+
+        glDrawBuffer(GL_BACK);
+
+}
+
 void GLWidget::drawPrimaryStatic  ( ) const // Draw only primary   Cells
 {
 
         SSAOIRESPrimaryStatic_->enable ( );
 
-        SSAOIRESPrimaryStatic_->setUniform ("vertex" , depthFBO->bindAttachment(verticesCutawayID_));
+        SSAOIRESPrimaryStatic_->setUniform ("silhouette" , depthFBO->bindAttachment(silhouetteID_));
 
         SSAOIRESPrimaryStatic_->setUniform ( "num_lights" , (GLint) lights.size ( ) );
         SSAOIRESPrimaryStatic_->setUniform ( "lights[0]" , light_elements , 3 , (GLint) lights.size ( ) );
@@ -788,9 +827,10 @@ void GLWidget::drawSecondaryStatic  ( ) const  // Draw only secondary Cells
         SSAOIRESCutawayStatic_->setUniform ( "saturation_" , this->saturationSecondaries_);
         SSAOIRESCutawayStatic_->setUniform ( "luminance_"  , this->luminanceSecondaries_);
 
-        SSAOIRESCutawayStatic_->setUniform("min_property", reservoir_model_.static_min[reservoir_model_.current_static]  );
-        SSAOIRESCutawayStatic_->setUniform("max_property", reservoir_model_.static_max[reservoir_model_.current_static]  );
-        SSAOIRESCutawayStatic_->setUniform("property_index", reservoir_model_.current_static );
+        SSAOIRESCutawayStatic_->setUniform("min_range_static", min_range_static_  );
+        SSAOIRESCutawayStatic_->setUniform("max_range_static", max_range_static_  );
+        SSAOIRESCutawayStatic_->setUniform("min_property_static", reservoir_model_.static_min[reservoir_model_.current_static]  );
+        SSAOIRESCutawayStatic_->setUniform("max_property_static", reservoir_model_.static_max[reservoir_model_.current_static]  );
 
         SSAOIRESCutawayStatic_->setUniform ( "isPerspective_" , isPerspective_ );
         SSAOIRESCutawayStatic_->setUniform ( "nearPlane_" , nearPlane_ );
@@ -868,6 +908,10 @@ void GLWidget::IRESCutawayStatic (  )
                 glDepthFunc(GL_LESS);
                 glClearDepth(1.0f);
                 glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
+
+                drawPrimaryStaticSilhouette();
+
 
                 drawBackGround( );
 
@@ -1693,6 +1737,7 @@ void GLWidget::reloadShaders ( )
         // ! DYNAMIC VIEWER F11 Static PropertieswayStatic"
                 IRESCutawaySurfaceStatic_->reloadShaders ( );
 
+                SSAOIRESPrimaryStaticSilhouette_->reloadShaders();
                 SSAOIRESPrimaryStatic_->reloadShaders();
                 SSAOIRESCutawayStatic_->reloadShaders();
                 SSAOIRESCutawayStaticShell_->reloadShaders();
@@ -1854,6 +1899,14 @@ void GLWidget::loadShaders ( )
                 std::cout << " blurShader_ " << blurShader_->getShaderProgram() << std::endl;
                 //! SSAO STATIC
 
+
+                SSAOIRESPrimaryStaticSilhouette_ = new Shader ("IRESPrimaryStatic",
+                                                (shaderDirectory + "Static/SSAO/SSAOIRESPrimaryStaticSilhouette.vert").toStdString(),
+                                                (shaderDirectory + "Static/SSAO/SSAOIRESPrimaryStaticSilhouette.frag").toStdString(),
+                                                (shaderDirectory + "Static/SSAO/SSAOIRESPrimaryStaticSilhouette.geom").toStdString(),1);
+
+                SSAOIRESPrimaryStaticSilhouette_->initialize();
+
                 SSAOIRESPrimaryStatic_ = new Shader ("IRESPrimaryStatic",
                                                 (shaderDirectory + "Static/SSAO/SSAOIRESPrimaryStatic.vert").toStdString(),
                                                 (shaderDirectory + "Static/SSAO/SSAOIRESPrimaryStatic.frag").toStdString(),
@@ -1903,6 +1956,7 @@ void GLWidget::loadShaders ( )
 
                 SSAOIRESCutawayDynamicShell_->initialize();
                 std::cout << " SSAOIRESCutawayDynamicShell_ " << SSAOIRESCutawayDynamicShell_->getShaderProgram() << std::endl;
+
 
 
 
