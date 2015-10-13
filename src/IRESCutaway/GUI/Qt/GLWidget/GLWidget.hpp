@@ -26,9 +26,11 @@
 #include <iterator>
 #include <functional>
 /// Eigen with STL Containers - http://eigen.tuxfamily.org/dox-devel/group__TopicStlContainers.html
+/// Maybe, the only way to use Eigen into vector in MS Visual Studio
 #include <Eigen/StdVector>
 
 /// Qt 5.5
+/// TODO Change it to modern QOpenGLWidget @see http://doc.qt.io/qt-5/qopenglwidget.html#relation-to-qglwidget
 #include <QGLWidget>
 #include <QMdiSubWindow>
 #include <QTimer>
@@ -433,7 +435,8 @@ class GLWidget: public QGLWidget
 
                 /// The per pixel AO computation shader
                 Shader* ssaoShader_;
-
+                /// For the Graphics Models Journal Paper
+                Shader* ssaoShaderTucanoGitlab_;
                 ///
                 Shader* deferredShader;
 

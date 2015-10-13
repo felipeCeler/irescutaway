@@ -155,7 +155,7 @@ void GLWidget::initializeGL ( )
 
 	loadShaders ( );
 
-	// TODO xtoon
+	/// TODO xtoon
 	picture = new Mesh( );
 	picture->createQuad( );
 
@@ -163,7 +163,7 @@ void GLWidget::initializeGL ( )
 
 	dynamic_property_index = 0;
 
-	// BenchMarking
+	/// BenchMarking
 
 	trackball_->decreaseZoom( 3.05 );
 
@@ -181,7 +181,7 @@ void GLWidget::initializeGL ( )
         displacement            = Eigen::Vector3f ( -3.0 , -3.0 , -3.0 );
         max_displacement        = Eigen::Vector3f ( 3.0 , 3.0 , 3.0 );
 
-       ///  -- SSAO - TUCANO
+        ///  -- SSAO - TUCANO
 
         depthTextureID = 0;
         normalTextureID = 1;
@@ -956,13 +956,13 @@ void GLWidget::IRESCutawayStatic (  )
                         accumulateRenderingPrimaryTime_ += (float)renderingPrimaryTime_.elapsed();
 
 
-                //glDrawBuffer(GL_BACK);
+                /// glDrawBuffer(GL_BACK);
 
                 glDisable(GL_DEPTH_TEST);
 
                 fboSSAO->bindRenderBuffer(blurTextureID);
 
-                /// SEGUNDO PASSO
+                /// Second Rendering Pass
                 renderingSSAOBlurTime_.start();
                 ssaoShader_->enable();
 
@@ -988,6 +988,7 @@ void GLWidget::IRESCutawayStatic (  )
                 quadSSAO->render();
 
                 ssaoShader_->disable();
+
                 glBindTexture(GL_TEXTURE_2D, 0);
                 fboSSAO->unbindAll ( );
                 fboSSAO->clearDepth ( );
@@ -1199,8 +1200,7 @@ void GLWidget::drawPrimaryDynamic ( ) const
 void GLWidget::drawSecondaryDynamic ( ) const
 {
 
-        // Interior Cells
-
+        /// Interior Cells
         SSAOIRESCutawayDynamic_->enable( );
 
         SSAOIRESCutawayDynamic_->setUniform( "normal" , depthFBO->bindAttachment(normalsSmoothID_) );
@@ -1243,33 +1243,33 @@ void GLWidget::drawSecondaryDynamic ( ) const
         SSAOIRESCutawayDynamic_->disable( );
 
 
-//        SSAOIRESCutawayDynamicShell_->enable( );
-//
-//        SSAOIRESCutawayDynamicShell_->setUniform( "normal" , depthFBO->bindAttachment(normalsSmoothID_) );
-//        SSAOIRESCutawayDynamicShell_->setUniform( "vertex" , depthFBO->bindAttachment(verticesSmoothID_) );
-//
-//        SSAOIRESCutawayDynamicShell_->setUniform ( "max_property" , reservoir_model_.dynamic_properties[dynamic_property_index].max_[time_step] );
-//        SSAOIRESCutawayDynamicShell_->setUniform ( "min_property" , reservoir_model_.dynamic_properties[dynamic_property_index].min_[time_step] );
-//        SSAOIRESCutawayDynamicShell_->setUniform ( "faults" , reservoir_model_.showFault );
-//
-//        /// Shader Intensity
-//        SSAOIRESCutawayDynamicShell_->setUniform ( "saturation_" , this->saturationShell_);
-//        SSAOIRESCutawayDynamicShell_->setUniform ( "luminance_"  , this->luminanceShell_);
-//
-//        SSAOIRESCutawayDynamicShell_->setUniform ( "isPerspective_" , isPerspective_ );
-//        SSAOIRESCutawayDynamicShell_->setUniform ( "nearPlane_" , nearPlane_ );
-//        SSAOIRESCutawayDynamicShell_->setUniform ( "farPlane_" , farPlane_ );
-//        SSAOIRESCutawayDynamicShell_->setUniform ( "num_lights" , (GLint) lights.size ( ) );
-//        SSAOIRESCutawayDynamicShell_->setUniform ( "lights[0]" , light_elements , 3 , (GLint) lights.size ( ) );
-//        SSAOIRESCutawayDynamicShell_->setUniform ( "WIN_SCALE" , (float) width ( ) , (float) height ( ) );
-//
-//        SSAOIRESCutawayDynamicShell_->setUniform ( "ModelMatrix" , trackball_->getModelMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
-//        SSAOIRESCutawayDynamicShell_->setUniform ( "ViewMatrix" , trackball_->getViewMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
-//        SSAOIRESCutawayDynamicShell_->setUniform ( "ProjectionMatrix" , trackball_->getProjectionMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
-//
-//        reservoir_model_.drawFaces( );
-//
-//        SSAOIRESCutawayDynamicShell_->disable( );
+        SSAOIRESCutawayDynamicShell_->enable( );
+
+        SSAOIRESCutawayDynamicShell_->setUniform( "normal" , depthFBO->bindAttachment(normalsSmoothID_) );
+        SSAOIRESCutawayDynamicShell_->setUniform( "vertex" , depthFBO->bindAttachment(verticesSmoothID_) );
+
+        SSAOIRESCutawayDynamicShell_->setUniform ( "max_property" , reservoir_model_.dynamic_properties[dynamic_property_index].max_[time_step] );
+        SSAOIRESCutawayDynamicShell_->setUniform ( "min_property" , reservoir_model_.dynamic_properties[dynamic_property_index].min_[time_step] );
+        SSAOIRESCutawayDynamicShell_->setUniform ( "faults" , reservoir_model_.showFault );
+
+        /// Shader Intensity
+        SSAOIRESCutawayDynamicShell_->setUniform ( "saturation_" , this->saturationShell_);
+        SSAOIRESCutawayDynamicShell_->setUniform ( "luminance_"  , this->luminanceShell_);
+
+        SSAOIRESCutawayDynamicShell_->setUniform ( "isPerspective_" , isPerspective_ );
+        SSAOIRESCutawayDynamicShell_->setUniform ( "nearPlane_" , nearPlane_ );
+        SSAOIRESCutawayDynamicShell_->setUniform ( "farPlane_" , farPlane_ );
+        SSAOIRESCutawayDynamicShell_->setUniform ( "num_lights" , (GLint) lights.size ( ) );
+        SSAOIRESCutawayDynamicShell_->setUniform ( "lights[0]" , light_elements , 3 , (GLint) lights.size ( ) );
+        SSAOIRESCutawayDynamicShell_->setUniform ( "WIN_SCALE" , (float) width ( ) , (float) height ( ) );
+
+        SSAOIRESCutawayDynamicShell_->setUniform ( "ModelMatrix" , trackball_->getModelMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
+        SSAOIRESCutawayDynamicShell_->setUniform ( "ViewMatrix" , trackball_->getViewMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
+        SSAOIRESCutawayDynamicShell_->setUniform ( "ProjectionMatrix" , trackball_->getProjectionMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
+
+        reservoir_model_.drawFaces( );
+
+        SSAOIRESCutawayDynamicShell_->disable( );
 
 
         depthFBO->unbindAttachments();
@@ -1309,13 +1309,17 @@ void GLWidget::IRESCutawayDynamic ( )
                                  drawSecondaryDynamic( );
                          }
 
-//                         if ( draw_primary )
-//                         {
-//                                 if (isply_)
-//                                         PaperPly();
-//                                 else
-//                                         drawPrimaryDynamic();
-//                         }
+                         if ( draw_primary )
+                         {
+				if ( isply_ )
+				{
+					PaperPly ( );
+				}
+				else
+				{
+					drawPrimaryDynamic ( );
+				}
+                         }
 
                          if ( reservoir_model_.showBorderLine )
                          {
@@ -1875,8 +1879,7 @@ void GLWidget::loadShaders ( )
                                         "",1);
                 BurnsPly_->initialize( );
                 std::cout << " BurnsPly_ " << BurnsPly_->getShaderProgram() << std::endl;
-        //! SSAO
-
+                //! SSAO
                 /// The per pixel AO computation shader
 
                 ssaoShader_ = new Shader ("ssaoShader",
@@ -1885,6 +1888,13 @@ void GLWidget::loadShaders ( )
                                             "",1);
                 ssaoShader_->initialize();
                 std::cout << " ssaoShader_ " << ssaoShader_->getShaderProgram() << std::endl;
+                //! SSAO from tucano-gitlab
+			ssaoShaderTucanoGitlab_ = new Shader ("ssaoShader",
+						 (shaderDirectory + "SSAO/ssao_tucano_gitlab.vert").toStdString(),
+						 (shaderDirectory + "SSAO/ssao_tucano_gitlab.frag").toStdString(),
+						    "",1);
+			ssaoShaderTucanoGitlab_->initialize();
+			std::cout << " ssaoShaderTucanoGitlab_ " << ssaoShaderTucanoGitlab_->getShaderProgram() << std::endl;
 
                 deferredShader = new Shader ("deferredShader", (shaderDirectory + "SSAO/viewspacebuffer.vert").toStdString(),
                                                              (shaderDirectory + "SSAO/viewspacebuffer.frag").toStdString(),
