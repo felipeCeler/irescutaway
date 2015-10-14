@@ -315,7 +315,7 @@ void GLWidget::changePropertyRangeStatic ( const double& minRange, const double&
 
         for ( std::size_t i = 0; i < reservoir_model_.cuboidStatic.size(); i+=4 )
         {
-                if ( ( minRange < reservoir_model_.cuboidStatic[i] ) && ( reservoir_model_.cuboidStatic[i] <= maxRange ) )
+                if ( ( minRange < reservoir_model_.cuboidStatic[i+property_index] ) && ( reservoir_model_.cuboidStatic[i+property_index] <= maxRange ) )
                 {
                         reservoir_model_.indexCuboids[primaries_cuboid] = i/4;
                         primaries_cuboid++;
@@ -708,7 +708,7 @@ void GLWidget::drawIRESCutawayStaticSurface ( )
 	IRESCutawaySurfaceStatic_->setUniform ("freeze", freezeView_ );
 	IRESCutawaySurfaceStatic_->setUniform ("FreezeViewMatrix",freeze_viewmatrix_.data ( ),4, GL_FALSE, 1 );
 
-	reservoir_model_.drawIndexCuboids (primaries_cuboid);//reservoir_model_.drawCuboid ( );
+	reservoir_model_.drawIndexCuboids (primaries_cuboid); //reservoir_model_.drawCuboid ( );
 
 	IRESCutawaySurfaceStatic_->disable( );
 
