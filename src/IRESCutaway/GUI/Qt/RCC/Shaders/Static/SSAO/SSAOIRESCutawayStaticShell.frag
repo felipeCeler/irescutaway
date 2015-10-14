@@ -33,6 +33,7 @@ uniform float farPlane_;
 out vec4 out_Coords;
 out vec4 out_Normal;
 out vec4 out_Color;
+out vec4 out_Silhouette_;
 
 vec3 RGB2HSL(vec3 color)
 {

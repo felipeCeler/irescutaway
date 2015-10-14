@@ -738,7 +738,7 @@ void GLWidget::drawIRESCutawayStaticSurface ( )
 void GLWidget::drawPrimaryStaticSilhouette  ( ) const // Draw only primary   Cells
 {
 
-		depthFBO->bindRenderBuffer(silhouetteID_);
+	depthFBO->bindRenderBuffer(silhouetteID_);
 
         SSAOIRESPrimaryStaticSilhouette_->enable ( );
 
@@ -831,10 +831,11 @@ void GLWidget::drawSecondaryStatic  ( ) const  // Draw only secondary Cells
         SSAOIRESCutawayStatic_->setUniform("max_range_static", max_range_static_  );
         SSAOIRESCutawayStatic_->setUniform("min_property_static", reservoir_model_.static_min[reservoir_model_.current_static]  );
         SSAOIRESCutawayStatic_->setUniform("max_property_static", reservoir_model_.static_max[reservoir_model_.current_static]  );
+        SSAOIRESCutawayStatic_->setUniform("property_index", reservoir_model_.current_static );
 
-        SSAOIRESCutawayStatic_->setUniform ( "isPerspective_" , isPerspective_ );
-        SSAOIRESCutawayStatic_->setUniform ( "nearPlane_" , nearPlane_ );
-        SSAOIRESCutawayStatic_->setUniform ( "farPlane_" , farPlane_ );
+        SSAOIRESCutawayStatic_->setUniform ("isPerspective_" , isPerspective_ );
+        SSAOIRESCutawayStatic_->setUniform ("nearPlane_" , nearPlane_ );
+        SSAOIRESCutawayStatic_->setUniform ("farPlane_" , farPlane_ );
 
         SSAOIRESCutawayStatic_->setUniform("num_lights", (GLint) lights.size ( )  );
         SSAOIRESCutawayStatic_->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
@@ -910,7 +911,7 @@ void GLWidget::IRESCutawayStatic (  )
                 glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
 
-                drawPrimaryStaticSilhouette();
+                //drawPrimaryStaticSilhouette();
 
 
                 drawBackGround( );
@@ -919,7 +920,7 @@ void GLWidget::IRESCutawayStatic (  )
                 /// OFFSCREEN Renderer
                 /// DRAW COLOR_BUFFER -->  glDrawBuffers(2,[depthTextureID, normalTextureID, colorTextureID]);
                 fboSSAO->clearAttachments();
-                fboSSAO->bindRenderBuffers(depthTextureID, normalTextureID, colorTextureID);
+                fboSSAO->bindRenderBuffers(depthTextureID, normalTextureID, colorTextureID, silhouetteID_);
 
                         renderingCutawayTime_.start();
                         if ( draw_secondary )
@@ -930,6 +931,7 @@ void GLWidget::IRESCutawayStatic (  )
                         glFinish();
                         accumulateRenderingCutawayTime_ += (float)renderingCutawayTime_.elapsed();
 
+               fboSSAO->bindRenderBuffers(depthTextureID, normalTextureID, colorTextureID);
                         renderingPrimaryTime_.start();
                         if ( draw_primary )
                         {

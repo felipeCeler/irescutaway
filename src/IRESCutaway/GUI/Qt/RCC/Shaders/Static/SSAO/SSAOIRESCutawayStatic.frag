@@ -32,6 +32,7 @@ uniform float farPlane_;
 out vec4 out_Coords;
 out vec4 out_Normal;
 out vec4 out_Color;
+out vec4 out_Silhouette_;
 
 /// Saturation Intensity
 uniform float saturation_;
@@ -140,10 +141,12 @@ void main(void)
 //        //outputColor =  vec4( 1.0,0.0,0.0,1.0 );
 //
 //        //push frontface back, so for double faces we see the interior of the cube (backface)
-        if (newNormal.z > 0.0)
-        {
-            discard;
-        }
+	if ( newNormal.z > 0.0 )
+	{
+		/// color_t.a == 0.0 means secondary
+		if ( color_t.a == 0.0 )
+			discard;
+	}
 
 
         vec2 dist_neighbor[8] = {vec2(linesize,0), vec2(-linesize,0), vec2(0,linesize), vec2(0,-linesize),
@@ -156,10 +159,13 @@ void main(void)
         vec4 cutaway = texelFetch( normal, ivec2(pixel_pos), 0 ).rgba;
         //newVert = texelFetch( vertex, ivec2(pixel_pos), 0 ).rgb;
 
-        // discard point in front of the cutaway surface
-        if ( (newVert.z > cutaway.w) ) {
-            discard;
-        }
+	// discard point in front of the cutaway surface
+	if ( ( newVert.z > cutaway.w ) )
+	{
+		/// color_t.a == 0.0 means secondary
+		if ( color_t.a == 0.0 )
+			discard;
+	}
 
         int size = 8;
 
@@ -244,7 +250,8 @@ void main(void)
         // uncomment to turn off illumination
         color = color_t;
 
-        newNormal = -cutaway.xyz;
+        if ( color_t.a == 0.0)
+        	newNormal = -cutaway.xyz;
 
         eye_dir = normalize ( -newVert.xyz );
 

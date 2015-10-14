@@ -29,12 +29,14 @@ uniform int property_index;
 
 uniform int faults;
 
+
 uniform float min_range_static;
 uniform float max_range_static;
 
 
-uniform vec3 displacement;
-
+uniform vec3 box_min;
+uniform vec3 box_max;
+uniform float paper;
 
 vec4 propertyColor (  )
 {
@@ -55,30 +57,51 @@ vec4 propertyColor (  )
         return color;
 }
 
+bool isPrimary (  )
+{
+
+	if ( static_properties[property_index] > min_range_static && static_properties[property_index] < max_range_static )
+        {
+                return true;
+        }
+        return false;
+
+}
 
 void main(void)
 {
 
-        VertexOut.n[0] = vec4(normalize(cross(vb.xyz-va.xyz, vd.xyz-va.xyz)),0.0);
-        VertexOut.n[1] = vec4(normalize(cross(vc.xyz-vb.xyz, vd.xyz-vb.xyz)),0.0);
+	VertexOut.n[0] = vec4(normalize(cross(vb.xyz-va.xyz, vd.xyz-va.xyz)),0.0);
+	VertexOut.n[1] = vec4(normalize(cross(vc.xyz-vb.xyz, vd.xyz-vb.xyz)),0.0);
 
-        mat3 normalMatrix = mat3(inverse(transpose((ModelMatrix*ViewMatrix))));
+	mat3 normalMatrix = mat3(inverse(transpose((ModelMatrix*ViewMatrix))));
 
-        VertexOut.n[0] = vec4(normalMatrix * VertexOut.n[0].xyz,0.0);
-        VertexOut.n[1] = vec4(normalMatrix * VertexOut.n[1].xyz,0.0);
+	VertexOut.n[0] = vec4(normalMatrix * VertexOut.n[0].xyz,0.0);
+	VertexOut.n[1] = vec4(normalMatrix * VertexOut.n[1].xyz,0.0);
 
-        VertexOut.eye[0] =  ModelMatrix * ViewMatrix * vec4(va);
-        VertexOut.eye[1] =  ModelMatrix * ViewMatrix * vec4(vb);
-        VertexOut.eye[2] =  ModelMatrix * ViewMatrix * vec4(vc);
-        VertexOut.eye[3] =  ModelMatrix * ViewMatrix * vec4(vd);
+	VertexOut.eye[0] =  ModelMatrix * ViewMatrix * vec4(va);
+	VertexOut.eye[1] =  ModelMatrix * ViewMatrix * vec4(vb);
+	VertexOut.eye[2] =  ModelMatrix * ViewMatrix * vec4(vc);
+	VertexOut.eye[3] =  ModelMatrix * ViewMatrix * vec4(vd);
 
-        VertexOut.color  =  propertyColor (  );
+        if (  isPrimary( )  ) // Fault Faces
+        {
+                VertexOut.color  =  propertyColor ( );
+                VertexOut.color.a  = 1.0;
+                VertexOut.v[0] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(va);
+                VertexOut.v[1] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(vb);
+                VertexOut.v[2] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(vc);
+                VertexOut.v[3] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(vd);
+        }
+        else  // Shell Faces
+        {
+        	VertexOut.color.a  = 0.0;
+                VertexOut.color  = propertyColor (  );
+                VertexOut.v[0] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(0.0);
+                VertexOut.v[1] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(0.0);
+                VertexOut.v[2] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(0.0);
+                VertexOut.v[3] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(0.0);
+        }
 
-        VertexOut.v[0] =  ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(va);
-        VertexOut.v[1] = ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(vb);
-        VertexOut.v[2] = ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(vc);
-        VertexOut.v[3] = ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(vd);
-
-
-        gl_Position = vec4(va);
+	gl_Position = vec4(va);
 }
