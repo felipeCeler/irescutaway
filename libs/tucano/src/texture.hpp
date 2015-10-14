@@ -23,7 +23,7 @@
 #ifndef __TEXTURE__
 #define __TEXTURE__
 
-#include <texturemanager.hpp>
+#include "texturemanager.hpp"
 #include <iostream>
 #include <GL/glew.h>
 
@@ -88,6 +88,33 @@ public:
         destroy();
     }
 
+
+    /**
+    * @brief Returns the texture width
+    * @return texture width in pixels
+    */
+    int getWidth (void)
+    {
+        return width;
+    }
+
+    /**
+    * @brief Returns the texture height
+    * @return texture height in pixels
+    */
+    int getHeight (void)
+    {
+        return height;
+    }
+
+    /**
+    * @brief Returns the texture dimensions
+    * @return Texture dimensions as an int vector
+    */
+    Eigen::Vector2i getDimensions (void)
+    {
+        return Eigen::Vector2i(width, height);
+    }
 
     /**
      * @brief Creates a texture object and returns its handler.
@@ -207,19 +234,20 @@ public:
     /**
      * @brief Updates the data of the texture mantaining all other parameters.
      * @param data Pointer to data to fill the texture.
+     * @remark Using glTexSubImage to update texture as recommended on OpenGL wiki
+     * @sa https://www.opengl.org/wiki/Common_Mistakes#Updating_a_texture
     **/
     void update (const GLvoid* data)
     {
-
         glBindTexture(tex_type, tex_id);
         if(tex_type == GL_TEXTURE_2D || tex_type == GL_TEXTURE_RECTANGLE) {
-            glTexImage2D(tex_type, lod, internal_format, width, height, 0, format,pixel_type,data);
+            glTexSubImage2D(tex_type, lod, 0, 0, width, height, format, pixel_type, data);
         }
         else if (tex_type == GL_TEXTURE_3D) {
-            glTexImage3D(tex_type, lod, internal_format,width, height, depth, 0,format,pixel_type,data);
+            glTexSubImage3D(tex_type, lod, 0, 0, 0, width, height, depth, format, pixel_type, data);
         }
         else if (tex_type == GL_TEXTURE_1D) {
-            glTexImage1D(tex_type, lod, internal_format,width,0,format,pixel_type,data);
+            glTexSubImage1D(tex_type, lod, 0, width, format, pixel_type, data);
         }
         glBindTexture(tex_type,0);
 

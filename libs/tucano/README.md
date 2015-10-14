@@ -23,13 +23,18 @@ By keeping the code **clean** and **compact**, Tucano also renders the code **le
 
 * use it with Qt, Glut, Glfw, or any other window manager that supports OpenGL
 
-* default widgets for Qt, e.g. with a few lines of code open a 3D viewer with a trackball to visualize a Mesh
-
 * examples and a collection of common effects (Phong, Image filters, SSAO...)
+* some mesh files can be found in http://graphics.stanford.edu/data/3Dscanrep/ like a xyzrgb_statuette.ply.gz
+
+
+## Download
+
+Download Tucano from GITLAB: https://gitlab.com/lcg/tucano/
+
 
 ## Documentation
 
-Documentation is available at http://lcg-ufrj.github.io/tucano
+Documentation is available at http://www.lcg.ufrj.br/tucano
 
 
 ## Requirements
@@ -51,12 +56,15 @@ No need to compile Tucano, just include *tucano.hpp* in your project and be happ
 
 Tucano comes with several examples and an Effects Collection.
 
+Check out the [Samples](@ref examples) page for the examples and the [Effects](@ref effects) Collection.
+
 ## Development Notice
 
-Even though **Tucano 0.1** is out, there are still some features that are not implemented, such as encapsulation of 
-*Tesselation Shaders*, and some *Buffer Objects* types. Some examples are still missing, but will soon be included in Tucano. Documentation is nearly up-to-date, but not 100%, completion is underway.
+Even though **Tucano** is out, there are still some features that are not implemented, such as some *Buffer Objects* types. Since there are a lot of OpenGL features that could be encapsulated within Tucano, we are including most things on a per-demand basis.
 
-Please help us improve Tucano using GitHub's [Issue Tracker](https://github.com/LCG-UFRJ/tucano/issues).
+We are translating the Qt examples to GLFW, since the release of Qt5.5 it became surprisingly difficult to use external calls to OpenGL without explicitly inserting Qt code inside Tucano main classes. This also means that the qt helper classes (inside utils) will become deprectated in a near future.
+
+Please help us improve Tucano using GitHub's [Issue Tracker](https://gitlab.com/lcg/tucano/issues).
 
 ## Developers
 
@@ -64,10 +72,12 @@ Tucano is maintained by the [Computer Graphics Lab](http://www.lcg.ufrj.br) at [
 
 Tucano was initially developed by:
 
-- [Ricardo Marroquim](http://www.lcg.ufrj.br/Members/ricardo)
-- [Vitor de Andrade](http://www.lcg.ufrj.br/Members/vitorandrade)
+- [Ricardo Marroquim](http://www.lcg.ufrj.br/~marroquim)
+- Vitor de Andrade
 
 A list of Tucano's contributors:
 
-- [Thiago Perrotta](http://www.lcg.ufrj.br/Members/thiago)
-- [Felipe Moura de Carvalho](http://www.lcg.ufrj.br/Members/fmc)
+- Thiago Perrotta
+- Felipe Moura de Carvalho
+- [Daniel Pinto Coutinho](http://www.lcg.ufrj.br/dpcoutinho)
+- Vinicius da Silva

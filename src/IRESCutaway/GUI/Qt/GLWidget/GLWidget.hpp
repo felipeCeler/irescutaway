@@ -15,6 +15,10 @@
 #include <shaderlib/framebuffer.hpp>
 #include <samples/imgproc/meanfilter.hpp>
 
+// Tucano
+#include <tucano.hpp>
+#include <utils/ppmimporter.hpp>
+
 /// C++ Standard Library
 #include <cstdio>
 #include <cstdlib>
@@ -428,7 +432,10 @@ class GLWidget: public QGLWidget
                 int max_K_;
                 int min_K_;
 
-                /// SSAO From Tacano
+                /// SSAO From Tucano
+
+                ///Noise texture
+                Tucano::Texture noise_texture;
 
                 /// Framebuffer to store coord/normal buffer
                 Framebuffer* fboSSAO;
@@ -437,6 +444,8 @@ class GLWidget: public QGLWidget
                 Shader* ssaoShader_;
                 /// For the Graphics Models Journal Paper
                 Shader* ssaoShaderTucanoGitlab_;
+                /// For the Graphics Models Journal Paper
+                Shader* blurTucanoGitlab_;
                 ///
                 Shader* deferredShader;
 

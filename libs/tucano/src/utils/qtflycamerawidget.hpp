@@ -20,8 +20,8 @@
  * along with Tucano Library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __QTTRACKBALLWIDGET__
-#define __QTTRACKBALLWIDGET__
+#ifndef __QTFLYCAMERAWIDGET__
+#define __QTFLYCAMERAWIDGET__
 
 #include <GL/glew.h>
 
@@ -29,6 +29,7 @@
 #include "plyimporter.hpp"
 
 #include <tucano.hpp>
+#include <utils/flycamera.hpp>
 #include <utils/trackball.hpp>
 
 #include <QGLWidget>
@@ -43,13 +44,13 @@ namespace Tucano
 /**
  * @brief This class is just to make sure that GLEW is
  * initialized before anything else, so the constructor of
- * this class is called before the QtTrackballWidget
+ * this class is called before the QtFlycameraWidget
  * constructor.
  */
-class QtGlewInitializer : public QGLWidget
+class QtGlewFlycameraInitializer : public QGLWidget
 {
 public:
-    QtGlewInitializer (QWidget* parent) : QGLWidget(parent)
+    QtGlewFlycameraInitializer (QWidget* parent) : QGLWidget(parent)
     {
         makeCurrent();
         Misc::initGlew();
@@ -59,10 +60,10 @@ public:
 
 /**
  * @brief A widget with a trackball iteration for a single mesh and a single light source.
- * Extends QGLWidget class to include common methods for using ShaderLib
+ * Extends QGLWidget class to include common methods for using Tucano
  * this widget already has a default camera and light trackball and associated mouse methods
  */
-class QtTrackballWidget : public QtGlewInitializer
+class QtFlycameraWidget : public QtGlewFlycameraInitializer
 {
     Q_OBJECT
 
@@ -71,8 +72,8 @@ protected:
     /// Triangle mesh.
     Mesh mesh;
 
-    /// Trackball for manipulating the camera.
-    Trackball camera;
+    /// Flycamera.
+    Flycamera* camera;
 
     /// Trackball for manipulating the light position.
     Trackball light_trackball;
@@ -83,12 +84,16 @@ public:
      * @brief Default constructor.
      * @param parent Parent widget.
      */
-    explicit QtTrackballWidget(QWidget *parent) : QtGlewInitializer(parent) {}
+    explicit QtFlycameraWidget(QWidget *parent) : QtGlewFlycameraInitializer(parent){
+		camera = new Flycamera();
+	}
 
     /**
      * @brief Default destructor.
      */
-    ~QtTrackballWidget () {}
+    ~QtFlycameraWidget (){
+		delete camera;
+	}
 
     /**
      * @brief Initializes openGL and GLEW.
@@ -108,8 +113,8 @@ public:
      */
     virtual void resizeGL (void)
     {
-        camera.setViewport(Eigen::Vector2f ((float)this->width(), (float)this->height()));
-        camera.setPerspectiveMatrix(camera.getFovy(), (float)this->width()/(float)this->height(), 0.1f, 100.0f);
+        camera->setViewport(Eigen::Vector2f ((float)this->width(), (float)this->height()));
+        camera->setPerspectiveMatrix(camera->getFovy(), (float)this->width()/(float)this->height(), 0.1f, 100.0f);
         light_trackball.setViewport(Eigen::Vector2f ((float)this->width(), (float)this->height()));
         updateGL();
     }
@@ -119,9 +124,11 @@ public:
      */
     void initialize (void)
     {
-        camera.setPerspectiveMatrix(60.0, (float)this->width()/(float)this->height(), 0.1f, 100.0f);
-        camera.setRenderFlag(true);
-        camera.setViewport(Eigen::Vector2f ((float)this->width(), (float)this->height()));
+        Eigen::Vector2i size;
+        size << this->width(), this->height();
+
+        camera->setPerspectiveMatrix(60.0, (float)this->width()/(float)this->height(), 0.1f, 100.0f);
+        camera->setViewport(Eigen::Vector2f ((float)this->width(), (float)this->height()));
 
         light_trackball.setRenderFlag(false);
         light_trackball.setViewport(Eigen::Vector2f ((float)this->width(), (float)this->height()));
@@ -166,7 +173,7 @@ protected:
      * @brief Callback for key press event.
      * @param event The key event that triggered the callback.
      */
-    void keyPressEvent (QKeyEvent * event)
+    virtual void keyPressEvent (QKeyEvent * event)
     {
         if (event->key() == Qt::Key_O)
         {
@@ -176,6 +183,23 @@ protected:
                 openMesh (filename.toStdString());
             }
         }
+        if (event->key() == Qt::Key_R)
+			camera->reset();
+        if (event->key() == Qt::Key_A)
+			camera->strideLeft();
+        if (event->key() == Qt::Key_D)
+			camera->strideRight();
+        if (event->key() == Qt::Key_S)
+			camera->moveBack();
+        if (event->key() == Qt::Key_W)
+			camera->moveForward();
+        if (event->key() == Qt::Key_C)
+			camera->moveDown();
+        if (event->key() == Qt::Key_E)
+			camera->moveUp();	
+
+		camera->updateViewMatrix();
+	
         event->ignore();
         updateGL();
     }
@@ -190,24 +214,15 @@ protected:
     {
         setFocus ();
         Eigen::Vector2f screen_pos (event->x(), event->y());
-        if (event->modifiers() & Qt::ShiftModifier)
-        {
-            if (event->button() == Qt::LeftButton)
-            {
-                camera.translateCamera(screen_pos);
-            }
-        }
-        else
-        {
-            if (event->button() == Qt::LeftButton)
-            {
-                camera.rotateCamera(screen_pos);
-            }
-            if (event->button() == Qt::RightButton)
-            {
-                light_trackball.rotateCamera(screen_pos);
-            }
-        }
+		if (event->button() == Qt::LeftButton)
+		{
+			camera->startRotation(screen_pos);
+			camera->updateViewMatrix();
+		}
+		if (event->button() == Qt::RightButton)
+		{
+			light_trackball.rotateCamera(screen_pos);
+		}
         updateGL ();
     }
 
@@ -220,21 +235,15 @@ protected:
     void mouseMoveEvent (QMouseEvent * event)
     {
         Eigen::Vector2f screen_pos (event->x(), event->y());
-        if (event->modifiers() & Qt::ShiftModifier && event->buttons() & Qt::LeftButton)
-        {
-            camera.translateCamera(screen_pos);
-        }
-        else
-        {
-            if (event->buttons() & Qt::LeftButton)
-            {
-                camera.rotateCamera(screen_pos);
-            }
-            if (event->buttons() & Qt::RightButton)
-            {
-                light_trackball.rotateCamera(screen_pos);
-            }
-        }
+		if (event->buttons() & Qt::LeftButton)
+		{
+			camera->rotate(screen_pos);
+			camera->updateViewMatrix();
+		}
+		if (event->buttons() & Qt::RightButton)
+		{
+			light_trackball.rotateCamera(screen_pos);
+		}
 
         updateGL ();
 
@@ -246,49 +255,13 @@ protected:
      * Stops rotation or translation.
      * @param event The mouse event that triggered the callback.
      */
-    void mouseReleaseEvent (QMouseEvent * event)
+    virtual void mouseReleaseEvent (QMouseEvent * event)
     {
-        if (event->button() == Qt::LeftButton)
-        {
-            camera.endTranslation();
-            camera.endRotation();
-        }
         if (event->button() == Qt::RightButton)
         {
             light_trackball.endRotation();
         }
 
-        updateGL ();
-    }
-
-    /**
-     * @brief Callback for mouse wheel event.
-     *
-     * Changes the camera zoom, or the camera FOV is Shift is pressed.
-     * @param event The mouse event that triggered the callback.
-     */
-    void wheelEvent (QWheelEvent * event)
-    {
-        const int WHEEL_STEP = 120;
-
-        float pos = event->delta () / float (WHEEL_STEP);
-
-        if (event->modifiers() & Qt::ShiftModifier) // change FOV
-        {
-            camera.incrementFov(pos);
-        }
-        else // change ZOOM
-        {
-            if( (pos > 0) )
-            {
-                camera.increaseZoom(1.05);
-            }
-
-            else if(pos < 0)
-            {
-                camera.increaseZoom(1.0/1.05);
-            }
-        }
         updateGL ();
     }
 

@@ -23,8 +23,8 @@
 #ifndef __MESH__
 #define __MESH__
 
-#include <model.hpp>
-#include <shader.hpp>
+#include "model.hpp"
+#include "shader.hpp"
 
 using namespace std;
 
@@ -94,32 +94,32 @@ public:
      * @brief Returns the name of the attribute
      * @return Attribute's name
      */
-    string getName (void) {return name;}
+    string getName (void) const {return name;}
 
     /**
      * @brief Returns the number of elements of this attribute (usually number of vertices in VAO)
      * @return Number of elements
      */
-    int getSize (void) {return size;}
+    int getSize (void) const {return size;}
 
     /**
      * @brief Returns the number of elements per attribute
      * For example, returns 3 if attribute is of type vec3
      * @return Size of one attribute
      */
-    int getElementSize (void) {return element_size;}
+    int getElementSize (void) const {return element_size;}
 
     /**
      * @brief Returns the type of the attribute (ex. GL_FLOAT)
      * @return Type of attribute
      */
-    GLenum getType (void) {return type;}
+    GLenum getType (void) const {return type;}
 
     /**
      * @brief Returns the type of array (ex. GL_ARRAY_BUFFER)
      * @return Type of array
      */
-    GLenum getArrayType (void) {return array_type;}
+    GLenum getArrayType (void) const {return array_type;}
 
     /**
      * @brief Sets the type of array (default is GL_ARRAY_BUFFER)
@@ -134,7 +134,7 @@ public:
      * known beforehand
      * @return Attribute shader location
      */
-    GLint getLocation(void) {return location;}
+    GLint getLocation(void) const {return location;}
 
     /**
      * @brief Sets the location of the attribute for a shader.
@@ -202,6 +202,8 @@ public:
  **/
 class Mesh : public Model {
 
+    /// Variable indicating if there will be tessellation
+    bool willTessellate;
 public:
 
     /**
@@ -214,6 +216,7 @@ public:
         numberOfNormals = 0;
         numberOfElements = 0;
         numberOfTexCoords = 0;
+        willTessellate = false;
 
         radius = 1.0;
         scale = 1.0;
@@ -263,10 +266,14 @@ public:
             vertex_attributes[i].destroy();
         }
         vertex_attributes.clear();
+
         if (vao_id > 0)
             glDeleteVertexArrays(1, &vao_id);
+		vao_id = 0;
+
         if (index_buffer_id > 0)
             glDeleteBuffers(1, &index_buffer_id);
+		index_buffer_id = 0;
 
     }
 
@@ -284,6 +291,8 @@ public:
 
         radius = 1.0;
         scale = 1.0;
+
+		resetModelMatrix();
     }
 
     ///Default Destructor. Deletes the bufferIDs. vertices. normals. colors. indices and texCoords arrays.
@@ -317,9 +326,6 @@ protected:
 
     /// Vertex Array Object ID (VAO is just a descriptor, does not contain any data)
     GLuint vao_id;
-
-    ///Function used for openGL error handling.
-    //void errorCheckFunc(string file, int line);
 
 public:
 
@@ -493,6 +499,7 @@ public:
      */
     void setDefaultAttribLocations (void)
     {
+		resetLocations();
         for (unsigned int i = 0; i < vertex_attributes.size(); ++i)
         {
             if (!vertex_attributes[i].getName().compare("in_Position"))
@@ -519,7 +526,7 @@ public:
      * @param name Name of attribute to be queried.
      * @return True if attribute exists, false otherwise.
      */
-    bool hasAttribute (string name)
+    bool hasAttribute (const string& name) const
     {
         for (unsigned int i = 0; i < vertex_attributes.size(); ++i)
         {
@@ -529,6 +536,26 @@ public:
             }
         }
         return false;
+    }
+
+
+    /**
+    * @brief Returns a pointer to an attribute
+    * Given an attribute name, searches to see if it exists, if so, returns a pointer to it
+    * @param name Attribute name
+    * @return Pointer to attribute, or NULL if it does not exist
+    */
+    VertexAttribute* getAttribute(const string& name)
+    {
+        for (unsigned int i = 0; i < vertex_attributes.size(); ++i)
+        {
+            if (!vertex_attributes[i].getName().compare(name))
+            {
+                return &vertex_attributes[i];
+            }
+        }
+        return NULL;
+       
     }
 
     /**
@@ -543,12 +570,18 @@ public:
         for (unsigned int i = 0; i < vertex_attributes.size(); ++i)
         {
             GLint loc = shader->getAttributeLocation(vertex_attributes[i].getName().c_str());
-            //if (loc != -1)
-            {
-                vertex_attributes[i].setLocation(loc);
-            }
+            vertex_attributes[i].setLocation(loc);
         }
+        if (shader->getTessellationEvaluationShader() != 0)
+            willTessellate = true;
+        else
+            willTessellate = false;
     }
+
+	void setAttributeLocation (const Shader& shader)
+	{
+		setAttributeLocation((Shader*)(&shader));
+	}
 
 
     /**
@@ -595,7 +628,7 @@ public:
         glBufferData(va.getArrayType(), va.getSize()*va.getElementSize()*sizeof(va.getType()), attrib_array, GL_STATIC_DRAW);
         va.unbind();
 
-        delete attrib_array;
+        delete [] attrib_array;
         return &vertex_attributes.back();
 
     }
@@ -627,7 +660,7 @@ public:
         glBufferData(va.getArrayType(), va.getSize()*va.getElementSize()*sizeof(va.getType()), attrib_array, GL_STATIC_DRAW);
         va.unbind();
 
-        delete attrib_array;
+        delete [] attrib_array;
         return &vertex_attributes.back();
     }
 
@@ -657,7 +690,7 @@ public:
         glBufferData(va.getArrayType(), va.getSize()*va.getElementSize()*sizeof(va.getType()), attrib_array, GL_STATIC_DRAW);
         va.unbind();
 
-        delete attrib_array;
+        delete [] attrib_array;
         return &vertex_attributes.back();
     }
 
@@ -669,7 +702,7 @@ public:
      * If there is a index buffer it will also be binded.
      * Then, binds one buffer for each vertex attribute.
      */
-    virtual void bindBuffers (void)
+    virtual void bindBuffers (void) 
     {
 
         if (vao_id == 0)
@@ -698,7 +731,7 @@ public:
     /**
      * @brief Unbinds all buffers.
      */
-    virtual void unbindBuffers (void)
+    virtual void unbindBuffers (void) 
     {
         glBindVertexArray(0);
         glBindBuffer(GL_ARRAY_BUFFER,0);
@@ -711,14 +744,31 @@ public:
     }
 
     /**
+     * @brief Render only points without index buffer
+     */
+    virtual void renderPoints (void)
+    {
+        glDrawArrays(GL_POINTS, 0, numberOfVertices);
+    }
+
+    /**
      * @brief Call the draw method for rendering triangles.
      * This method requires that a index buffer has been created.
      */
-    virtual void renderElements (void)
+    virtual void renderElements (void) 
     {
 
         glDrawElements(GL_TRIANGLES, numberOfElements, GL_UNSIGNED_INT, (GLvoid*)0);
-        //glDrawArrays(GL_TRIANGLES, 0, numberOfElements);
+    }
+
+    /**
+     * @brief Call the draw method for rendering patches.
+     * This method requires that a index buffer has been created.
+     */
+    virtual void renderPatches(void)
+    {
+        glPatchParameteri(GL_PATCH_VERTICES, 3);
+        glDrawElements(GL_PATCHES, numberOfElements,GL_UNSIGNED_INT, 0);
     }
 
     /**
@@ -726,12 +776,26 @@ public:
      * The method binds the buffers, calls the method to render triangles, and then unbinds all buffers.
      * Note that a index buffer is necessary.
      */
-    virtual void render() {
+    virtual void render (void)
+    {
         bindBuffers();
-        renderElements();
+        if (numberOfElements == 0)
+        {
+            renderPoints();
+        }
+        else
+        {
+            if (willTessellate)
+            {
+                renderPatches();
+            }
+            else
+            {
+                renderElements();
+            }
+        }
         unbindBuffers();
     }
-
 
     /**
      * @brief Sets the mesh as a Parallelpiped with given dimensions, scales so larger side is equal to 1.

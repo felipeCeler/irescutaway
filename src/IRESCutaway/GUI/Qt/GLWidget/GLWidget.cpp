@@ -915,8 +915,7 @@ void GLWidget::IRESCutawayStatic (  )
 
                 drawBackGround( );
 
-                // SSAO -- C&G
-
+                /// SSAO -- C&G
                 /// OFFSCREEN Renderer
                 /// DRAW COLOR_BUFFER -->  glDrawBuffers(2,[depthTextureID, normalTextureID, colorTextureID]);
                 fboSSAO->clearAttachments();
@@ -960,52 +959,98 @@ void GLWidget::IRESCutawayStatic (  )
 
                 glDisable(GL_DEPTH_TEST);
 
-                fboSSAO->bindRenderBuffer(blurTextureID);
+//                /// SSAO -- C&G - Fail =(
+//                fboSSAO->bindRenderBuffer(blurTextureID);
+//
+//                /// Second Rendering Pass
+//                renderingSSAOBlurTime_.start();
+//                ssaoShader_->enable();
+//
+//                glActiveTexture(GL_TEXTURE0 + 7);
+//                glBindTexture(GL_TEXTURE_2D, noiseTexture);
+//
+//                ssaoShader_->setUniform("lightViewMatrix", trackball_->getProjectionMatrix().data(),4,GL_FALSE,1);
+//
+//                ssaoShader_->setUniform("noiseScale", noise_scale.x(),noise_scale.y());
+//                ssaoShader_->setUniform("kernel", kernel, 2, numberOfSamples);
+//
+//                ssaoShader_->setUniform("coordsTexture", fboSSAO->bindAttachment(depthTextureID));
+//                ssaoShader_->setUniform("normalTexture", fboSSAO->bindAttachment(normalTextureID));
+//                ssaoShader_->setUniform("colorTexture", fboSSAO->bindAttachment(colorTextureID));
+//                ssaoShader_->setUniform("displayAmbientPass", displayAmbientPass);
+//
+//                ssaoShader_->setUniform("radius", radius);
+//                ssaoShader_->setUniform("intensity", (float)intensity);
+//                ssaoShader_->setUniform("max_dist", max_dist);
+//                ssaoShader_->setUniform("noiseTexture", 7);
+//
+//                //Second pass mesh rendering:
+//                quadSSAO->render();
+//
+//                ssaoShader_->disable();
+//
+//                glBindTexture(GL_TEXTURE_2D, 0);
+//                fboSSAO->unbindAll ( );
+//                fboSSAO->clearDepth ( );
 
-                /// Second Rendering Pass
-                renderingSSAOBlurTime_.start();
-                ssaoShader_->enable();
+		/// SSAO -- Graphical Models - I hope
+		fboSSAO->bindRenderBuffer(blurTextureID);
 
-                glActiveTexture(GL_TEXTURE0 + 7);
-                glBindTexture(GL_TEXTURE_2D, noiseTexture);
+		/// Second Rendering Pass
+		renderingSSAOBlurTime_.start();
+		ssaoShaderTucanoGitlab_->enable();
 
-                ssaoShader_->setUniform("lightViewMatrix", trackball_->getProjectionMatrix().data(),4,GL_FALSE,1);
+		ssaoShaderTucanoGitlab_->setUniform("coordsTexture", fboSSAO->bindAttachment(depthTextureID));
+		ssaoShaderTucanoGitlab_->setUniform("normalTexture", fboSSAO->bindAttachment(normalTextureID));
+		ssaoShaderTucanoGitlab_->setUniform("displayAmbientPass", displayAmbientPass);
+		noise_texture.bind(7);
+		ssaoShaderTucanoGitlab_->setUniform("noise_texture", 7);
 
-                ssaoShader_->setUniform("noiseScale", noise_scale.x(),noise_scale.y());
-                ssaoShader_->setUniform("kernel", kernel, 2, numberOfSamples);
+		ssaoShaderTucanoGitlab_->setUniform("radius", radius);
+		ssaoShaderTucanoGitlab_->setUniform("intensity", (GLfloat)intensity);
+		ssaoShaderTucanoGitlab_->setUniform("global_scale", (GLfloat)intensity);
 
-                ssaoShader_->setUniform("coordsTexture", fboSSAO->bindAttachment(depthTextureID));
-                ssaoShader_->setUniform("normalTexture", fboSSAO->bindAttachment(normalTextureID));
-                ssaoShader_->setUniform("colorTexture", fboSSAO->bindAttachment(colorTextureID));
-                ssaoShader_->setUniform("displayAmbientPass", displayAmbientPass);
+		/// Second pass mesh rendering:
+		quadSSAO->render();
 
-                ssaoShader_->setUniform("radius", radius);
-                ssaoShader_->setUniform("intensity", (float)intensity);
-                ssaoShader_->setUniform("max_dist", max_dist);
-                ssaoShader_->setUniform("noiseTexture", 7);
+		ssaoShaderTucanoGitlab_->disable();
 
-                //Second pass mesh rendering:
-                quadSSAO->render();
-
-                ssaoShader_->disable();
-
-                glBindTexture(GL_TEXTURE_2D, 0);
-                fboSSAO->unbindAll ( );
-                fboSSAO->clearDepth ( );
+		glBindTexture(GL_TEXTURE_2D, 0);
+		fboSSAO->unbindAll ( );
+		fboSSAO->clearDepth ( );
+		noise_texture.unbind();
+		/// End of SSAO
 
                 glDrawBuffer(GL_BACK);
 
-                blurShader_->enable();
+//                blurShader_->enable();
+//
+//                blurShader_->setUniform("blurTexture", fboSSAO->bindAttachment(blurTextureID));
+//                blurShader_->setUniform("blurRange", blurRange);
+//
+//                quadSSAO->render();
+//
+//                glFinish( );
+//                accumulateSSAOBlurTime_ += (float)renderingSSAOBlurTime_.elapsed();
+//
+//                blurShader_->disable();
 
-                blurShader_->setUniform("blurTexture", fboSSAO->bindAttachment(blurTextureID));
-                blurShader_->setUniform("blurRange", blurRange);
 
-                quadSSAO->render();
+		blurTucanoGitlab_->enable();
 
-                glFinish( );
-                accumulateSSAOBlurTime_ += (float)renderingSSAOBlurTime_.elapsed();
+		blurTucanoGitlab_->setUniform("coordsTexture", fboSSAO->bindAttachment(depthTextureID));
+		blurTucanoGitlab_->setUniform("normalTexture", fboSSAO->bindAttachment(normalTextureID));
+		blurTucanoGitlab_->setUniform("colorTexture", fboSSAO->bindAttachment(colorTextureID));
+		blurTucanoGitlab_->setUniform("ssaoTexture", fboSSAO->bindAttachment(blurTextureID));
+		blurTucanoGitlab_->setUniform("blurRange", blurRange);
 
-                blurShader_->disable();
+		quadSSAO->render();
+
+		glFinish( );
+		accumulateSSAOBlurTime_ += (float)renderingSSAOBlurTime_.elapsed();
+
+		blurTucanoGitlab_->disable();
+
                 fboSSAO->unbindAll( );
                 fboSSAO->clearDepth( );
 
@@ -1758,6 +1803,8 @@ void GLWidget::reloadShaders ( )
 
         // SSAO
         ssaoShader_->reloadShaders ( );
+        ssaoShaderTucanoGitlab_->reloadShaders();
+        blurTucanoGitlab_->reloadShaders();
         blurShader_->reloadShaders ( );
         deferredShader->reloadShaders ( );
 
@@ -1895,6 +1942,17 @@ void GLWidget::loadShaders ( )
 						    "",1);
 			ssaoShaderTucanoGitlab_->initialize();
 			std::cout << " ssaoShaderTucanoGitlab_ " << ssaoShaderTucanoGitlab_->getShaderProgram() << std::endl;
+
+			blurTucanoGitlab_ = new Shader ("ssaoShader",
+						 (shaderDirectory + "SSAO/blur_tuncano_gitlab.vert").toStdString(),
+						 (shaderDirectory + "SSAO/blur_tuncano_gitlab.frag").toStdString(),
+						    "",1);
+			blurTucanoGitlab_->initialize();
+			std::cout << " ssaoShaderTucanoGitlab_ " << ssaoShaderTucanoGitlab_->getShaderProgram() << std::endl;
+
+		        /// Tucano gitlab
+		        Tucano::ImageImporter::loadPPMImage(&noise_texture, (shaderDirectory + "samples/random.ppm").toStdString());
+		        noise_texture.setTexParameters( GL_REPEAT, GL_REPEAT, GL_NEAREST, GL_NEAREST );
 
                 deferredShader = new Shader ("deferredShader", (shaderDirectory + "SSAO/viewspacebuffer.vert").toStdString(),
                                                              (shaderDirectory + "SSAO/viewspacebuffer.frag").toStdString(),

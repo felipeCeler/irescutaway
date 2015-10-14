@@ -51,6 +51,12 @@ private:
     /// Stores the path to the vertex shader file.
     string vertexShaderPath;
 
+    /// Stores the path to the tessellation control shader file.
+    string tessellationControlShaderPath;
+
+    /// Stores the path to the tessellation evaluation shader file.
+    string tessellationEvaluationShaderPath;
+
     /// Stores the path to the geometry shader file.
     string geometryShaderPath;
 
@@ -78,6 +84,12 @@ private:
     /// Vertex Shader identification.
     GLuint vertexShader;
 
+    /// Tessellation Control Shader identification.
+    GLuint tessellationControlShader;
+
+    /// Tessellation Evaluation Shader identification.
+    GLuint tessellationEvaluationShader;
+
     /// Geometry Shader identification.
     GLuint geometryShader;
 
@@ -98,10 +110,10 @@ public:
      * Usually used to initialize the instance when passing shaders as strings, and not files.
      * @param name The string to be set as shader identification. User mantained.
      */
-    Shader (string name)
+    Shader (string name = "")
     {
         shaderName = name;
-        vertexShader = 0; fragmentShader = 0; geometryShader = 0; shaderProgram = 0; computeShaders = vector<GLuint>();
+        vertexShader = 0; fragmentShader = 0; geometryShader = 0; tessellationControlShader = 0; tessellationEvaluationShader = 0; shaderProgram = 0; computeShaders = vector<GLuint>();
     }
 
     /**
@@ -114,7 +126,7 @@ public:
         shaderName = name;
         computeShaderPaths = compute_shader_paths;
 
-        vertexShader = 0; fragmentShader = 0; geometryShader = 0; shaderProgram = 0; computeShaders = vector<GLuint>();
+        vertexShader = 0; fragmentShader = 0; geometryShader = 0; tessellationControlShader = 0; tessellationEvaluationShader = 0; shaderProgram = 0; computeShaders = vector<GLuint>();
     }
 
     /**
@@ -124,6 +136,15 @@ public:
     {
         deleteShaders();
     }
+
+	/**
+	* @brief Sets the shader name, very useful for debugging
+	* @param name Shader name
+	*/
+	void setShaderName (string name)
+	{
+		shaderName = name;
+	}
 
     /**
      * @brief Returns a string with the shader name.
@@ -172,6 +193,26 @@ public:
         return geometryShader;
     }
 
+    /**
+     * @brief Returns a handle to the tessellation control shader.
+     * @return Return the Tessellation Control Shader identification handle.
+     */
+    GLuint getTessellationControlShader (void)
+    {
+        return tessellationControlShader;
+    }
+
+
+    /**
+     * @brief Returns a handle to the tessellation evaluation shader.
+     * @return Return the Tessellation Evaluation Shader identification handle.
+     */
+    GLuint getTessellationEvaluationShader (void)
+    {
+        return tessellationEvaluationShader;
+    }
+
+
 
     /**
    * @return Return the vector of Compute Shaders identification handles.
@@ -192,30 +233,37 @@ public:
      * @param vertex_shader_path String giving the path to the external file containing the vertex shader.
      * @param fragment_shader_path String giving the path to the external file containing the fragment shader.
      * @param geometry_shader_path String giving the path to the external file containing the geometry shader.
+     * @param tessellation_evaluation_shader_path String giving the path to the external file containing the tessellation evaluation shader.
+     * @param tessellation_control_shader_path String giving the path to the external file containing the tessellation control shader.
      */
-    Shader (string name, string vertex_shader_path, string fragment_shader_path, string geometry_shader_path = "")
+    Shader (string name, string vertex_shader_path, string fragment_shader_path, string geometry_shader_path = "", string tessellation_evaluation_shader_path = "", string tessellation_control_shader_path = "")
     {
         shaderName = name;
         vertexShaderPath = vertex_shader_path;
+        tessellationControlShaderPath = tessellation_control_shader_path;
+        tessellationEvaluationShaderPath = tessellation_evaluation_shader_path;
         geometryShaderPath = geometry_shader_path;
         fragmentShaderPath = fragment_shader_path;
         vertexShader = 0;
         fragmentShader = 0;
         geometryShader = 0;
+        tessellationControlShader = 0;
+        tessellationEvaluationShader = 0;
         shaderProgram = 0;
         computeShaders = vector<GLuint>();
     }
 
-    /**
-     * @brief Constructors that searches a given directory for shaders with given name.
-     *
+	/**
+	 * @brief Loads a shader given a directory and a name. Searches for all shader
+	 * extensions in directory.
+	 *
      * Receives a directory and a shader name, searches for files with the same name and extesions vert, frag, geom and comp to auto load shaders.
      * @param shader_dir Directory containing shaders.
      * @param name Shader name, must be the same as the files name without extensions.
-     */
-    Shader (string shader_dir, string name) {
-
-        shaderName = name;
+	 */
+	void load (string name, string shader_dir = "")
+	{
+	    shaderName = name;
 
         bool found = false;
 
@@ -225,6 +273,24 @@ public:
         if (vertex_file.good())
         {
             vertexShaderPath = vs_name;
+            found = true;
+        }
+
+        //Tessellation Control:
+        string tesc_name = shader_dir + name + ".tesc";
+        ifstream tesc_file(tesc_name.c_str());
+        if (tesc_file.good())
+        {
+            tessellationControlShaderPath = tesc_name;
+            found = true;
+        }
+
+        //Tessellation Evaluation:
+        string tese_name = shader_dir + name + ".tese";
+        ifstream tese_file(tese_name.c_str());
+        if (tese_file.good())
+        {
+            tessellationEvaluationShaderPath = tese_name;
             found = true;
         }
 
@@ -264,8 +330,24 @@ public:
         vertexShader = 0;
         fragmentShader = 0;
         geometryShader = 0;
+        tessellationControlShader = 0;
+        tessellationEvaluationShader = 0;
         shaderProgram = 0;
         computeShaders = vector<GLuint>();
+
+	}
+
+
+    /**
+     * @brief Constructors that searches a given directory for shaders with given name.
+     *
+     * Receives a directory and a shader name, searches for files with the same name and extesions vert, frag, geom and comp to auto load shaders.
+     * @param shader_dir Directory containing shaders.
+     * @param name Shader name, must be the same as the files name without extensions.
+     */
+    Shader (string name, string shader_dir)
+	{
+		load (name, shader_dir);
     }
 
     /**
@@ -289,7 +371,7 @@ public:
         #ifdef TUCANODEBUG
         else
         {
-            cout << " Linked program with no errors : " << shaderName << endl << endl;
+            cout << " Successfully linked : " << shaderName << endl << endl;
         }
         #endif
     }
@@ -311,6 +393,16 @@ public:
         if(!vertexShaderPath.empty())
         {
             readVertexCode();
+            // tessellation control shader needs a vertex shader
+            if (!tessellationControlShaderPath.empty())
+            {
+                readTessellationControlCode();
+            }
+            // tessellation evaluation shader needs a vertex shader
+            if (!tessellationEvaluationShaderPath.empty())
+            {
+                readTessellationEvaluationCode();
+            }
             // geom shader needs a vertex shader
             if(!geometryShaderPath.empty())
             {
@@ -340,8 +432,10 @@ public:
      * @param vertex_code String containing vertex code.
      * @param fragment_code String containing fragment code.
      * @param geometry_code String containing geometry code, this is optional.
+     * @param tessellation_evaluation_code String containing tessellation evaluation code, this is optional.
+     * @param tessellation_control_code String containing tessellation control code, this is optional.
      */
-    void initializeFromStrings (string vertex_code, string fragment_code, string geometry_code = "")
+    void initializeFromStrings (string vertex_code, string fragment_code, string geometry_code = "", string tessellation_evaluation_code = "", string tessellation_control_code = "")
     {
         //Create Shader Program.
         shaderProgram = glCreateProgram();
@@ -354,6 +448,18 @@ public:
         {
             vertexShader = glCreateShader(GL_VERTEX_SHADER);
             setVertexShader(vertex_code);
+            // tessellation control shader is optional, but needs needs a vertex shader
+            if (!tessellationControlShaderPath.empty())
+            {
+                tessellationControlShader = glCreateShader(GL_TESS_CONTROL_SHADER);
+                setTessellationControlShader(tessellation_control_code);
+            }
+            // tessellation evaluation shader is optional, but needs a vertex shader
+            if (!tessellationEvaluationShaderPath.empty())
+            {
+                tessellationEvaluationShader = glCreateShader(GL_TESS_EVALUATION_SHADER);
+                setTessellationEvaluationShader(tessellation_evaluation_code);
+            }
             // geometry shader is optional, but need a vertex shader if is set
             if (!geometry_code.empty())
             {
@@ -388,6 +494,16 @@ public:
         if(!vertexShaderPath.empty())
         {
             readVertexCode();
+            // tessellation control shader needs a vertex shader
+            if (!tessellationControlShaderPath.empty())
+            {
+                readTessellationControlCode();
+            }
+            // tessellation evaluation shader needs a vertex shader
+            if (!tessellationEvaluationShaderPath.empty())
+            {
+                readTessellationEvaluationCode();
+            }
             // geom shader needs a vertex shader
             if(!geometryShaderPath.empty()) {
                 readGeometryCode();
@@ -428,6 +544,20 @@ public:
         {
             //Create Vertex Shader.
             vertexShader = glCreateShader(GL_VERTEX_SHADER);
+
+            // vertex shader is mandatory when using geom shader
+            if(!tessellationControlShaderPath.empty())
+            {
+                //Create Tessellation Control Shader
+                tessellationControlShader = glCreateShader(GL_TESS_CONTROL_SHADER);
+            }
+
+            // vertex shader is mandatory when using geom shader
+            if(!tessellationEvaluationShaderPath.empty())
+            {
+                //Create Tessellation Evaluation Shader
+                tessellationEvaluationShader = glCreateShader(GL_TESS_EVALUATION_SHADER);
+            }
 
             // vertex shader is mandatory when using geom shader
             if(!geometryShaderPath.empty())
@@ -522,6 +652,150 @@ public:
         setVertexShader(vertexShaderCode);
     }
 
+    /**
+     * @brief Loads tessellation control code into shader program.
+     * @param tessellationControlShaderCode String containing code
+     */
+    void setTessellationControlShader(string &tessellationControlCode)
+    {
+        GLint result = GL_FALSE;
+        int infoLogLength;
+
+        char const * tessellationControlSourcePointer = tessellationControlCode.c_str();
+        glShaderSource(tessellationControlShader, 1, &tessellationControlSourcePointer , NULL);
+        glCompileShader(tessellationControlShader);
+
+        // Check Vertex Shader
+        glGetShaderiv(tessellationControlShader, GL_COMPILE_STATUS, &result);
+        if (result != GL_TRUE)
+        {
+            // if an error is found, print the log (even if not in debug mode)
+            cerr << "Erro compiling tessellation evaluation shader: " << tessellationControlShaderPath << endl;
+            glGetShaderiv(tessellationControlShader, GL_INFO_LOG_LENGTH, &infoLogLength);
+            char * tessellationControlShaderErrorMessage = new char[infoLogLength];
+            glGetShaderInfoLog(tessellationControlShader, infoLogLength, NULL, &tessellationControlShaderErrorMessage[0]);
+            fprintf(stdout, "\n%s", &tessellationControlShaderErrorMessage[0]);
+            delete [] tessellationControlShaderErrorMessage;
+        }
+        #ifdef TUCANODEBUG
+        else
+        {
+            if (tessellationControlShaderPath.empty())
+            {
+                cout << "Compiled tessellation control shader from string without errors : " << shaderName.c_str() << endl;
+            }
+            else
+            {
+                cout << "Compiled tessellation control shader without errors : " << tessellationControlShaderPath << endl;
+            }
+        }
+        #endif
+
+        glAttachShader(shaderProgram, tessellationControlShader);
+
+        #ifdef TUCANODEBUG
+        Misc::errorCheckFunc(__FILE__, __LINE__, "error loading tessellation control shader code");
+        #endif
+    }
+
+    /**
+     * @brief Reads the external file containing the tessellation control shader and loads it into the shader program.
+     */
+    void readTessellationControlCode(void)
+    {
+        // Read the tessellation control Shader code from the file
+        string tessellationControlShaderCode;
+
+        ifstream tessellationControlShaderStream(tessellationControlShaderPath.c_str(), std::ios::in);
+        if(tessellationControlShaderStream.is_open())
+        {
+            string line = "";
+            while(getline(tessellationControlShaderStream, line))
+            {
+                tessellationControlShaderCode += "\n" + line;
+            }
+            tessellationControlShaderStream.close();
+        }
+        else
+        {
+            cout << "warning: no tessellation control shader file found : " << tessellationControlShaderPath << endl;
+        }
+
+        setTessellationControlShader(tessellationControlShaderCode);
+    }
+
+    /**
+     * @brief Loads tessellation evaluation code into shader program.
+     * @param tessellationEvaluationShaderCode String containing code
+     */
+    void setTessellationEvaluationShader(string &tessellationEvaluationCode)
+    {
+        GLint result = GL_FALSE;
+        int infoLogLength;
+
+        char const * tessellationEvaluationSourcePointer = tessellationEvaluationCode.c_str();
+        glShaderSource(tessellationEvaluationShader, 1, &tessellationEvaluationSourcePointer , NULL);
+        glCompileShader(tessellationEvaluationShader);
+
+        // Check Vertex Shader
+        glGetShaderiv(tessellationEvaluationShader, GL_COMPILE_STATUS, &result);
+        if (result != GL_TRUE)
+        {
+            // if an error is found, print the log (even if not in debug mode)
+            cerr << "Erro compiling tessellation evaluation shader: " << tessellationEvaluationShaderPath << endl;
+            glGetShaderiv(tessellationEvaluationShader, GL_INFO_LOG_LENGTH, &infoLogLength);
+            char * tessellationEvaluationShaderErrorMessage = new char[infoLogLength];
+            glGetShaderInfoLog(tessellationEvaluationShader, infoLogLength, NULL, &tessellationEvaluationShaderErrorMessage[0]);
+            fprintf(stdout, "\n%s", &tessellationEvaluationShaderErrorMessage[0]);
+            delete [] tessellationEvaluationShaderErrorMessage;
+        }
+        #ifdef TUCANODEBUG
+        else
+        {
+            if (tessellationEvaluationShaderPath.empty())
+            {
+                cout << "Compiled tessellation evaluation shader from string without errors : " << shaderName.c_str() << endl;
+            }
+            else
+            {
+                cout << "Compiled tessellation evaluation shader without errors : " << tessellationEvaluationShaderPath << endl;
+            }
+        }
+        #endif
+
+        glAttachShader(shaderProgram, tessellationEvaluationShader);
+
+        #ifdef TUCANODEBUG
+        Misc::errorCheckFunc(__FILE__, __LINE__, "error loading tessellation evaluation shader code");
+        #endif
+    }
+
+    /**
+     * @brief Reads the external file containing the tessellation evaluation shader and loads it into the shader program.
+     */
+    void readTessellationEvaluationCode(void)
+    {
+        // Read the Vertex Shader code from the file
+        string tessellationEvaluationShaderCode;
+
+        ifstream tessellationEvaluationShaderStream(tessellationEvaluationShaderPath.c_str(), std::ios::in);
+
+        if(tessellationEvaluationShaderStream.is_open())
+        {
+            string line = "";
+            while(getline(tessellationEvaluationShaderStream, line))
+            {
+                tessellationEvaluationShaderCode += "\n" + line;
+            }
+            tessellationEvaluationShaderStream.close();
+        }
+        else
+        {
+            cout << "warning: no tessellation evaluation shader file found : " << tessellationEvaluationShaderPath << endl;
+        }
+
+        setTessellationEvaluationShader(tessellationEvaluationShaderCode);
+    }
 
     /**
      * @brief Loads geometry code into shader program.
@@ -756,6 +1030,16 @@ public:
             glDetachShader(shaderProgram, vertexShader);
             readVertexCode();
         }
+        if (tessellationControlShader != 0)
+        {
+            glDetachShader(shaderProgram, tessellationControlShader);
+            readTessellationControlCode();
+        }
+        if (tessellationEvaluationShader != 0)
+        {
+            glDetachShader(shaderProgram, tessellationEvaluationShader);
+            readTessellationEvaluationCode();
+        }
         if(geometryShader != 0)
         {
             glDetachShader(shaderProgram, geometryShader);
@@ -812,13 +1096,36 @@ public:
         glDeleteProgram(shaderProgram);
     }
 
+	/**
+	* @brief Generates a list with all active attributes
+	* @param attribs Vector of strings to hold attributes names
+	*/
+	void getActiveAttributes( vector< string > &attribs )
+	{
+		int maxlength = 0;
+		int numattribs = 0;
+
+		glGetProgramiv (shaderProgram, GL_ACTIVE_ATTRIBUTES, &numattribs);
+		glGetProgramiv (shaderProgram, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &maxlength);
+
+		int length = 0;
+		int size = 0;
+		GLuint type = 0;
+		char* name = new char[maxlength];
+		for (int i = 0; i < numattribs; ++i)
+		{
+			glGetActiveAttrib(shaderProgram, i, maxlength, &length, &size, &type, name);
+			attribs.push_back(name);
+		}
+        delete [] name;
+	}
 
     /**
      * Given the name of a uniform used inside the shader, returns it's location.
      * @param name Name of the uniform variable in shader.
      * @return The uniform location.
      */
-    GLint getUniformLocation (const GLchar* name)
+    GLint getUniformLocation (const GLchar* name) const
     {
         return glGetUniformLocation(shaderProgram, name);
     }
@@ -828,7 +1135,7 @@ public:
      * @param name Name of the attribute variable in the shader.
      * @return The attribute location, or -1 if the attribute was not found or has an invalid name.
      */
-    GLint getAttributeLocation (const GLchar* name)
+    GLint getAttributeLocation (const GLchar* name) const
     {
         return glGetAttribLocation(shaderProgram, name);
     }

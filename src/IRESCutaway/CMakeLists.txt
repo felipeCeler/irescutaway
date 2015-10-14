@@ -26,6 +26,8 @@ include_directories(
 		${CMAKE_SOURCE_DIR}/libs/Ires
 		## - LCG/include
 		${CMAKE_SOURCE_DIR}/libs/LCG
+		## - Tucano/include
+		${CMAKE_SOURCE_DIR}/libs/tucano/src
         ## - Qt4     
 #        ${QT_INCLUDE_DIR}
 #        ${QT_QTCORE_INCLUDE_DIR}
@@ -64,6 +66,16 @@ set( ${PROJECT_NAME}_SOURCES App/main.cpp
     						 ${CMAKE_SOURCE_DIR}/libs/LCG/shaderlib/shader.cpp
     						 ${CMAKE_SOURCE_DIR}/libs/LCG/shaderlib/mesh.cpp
     						 ${CMAKE_SOURCE_DIR}/libs/LCG/samples/imgproc/meanfilter.cpp
+    						 ## Tucano
+    						 ${CMAKE_SOURCE_DIR}/libs/tucano/src/tucano.hpp
+    						 ${CMAKE_SOURCE_DIR}/libs/tucano/src/texture.hpp
+    						 ${CMAKE_SOURCE_DIR}/libs/tucano/src/texturemanager.hpp
+    						 ${CMAKE_SOURCE_DIR}/libs/tucano/src/mesh.hpp
+    						 ${CMAKE_SOURCE_DIR}/libs/tucano/src/model.hpp
+    						 ${CMAKE_SOURCE_DIR}/libs/tucano/src/framebuffer.hpp
+    						 ${CMAKE_SOURCE_DIR}/libs/tucano/src/effect.hpp
+    						 ${CMAKE_SOURCE_DIR}/libs/tucano/src/bufferobject.hpp
+    						 ${CMAKE_SOURCE_DIR}/libs/tucano/src/utils/ppmimporter.hpp
     						 )
 	
 set( ${PROJECT_NAME}_HEADERS GUI/Qt/MainWindow/MainWindow.hpp
