@@ -911,7 +911,7 @@ void GLWidget::IRESCutawayStatic (  )
                 glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
 
-                //drawPrimaryStaticSilhouette();
+                drawPrimaryStaticSilhouette();
 
 
                 drawBackGround( );
@@ -920,7 +920,7 @@ void GLWidget::IRESCutawayStatic (  )
                 /// OFFSCREEN Renderer
                 /// DRAW COLOR_BUFFER -->  glDrawBuffers(2,[depthTextureID, normalTextureID, colorTextureID]);
                 fboSSAO->clearAttachments();
-                fboSSAO->bindRenderBuffers(depthTextureID, normalTextureID, colorTextureID, silhouetteID_);
+                fboSSAO->bindRenderBuffers(depthTextureID, normalTextureID, colorTextureID);
 
                         renderingCutawayTime_.start();
                         if ( draw_secondary )
@@ -931,7 +931,6 @@ void GLWidget::IRESCutawayStatic (  )
                         glFinish();
                         accumulateRenderingCutawayTime_ += (float)renderingCutawayTime_.elapsed();
 
-               fboSSAO->bindRenderBuffers(depthTextureID, normalTextureID, colorTextureID);
                         renderingPrimaryTime_.start();
                         if ( draw_primary )
                         {

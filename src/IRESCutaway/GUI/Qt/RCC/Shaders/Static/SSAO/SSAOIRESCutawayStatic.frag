@@ -141,12 +141,10 @@ void main(void)
 //        //outputColor =  vec4( 1.0,0.0,0.0,1.0 );
 //
 //        //push frontface back, so for double faces we see the interior of the cube (backface)
-	if ( newNormal.z > 0.0 )
-	{
-		/// color_t.a == 0.0 means secondary
-		if ( color_t.a == 0.0 )
-			discard;
-	}
+        if (newNormal.z > 0.0)
+        {
+            discard;
+        }
 
 
         vec2 dist_neighbor[8] = {vec2(linesize,0), vec2(-linesize,0), vec2(0,linesize), vec2(0,-linesize),
@@ -159,13 +157,10 @@ void main(void)
         vec4 cutaway = texelFetch( normal, ivec2(pixel_pos), 0 ).rgba;
         //newVert = texelFetch( vertex, ivec2(pixel_pos), 0 ).rgb;
 
-	// discard point in front of the cutaway surface
-	if ( ( newVert.z > cutaway.w ) )
-	{
-		/// color_t.a == 0.0 means secondary
-		if ( color_t.a == 0.0 )
-			discard;
-	}
+        // discard point in front of the cutaway surface
+        if ( (newVert.z > cutaway.w) ) {
+            discard;
+        }
 
         int size = 8;
 
@@ -250,8 +245,7 @@ void main(void)
         // uncomment to turn off illumination
         color = color_t;
 
-        if ( color_t.a == 0.0)
-        	newNormal = -cutaway.xyz;
+        newNormal = -cutaway.xyz;
 
         eye_dir = normalize ( -newVert.xyz );
 
@@ -283,12 +277,10 @@ void main(void)
 
         color.rgb = HSLToRGB(hsl);
 
-        //color.a = VertexIn.color.a;
+        color.a = VertexIn.color.a;
 
         out_Coords = vec4 (newVert.xyz, 1.0);
         out_Normal = vec4 (newNormal.xyz, 1.0);
         out_Color = I * vec4 ( vec3 ( 0.7 ) , 1.0 ) + ( 1.0 - I ) * ( ( color ) );
-
-
 
 }

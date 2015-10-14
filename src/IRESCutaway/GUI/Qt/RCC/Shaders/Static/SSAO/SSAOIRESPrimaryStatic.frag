@@ -166,7 +166,7 @@ void main(void)
 //        // cutaway normal = rgb, and cutaway depth in camera space = w
 //        vec4 cutaway = texelFetch( normal, ivec2(pixel_pos), 0 ).rgba;
 
-        int size = 2;
+        int size = 4;
         vec4 back = vec4(0.0,0.0,0.0,0.0);
 
 
