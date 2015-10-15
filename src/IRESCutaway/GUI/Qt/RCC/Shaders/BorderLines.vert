@@ -43,7 +43,7 @@ void main(void)
 
 	VertexOut.faceType = faceType;
 
-	VertexOut.color  = vec4(1.0,1.0,1.0,1.0);
+	VertexOut.color  = vec4(0.5,0.5,0.5,1.0);
 
 	if (  (faceType.y == 0) )  // Shell faces
 	{

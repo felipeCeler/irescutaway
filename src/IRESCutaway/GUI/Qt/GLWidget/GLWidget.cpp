@@ -19,7 +19,7 @@ GLWidget::GLWidget (  QWidget* parent , const QGLWidget* shareWidget , Qt::Windo
 void GLWidget::initializeGL ( )
 {
 	/// GLEW OpenGL
-	//Glew Initialization:
+	/// Glew Initialization:
 
 	GLenum glewInitResult = glewInit();
 
@@ -598,7 +598,7 @@ void GLWidget::paintGL ( )
 
         drawBackGround ( );
 
-        renderTime.start();
+        renderTime.start ( );
 
         if ( isIRESOpen_ )
         {
@@ -938,20 +938,6 @@ void GLWidget::IRESCutawayStatic (  )
 
                         }
 
-                        if ( reservoir_model_.showBorderLine )
-                        {
-
-                                glLineWidth( (float) borderLinesSize_ );
-                                BorderLines_->enable ( );
-
-                                BorderLines_->setUniform ( "ModelMatrix" , trackball_->getModelMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
-                                BorderLines_->setUniform ( "ViewMatrix" , trackball_->getViewMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
-                                BorderLines_->setUniform ( "ProjectionMatrix" , trackball_->getProjectionMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
-
-                                reservoir_model_.drawFaces ( );
-
-                                BorderLines_->disable ( );
-                        }
                         glFinish();
                         accumulateRenderingPrimaryTime_ += (float)renderingPrimaryTime_.elapsed();
 
@@ -1055,7 +1041,25 @@ void GLWidget::IRESCutawayStatic (  )
                 fboSSAO->unbindAll( );
                 fboSSAO->clearDepth( );
 
+                if ( reservoir_model_.showBorderLine )
+                {
+
+                        glLineWidth( (float) borderLinesSize_ );
+                        BorderLines_->enable ( );
+
+                        BorderLines_->setUniform ( "ModelMatrix" , trackball_->getModelMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
+                        BorderLines_->setUniform ( "ViewMatrix" , trackball_->getViewMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
+                        BorderLines_->setUniform ( "ProjectionMatrix" , trackball_->getProjectionMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
+
+                        reservoir_model_.drawFaces ( );
+
+                        BorderLines_->disable ( );
+                }
+
                 glEnable(GL_DEPTH_TEST);
+
+
+
 
 //                if (play_)
 //                {
@@ -1642,7 +1646,7 @@ void GLWidget::PaperSecondary( ) const
 
         drawBackGround( );
 
-        // Surface Faces
+        /// Surface Faces
 
         BurnsSecondary_->enable( );
 

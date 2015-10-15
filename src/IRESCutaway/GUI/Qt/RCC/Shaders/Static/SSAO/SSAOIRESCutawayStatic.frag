@@ -281,6 +281,6 @@ void main(void)
 
         out_Coords = vec4 (newVert.xyz, 1.0);
         out_Normal = vec4 (newNormal.xyz, 1.0);
-        out_Color = I * vec4 ( vec3 ( 0.7 ) , 1.0 ) + ( 1.0 - I ) * ( ( color ) );
+        out_Color = I * vec4 ( vec3 ( 0.0 ) , 1.0 ) + ( 1.0 - I ) * ( ( color ) );
 
 }
