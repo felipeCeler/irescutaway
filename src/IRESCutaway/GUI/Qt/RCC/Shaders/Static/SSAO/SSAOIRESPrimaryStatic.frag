@@ -185,7 +185,7 @@ void main(void)
 				back = texelFetch(silhouette, ivec2(gl_FragCoord.st+offset), 0).rgba;
 
 				if ((back.a < 51.0)) {
-					color = vec4(0.0,0.0,0.0,1.0);
+					color = vec4(1.0,0.2,0.0,1.0);
 				}
 			}
 		}

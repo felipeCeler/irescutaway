@@ -911,10 +911,29 @@ void GLWidget::IRESCutawayStatic (  )
                 glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
 
-                drawPrimaryStaticSilhouette();
+                if ( reservoir_model_.showBorderLine )
+                {
+                	drawPrimaryStaticSilhouette();
+                }
 
 
                 drawBackGround( );
+
+                if ( reservoir_model_.showBorderLine )
+                {
+
+                        glLineWidth( (float) borderLinesSize_ );
+                        BorderLines_->enable ( );
+
+                        BorderLines_->setUniform ( "ModelMatrix" , trackball_->getModelMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
+                        BorderLines_->setUniform ( "ViewMatrix" , trackball_->getViewMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
+                        BorderLines_->setUniform ( "ProjectionMatrix" , trackball_->getProjectionMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
+
+                        reservoir_model_.drawFaces ( );
+
+                        BorderLines_->disable ( );
+                }
+
 
                 /// SSAO -- C&G
                 /// OFFSCREEN Renderer
@@ -1041,25 +1060,8 @@ void GLWidget::IRESCutawayStatic (  )
                 fboSSAO->unbindAll( );
                 fboSSAO->clearDepth( );
 
-                if ( reservoir_model_.showBorderLine )
-                {
-
-                        glLineWidth( (float) borderLinesSize_ );
-                        BorderLines_->enable ( );
-
-                        BorderLines_->setUniform ( "ModelMatrix" , trackball_->getModelMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
-                        BorderLines_->setUniform ( "ViewMatrix" , trackball_->getViewMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
-                        BorderLines_->setUniform ( "ProjectionMatrix" , trackball_->getProjectionMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
-
-                        reservoir_model_.drawFaces ( );
-
-                        BorderLines_->disable ( );
-                }
 
                 glEnable(GL_DEPTH_TEST);
-
-
-
 
 //                if (play_)
 //                {
