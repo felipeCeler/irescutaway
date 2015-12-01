@@ -35,31 +35,33 @@
 
 /// Qt 5.5
 /// TODO Change it to modern QOpenGLWidget @see http://doc.qt.io/qt-5/qopenglwidget.html#relation-to-qglwidget
-#include <QGLWidget>
-#include <QMdiSubWindow>
-#include <QTimer>
-#include <QTimeLine>
-#include <QFile>
-#include <QDir>
-#include <QDebug>
-#include <QSet>
-#include <QMimeData>
-#include <QTime>
-#include <QMouseEvent>
-#include <QKeyEvent>
-#include <QElapsedTimer>
-#include <QApplication>
-#include <QProcess>
+#include <QtWidgets/QOpenGLWidget>
+#include <QtWidgets/QApplication>
+#include <QtCore/QTime>
+#include <QtCore/QTimer>
+#include <QtCore/QTimeLine>
+#include <QtCore/QElapsedTimer>
+#include <QtCore/QProcess>
 
-class GLWidget: public QGLWidget
+#include <QtCore/QFile>
+#include <QtCore/QDir>
+#include <QtCore/QDebug>
+#include <QtCore/QSet>
+#include <QtCore/QMimeData>
+
+#include <QtGui/QMouseEvent>
+#include <QtGui/QKeyEvent>
+
+#include <QtGui/QPainter>
+
+class GLWidget: public QOpenGLWidget
 {
         Q_OBJECT
 
         public:
 
                 // From QGLWidget
-                explicit GLWidget ( const QGLFormat& format , QWidget* parent = 0 , const QGLWidget* shareWidget = 0 , Qt::WindowFlags f = 0 );
-                explicit GLWidget ( QWidget* parent = 0 , const QGLWidget* shareWidget = 0 , Qt::WindowFlags f = 0 );
+                explicit GLWidget ( QWidget* parent = 0);
                 ~GLWidget ( );
                 void initializeGL ( );
                 void resizeGL ( int width , int height );
@@ -211,6 +213,7 @@ class GLWidget: public QGLWidget
 
                 void loadPly ( QString pFilename )
                 {
+                	makeCurrent();
                         std::string filename = QFile::encodeName ( pFilename ).constData ( );
                         ply_primary_.Load ( filename.c_str ( ) );
 
@@ -220,8 +223,8 @@ class GLWidget: public QGLWidget
                         }
                 }
 
-                void PaperPly ( ) const;
-                void PaperDemo ( ) const;
+                void PaperPly ( );
+                void PaperDemo ( );
                 void PaperDrawCutawaySurface ( ) const;
                 void PaperPrimary ( ) const;
                 void PaperSecondary ( ) const;
@@ -247,6 +250,7 @@ class GLWidget: public QGLWidget
 
                 void changeTimeStep ( const int step )
                 {
+                	makeCurrent();
                         std::cout << " ... " << step << std::endl;
                         this->time_step = step;
 
@@ -271,6 +275,7 @@ class GLWidget: public QGLWidget
                 ;
                 void changeDynamicProperty ( int index )
                 {
+                	makeCurrent();
                         this->dynamic_property_index = index;
 
                         glBindVertexArray ( reservoir_model_.vertexArrayCuboids );

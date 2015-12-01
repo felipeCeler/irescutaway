@@ -1,15 +1,8 @@
 # Teste
 project(${CMAKE_PROJECT_NAME}_EXE)
 
-set(QT_USE_QTOPENGL true)
-set(QT_USE_QTGUI true)
-set(QT_WRAP_CPP true)
-set(QT_WRAP_UI true)
-
-
-
-find_package(Qt5OpenGL REQUIRED)
-find_package(Qt5Widgets REQUIRED)
+## It asks for Qt5_DIR
+find_package(Qt5 COMPONENTS Core Gui Widgets OpenGL)
 
 find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
@@ -39,6 +32,8 @@ include_directories(
         ## - Eigen
         ${EIGEN_INCLUDE_DIR}
         ## - Qt5
+        ${Qt5Core_INCLUDE_DIRS}
+        ${Qt5Gui_INCLUDE_DIRS}
         ${Qt5Widgets_INCLUDE_DIRS}
         ${Qt5OpenGL_INCLUDE_DIRS}
         )
@@ -115,7 +110,7 @@ ENDIF(WIN32)
               
 #TARGET_LINK_LIBRARIES(${CMAKE_PROJECT_NAME} ${QT_LIBRARIES} ${QT_QTMAIN_LIBRARY} ${OPENGL_LIBRARIES}  ${GLEW_LIBRARY} IresReader CelerMath CelerPhysics CelerScene CelerOpenGL)
 
-TARGET_LINK_LIBRARIES(${CMAKE_PROJECT_NAME}   Qt5::OpenGL Qt5::Widgets ${OPENGL_LIBRARIES}  ${GLEW_LIBRARY} IresReader CelerMath CelerPhysics CelerScene CelerOpenGL)
+TARGET_LINK_LIBRARIES(${CMAKE_PROJECT_NAME} Qt5::Gui  Qt5::OpenGL Qt5::Widgets Qt5::Core ${OPENGL_LIBRARIES}  ${GLEW_LIBRARY} IresReader CelerMath CelerPhysics CelerScene CelerOpenGL)
 
 # Do a better solution. This one is Ungly !!!
 SET (SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/GUI/Qt/RCC/Shaders")

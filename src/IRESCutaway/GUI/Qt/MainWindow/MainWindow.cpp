@@ -6,15 +6,12 @@ MainWindow::MainWindow ( QMainWindow *parent ) :
 	QMainWindow ( parent )
 {
 
-	QGLFormat glFormat;
-	glFormat.setSwapInterval ( 0 ); // vsync
-
 	ui = new Ui::MainWindow;
 	ui->setupUi( this );
 
 	aboutIRESReader = new AboutWidgetIRESReader( this );
 
-	glWidget = new GLWidget ( glFormat, this );
+	glWidget = new GLWidget ( this );
 
 	setCentralWidget( glWidget );
 

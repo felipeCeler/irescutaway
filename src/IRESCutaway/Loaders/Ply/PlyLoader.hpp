@@ -36,6 +36,7 @@ class Model_PLY
 		void DrawLines ( );
 		void calculateNormal( float *coord1, float *coord2, float *coord3, float  norm[3] );
 		Model_PLY ( );
+		void init ();
 
 		float* Faces_Triangles;
 		float* Faces_Quads;

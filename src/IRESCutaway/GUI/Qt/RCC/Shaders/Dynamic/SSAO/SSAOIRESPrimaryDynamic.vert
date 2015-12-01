@@ -119,14 +119,14 @@ bool isInside ( )
 bool isPrimary (  )
 {
 
-//        if (paper == 0.0 )
-//        {
-//               return isInside();
-//
-//
-//        }
+        if (paper == 1.0 )
+        {
+               return isInside();
 
-        return ( ( dynamic_properties > min_range_dynamic) && ( dynamic_properties < max_range_dynamic ));
+
+        }
+
+//        return ( ( dynamic_properties > min_range_dynamic) && ( dynamic_properties < max_range_dynamic ));
 //        if ( property_type == 0 )
 //        {
 //                return ( ( dynamic_properties > min_range_dynamic) && ( dynamic_properties < max_range_dynamic ));

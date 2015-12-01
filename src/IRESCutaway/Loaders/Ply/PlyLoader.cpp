@@ -13,6 +13,10 @@
 Model_PLY::Model_PLY()
 {
  open = 0;
+ vertexArray = 0;
+ vertex_buffer = 0;
+ normal_buffer = 0;
+
 }
 
 void Model_PLY::calculateNormal( float *coord1, float *coord2, float *coord3, float norm[3] )
@@ -39,6 +43,14 @@ void Model_PLY::calculateNormal( float *coord1, float *coord2, float *coord3, fl
 	norm[1] = vr[1]/val;
 	norm[2] = vr[2]/val;
 
+}
+
+
+void Model_PLY::init ()
+{
+	glGenVertexArrays ( 1 , &vertexArray );
+		glGenBuffers ( 1, &vertex_buffer );
+		glGenBuffers ( 1, &normal_buffer );
 }
 
 int Model_PLY::Load(const char* filename)
@@ -201,10 +213,6 @@ int Model_PLY::Load(const char* filename)
 		printf("File does not have a .PLY extension. ");
 	}
 
-
-	glGenVertexArrays ( 1 , &vertexArray );
-		glGenBuffers ( 1, &vertex_buffer );
-		glGenBuffers ( 1, &normal_buffer );
 	glBindVertexArray (vertexArray);
 
 	glBindBuffer ( GL_ARRAY_BUFFER , vertex_buffer );

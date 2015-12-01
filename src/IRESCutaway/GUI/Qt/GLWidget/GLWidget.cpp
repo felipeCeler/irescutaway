@@ -1,17 +1,8 @@
 #include <GUI/Qt/GLWidget/GLWidget.hpp>
 
-//#include <QtGui>
 
 // Se quiser usar QPainter Ver exemplo no QT demo - Manda Qt em wave animation !!!
-
-GLWidget::GLWidget ( const QGLFormat& format , QWidget* parent , const QGLWidget* shareWidget , Qt::WindowFlags f ) :
-	QGLWidget ( format , parent , shareWidget , f )
-{
-
-}
-
-GLWidget::GLWidget (  QWidget* parent , const QGLWidget* shareWidget , Qt::WindowFlags f ) :
-	QGLWidget ( parent , shareWidget , f )
+GLWidget::GLWidget (  QWidget* parent ) : QOpenGLWidget ( parent )
 {
 
 }
@@ -20,8 +11,8 @@ void GLWidget::initializeGL ( )
 {
 	/// GLEW OpenGL
 	/// Glew Initialization:
-
-	GLenum glewInitResult = glewInit();
+	glewExperimental = GL_TRUE;
+	GLenum glewInitResult = glewInit ( );;
 
 	//Check Glew Initialization:
 	if (GLEW_OK != glewInitResult) {
@@ -212,6 +203,8 @@ void GLWidget::initializeGL ( )
 
         isply_          = false;
 
+        ply_primary_.init();
+
         /// From libQGLViewer
         AnimationInitializer( );
 
@@ -258,7 +251,7 @@ void GLWidget::dropEvent(QDropEvent *event)
 		qDebug() << text;
 
 		QImage image 			= QImage(text);
-		QImage imageOpenGL = QGLWidget::convertToGLFormat( image );
+		//QImage imageOpenGL = QGLWidget::convertToGLFormat( image );
 
 		// TODO this is just the beginning
 		// Create a texture as attachment
@@ -278,7 +271,7 @@ void GLWidget::dropEvent(QDropEvent *event)
 		glTexParameteri ( GL_TEXTURE_2D , GL_TEXTURE_MIN_FILTER , GL_NEAREST );
 		glTexParameteri ( GL_TEXTURE_2D , GL_TEXTURE_MAG_FILTER , GL_NEAREST );
 		// Allocate memory
-		glTexImage2D ( GL_TEXTURE_2D , 0 , GL_RGBA , image.width() , image.height() , 0 , GL_RGBA , GL_UNSIGNED_BYTE , imageOpenGL.bits() );
+		//glTexImage2D ( GL_TEXTURE_2D , 0 , GL_RGBA , image.width() , image.height() , 0 , GL_RGBA , GL_UNSIGNED_BYTE , imageOpenGL.bits() );
 
 		qDebug() << " ID Texture " << xtoon_texture_ << " w x h " << image.width() << " x " << image.height();
 
@@ -1027,7 +1020,9 @@ void GLWidget::IRESCutawayStatic (  )
 		noise_texture.unbind();
 		/// End of SSAO
 
+		//glBindFramebuffer(context()->defaultFramebufferObject());
                 glDrawBuffer(GL_BACK);
+                makeCurrent();
 
 //                blurShader_->enable();
 //
@@ -1119,74 +1114,34 @@ void GLWidget::drawIRESCutawayDynamicSurface ( )
 
         IRESCutawaySurfaceDynamic_->enable( );
 
-//        IRESCutawaySurfaceDynamic_->setUniform( "v0" , ply_primary_.box.box_min().x, ply_primary_.box.box_max().y,ply_primary_.box.box_max().z);
-//        IRESCutawaySurfaceDynamic_->setUniform( "v1" , ply_primary_.box.box_min().x, ply_primary_.box.box_max().y,ply_primary_.box.box_min().z);
-//        IRESCutawaySurfaceDynamic_->setUniform( "v2" , ply_primary_.box.box_max().x, ply_primary_.box.box_max().y,ply_primary_.box.box_min().z);
-//        IRESCutawaySurfaceDynamic_->setUniform( "v3" , ply_primary_.box.box_max().x, ply_primary_.box.box_max().y,ply_primary_.box.box_max().z);
-//
-//        IRESCutawaySurfaceDynamic_->setUniform( "v4" , ply_primary_.box.box_max().x, ply_primary_.box.box_min().y,ply_primary_.box.box_max().z);
-//        IRESCutawaySurfaceDynamic_->setUniform( "v5" , ply_primary_.box.box_max().x, ply_primary_.box.box_min().y,ply_primary_.box.box_min().z);
-//        IRESCutawaySurfaceDynamic_->setUniform( "v6" , ply_primary_.box.box_min().x, ply_primary_.box.box_min().y,ply_primary_.box.box_min().z);
-//        IRESCutawaySurfaceDynamic_->setUniform( "v7" , ply_primary_.box.box_min().x, ply_primary_.box.box_min().y,ply_primary_.box.box_max().z);
+        IRESCutawaySurfaceDynamic_->setUniform( "v0" , ply_primary_.box.box_min().x, ply_primary_.box.box_max().y,ply_primary_.box.box_max().z);
+        IRESCutawaySurfaceDynamic_->setUniform( "v1" , ply_primary_.box.box_min().x, ply_primary_.box.box_max().y,ply_primary_.box.box_min().z);
+        IRESCutawaySurfaceDynamic_->setUniform( "v2" , ply_primary_.box.box_max().x, ply_primary_.box.box_max().y,ply_primary_.box.box_min().z);
+        IRESCutawaySurfaceDynamic_->setUniform( "v3" , ply_primary_.box.box_max().x, ply_primary_.box.box_max().y,ply_primary_.box.box_max().z);
+
+        IRESCutawaySurfaceDynamic_->setUniform( "v4" , ply_primary_.box.box_max().x, ply_primary_.box.box_min().y,ply_primary_.box.box_max().z);
+        IRESCutawaySurfaceDynamic_->setUniform( "v5" , ply_primary_.box.box_max().x, ply_primary_.box.box_min().y,ply_primary_.box.box_min().z);
+        IRESCutawaySurfaceDynamic_->setUniform( "v6" , ply_primary_.box.box_min().x, ply_primary_.box.box_min().y,ply_primary_.box.box_min().z);
+        IRESCutawaySurfaceDynamic_->setUniform( "v7" , ply_primary_.box.box_min().x, ply_primary_.box.box_min().y,ply_primary_.box.box_max().z);
 
 
-//        IRESCutawaySurfaceDynamic_->setUniform("move_x", move_x);
-//        IRESCutawaySurfaceDynamic_->setUniform("move_y", move_y);
-//        IRESCutawaySurfaceDynamic_->setUniform("move_z", move_z);
-//        IRESCutawaySurfaceDynamic_->setUniform( "x" , volume_width );
-//        IRESCutawaySurfaceDynamic_->setUniform( "y" , volume_height );
-//        IRESCutawaySurfaceDynamic_->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
-//        IRESCutawaySurfaceDynamic_->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
-//        IRESCutawaySurfaceDynamic_->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
-//
-//        IRESCutawaySurfaceDynamic_->setUniform ("freeze", freezeView_ );
-//        IRESCutawaySurfaceDynamic_->setUniform ("FreezeViewMatrix",freeze_viewmatrix_.data ( ),4, GL_FALSE, 1 );
-
-        IRESCutawaySurfaceDynamic_->setUniform("num_lights", (GLint) lights.size ( )  );
-        IRESCutawaySurfaceDynamic_->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
-        IRESCutawaySurfaceDynamic_->setUniform("WIN_SCALE", (float) width ( ) , (float) height ( ) );
-
-        /// Shader Intensity
-        IRESCutawaySurfaceDynamic_->setUniform ( "saturation_" , this->saturationPrimaries_);
-        IRESCutawaySurfaceDynamic_->setUniform ( "luminance_"  , this->luminancePrimaries_);
-
-        IRESCutawaySurfaceDynamic_->setUniform("paper", 1.0  );
-        IRESCutawaySurfaceDynamic_->setUniform("property_type", property_type_  );
-        IRESCutawaySurfaceDynamic_->setUniform("box_min", ply_primary_.box.box_min().x,ply_primary_.box.box_min().y,ply_primary_.box.box_min().z );
-        IRESCutawaySurfaceDynamic_->setUniform("box_max", ply_primary_.box.box_max().x,ply_primary_.box.box_max().y,ply_primary_.box.box_max().z );
-
-        IRESCutawaySurfaceDynamic_->setUniform("move_x", move_x  );
-        IRESCutawaySurfaceDynamic_->setUniform("move_y", move_y  );
-        IRESCutawaySurfaceDynamic_->setUniform("move_z", move_z  );
-
+        IRESCutawaySurfaceDynamic_->setUniform("move_x", move_x);
+        IRESCutawaySurfaceDynamic_->setUniform("move_y", move_y);
+        IRESCutawaySurfaceDynamic_->setUniform("move_z", move_z);
         IRESCutawaySurfaceDynamic_->setUniform( "x" , volume_width );
         IRESCutawaySurfaceDynamic_->setUniform( "y" , volume_height );
-
-        IRESCutawaySurfaceDynamic_->setUniform("min_range_static", min_range_static_  );
-        IRESCutawaySurfaceDynamic_->setUniform("max_range_static", max_range_static_  );
-
-        IRESCutawaySurfaceDynamic_->setUniform("min_range_dynamic", min_range_dynamic_  );
-        IRESCutawaySurfaceDynamic_->setUniform("max_range_dynamic", max_range_dynamic_  );
-
-        IRESCutawaySurfaceDynamic_->setUniform ( "max_property_dynamic" , reservoir_model_.dynamic_properties[dynamic_property_index].max_[time_step] );
-        IRESCutawaySurfaceDynamic_->setUniform ( "min_property_dynamic" , reservoir_model_.dynamic_properties[dynamic_property_index].min_[time_step] );
-
-        IRESCutawaySurfaceDynamic_->setUniform("min_property_static", reservoir_model_.static_min[reservoir_model_.current_static]  );
-        SSAOIRESPrimaryDynamic_->setUniform("max_property_static", reservoir_model_.static_max[reservoir_model_.current_static]  );
-        IRESCutawaySurfaceDynamic_->setUniform("property_index", reservoir_model_.current_static );
-
         IRESCutawaySurfaceDynamic_->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
         IRESCutawaySurfaceDynamic_->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
         IRESCutawaySurfaceDynamic_->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
+
         IRESCutawaySurfaceDynamic_->setUniform ("freeze", freezeView_ );
         IRESCutawaySurfaceDynamic_->setUniform ("FreezeViewMatrix",freeze_viewmatrix_.data ( ),4, GL_FALSE, 1 );
 
+        glBindVertexArray(vertexArray_Dummy);
+                glDrawArrays(GL_POINTS,0,1);
+        glBindVertexArray(0);
 
-//        glBindVertexArray(vertexArray_Dummy);
-//                glDrawArrays(GL_POINTS,0,1);
-//        glBindVertexArray(0);
-
-        reservoir_model_.drawCuboid ( );
+        //reservoir_model_.drawCuboid ( );
 
         IRESCutawaySurfaceDynamic_->disable( );
 
@@ -1199,13 +1154,10 @@ void GLWidget::drawIRESCutawayDynamicSurface ( )
         depthFBO->unbindAll();
 
         glEnable(GL_DEPTH_TEST);
-        glDrawBuffer(GL_BACK);
-
 }
 
 void GLWidget::drawPrimaryDynamic ( ) const
 {
-
 
         SSAOIRESPrimaryDynamic_->enable( );
 
@@ -1290,7 +1242,7 @@ void GLWidget::drawSecondaryDynamic ( ) const
         SSAOIRESCutawayDynamic_->setUniform ( "ViewMatrix" , trackball_->getViewMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
         SSAOIRESCutawayDynamic_->setUniform ( "ProjectionMatrix" , trackball_->getProjectionMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
 
-        reservoir_model_.drawFaces();
+        reservoir_model_.drawCuboid();
 
         SSAOIRESCutawayDynamic_->disable( );
 
@@ -1425,6 +1377,7 @@ void GLWidget::IRESCutawayDynamic ( )
                  fboSSAO->clearDepth ( );
 
                  glDrawBuffer(GL_BACK);
+                 makeCurrent();
 
                  blurShader_->enable();
 
@@ -1460,6 +1413,14 @@ void GLWidget::drawIRESModel ( )
         glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
         drawBackGround( );
+
+        fboSSAO->bind();
+
+        fboSSAO->unbindAll();
+
+        glDrawBuffer(GL_BACK);
+
+        makeCurrent();
 
         // Surface Faces
         RawModel_->enable( );
@@ -1535,50 +1496,50 @@ void GLWidget::drawBackGround ( ) const
 	glDepthMask(GL_TRUE);
 }
 
-void GLWidget::PaperDemo() const
+void GLWidget::PaperDemo()
 {
         if ( isIRESOpen_ )
         {
-                PaperDrawCutawaySurface( );
+                //PaperDrawCutawaySurface( );
 
                 glClearColor ( 1.0 , 1.0 , 1.0 , 1.0 );
                 glDepthFunc(GL_LESS);
                 glClearDepth(1.0f);
                 glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-
+                makeCurrent();
                 drawBackGround( );
 
                 if ( draw_secondary )
                 {
-                        //PaperSecondary( );
+                        PaperSecondary( );
                 }
                 if ( draw_primary )
                 {
-                		PaperPrimary( );//PaperPly();
+                	PaperPly();
                 }
 
-                glActiveTexture(GL_TEXTURE0);
-                glEnable(GL_BLEND);
-                glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
-
-                DummyQuad_->enable();
-
-                DummyQuad_->setUniform("WIN_SCALE", (float) width ( ) , (float) height ( ) );
-                DummyQuad_->setUniform("displacement", displacement[0],displacement[1],displacement[2] );
-                DummyQuad_->setUniform("max_displacement", max_displacement[0],max_displacement[1],max_displacement[2] );
-                DummyQuad_->setUniform("num_lights", (GLint) lights.size ( )  );
-                DummyQuad_->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
-                DummyQuad_->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
-                DummyQuad_->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
-                DummyQuad_->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
-
-                glBindVertexArray( vertexArray_Dummy );
-                glDrawArrays( GL_POINTS, 0, 1 );
-                glBindVertexArray( 0);
-
-                DummyQuad_->disable();
-                glDisable(GL_BLEND);
+//                glActiveTexture(GL_TEXTURE0);
+//                glEnable(GL_BLEND);
+//                glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+//
+//                DummyQuad_->enable();
+//
+//                DummyQuad_->setUniform("WIN_SCALE", (float) width ( ) , (float) height ( ) );
+//                DummyQuad_->setUniform("displacement", displacement[0],displacement[1],displacement[2] );
+//                DummyQuad_->setUniform("max_displacement", max_displacement[0],max_displacement[1],max_displacement[2] );
+//                DummyQuad_->setUniform("num_lights", (GLint) lights.size ( )  );
+//                DummyQuad_->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
+//                DummyQuad_->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
+//                DummyQuad_->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
+//                DummyQuad_->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
+//
+//                glBindVertexArray( vertexArray_Dummy );
+//                glDrawArrays( GL_POINTS, 0, 1 );
+//                glBindVertexArray( 0);
+//
+//                DummyQuad_->disable();
+//                glDisable(GL_BLEND);
         }
 }
 
@@ -1750,7 +1711,7 @@ void GLWidget::PaperPrimary( ) const
 
 }
 
-void GLWidget::PaperPly ( ) const
+void GLWidget::PaperPly ( )
 {
         /// FIXME Conditions - Just the model opened.
 
