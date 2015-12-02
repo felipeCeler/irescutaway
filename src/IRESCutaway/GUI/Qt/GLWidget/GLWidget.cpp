@@ -118,20 +118,14 @@ void GLWidget::initializeGL ( )
         borderLinesSize_ = 0;
         meanFilterSize_  = 0;
 
-	trackball_ = new Trackball();
-
 	nearPlane_ = 1.0f;
         farPlane_  = 15.0f;
 
 	isPerspective_ = true;
 
-	trackball_->initOpenGLMatrices();
-
-	trackball_->initializeBuffers();
-
 	enable_blend_ = 0;
 
-	depthFBO = new Framebuffer( width() , height(), 5 );
+	depthFBO = new Tucano::Framebuffer( width() , height(), 5 );
 
 	normalCutawayID_ = 0;
 	verticesCutawayID_ = 1;
@@ -139,8 +133,7 @@ void GLWidget::initializeGL ( )
 	verticesSmoothID_ =  3;
 	silhouetteID_	  = 4;
 
-	meanFilter = new MeanFilter( "Gaussian blur");
-	meanFilter->resize(width(), height());
+	meanFilter = new Effects::MeanFilter();
 
 	justWireFrame = 0;
 
@@ -156,7 +149,8 @@ void GLWidget::initializeGL ( )
 
 	/// BenchMarking
 
-	trackball_->decreaseZoom( 3.05 );
+	camera.setPerspectiveMatrix ( 60.0 , (float) this->width ( ) / (float) this->height ( ) , 0.1f , 100.0f );
+	camera.decreaseZoom( 3.05 );
 
 	glGenVertexArrays (1, &vertexArray_Dummy);
 	        glGenBuffers(1,&vertexBuffer_Dummy);
@@ -389,13 +383,16 @@ void GLWidget::resizeGL ( int width , int height )
 
 	/// @Noob - http://math.hws.edu/graphicsnotes/c3/s5.html near plane can be negative on orthographic avoiding clipping by it.
 
+	camera.setViewport ( Eigen::Vector2f ( (float) width , (float) height ) );
+
+
 	if ( isPerspective_ )
 	{
-	        trackball_->usePerspectiveMatrix  ( 45.0f , aspect_ , nearPlane_ , farPlane_);
+	        camera.setTrackballPerspectiveMatrix( 45.0f , aspect_ , nearPlane_ , farPlane_);
 	}
 	else
 	{
-	        trackball_->useOrthographicMatrix ( -1.0f*aspect_ , 1.0f*aspect_ , -1.0f , 1.0 , 0.1f , 500.0f );
+	        camera.setTrackballOrthographicMatrix(-1.0f*aspect_ , 1.0f*aspect_ , -1.0f , 1.0 , 0.1f , 500.0f );
 	}
 
 
@@ -409,7 +406,6 @@ void GLWidget::resizeGL ( int width , int height )
 	        delete fboSSAO;
 	}
 
-	std::cout << trackball_->getProjectionMatrix() << std::endl;
 
 	depthFBO = new Framebuffer( width , height, 5 );
 	depthFBO->clearAttachments();
@@ -417,7 +413,9 @@ void GLWidget::resizeGL ( int width , int height )
         fboSSAO = new Framebuffer( width , height, 4 );
         fboSSAO->clearAttachments();
 
-	meanFilter->resize(width, height);
+        viewport_[0] = width;
+        viewport_[1] = height;
+
 
 	glFinish();
 }
@@ -618,12 +616,12 @@ void GLWidget::drawIRESCutawayStaticSurface ( )
 
 	IRESCutawaySurfaceStatic_->setUniform( "x" , volume_width );
 	IRESCutawaySurfaceStatic_->setUniform( "y" , volume_height );
-	IRESCutawaySurfaceStatic_->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
-	IRESCutawaySurfaceStatic_->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
-	IRESCutawaySurfaceStatic_->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
+	IRESCutawaySurfaceStatic_->setUniform ( "ModelMatrix" , camera.getViewMatrix ( ) );
+	IRESCutawaySurfaceStatic_->setUniform ( "ViewMatrix" , camera.getViewMatrix ( ) );
+	IRESCutawaySurfaceStatic_->setUniform ( "ProjectionMatrix" , camera.getProjectionMatrix ( ) );
 
 	IRESCutawaySurfaceStatic_->setUniform ("freeze", freezeView_ );
-	IRESCutawaySurfaceStatic_->setUniform ("FreezeViewMatrix",freeze_viewmatrix_.data ( ),4, GL_FALSE, 1 );
+	IRESCutawaySurfaceStatic_->setUniform ("FreezeViewMatrix",freeze_viewmatrix_ );
 
 	reservoir_model_.drawIndexCuboids (primaries_cuboid); //reservoir_model_.drawCuboid ( );
 
@@ -637,8 +635,9 @@ void GLWidget::drawIRESCutawayStaticSurface ( )
         glDisable(GL_DEPTH_TEST);
 
         renderingMeanFilterTime_.start();
-        meanFilter->renderTexture( depthFBO->bindAttachment(normalCutawayID_),depthFBO->bindAttachment(verticesCutawayID_),meanFilterSize_);
-        depthFBO->unbindAll();
+        meanFilter->renderTexture( depthFBO->getTexture(normalCutawayID_),viewport_);
+        meanFilter->renderTexture( depthFBO->getTexture(verticesCutawayID_),viewport_);
+        depthFBO->unbind();
 
         glFinish( );
         accumulateMeanFilterTime_ += (float)renderingMeanFilterTime_.elapsed();
@@ -677,15 +676,15 @@ void GLWidget::drawPrimaryStaticSilhouette  ( ) const // Draw only primary   Cel
         SSAOIRESPrimaryStaticSilhouette_->setUniform ( "max_property_static" , reservoir_model_.static_max[reservoir_model_.current_static] );
         SSAOIRESPrimaryStaticSilhouette_->setUniform ( "property_index" , reservoir_model_.current_static );
 
-        SSAOIRESPrimaryStaticSilhouette_->setUniform ( "ModelMatrix" , trackball_->getModelMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
-        SSAOIRESPrimaryStaticSilhouette_->setUniform ( "ViewMatrix" , trackball_->getViewMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
-        SSAOIRESPrimaryStaticSilhouette_->setUniform ( "ProjectionMatrix" , trackball_->getProjectionMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
+        SSAOIRESPrimaryStaticSilhouette_->setUniform ( "ModelMatrix" , camera.getViewMatrix ( ) );
+        SSAOIRESPrimaryStaticSilhouette_->setUniform ( "ViewMatrix" , camera.getViewMatrix ( ) );
+        SSAOIRESPrimaryStaticSilhouette_->setUniform ( "ProjectionMatrix" , camera.getProjectionMatrix ( ) );
 
         reservoir_model_.drawFaces ( );//reservoir_model_.drawIndexFaces(primaries_face);
 
         SSAOIRESPrimaryStaticSilhouette_->unbind ( );
 
-        depthFBO->unbindAll();
+        depthFBO->unbind();
 
         glDrawBuffer(GL_BACK);
 
@@ -716,15 +715,15 @@ void GLWidget::drawPrimaryStatic  ( ) const // Draw only primary   Cells
         SSAOIRESPrimaryStatic_->setUniform ( "max_property_static" , reservoir_model_.static_max[reservoir_model_.current_static] );
         SSAOIRESPrimaryStatic_->setUniform ( "property_index" , reservoir_model_.current_static );
 
-        SSAOIRESPrimaryStatic_->setUniform ( "ModelMatrix" , trackball_->getModelMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
-        SSAOIRESPrimaryStatic_->setUniform ( "ViewMatrix" , trackball_->getViewMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
-        SSAOIRESPrimaryStatic_->setUniform ( "ProjectionMatrix" , trackball_->getProjectionMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
+        SSAOIRESPrimaryStatic_->setUniform ( "ModelMatrix" , camera.getViewMatrix ( ) );
+        SSAOIRESPrimaryStatic_->setUniform ( "ViewMatrix" , camera.getViewMatrix ( ) );
+        SSAOIRESPrimaryStatic_->setUniform ( "ProjectionMatrix" , camera.getProjectionMatrix ( ) );
 
         reservoir_model_.drawFaces ( );//reservoir_model_.drawIndexFaces(primaries_face);
 
         SSAOIRESPrimaryStatic_->unbind ( );
 
-        depthFBO->unbindAll();
+        depthFBO->unbind();
 
 }
 
@@ -758,9 +757,9 @@ void GLWidget::drawSecondaryStatic  ( ) const  // Draw only secondary Cells
         SSAOIRESCutawayStatic_->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
         SSAOIRESCutawayStatic_->setUniform("WIN_SCALE", (float) width ( ) , (float) height ( ) );
 
-        SSAOIRESCutawayStatic_->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
-        SSAOIRESCutawayStatic_->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
-        SSAOIRESCutawayStatic_->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
+        SSAOIRESCutawayStatic_->setUniform ( "ModelMatrix" , camera.getViewMatrix ( ) );
+        SSAOIRESCutawayStatic_->setUniform ( "ViewMatrix" , camera.getViewMatrix ( ) );
+        SSAOIRESCutawayStatic_->setUniform ( "ProjectionMatrix" , camera.getProjectionMatrix ( ) );
 
         reservoir_model_.drawFaces( );//reservoir_model_.drawIndexFaces(reservoir_model_.faceCount);
 
@@ -791,9 +790,9 @@ void GLWidget::drawSecondaryStatic  ( ) const  // Draw only secondary Cells
         SSAOIRESCutawayStaticShell_->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
         SSAOIRESCutawayStaticShell_->setUniform("WIN_SCALE", (float) width ( ) , (float) height ( ) );
 
-        SSAOIRESCutawayStaticShell_->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
-        SSAOIRESCutawayStaticShell_->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
-        SSAOIRESCutawayStaticShell_->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
+        SSAOIRESCutawayStaticShell_->setUniform ( "ModelMatrix" , camera.getViewMatrix ( ) );
+        SSAOIRESCutawayStaticShell_->setUniform ( "ViewMatrix" , camera.getViewMatrix ( ) );
+        SSAOIRESCutawayStaticShell_->setUniform ( "ProjectionMatrix" , camera.getProjectionMatrix ( ) );
 
         reservoir_model_.drawFaces();//reservoir_model_.drawIndexFaces(reservoir_model_.faceCount);
 
@@ -840,9 +839,9 @@ void GLWidget::IRESCutawayStatic (  )
                         glLineWidth( (float) borderLinesSize_ );
                         BorderLines_->bind ( );
 
-                        BorderLines_->setUniform ( "ModelMatrix" , trackball_->getModelMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
-                        BorderLines_->setUniform ( "ViewMatrix" , trackball_->getViewMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
-                        BorderLines_->setUniform ( "ProjectionMatrix" , trackball_->getProjectionMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
+                        BorderLines_->setUniform ( "ModelMatrix" , camera.getViewMatrix ( ) );
+                        BorderLines_->setUniform ( "ViewMatrix" , camera.getViewMatrix ( ) );
+                        BorderLines_->setUniform ( "ProjectionMatrix" , camera.getProjectionMatrix ( ) );
 
                         reservoir_model_.drawFaces ( );
 
@@ -899,7 +898,7 @@ void GLWidget::IRESCutawayStatic (  )
 		ssaoShaderTucanoGitlab_->unbind();
 
 		glBindTexture(GL_TEXTURE_2D, 0);
-		fboSSAO->unbindAll ( );
+		fboSSAO->unbind ( );
 		fboSSAO->clearDepth ( );
 		/// End of SSAO
 
@@ -922,7 +921,7 @@ void GLWidget::IRESCutawayStatic (  )
 
 		blurTucanoGitlab_->unbind();
 
-                fboSSAO->unbindAll( );
+                fboSSAO->unbind( );
                 fboSSAO->clearDepth( );
 
 
@@ -1000,12 +999,12 @@ void GLWidget::drawIRESCutawayDynamicSurface ( )
         IRESCutawaySurfaceDynamic_->setUniform("move_z", move_z);
         IRESCutawaySurfaceDynamic_->setUniform( "x" , volume_width );
         IRESCutawaySurfaceDynamic_->setUniform( "y" , volume_height );
-        IRESCutawaySurfaceDynamic_->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
-        IRESCutawaySurfaceDynamic_->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
-        IRESCutawaySurfaceDynamic_->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
+        IRESCutawaySurfaceDynamic_->setUniform ( "ModelMatrix" , camera.getViewMatrix ( ) );
+        IRESCutawaySurfaceDynamic_->setUniform ( "ViewMatrix" , camera.getViewMatrix ( ) );
+        IRESCutawaySurfaceDynamic_->setUniform ( "ProjectionMatrix" , camera.getProjectionMatrix ( ) );
 
         IRESCutawaySurfaceDynamic_->setUniform ("freeze", freezeView_ );
-        IRESCutawaySurfaceDynamic_->setUniform ("FreezeViewMatrix",freeze_viewmatrix_.data ( ),4, GL_FALSE, 1 );
+        IRESCutawaySurfaceDynamic_->setUniform ("FreezeViewMatrix",freeze_viewmatrix_);
 
         glBindVertexArray(vertexArray_Dummy);
                 glDrawArrays(GL_POINTS,0,1);
@@ -1019,9 +1018,10 @@ void GLWidget::drawIRESCutawayDynamicSurface ( )
 
         glDisable(GL_DEPTH_TEST);
 
-        meanFilter->renderTexture( depthFBO->bindAttachment(normalCutawayID_),depthFBO->bindAttachment(verticesCutawayID_),meanFilterSize_);
+        meanFilter->renderTexture( depthFBO->getTexture(normalCutawayID_),viewport_);
+        meanFilter->renderTexture( depthFBO->getTexture(verticesCutawayID_),viewport_);
 
-        depthFBO->unbindAll();
+        depthFBO->unbind();
 
         glEnable(GL_DEPTH_TEST);
 }
@@ -1061,9 +1061,9 @@ void GLWidget::drawPrimaryDynamic ( ) const
         SSAOIRESPrimaryDynamic_->setUniform("max_property_static", reservoir_model_.static_max[reservoir_model_.current_static]  );
         SSAOIRESPrimaryDynamic_->setUniform("property_index", reservoir_model_.current_static );
 
-        SSAOIRESPrimaryDynamic_->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
-        SSAOIRESPrimaryDynamic_->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
-        SSAOIRESPrimaryDynamic_->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
+        SSAOIRESPrimaryDynamic_->setUniform ( "ModelMatrix" , camera.getViewMatrix ( ) );
+        SSAOIRESPrimaryDynamic_->setUniform ( "ViewMatrix" , camera.getViewMatrix ( ) );
+        SSAOIRESPrimaryDynamic_->setUniform ( "ProjectionMatrix" , camera.getProjectionMatrix ( ) );
 
         reservoir_model_.drawCuboid ( );
 
@@ -1108,9 +1108,9 @@ void GLWidget::drawSecondaryDynamic ( ) const
         SSAOIRESCutawayDynamic_->setUniform ( "lights[0]" , light_elements , 3 , (GLint) lights.size ( ) );
         SSAOIRESCutawayDynamic_->setUniform ( "WIN_SCALE" , (float) width ( ) , (float) height ( ) );
 
-        SSAOIRESCutawayDynamic_->setUniform ( "ModelMatrix" , trackball_->getModelMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
-        SSAOIRESCutawayDynamic_->setUniform ( "ViewMatrix" , trackball_->getViewMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
-        SSAOIRESCutawayDynamic_->setUniform ( "ProjectionMatrix" , trackball_->getProjectionMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
+        SSAOIRESCutawayDynamic_->setUniform ( "ModelMatrix" , camera.getViewMatrix ( ) );
+        SSAOIRESCutawayDynamic_->setUniform ( "ViewMatrix" , camera.getViewMatrix ( ) );
+        SSAOIRESCutawayDynamic_->setUniform ( "ProjectionMatrix" , camera.getProjectionMatrix ( ) );
 
         reservoir_model_.drawCuboid();
 
@@ -1137,9 +1137,9 @@ void GLWidget::drawSecondaryDynamic ( ) const
         SSAOIRESCutawayDynamicShell_->setUniform ( "lights[0]" , light_elements , 3 , (GLint) lights.size ( ) );
         SSAOIRESCutawayDynamicShell_->setUniform ( "WIN_SCALE" , (float) width ( ) , (float) height ( ) );
 
-        SSAOIRESCutawayDynamicShell_->setUniform ( "ModelMatrix" , trackball_->getModelMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
-        SSAOIRESCutawayDynamicShell_->setUniform ( "ViewMatrix" , trackball_->getViewMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
-        SSAOIRESCutawayDynamicShell_->setUniform ( "ProjectionMatrix" , trackball_->getProjectionMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
+        SSAOIRESCutawayDynamicShell_->setUniform ( "ModelMatrix" , camera.getViewMatrix ( ) );
+        SSAOIRESCutawayDynamicShell_->setUniform ( "ViewMatrix" , camera.getViewMatrix ( ) );
+        SSAOIRESCutawayDynamicShell_->setUniform ( "ProjectionMatrix" , camera.getProjectionMatrix ( ) );
 
         reservoir_model_.drawFaces( );
 
@@ -1201,9 +1201,9 @@ void GLWidget::IRESCutawayDynamic ( )
                                  glLineWidth( (float) borderLinesSize_ );
                                  BorderLines_->bind ( );
 
-                                 BorderLines_->setUniform ( "ModelMatrix" , trackball_->getModelMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
-                                 BorderLines_->setUniform ( "ViewMatrix" , trackball_->getViewMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
-                                 BorderLines_->setUniform ( "ProjectionMatrix" , trackball_->getProjectionMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
+                                 BorderLines_->setUniform ( "ModelMatrix" , camera.getViewMatrix ( ) );
+                                 BorderLines_->setUniform ( "ViewMatrix" , camera.getViewMatrix ( ) );
+                                 BorderLines_->setUniform ( "ProjectionMatrix" , camera.getProjectionMatrix ( ) );
 
                                  reservoir_model_.drawFaces ( );
 
@@ -1236,7 +1236,7 @@ void GLWidget::IRESCutawayDynamic ( )
  		ssaoShaderTucanoGitlab_->unbind();
 
  		glBindTexture(GL_TEXTURE_2D, 0);
- 		fboSSAO->unbindAll ( );
+ 		fboSSAO->unbind ( );
  		fboSSAO->clearDepth ( );
  		noise_texture.unbind();
  		/// End of SSAO
@@ -1259,7 +1259,7 @@ void GLWidget::IRESCutawayDynamic ( )
 
 		blurTucanoGitlab_->unbind ( );
 
-		fboSSAO->unbindAll ( );
+		fboSSAO->unbind ( );
 		fboSSAO->clearDepth ( );
 
 		glEnable ( GL_DEPTH_TEST );
@@ -1281,7 +1281,7 @@ void GLWidget::drawIRESModel ( )
 
         fboSSAO->bind();
 
-        fboSSAO->unbindAll();
+        fboSSAO->unbind();
 
         glDrawBuffer(GL_BACK);
 
@@ -1295,9 +1295,9 @@ void GLWidget::drawIRESModel ( )
         RawModel_->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
         RawModel_->setUniform("WIN_SCALE", (float) width ( ) , (float) height ( ) );
 
-        RawModel_->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
-        RawModel_->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
-        RawModel_->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
+        RawModel_->setUniform ( "ModelMatrix" , camera.getViewMatrix ( ) );
+        RawModel_->setUniform ( "ViewMatrix" , camera.getViewMatrix ( ) );
+        RawModel_->setUniform ( "ProjectionMatrix" , camera.getProjectionMatrix ( ) );
 
         reservoir_model_.drawFaces();//drawIndexFaces(primaries_face);
 
@@ -1310,9 +1310,9 @@ void GLWidget::drawIRESModel ( )
                 glLineWidth( (float) borderLinesSize_ );
                 BorderLines_->bind ( );
 
-                BorderLines_->setUniform ( "ModelMatrix" , trackball_->getModelMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
-                BorderLines_->setUniform ( "ViewMatrix" , trackball_->getViewMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
-                BorderLines_->setUniform ( "ProjectionMatrix" , trackball_->getProjectionMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
+                BorderLines_->setUniform ( "ModelMatrix" , camera.getViewMatrix ( ) );
+                BorderLines_->setUniform ( "ViewMatrix" , camera.getViewMatrix ( ) );
+                BorderLines_->setUniform ( "ProjectionMatrix" , camera.getProjectionMatrix ( ) );
 
                 reservoir_model_.drawFaces ( );
 
@@ -1441,12 +1441,12 @@ void GLWidget::PaperDrawCutawaySurface() const
         BurnsPrimarySetup_->setUniform("move_z", move_z );
         BurnsPrimarySetup_->setUniform( "x" , volume_width );
         BurnsPrimarySetup_->setUniform( "y" , volume_height );
-        BurnsPrimarySetup_->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
-        BurnsPrimarySetup_->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
-        BurnsPrimarySetup_->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
+        BurnsPrimarySetup_->setUniform ( "ModelMatrix" , camera.getViewMatrix ( ) );
+        BurnsPrimarySetup_->setUniform ( "ViewMatrix" , camera.getViewMatrix ( ) );
+        BurnsPrimarySetup_->setUniform ( "ProjectionMatrix" , camera.getProjectionMatrix ( ) );
 
         BurnsPrimarySetup_->setUniform ("freeze", freezeView_ );
-        BurnsPrimarySetup_->setUniform ("FreezeViewMatrix",freeze_viewmatrix_.data ( ),4, GL_FALSE, 1 );
+        BurnsPrimarySetup_->setUniform ("FreezeViewMatrix",freeze_viewmatrix_);
 
         glBindVertexArray(vertexArray_Dummy);
         glDrawArrays(GL_POINTS,0,1);
@@ -1457,9 +1457,9 @@ void GLWidget::PaperDrawCutawaySurface() const
 
         glDrawBuffer(GL_COLOR_ATTACHMENT0+1);
 
-        meanFilter->renderTexture( depthFBO->bindAttachment(0),meanFilterSize_);
+        meanFilter->renderTexture( depthFBO->getTexture(0),viewport_);
 
-        depthFBO->unbindAll();
+        depthFBO->unbind();
 
 
         glDrawBuffer(GL_BACK);
@@ -1494,9 +1494,9 @@ void GLWidget::PaperSecondary( ) const
         BurnsSecondary_->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
         BurnsSecondary_->setUniform("WIN_SCALE", (float) width ( ) , (float) height ( ) );
 
-        BurnsSecondary_->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
-        BurnsSecondary_->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
-        BurnsSecondary_->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
+        BurnsSecondary_->setUniform ( "ModelMatrix" , camera.getViewMatrix ( ) );
+        BurnsSecondary_->setUniform ( "ViewMatrix" , camera.getViewMatrix ( ) );
+        BurnsSecondary_->setUniform ( "ProjectionMatrix" , camera.getProjectionMatrix ( ) );
 
         reservoir_model_.drawFaces();
 
@@ -1512,9 +1512,9 @@ void GLWidget::PaperSecondary( ) const
                 glLineWidth( (float) borderLinesSize_ );
                 BorderLines_->bind ( );
 
-                BorderLines_->setUniform ( "ModelMatrix" , trackball_->getModelMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
-                BorderLines_->setUniform ( "ViewMatrix" , trackball_->getViewMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
-                BorderLines_->setUniform ( "ProjectionMatrix" , trackball_->getProjectionMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
+                BorderLines_->setUniform ( "ModelMatrix" , camera.getViewMatrix ( ) );
+                BorderLines_->setUniform ( "ViewMatrix" , camera.getViewMatrix ( ) );
+                BorderLines_->setUniform ( "ProjectionMatrix" , camera.getProjectionMatrix ( ) );
 
                 reservoir_model_.drawFaces ( );
 
@@ -1551,9 +1551,9 @@ void GLWidget::PaperPrimary( ) const
         BurnsPrimary_->setUniform("max_DynamicProperty", reservoir_model_.dynamic_properties[dynamic_property_index].max_[time_step] );
         BurnsPrimary_->setUniform("property_type", 0.0 );
 
-        BurnsPrimary_->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
-        BurnsPrimary_->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
-        BurnsPrimary_->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
+        BurnsPrimary_->setUniform ( "ModelMatrix" , camera.getViewMatrix ( ) );
+        BurnsPrimary_->setUniform ( "ViewMatrix" , camera.getViewMatrix ( ) );
+        BurnsPrimary_->setUniform ( "ProjectionMatrix" , camera.getProjectionMatrix ( ) );
 
         reservoir_model_.drawCuboid();
 
@@ -1565,9 +1565,9 @@ void GLWidget::PaperPrimary( ) const
                 glLineWidth( (float) borderLinesSize_ );
                 BorderLines_->bind ( );
 
-                BorderLines_->setUniform ( "ModelMatrix" , trackball_->getModelMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
-                BorderLines_->setUniform ( "ViewMatrix" , trackball_->getViewMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
-                BorderLines_->setUniform ( "ProjectionMatrix" , trackball_->getProjectionMatrix ( ).data ( ) , 4 , GL_FALSE , 1 );
+                BorderLines_->setUniform ( "ModelMatrix" , camera.getViewMatrix ( ) );
+                BorderLines_->setUniform ( "ViewMatrix" , camera.getViewMatrix ( ) );
+                BorderLines_->setUniform ( "ProjectionMatrix" , camera.getProjectionMatrix ( ) );
 
                 reservoir_model_.drawFaces ( );
 
@@ -1589,9 +1589,10 @@ void GLWidget::PaperPly ( )
         BurnsPly_->setUniform("move", (float) borderLinesSize_ );
         BurnsPly_->setUniform("num_lights", (GLint) lights.size ( )  );
         BurnsPly_->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
-        BurnsPly_->setUniform("ModelMatrix",trackball_->getModelMatrix().data(), 4, GL_FALSE, 1);
-        BurnsPly_->setUniform("ViewMatrix",trackball_->getViewMatrix().data(), 4, GL_FALSE, 1);
-        BurnsPly_->setUniform("ProjectionMatrix", trackball_->getProjectionMatrix().data(), 4 ,GL_FALSE, 1);
+
+        BurnsPly_->setUniform ( "ModelMatrix" , camera.getViewMatrix ( ) );
+        BurnsPly_->setUniform ( "ViewMatrix" , camera.getViewMatrix ( ) );
+        BurnsPly_->setUniform ( "ProjectionMatrix" , camera.getProjectionMatrix ( ) );
 
         ply_primary_.Draw();
 
@@ -1959,8 +1960,8 @@ void GLWidget::keyPressEvent ( QKeyEvent * event )
         }
 	else if ( (event->modifiers() == Qt::ShiftModifier ) && (event->key() == Qt::Key_R) )
 	{
-                trackball_->reset();
-                trackball_->decreaseZoom( 5.05 );
+                camera.reset();
+                camera.decreaseZoom( 5.05 );
                 //  Animation
                         takes_[take_index_].number_of_keyframes_    = 0;
                         takes_[take_index_].nextKeyframe_           = 0;
@@ -1977,9 +1978,9 @@ void GLWidget::keyPressEvent ( QKeyEvent * event )
                 float aspect = (float) width() / height();
 
                 if ( isPerspective_ )
-                        trackball_->usePerspectiveMatrix  ( fovy_ , aspect , nearPlane_ , farPlane_ );
+                        camera.setTrackballPerspectiveMatrix( fovy_ , aspect , nearPlane_ , farPlane_ );
                 else
-                        trackball_->useOrthographicMatrix ( -1.0f*aspect , 1.0f*aspect , -1.0f , 1.0 , 0.1f , 500.0f );
+                        camera.setTrackballOrthographicMatrix( -1.0f*aspect , 1.0f*aspect , -1.0f , 1.0 , 0.1f , 500.0f );
 
                 /// Clear All color/depth buffer from the current framebuffer
                 depthFBO->clearAttachments();
@@ -2008,19 +2009,19 @@ void GLWidget::keyPressEvent ( QKeyEvent * event )
         }
 	else if ( event->key() == Qt::Key_7)
 	{
-	        position_one = trackball_->getViewMatrix();
+	        position_one = camera.getViewMatrix();
 	}
         else if ( event->key() == Qt::Key_8)
         {
-                position_two = trackball_->getViewMatrix();
+                position_two = camera.getViewMatrix();
         }
         else if ( event->key() == Qt::Key_9)
         {
-                trackball_->setViewMatrix( position_one );
+        	camera.setViewMatrix( position_one );
         }
         else if ( event->key() == Qt::Key_0)
         {
-                trackball_->setViewMatrix( position_two );
+                camera.setViewMatrix( position_two );
         }
 	else if ( event->key() == Qt::Key_P )
         {
@@ -2053,7 +2054,7 @@ void GLWidget::keyPressEvent ( QKeyEvent * event )
         }
         else if ( event->key() == Qt::Key_Space)
         {
-                takes_[take_index_].keyframes_[takes_[take_index_].number_of_keyframes_] = (trackball_->getQuaternion());
+                takes_[take_index_].keyframes_[takes_[take_index_].number_of_keyframes_] = (camera.getQuaternion());
 
                 takes_[take_index_].number_of_keyframes_++;
 
@@ -2098,28 +2099,27 @@ void GLWidget::mousePressEvent ( QMouseEvent *event )
 
 	event->accept ( );
 
-	Eigen::Vector2i pos(event->x ( ),event->y ( ));
-
-	Eigen::Vector2f positionInTrackballSystem;
-	positionInTrackballSystem = convertToNormalizedDeviceCoordinates(pos);
-
-
-	if ( event->button ( ) == Qt::LeftButton )
+	Eigen::Vector2f screen_pos ( event->x ( ) , event->y ( ) );
+	if ( event->modifiers ( ) & Qt::ShiftModifier )
 	{
-		trackball_->setInitialRotationPosition(positionInTrackballSystem[0],positionInTrackballSystem[1]);
-		trackball_->beginRotation();
+		if ( event->button ( ) == Qt::LeftButton )
+		{
+			camera.translateCamera ( screen_pos );
+		}
+	}
+	else
+	{
+		if ( event->button ( ) == Qt::LeftButton )
+		{
+			camera.rotateCamera ( screen_pos );
+		}
 	}
 
-	if ( event->button ( ) == Qt::RightButton )
-	{
-		lastPos = event->pos ( );
-		trackball_->setInitialTranslationPosition(positionInTrackballSystem[0],positionInTrackballSystem[1]);
-		trackball_->beginTranslation();
-	}
 	if ( event->button ( ) == Qt::MiddleButton )
 	{
 	        zoom_start_ = true;
 	}
+
     update();
 }
 
@@ -2130,13 +2130,8 @@ void GLWidget::mouseReleaseEvent ( QMouseEvent *event )
 
 	if ( event->button ( ) == Qt::LeftButton )
 	{
-
-		trackball_->endRotation();
-
-	}
-	else if ( event->button ( ) == Qt::RightButton )
-	{
-		trackball_->endTranslation();
+		camera.endTranslation ( );
+		camera.endRotation ( );
 	}
 	if ( event->button ( ) == Qt::MiddleButton )
 	{
@@ -2148,37 +2143,23 @@ void GLWidget::mouseReleaseEvent ( QMouseEvent *event )
 
 void GLWidget::mouseMoveEvent ( QMouseEvent *event )
 {
-
-
-	if ( event->buttons ( )  )
+	Eigen::Vector2f screen_pos ( event->x ( ) , event->y ( ) );
+	if ( ( event->modifiers ( ) & Qt::ShiftModifier )  )
 	{
-		//Position vector in [0,viewportWidth] domain:
-		Eigen::Vector2i pos(event->x ( ),event->y ( ));
 
-		//Convert to Normalized Device Coordinates System:
-		Eigen::Vector2f positionInTrackballSystem;
-		positionInTrackballSystem = convertToNormalizedDeviceCoordinates(pos);
-
-		//Camera Rotating:
-		if(trackball_->isRotating() && (event->buttons ( ) & Qt::LeftButton ))  {
-			Eigen::Vector3f initialPosition = trackball_->getInitialRotationPosition();
-			if(positionInTrackballSystem != Eigen::Vector2f(initialPosition[0], initialPosition[1])) {
-				trackball_->setFinalRotationPosition(positionInTrackballSystem[0],positionInTrackballSystem[1]);
-				trackball_->rotateCamera();
-				trackball_->setInitialRotationPosition(positionInTrackballSystem[0],positionInTrackballSystem[1]);
-
-			}
-
+		if ( event->buttons ( ) & Qt::LeftButton )
+		{
+			camera.translateCamera ( screen_pos );
 		}
 
-		if(trackball_->isTranslating() && (event->buttons ( ) & Qt::RightButton )) {
-			Eigen::Vector2f initialPosition = trackball_->getInitialTranslationPosition();
-			if(positionInTrackballSystem != Eigen::Vector2f(initialPosition[0], initialPosition[1])) {
-				trackball_->setFinalTranslationPosition(positionInTrackballSystem[0],positionInTrackballSystem[1]);
-				trackball_->translateCamera();
-				trackball_->setInitialTranslationPosition(positionInTrackballSystem[0],positionInTrackballSystem[1]);
-			}
+	}
+	else
+	{
+		if ( event->buttons ( ) & Qt::LeftButton )
+		{
+			camera.rotateCamera ( screen_pos );
 		}
+
 	}
     update();
 
@@ -2339,6 +2320,6 @@ void GLWidget::freezeView ( )
         freezeView_ = !freezeView_;
         if ( freezeView_ )
         {
-                freeze_viewmatrix_ = trackball_->getViewMatrix ( ).matrix ( );
+                freeze_viewmatrix_ = camera.getViewMatrix ( );
         }
 }

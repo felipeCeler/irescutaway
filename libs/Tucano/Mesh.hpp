@@ -24,7 +24,7 @@
 #define __MESH__
 
 #include "Model.hpp"
-#include "shader.hpp"
+#include "Shader.hpp"
 
 using namespace std;
 

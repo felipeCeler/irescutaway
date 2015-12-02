@@ -53,21 +53,6 @@ set( ${PROJECT_NAME}_SOURCES App/main.cpp
     						 IRES/CornerPointGrid.cpp    						 
     						 IRES/Block.cpp
     						 Loaders/Ply/PlyLoader.cpp
-    						 ${CMAKE_SOURCE_DIR}/libs/LCG/shaderlib/trackball.cpp
-    						 ${CMAKE_SOURCE_DIR}/libs/LCG/shaderlib/framebuffer.cpp
-    						 ${CMAKE_SOURCE_DIR}/libs/LCG/shaderlib/shader.cpp
-    						 ${CMAKE_SOURCE_DIR}/libs/LCG/shaderlib/mesh.cpp
-    						 ${CMAKE_SOURCE_DIR}/libs/LCG/samples/imgproc/meanfilter.cpp
-    						 ## Tucano
-    						 ${CMAKE_SOURCE_DIR}/libs/tucano/src/tucano.hpp
-    						 ${CMAKE_SOURCE_DIR}/libs/tucano/src/texture.hpp
-    						 ${CMAKE_SOURCE_DIR}/libs/tucano/src/texturemanager.hpp
-    						 ${CMAKE_SOURCE_DIR}/libs/tucano/src/mesh.hpp
-    						 ${CMAKE_SOURCE_DIR}/libs/tucano/src/model.hpp
-    						 ${CMAKE_SOURCE_DIR}/libs/tucano/src/framebuffer.hpp
-    						 ${CMAKE_SOURCE_DIR}/libs/tucano/src/effect.hpp
-    						 ${CMAKE_SOURCE_DIR}/libs/tucano/src/bufferobject.hpp
-    						 ${CMAKE_SOURCE_DIR}/libs/tucano/src/utils/ppmimporter.hpp
     						 )
 	
 set( ${PROJECT_NAME}_HEADERS GUI/Qt/MainWindow/MainWindow.hpp
@@ -76,11 +61,6 @@ set( ${PROJECT_NAME}_HEADERS GUI/Qt/MainWindow/MainWindow.hpp
                              IRES/CornerPointGrid.hpp
                              IRES/Block.hpp
                              Loaders/Ply/PlyLoader.hpp
-                             ${CMAKE_SOURCE_DIR}/libs/LCG/shaderlib/trackball.hpp
-                             ${CMAKE_SOURCE_DIR}/libs/LCG/shaderlib/framebuffer.hpp
-                             ${CMAKE_SOURCE_DIR}/libs/LCG/shaderlib/shader.hpp
-                             ${CMAKE_SOURCE_DIR}/libs/LCG/shaderlib/mesh.hpp
-                             ${CMAKE_SOURCE_DIR}/libs/LCG/samples/imgproc/meanfilter.hpp
                              )	
 
 set( MOC_HEADERS GUI/Qt/MainWindow/MainWindow.hpp

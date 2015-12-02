@@ -201,6 +201,15 @@ public:
         return zoom;
     }
 
+    virtual Eigen::Quaternion<float> getQuaternion ( void )
+    {
+	    return quaternion;
+    }
+    virtual void setQuaternion ( const Eigen::Quaternion<float>& q )
+    {
+	    quaternion = q;
+    }
+
 
     /**
      * @brief Sets the projection matrix used for the trackball rendering.
