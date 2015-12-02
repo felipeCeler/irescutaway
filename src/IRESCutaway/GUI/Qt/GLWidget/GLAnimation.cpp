@@ -260,9 +260,9 @@ void GLWidget::gameLooping ( )
         if ( zoom_start_ )
         {
                 if ( zoom_increment_ > 0)
-                        trackball_->increaseZoom ( 1.01 );
+                        camera.increaseZoom ( 1.01 );
                 else
-                        trackball_->decreaseZoom( 1.01 );
+                        camera.decreaseZoom( 1.01 );
                 update();
         }
 
@@ -273,7 +273,7 @@ void GLWidget::gameLooping ( )
                 if ( time_steps_ <= 1.0 )
                 {
 //                        std::cout << "fps :" << time_steps_  << std::endl;
-                        trackball_->setQuaternion(this->squad(sourcePosition_,sourcePositionTangent_,targetPositionTangent_,targetPosition_,time_steps_));
+                        camera.setQuaternion(this->squad(sourcePosition_,sourcePositionTangent_,targetPositionTangent_,targetPosition_,time_steps_));
                         //trackball_->setQuaternion(this->slerp(sourcePosition_,targetPosition_,time_steps_,false));
 
                         //std::cout << " mTagent " << takes_[take_index_].keyframes_[takes_[take_index_].nextKeyframe_].coeffs() << std::endl;

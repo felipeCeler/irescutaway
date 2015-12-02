@@ -10,16 +10,13 @@
 /// Celer::Libraries
 #include <IRES/CornerPointGrid.hpp>
 #include <Loaders/Ply/PlyLoader.hpp>
-/// LCG Library
-#include <shaderlib/trackball.hpp>
-#include <shaderlib/framebuffer.hpp>
-#include <samples/imgproc/meanfilter.hpp>
-
-// Tucano
-#include <tucano.hpp>
-#include <utils/ppmimporter.hpp>
 
 #include <Tucano/Shader.hpp>
+#include <Tucano/Trackball.hpp>
+#include <Tucano/Mesh.hpp>
+#include <Tucano/FrameBuffer.hpp>
+#include <Tucano/MeanFilter.hpp>
+#include <Tucano/utils/ppmimporter.hpp>
 
 /// C++ Standard Library
 #include <cstdio>
@@ -389,7 +386,7 @@ class GLWidget: public QOpenGLWidget
                 Tucano::Texture noise_texture;
 
                 /// Framebuffer to store coord/normal buffer
-                Framebuffer* fboSSAO;
+                Tucano::Framebuffer* fboSSAO;
 
                 /// The per pixel AO computation shader
                 Tucano::Shader* ssaoShader_;
@@ -404,7 +401,7 @@ class GLWidget: public QOpenGLWidget
                 Tucano::Shader* blurShader_;
 
                 /// A quad mesh for framebuffer rendering
-                Mesh* quadSSAO;
+                Tucano::Mesh* quadSSAO;
 
                 /// The ID defining the color attachment to which the depth texture is bound in the framebuffer.
                 GLuint depthTextureID;
@@ -464,10 +461,11 @@ class GLWidget: public QOpenGLWidget
                 /// Silhouette Rendering
                 GLuint silhouetteID_;
                 /// Cutaway FrameBuffer
-                Framebuffer * depthFBO;
+                Tucano::Framebuffer * depthFBO;
 
                 /// Smooth
-                MeanFilter * meanFilter;
+                Effects::MeanFilter * meanFilter;
+                Eigen::Vector2i viewport_;
 
                 bool enable_blend_;
 
@@ -490,13 +488,14 @@ class GLWidget: public QOpenGLWidget
                 float justWireFrame;
 
                 // Stores the froze camera (view matrix)
-                Eigen::Matrix4f freeze_viewmatrix_;
+                Eigen::Affine3f freeze_viewmatrix_;
                 bool freezeView_;
 
                 Eigen::Affine3f position_one;
                 Eigen::Affine3f position_two;
 
-                Trackball * trackball_;
+                //Trackball * trackball_;
+                Tucano::Trackball camera;
                 /// Trackball for manipulating the camera.
 
                 float nearPlane_;
@@ -515,9 +514,8 @@ class GLWidget: public QOpenGLWidget
 
                 // TODO NPR Stuffs - Mario's request
                 GLuint xtoon_texture_;
-                Mesh * picture;
+                Tucano::Mesh * picture;
 
-                Shader * xtoon_texture_viewer;
 
                 // Ply Models Emilio's No sense !
                 Model_PLY ply_primary_;
