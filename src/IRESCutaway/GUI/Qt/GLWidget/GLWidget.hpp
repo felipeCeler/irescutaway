@@ -19,6 +19,8 @@
 #include <tucano.hpp>
 #include <utils/ppmimporter.hpp>
 
+#include <Tucano/Shader.hpp>
+
 /// C++ Standard Library
 #include <cstdio>
 #include <cstdlib>
@@ -284,37 +286,37 @@ class GLWidget: public QOpenGLWidget
                 QSet<int> keysPresseds_;
                 bool buttonRelease_;
 
-                Shader* BackGround_;
-                Shader* RawModel_;
-                Shader* BorderLines_;
-                Shader* DummyQuad_;
+                Tucano::Shader* BackGround_;
+                Tucano::Shader* RawModel_;
+                Tucano::Shader* BorderLines_;
+                Tucano::Shader* DummyQuad_;
 
                 bool isIRESOpen_;
 
                 // ! DEMO
 
-                Shader* BurnsPrimarySetup_;
-                Shader* BurnsPrimary_;
-                Shader* BurnsSecondary_;
-                Shader* BurnsPly_;
+                Tucano::Shader* BurnsPrimarySetup_;
+                Tucano::Shader* BurnsPrimary_;
+                Tucano::Shader* BurnsSecondary_;
+                Tucano::Shader* BurnsPly_;
 
                 /// ! DYNAMIC VIEWER F10 Static Properties
 
-                Shader* IRESCutawaySurfaceStatic_;
+                Tucano::Shader* IRESCutawaySurfaceStatic_;
 
 
-                Shader* SSAOIRESPrimaryStaticSilhouette_;
-                Shader* SSAOIRESPrimaryStatic_;
-                Shader* SSAOIRESCutawayStatic_;
-                Shader* SSAOIRESCutawayStaticShell_;
+                Tucano::Shader* SSAOIRESPrimaryStaticSilhouette_;
+                Tucano::Shader* SSAOIRESPrimaryStatic_;
+                Tucano::Shader* SSAOIRESCutawayStatic_;
+                Tucano::Shader* SSAOIRESCutawayStaticShell_;
 
                 /// ! DYNAMIC VIEWER F12 Dynamic Properties
 
-                Shader* IRESCutawaySurfaceDynamic_;
+                Tucano::Shader* IRESCutawaySurfaceDynamic_;
 
-                Shader* SSAOIRESPrimaryDynamic_;
-                Shader* SSAOIRESCutawayDynamic_;
-                Shader* SSAOIRESCutawayDynamicShell_;
+                Tucano::Shader* SSAOIRESPrimaryDynamic_;
+                Tucano::Shader* SSAOIRESCutawayDynamic_;
+                Tucano::Shader* SSAOIRESCutawayDynamicShell_;
 
                 /// Saturation Intensity
                 float saturationPrimaries_;
@@ -390,16 +392,16 @@ class GLWidget: public QOpenGLWidget
                 Framebuffer* fboSSAO;
 
                 /// The per pixel AO computation shader
-                Shader* ssaoShader_;
+                Tucano::Shader* ssaoShader_;
                 /// For the Graphics Models Journal Paper
-                Shader* ssaoShaderTucanoGitlab_;
+                Tucano::Shader* ssaoShaderTucanoGitlab_;
                 /// For the Graphics Models Journal Paper
-                Shader* blurTucanoGitlab_;
+                Tucano::Shader* blurTucanoGitlab_;
                 ///
-                Shader* deferredShader;
+                Tucano::Shader* deferredShader;
 
                 ///
-                Shader* blurShader_;
+                Tucano::Shader* blurShader_;
 
                 /// A quad mesh for framebuffer rendering
                 Mesh* quadSSAO;
