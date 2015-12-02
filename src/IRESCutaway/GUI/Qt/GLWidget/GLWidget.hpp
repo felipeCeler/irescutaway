@@ -248,55 +248,8 @@ class GLWidget: public QOpenGLWidget
                 void drawPrimaryDynamic ( ) const;
                 void drawSecondaryDynamic ( ) const;
 
-                void changeTimeStep ( const int step )
-                {
-                	makeCurrent();
-                        std::cout << " ... " << step << std::endl;
-                        this->time_step = step;
-
-                        glBindVertexArray ( reservoir_model_.vertexArrayCuboids );
-
-                        glBindBuffer ( GL_ARRAY_BUFFER , reservoir_model_.cuboidDynamicIds[dynamic_property_index][time_step] );
-                        glEnableVertexAttribArray ( 9 );
-                        glVertexAttribPointer ( 9 , 1 , GL_FLOAT , GL_FALSE , 0 , 0 );
-
-                        glBindVertexArray ( 0 );
-
-                        glBindVertexArray ( reservoir_model_.vertexArrayFaces );
-
-                        glBindBuffer ( GL_ARRAY_BUFFER , reservoir_model_.faceDynamicIds[dynamic_property_index][time_step] );
-                        glEnableVertexAttribArray ( 6 );
-                        glVertexAttribPointer ( 6 , 1 , GL_FLOAT , GL_FALSE , 0 , 0 );
-
-                        glBindVertexArray ( 0 );
-
-                        update ( );
-                }
-                ;
-                void changeDynamicProperty ( int index )
-                {
-                	makeCurrent();
-                        this->dynamic_property_index = index;
-
-                        glBindVertexArray ( reservoir_model_.vertexArrayCuboids );
-
-                        glBindBuffer ( GL_ARRAY_BUFFER , reservoir_model_.cuboidDynamicIds[dynamic_property_index][time_step] );
-                        glEnableVertexAttribArray ( 9 );
-                        glVertexAttribPointer ( 9 , 1 , GL_FLOAT , GL_FALSE , 0 , 0 );
-
-                        glBindVertexArray ( 0 );
-
-                        glBindVertexArray ( reservoir_model_.vertexArrayFaces );
-
-                        glBindBuffer ( GL_ARRAY_BUFFER , reservoir_model_.faceDynamicIds[dynamic_property_index][time_step] );
-                        glEnableVertexAttribArray ( 6 );
-                        glVertexAttribPointer ( 6 , 1 , GL_FLOAT , GL_FALSE , 0 , 0 );
-
-                        glBindVertexArray ( 0 );
-
-                        update ( );
-                }
-                ;
+                void changeTimeStep ( const int step );
+                void changeDynamicProperty ( int index );
 
         signals:
                 void fpsChanged ( const QString& );
@@ -306,15 +259,6 @@ class GLWidget: public QOpenGLWidget
                 void renderingSSAOBlurTime ( const QString& );
                 void renderingMeanFilterTime ( const QString& );
                 void primariesPorcentage ( const QString& );
-
-        protected:
-                void dragEnterEvent ( QDragEnterEvent *event );
-                void dragMoveEvent ( QDragMoveEvent *event );
-                void dragLeaveEvent ( QDragLeaveEvent *event );
-                void dropEvent ( QDropEvent *event );
-
-        signals:
-
                 void changed ( const QMimeData *mimeData = 0 );
 
         public:
@@ -503,90 +447,6 @@ class GLWidget: public QOpenGLWidget
 
                 /// The ID defining the color attachment to which the blur texture is bound in the framebuffer.
                 GLuint blurTextureID;
-
-                ///Computes the noise scale factor, that will be used for tiling the noise texture through the screen.
-                void computeNoiseScale ( const Eigen::Vector2i &viewport_size )
-                {
-                        noise_scale = Eigen::Vector2f ( viewport_size[0] / (float) noise_size , viewport_size[1] / (float) noise_size );
-                }
-
-                /**
-                 * @brief Generates a sampling kernel with random 2D unormalized vectors in range [-1,1].
-                 */
-                void generateKernel ( void )
-                {
-                        Eigen::Vector2f sample;
-                        kernel = new float[numberOfSamples * 2];
-
-                        float step = 2.0 * M_PI / (float) numberOfSamples;
-
-                        // divide in numberOfSamples directions in the unit circle, and multiply each vector by a random radius
-                        for ( int i = 1; i <= numberOfSamples; i++ )
-                        {
-                                float r = random ( 0.1 , 1.0f );
-
-                                sample[0] = cos ( step * i );
-                                sample[1] = sin ( step * i );
-
-                                kernel[i * 2 + 0] = r * sample[0];
-                                kernel[i * 2 + 1] = r * sample[1];
-                        }
-                }
-
-                /**
-                 * @brief Generates a random noise texture.
-                 */
-                void generateNoiseTexture ( void )
-                {
-
-                        GLfloat *noise = new GLfloat[noise_size * noise_size];
-
-                        for ( int i = 0; i < noise_size * noise_size; i++ )
-                        {
-                                noise[i] = random ( 0.0f , 1.0f );
-                        }
-
-                        // TODO this is just the beginning
-                        // Create a texture as attachment
-                        if ( noiseTexture != 0 )
-                        {
-                                glDeleteTextures ( 1 , &noiseTexture );
-                        }
-                        else
-                        {
-                                glGenTextures ( 1 , &noiseTexture );
-                        }
-
-                        glBindTexture ( GL_TEXTURE_2D , noiseTexture );
-                        // Set basic parameters
-                        glTexParameteri ( GL_TEXTURE_2D , GL_TEXTURE_WRAP_S , GL_CLAMP_TO_EDGE );
-                        glTexParameteri ( GL_TEXTURE_2D , GL_TEXTURE_WRAP_T , GL_CLAMP_TO_EDGE );
-                        glTexParameteri ( GL_TEXTURE_2D , GL_TEXTURE_MIN_FILTER , GL_NEAREST );
-                        glTexParameteri ( GL_TEXTURE_2D , GL_TEXTURE_MAG_FILTER , GL_NEAREST );
-                        // Allocate memory
-                        glTexImage2D ( GL_TEXTURE_2D , 0 , GL_RGBA32F , noise_size , noise_size , 0 , GL_RGBA , GL_FLOAT , noise );
-
-                        glBindTexture ( GL_TEXTURE_2D , 0 );
-
-                        delete[] noise;
-                }
-
-                /**
-                 * @brief Generates a random number in range [min,max].
-                 * @param min The minimum value for random number generation.
-                 * @param max The maximum value for random number generation.
-                 */
-                float random ( float min , float max )
-                {
-                        //srand ( time(NULL) );
-                        int random = rand ( );
-                        float ret = random / float ( RAND_MAX );
-                        ret *= ( max - min );
-                        ret += min;
-                        assert( ret >= min && ret <= max );
-                        return ret;
-                }
-
                 /// Lights
                 std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f> > lights;
                 GLfloat * light_elements;

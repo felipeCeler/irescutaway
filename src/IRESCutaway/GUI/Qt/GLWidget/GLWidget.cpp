@@ -193,9 +193,6 @@ void GLWidget::initializeGL ( )
 
         noise_scale = Eigen::Vector2f::Zero();
 
-        generateKernel();
-        generateNoiseTexture();
-
         fboSSAO = new Framebuffer( width() , height(), 4 );
 
         quadSSAO = new Mesh();
@@ -213,79 +210,6 @@ void GLWidget::initializeGL ( )
 GLWidget::~GLWidget( )
 {
         delete[] light_elements;
-}
-
-void GLWidget::dragEnterEvent(QDragEnterEvent *event)
-{
-
-	setBackgroundRole(QPalette::Highlight);
-
-	event->acceptProposedAction();
-
-	emit changed(event->mimeData());
-
-	qDebug() << "Entrou";
-}
-/// Then, we invoke acceptProposedAction() on event, setting the drop action to the one proposed.
-/// Lastly, we emit the changed() signal, with the data that was dropped and its MIME type information as a parameter.
-/// For dragMoveEvent(), we just accept the proposed QDragMoveEvent object, event, with acceptProposedAction().
-void GLWidget::dragMoveEvent(QDragMoveEvent *event)
-{
-	event->acceptProposedAction();
-}
-///The DropArea class's implementation of dropEvent() extracts the event's mime data and displays it accordingly.
-void GLWidget::dropEvent(QDropEvent *event)
-{
-	const QMimeData *mimeData = event->mimeData();
-	/// The mimeData object can contain one of the following objects: an image, HTML text, plain text, or a list of URLs.
-
-	if (event->mimeData()->hasUrls())
-	{
-
-		QList<QUrl> urlList = mimeData->urls();
-		QString text;
-		for (int i = 0; i < urlList.size() && i < 32; ++i) {
-			QString url = urlList.at(i).path();
-			text += url;// + QString("\n");
-		}
-		qDebug() << text;
-
-		QImage image 			= QImage(text);
-		//QImage imageOpenGL = QGLWidget::convertToGLFormat( image );
-
-		// TODO this is just the beginning
-		// Create a texture as attachment
-		if ( xtoon_texture_ != 0 )
-		{
-			glDeleteTextures ( 1 , &xtoon_texture_ );
-		}
-		else
-		{
-			glGenTextures ( 1 , &xtoon_texture_ );
-		}
-
-		glBindTexture ( GL_TEXTURE_2D, xtoon_texture_ );
-		// Set basic parameters
-		glTexParameteri ( GL_TEXTURE_2D , GL_TEXTURE_WRAP_S , GL_CLAMP_TO_EDGE );
-		glTexParameteri ( GL_TEXTURE_2D , GL_TEXTURE_WRAP_T , GL_CLAMP_TO_EDGE );
-		glTexParameteri ( GL_TEXTURE_2D , GL_TEXTURE_MIN_FILTER , GL_NEAREST );
-		glTexParameteri ( GL_TEXTURE_2D , GL_TEXTURE_MAG_FILTER , GL_NEAREST );
-		// Allocate memory
-		//glTexImage2D ( GL_TEXTURE_2D , 0 , GL_RGBA , image.width() , image.height() , 0 , GL_RGBA , GL_UNSIGNED_BYTE , imageOpenGL.bits() );
-
-		qDebug() << " ID Texture " << xtoon_texture_ << " w x h " << image.width() << " x " << image.height();
-
-		glBindTexture ( GL_TEXTURE_2D, 0 );
-
-		qDebug() << "Soltou";
-
-	}
-
-}
-
-void GLWidget::dragLeaveEvent(QDragLeaveEvent *event)
-{
-		event->accept ( );
 }
 
 bool GLWidget::isIRESOpen ( ) const
@@ -846,8 +770,6 @@ void GLWidget::drawSecondaryStatic  ( ) const  // Draw only secondary Cells
 
         SSAOIRESCutawayStaticShell_->enable( );
 
-//        std::cout << " SSAOIRESCutawayStaticShell_->getShaderProgram()" << SSAOIRESCutawayStaticShell_->getShaderProgram() << std::endl;
-
         SSAOIRESCutawayStaticShell_->setUniform( "normal" , depthFBO->bindAttachment(normalsSmoothID_) );
         SSAOIRESCutawayStaticShell_->setUniform( "vertex" , depthFBO->bindAttachment(verticesSmoothID_) );
 
@@ -953,44 +875,7 @@ void GLWidget::IRESCutawayStatic (  )
                         glFinish();
                         accumulateRenderingPrimaryTime_ += (float)renderingPrimaryTime_.elapsed();
 
-
-                /// glDrawBuffer(GL_BACK);
-
                 glDisable(GL_DEPTH_TEST);
-
-//                /// SSAO -- C&G - Fail =(
-//                fboSSAO->bindRenderBuffer(blurTextureID);
-//
-//                /// Second Rendering Pass
-//                renderingSSAOBlurTime_.start();
-//                ssaoShader_->enable();
-//
-//                glActiveTexture(GL_TEXTURE0 + 7);
-//                glBindTexture(GL_TEXTURE_2D, noiseTexture);
-//
-//                ssaoShader_->setUniform("lightViewMatrix", trackball_->getProjectionMatrix().data(),4,GL_FALSE,1);
-//
-//                ssaoShader_->setUniform("noiseScale", noise_scale.x(),noise_scale.y());
-//                ssaoShader_->setUniform("kernel", kernel, 2, numberOfSamples);
-//
-//                ssaoShader_->setUniform("coordsTexture", fboSSAO->bindAttachment(depthTextureID));
-//                ssaoShader_->setUniform("normalTexture", fboSSAO->bindAttachment(normalTextureID));
-//                ssaoShader_->setUniform("colorTexture", fboSSAO->bindAttachment(colorTextureID));
-//                ssaoShader_->setUniform("displayAmbientPass", displayAmbientPass);
-//
-//                ssaoShader_->setUniform("radius", radius);
-//                ssaoShader_->setUniform("intensity", (float)intensity);
-//                ssaoShader_->setUniform("max_dist", max_dist);
-//                ssaoShader_->setUniform("noiseTexture", 7);
-//
-//                //Second pass mesh rendering:
-//                quadSSAO->render();
-//
-//                ssaoShader_->disable();
-//
-//                glBindTexture(GL_TEXTURE_2D, 0);
-//                fboSSAO->unbindAll ( );
-//                fboSSAO->clearDepth ( );
 
 		/// SSAO -- Graphical Models - I hope
 		fboSSAO->bindRenderBuffer(blurTextureID);
@@ -1002,7 +887,6 @@ void GLWidget::IRESCutawayStatic (  )
 		ssaoShaderTucanoGitlab_->setUniform("coordsTexture", fboSSAO->bindAttachment(depthTextureID));
 		ssaoShaderTucanoGitlab_->setUniform("normalTexture", fboSSAO->bindAttachment(normalTextureID));
 		ssaoShaderTucanoGitlab_->setUniform("displayAmbientPass", displayAmbientPass);
-		noise_texture.bind(7);
 		ssaoShaderTucanoGitlab_->setUniform("noise_texture", 7);
 
 		ssaoShaderTucanoGitlab_->setUniform("radius", radius);
@@ -1017,25 +901,11 @@ void GLWidget::IRESCutawayStatic (  )
 		glBindTexture(GL_TEXTURE_2D, 0);
 		fboSSAO->unbindAll ( );
 		fboSSAO->clearDepth ( );
-		noise_texture.unbind();
 		/// End of SSAO
 
 		//glBindFramebuffer(context()->defaultFramebufferObject());
                 glDrawBuffer(GL_BACK);
                 makeCurrent();
-
-//                blurShader_->enable();
-//
-//                blurShader_->setUniform("blurTexture", fboSSAO->bindAttachment(blurTextureID));
-//                blurShader_->setUniform("blurRange", blurRange);
-//
-//                quadSSAO->render();
-//
-//                glFinish( );
-//                accumulateSSAOBlurTime_ += (float)renderingSSAOBlurTime_.elapsed();
-//
-//                blurShader_->disable();
-
 
 		blurTucanoGitlab_->enable();
 
@@ -1341,69 +1211,64 @@ void GLWidget::IRESCutawayDynamic ( )
                          }
 
 
-                 //glDrawBuffer(GL_BACK);
-
                  glDisable(GL_DEPTH_TEST);
 
-                 fboSSAO->bindRenderBuffer(blurTextureID);
 
-                 /// SEGUNDO PASSO
-                 ssaoShader_->enable();
+ 		fboSSAO->bindRenderBuffer(blurTextureID);
 
-                 glActiveTexture(GL_TEXTURE0 + 7);
-                 glBindTexture(GL_TEXTURE_2D, noiseTexture);
+ 		/// Second Rendering Pass
+ 		renderingSSAOBlurTime_.start();
+ 		ssaoShaderTucanoGitlab_->enable();
 
-                 ssaoShader_->setUniform("lightViewMatrix", trackball_->getProjectionMatrix().data(),4,GL_FALSE,1);
+ 		ssaoShaderTucanoGitlab_->setUniform("coordsTexture", fboSSAO->bindAttachment(depthTextureID));
+ 		ssaoShaderTucanoGitlab_->setUniform("normalTexture", fboSSAO->bindAttachment(normalTextureID));
+ 		ssaoShaderTucanoGitlab_->setUniform("displayAmbientPass", displayAmbientPass);
+ 		noise_texture.bind(7);
+ 		ssaoShaderTucanoGitlab_->setUniform("noise_texture", 7);
 
-                 ssaoShader_->setUniform("noiseScale", noise_scale.x(),noise_scale.y());
-                 ssaoShader_->setUniform("kernel", kernel, 2, numberOfSamples);
+ 		ssaoShaderTucanoGitlab_->setUniform("radius", radius);
+ 		ssaoShaderTucanoGitlab_->setUniform("intensity", (GLfloat)intensity);
+ 		ssaoShaderTucanoGitlab_->setUniform("global_scale", (GLfloat)intensity);
 
-                 ssaoShader_->setUniform("coordsTexture", fboSSAO->bindAttachment(depthTextureID));
-                 ssaoShader_->setUniform("normalTexture", fboSSAO->bindAttachment(normalTextureID));
-                 ssaoShader_->setUniform("colorTexture", fboSSAO->bindAttachment(colorTextureID));
-                 ssaoShader_->setUniform("displayAmbientPass", displayAmbientPass);
+ 		/// Second pass mesh rendering:
+ 		quadSSAO->render();
 
-                 ssaoShader_->setUniform("radius", radius);
-                 ssaoShader_->setUniform("intensity", (float)intensity);
-                 ssaoShader_->setUniform("max_dist", max_dist);
-                 ssaoShader_->setUniform("noiseTexture", 7);
+ 		ssaoShaderTucanoGitlab_->disable();
 
-                 //Second pass mesh rendering:
-                 quadSSAO->render();
+ 		glBindTexture(GL_TEXTURE_2D, 0);
+ 		fboSSAO->unbindAll ( );
+ 		fboSSAO->clearDepth ( );
+ 		noise_texture.unbind();
+ 		/// End of SSAO
 
-                 ssaoShader_->disable();
-                 glBindTexture(GL_TEXTURE_2D, 0);
-                 fboSSAO->unbindAll ( );
-                 fboSSAO->clearDepth ( );
+		glDrawBuffer ( GL_BACK );
+		makeCurrent ( );
 
-                 glDrawBuffer(GL_BACK);
-                 makeCurrent();
+		blurTucanoGitlab_->enable ( );
 
-                 blurShader_->enable();
+		blurTucanoGitlab_->setUniform ( "coordsTexture" , fboSSAO->bindAttachment ( depthTextureID ) );
+		blurTucanoGitlab_->setUniform ( "normalTexture" , fboSSAO->bindAttachment ( normalTextureID ) );
+		blurTucanoGitlab_->setUniform ( "colorTexture" , fboSSAO->bindAttachment ( colorTextureID ) );
+		blurTucanoGitlab_->setUniform ( "ssaoTexture" , fboSSAO->bindAttachment ( blurTextureID ) );
+		blurTucanoGitlab_->setUniform ( "blurRange" , blurRange );
 
-                 blurShader_->setUniform("blurTexture", fboSSAO->bindAttachment(blurTextureID));
-                 blurShader_->setUniform("blurRange", blurRange);
+		quadSSAO->render ( );
 
-                 quadSSAO->render();
+		glFinish ( );
+		accumulateSSAOBlurTime_ += (float) renderingSSAOBlurTime_.elapsed ( );
 
-                 blurShader_->disable();
-                 fboSSAO->unbindAll( );
-                 fboSSAO->clearDepth( );
+		blurTucanoGitlab_->disable ( );
 
-                 glEnable(GL_DEPTH_TEST);
+		fboSSAO->unbindAll ( );
+		fboSSAO->clearDepth ( );
+
+		glEnable ( GL_DEPTH_TEST );
+
 
         }
 
 
 }
-
-////Timer
-//void GLWidget::timerEvent( QTimerEvent *event )
-//{
-//
-//
-//
-//}
 
 
 /// F10
@@ -2379,6 +2244,55 @@ void GLWidget::wheelEvent ( QWheelEvent *event )
 
     update();
 
+}
+
+void GLWidget::changeTimeStep ( const int step )
+{
+	makeCurrent();
+        std::cout << " ... " << step << std::endl;
+        this->time_step = step;
+
+        glBindVertexArray ( reservoir_model_.vertexArrayCuboids );
+
+        glBindBuffer ( GL_ARRAY_BUFFER , reservoir_model_.cuboidDynamicIds[dynamic_property_index][time_step] );
+        glEnableVertexAttribArray ( 9 );
+        glVertexAttribPointer ( 9 , 1 , GL_FLOAT , GL_FALSE , 0 , 0 );
+
+        glBindVertexArray ( 0 );
+
+        glBindVertexArray ( reservoir_model_.vertexArrayFaces );
+
+        glBindBuffer ( GL_ARRAY_BUFFER , reservoir_model_.faceDynamicIds[dynamic_property_index][time_step] );
+        glEnableVertexAttribArray ( 6 );
+        glVertexAttribPointer ( 6 , 1 , GL_FLOAT , GL_FALSE , 0 , 0 );
+
+        glBindVertexArray ( 0 );
+
+        update ( );
+}
+
+void GLWidget::changeDynamicProperty ( int index )
+{
+	makeCurrent();
+        this->dynamic_property_index = index;
+
+        glBindVertexArray ( reservoir_model_.vertexArrayCuboids );
+
+        glBindBuffer ( GL_ARRAY_BUFFER , reservoir_model_.cuboidDynamicIds[dynamic_property_index][time_step] );
+        glEnableVertexAttribArray ( 9 );
+        glVertexAttribPointer ( 9 , 1 , GL_FLOAT , GL_FALSE , 0 , 0 );
+
+        glBindVertexArray ( 0 );
+
+        glBindVertexArray ( reservoir_model_.vertexArrayFaces );
+
+        glBindBuffer ( GL_ARRAY_BUFFER , reservoir_model_.faceDynamicIds[dynamic_property_index][time_step] );
+        glEnableVertexAttribArray ( 6 );
+        glVertexAttribPointer ( 6 , 1 , GL_FLOAT , GL_FALSE , 0 , 0 );
+
+        glBindVertexArray ( 0 );
+
+        update ( );
 }
 
 void GLWidget::showFault	  ( bool visibility )

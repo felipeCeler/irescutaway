@@ -6,7 +6,7 @@ find_package(Qt5 COMPONENTS Core Gui Widgets OpenGL)
 
 find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
-find_package(Eigen REQUIRED)
+find_package(Eigen3 REQUIRED)
 
 
 #INCLUDE(${QT_USE_FILE})
@@ -20,12 +20,9 @@ include_directories(
 		## - LCG/include
 		${CMAKE_SOURCE_DIR}/libs/LCG
 		## - Tucano/include
+		${CMAKE_SOURCE_DIR}/libs
+		## - Tucano/include
 		${CMAKE_SOURCE_DIR}/libs/tucano/src
-        ## - Qt4     
-#        ${QT_INCLUDE_DIR}
-#        ${QT_QTCORE_INCLUDE_DIR}
-#        ${QT_QTGUI_INCLUDE_DIR}
-#        ${QT_QTOPENGL_INCLUDE_DIR}
         ##- OpenGL 
         ${GLEW_INCLUDE_DIR}
         ${OPENGL_INCLUDE_DIR}
