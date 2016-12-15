@@ -695,7 +695,7 @@ void GLWidget::drawPrimaryStatic  ( ) const // Draw only primary   Cells
 
         SSAOIRESPrimaryStatic_->bind ( );
 
-        SSAOIRESPrimaryStatic_->setUniform ("silhouette" , depthFBO->bindAttachment(silhouetteID_));
+        //SSAOIRESPrimaryStatic_->setUniform ("silhouette" , depthFBO->bindAttachment(silhouetteID_));
 
         SSAOIRESPrimaryStatic_->setUniform ( "num_lights" , (GLint) lights.size ( ) );
         SSAOIRESPrimaryStatic_->setUniform ( "lights[0]" , light_elements , 3 , (GLint) lights.size ( ) );
@@ -723,7 +723,7 @@ void GLWidget::drawPrimaryStatic  ( ) const // Draw only primary   Cells
 
         SSAOIRESPrimaryStatic_->unbind ( );
 
-        depthFBO->unbind();
+        //depthFBO->unbind();
 
 }
 
@@ -809,7 +809,8 @@ void GLWidget::IRESCutawayStatic (  )
 
         if ( isIRESOpen_ )
         {
-//
+
+
                 if ( draw_cutaway_surface_ )
                 {
                         drawIRESCutawayStaticSurface ( );
@@ -823,6 +824,7 @@ void GLWidget::IRESCutawayStatic (  )
                 glDepthFunc(GL_LESS);
                 glClearDepth(1.0f);
                 glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
 
 
                 if ( reservoir_model_.showBorderLine )

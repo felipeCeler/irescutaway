@@ -13,10 +13,14 @@ noperspective in vec4 dist;
 uniform int num_lights;
 uniform vec3 lights[4];
 
-/// SSAO output Buffers
-out vec4 out_Color;
 
 //out vec4 fragmentColor;
+
+/// SSAO output Buffers
+out vec4 out_Coords;
+out vec4 out_Normal;
+out vec4 out_Color;
+
 
 /// Saturation Intensity
 uniform float saturation_;
@@ -153,8 +157,7 @@ void main(void)
 
         color.rgb = HSLToRGB(hsl);
 
-        color.a = 51;
-
-        out_Color =  I * vec4 ( 1.0 , 1.0 , 1.0 , 1.0 ) + ( 1.0 - I ) * color;
-
+        out_Coords = vec4 (newVert.xyz, 1.0);
+        out_Normal = vec4 (newNormal.xyz, 1.0);
+        out_Color = I * vec4 ( vec3 ( 0.0 ) , 1.0 ) + ( 1.0 - I ) * ( ( color ) );
 }
