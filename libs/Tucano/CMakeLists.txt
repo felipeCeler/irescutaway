@@ -33,6 +33,9 @@ set( _HEADERS_
     Misc.hpp
     )
 
+# C++ flags
+## -Wno-unused-local-typedefs -Wunused-local-typedefs - For Eigen Boring Warning
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -Wdeprecated-declarations")
      
 add_library( Tucano STATIC  ${_SRCS_} ${_HEADERS_} )
      
