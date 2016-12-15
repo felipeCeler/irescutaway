@@ -48,8 +48,8 @@ int main ( int argc , char *argv[] )
 	//form->open( "/media/d/Workspace/IRESCutaway/Files/models/opaDynamic_v2_NEW01_FaceProp.ires",true );/
 
 //
-//	form->ui->doubleSpinMin->setValue(280000.0);
-//	form->ui->doubleSpinMax->setValue(290000.0);
+	form->ui->doubleSpinMin->setValue(280000.0);
+	form->ui->doubleSpinMax->setValue(290000.0);
 
 	form->ui->horizontalSlider_PrimariesSaturation->setValue(70);
 	form->ui->horizontalSlider_PrimariesLuminance->setValue(50);
