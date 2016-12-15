@@ -277,7 +277,7 @@ void main(void)
 
         color.rgb = HSLToRGB(hsl);
 
-        color.a = VertexIn.color.a;
+        //color.a = VertexIn.color.a;
 
         out_Coords = vec4 (newVert.xyz, 1.0);
         out_Normal = vec4 (newNormal.xyz, 1.0);
