@@ -43,7 +43,7 @@ int main ( int argc , char *argv[] )
 
 //	form->open( "D:\\Workspace\\RESCutaway\\build\\build\\bin\\zmap.ires2.ires",true );
 //	form->open( "/home/ricardomarroquim/devel/irescutaway/build/build/bin/zmap.ires2.ires",true );
-	form->open( (shaderDirectory + "petrellThrustDynamic_v2_NEW01_FaceProp.ires"),true );
+	form->open( (shaderDirectory + "zmapDynamic_v2_NEW01_FaceProp.ires"),true );
 	form->glWidget->loadPly((plyDirectory + "sphere.ply"));
 	//form->open( "/media/d/Workspace/IRESCutaway/Files/models/opaDynamic_v2_NEW01_FaceProp.ires",true );/
 

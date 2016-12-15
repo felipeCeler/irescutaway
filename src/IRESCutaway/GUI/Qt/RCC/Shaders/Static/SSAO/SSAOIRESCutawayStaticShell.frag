@@ -297,4 +297,5 @@ void main(void)
                 out_Color = I * vec4(vec3(0.0,0.0,0.0), 1.0) + (1.0 - I) * ( color );
 
         }
+
 }
