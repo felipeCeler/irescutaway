@@ -635,6 +635,7 @@ void GLWidget::drawIRESCutawayStaticSurface ( )
         glDisable(GL_DEPTH_TEST);
 
         renderingMeanFilterTime_.start();
+        meanFilter->setKernel(this->meanFilterSize_);
         meanFilter->renderTexture( depthFBO->getTexture(normalCutawayID_),viewport_);
         meanFilter->renderTexture( depthFBO->getTexture(verticesCutawayID_),viewport_);
         depthFBO->unbind();
@@ -829,7 +830,7 @@ void GLWidget::IRESCutawayStatic (  )
 
                 if ( reservoir_model_.showBorderLine )
                 {
-                	drawPrimaryStaticSilhouette();
+                	//drawPrimaryStaticSilhouette();
                 }
 
 
