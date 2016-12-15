@@ -1,11 +1,12 @@
 #version 430 core
 
+layout(location = 4) uniform sampler2D silhouette;
 
 in VertexData
 {
-	vec4 vertice;
+    vec4 vertice;
    flat vec4 normal;
-	vec4 color;
+    vec4 color;
 } VertexIn;
 
 noperspective in vec4 dist;
@@ -15,6 +16,8 @@ uniform int num_lights;
 uniform vec3 lights[4];
 
 /// SSAO output Buffers
+out vec4 out_Coords;
+out vec4 out_Normal;
 out vec4 out_Color;
 
 //out vec4 fragmentColor;
@@ -154,8 +157,42 @@ void main(void)
 
         color.rgb = HSLToRGB(hsl);
 
-		color.a = 51;
 
-        out_Color = color;
+       // Add the pixels which make up our window to the pixel array.
+
+//
+//        // make sure we are at the center of the pixel to make the right texture access
+//        vec2 pixel_pos = vec2(floor(gl_FragCoord.x), floor(gl_FragCoord.y)) + vec2(0.5);
+//        // cutaway normal = rgb, and cutaway depth in camera space = w
+//        vec4 cutaway = texelFetch( normal, ivec2(pixel_pos), 0 ).rgba;
+
+        int size = 4;
+        vec4 back = vec4(0.0,0.0,0.0,0.0);
+
+
+        // make sure we are at the center of the pixel to make the right texture access
+        vec2 pixel_pos = vec2(floor(gl_FragCoord.x), floor(gl_FragCoord.y)) + vec2(0.5);
+        // cutaway normal = rgb, and cutaway depth in camera space = w
+
+
+        for (int dX = -size; dX <= size; ++dX) {
+            for (int dY = -size; dY <= size; ++dY) {
+                vec2 offset = vec2(float(dX), float(dY));
+
+                // If a pixel in the window is located at (x+dX, y+dY), put it at index (dX + R)(2R + 1) + (dY + R) of the
+                // pixel array. This will fill the pixel array, with the top left pixel of the window at pixel[0] and the
+                // bottom right pixel of the window at pixel[N-1].
+                back = texelFetch(silhouette, ivec2(gl_FragCoord.st+offset), 0).rgba;
+
+//              if ((back.a < 51.0)) {
+//                  color = vec4(1.0,0.2,0.0,1.0);
+//              }
+            }
+        }
+
+        out_Coords = vec4 (newVert.xyz, 1.0);
+        out_Normal = vec4 (newNormal.xyz, 1.0);
+        out_Color = I * vec4 ( 0.0 , 0.0 , 0.0 , 1.0 ) + ( 1.0 - I ) * color;
 
 }
+

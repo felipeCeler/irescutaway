@@ -27,7 +27,7 @@ include_directories(
         ${GLEW_INCLUDE_DIR}
         ${OPENGL_INCLUDE_DIR}
         ## - Eigen
-        ${EIGEN_INCLUDE_DIR}
+        ${EIGEN3_INCLUDE_DIR}
         ## - Qt5
         ${Qt5Core_INCLUDE_DIRS}
         ${Qt5Gui_INCLUDE_DIRS}

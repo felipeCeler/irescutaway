@@ -616,14 +616,14 @@ void GLWidget::drawIRESCutawayStaticSurface ( )
 
 	IRESCutawaySurfaceStatic_->setUniform( "x" , volume_width );
 	IRESCutawaySurfaceStatic_->setUniform( "y" , volume_height );
-	IRESCutawaySurfaceStatic_->setUniform ( "ModelMatrix" , camera.getViewMatrix ( ) );
+	IRESCutawaySurfaceStatic_->setUniform ( "ModelMatrix" , Eigen::Affine3f::Identity() );
 	IRESCutawaySurfaceStatic_->setUniform ( "ViewMatrix" , camera.getViewMatrix ( ) );
 	IRESCutawaySurfaceStatic_->setUniform ( "ProjectionMatrix" , camera.getProjectionMatrix ( ) );
 
 	IRESCutawaySurfaceStatic_->setUniform ("freeze", freezeView_ );
 	IRESCutawaySurfaceStatic_->setUniform ("FreezeViewMatrix",freeze_viewmatrix_ );
 
-	reservoir_model_.drawIndexCuboids (primaries_cuboid); //reservoir_model_.drawCuboid ( );
+	reservoir_model_.drawIndexCuboids (primaries_cuboid);//reservoir_model_.drawCuboid ( );
 
 	IRESCutawaySurfaceStatic_->unbind( );
 
@@ -676,11 +676,11 @@ void GLWidget::drawPrimaryStaticSilhouette  ( ) const // Draw only primary   Cel
         SSAOIRESPrimaryStaticSilhouette_->setUniform ( "max_property_static" , reservoir_model_.static_max[reservoir_model_.current_static] );
         SSAOIRESPrimaryStaticSilhouette_->setUniform ( "property_index" , reservoir_model_.current_static );
 
-        SSAOIRESPrimaryStaticSilhouette_->setUniform ( "ModelMatrix" , camera.getViewMatrix ( ) );
+        SSAOIRESPrimaryStaticSilhouette_->setUniform ( "ModelMatrix" , Eigen::Affine3f::Identity() );
         SSAOIRESPrimaryStaticSilhouette_->setUniform ( "ViewMatrix" , camera.getViewMatrix ( ) );
         SSAOIRESPrimaryStaticSilhouette_->setUniform ( "ProjectionMatrix" , camera.getProjectionMatrix ( ) );
 
-        reservoir_model_.drawFaces ( );//reservoir_model_.drawIndexFaces(primaries_face);
+        reservoir_model_.drawIndexFaces(primaries_face);//reservoir_model_.drawFaces ( )
 
         SSAOIRESPrimaryStaticSilhouette_->unbind ( );
 
@@ -715,11 +715,11 @@ void GLWidget::drawPrimaryStatic  ( ) const // Draw only primary   Cells
         SSAOIRESPrimaryStatic_->setUniform ( "max_property_static" , reservoir_model_.static_max[reservoir_model_.current_static] );
         SSAOIRESPrimaryStatic_->setUniform ( "property_index" , reservoir_model_.current_static );
 
-        SSAOIRESPrimaryStatic_->setUniform ( "ModelMatrix" , camera.getViewMatrix ( ) );
+        SSAOIRESPrimaryStatic_->setUniform ( "ModelMatrix" , Eigen::Affine3f::Identity() );
         SSAOIRESPrimaryStatic_->setUniform ( "ViewMatrix" , camera.getViewMatrix ( ) );
         SSAOIRESPrimaryStatic_->setUniform ( "ProjectionMatrix" , camera.getProjectionMatrix ( ) );
 
-        reservoir_model_.drawFaces ( );//reservoir_model_.drawIndexFaces(primaries_face);
+        reservoir_model_.drawIndexFaces(primaries_face);//reservoir_model_.drawFaces ( );
 
         SSAOIRESPrimaryStatic_->unbind ( );
 
@@ -757,7 +757,7 @@ void GLWidget::drawSecondaryStatic  ( ) const  // Draw only secondary Cells
         SSAOIRESCutawayStatic_->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
         SSAOIRESCutawayStatic_->setUniform("WIN_SCALE", (float) width ( ) , (float) height ( ) );
 
-        SSAOIRESCutawayStatic_->setUniform ( "ModelMatrix" , camera.getViewMatrix ( ) );
+        SSAOIRESCutawayStatic_->setUniform ( "ModelMatrix" , Eigen::Affine3f::Identity() );
         SSAOIRESCutawayStatic_->setUniform ( "ViewMatrix" , camera.getViewMatrix ( ) );
         SSAOIRESCutawayStatic_->setUniform ( "ProjectionMatrix" , camera.getProjectionMatrix ( ) );
 
@@ -790,7 +790,7 @@ void GLWidget::drawSecondaryStatic  ( ) const  // Draw only secondary Cells
         SSAOIRESCutawayStaticShell_->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
         SSAOIRESCutawayStaticShell_->setUniform("WIN_SCALE", (float) width ( ) , (float) height ( ) );
 
-        SSAOIRESCutawayStaticShell_->setUniform ( "ModelMatrix" , camera.getViewMatrix ( ) );
+        SSAOIRESCutawayStaticShell_->setUniform ( "ModelMatrix" , Eigen::Affine3f::Identity() );
         SSAOIRESCutawayStaticShell_->setUniform ( "ViewMatrix" , camera.getViewMatrix ( ) );
         SSAOIRESCutawayStaticShell_->setUniform ( "ProjectionMatrix" , camera.getProjectionMatrix ( ) );
 
@@ -839,7 +839,7 @@ void GLWidget::IRESCutawayStatic (  )
                         glLineWidth( (float) borderLinesSize_ );
                         BorderLines_->bind ( );
 
-                        BorderLines_->setUniform ( "ModelMatrix" , camera.getViewMatrix ( ) );
+                        BorderLines_->setUniform ( "ModelMatrix" , Eigen::Affine3f::Identity() );
                         BorderLines_->setUniform ( "ViewMatrix" , camera.getViewMatrix ( ) );
                         BorderLines_->setUniform ( "ProjectionMatrix" , camera.getProjectionMatrix ( ) );
 
@@ -999,7 +999,7 @@ void GLWidget::drawIRESCutawayDynamicSurface ( )
         IRESCutawaySurfaceDynamic_->setUniform("move_z", move_z);
         IRESCutawaySurfaceDynamic_->setUniform( "x" , volume_width );
         IRESCutawaySurfaceDynamic_->setUniform( "y" , volume_height );
-        IRESCutawaySurfaceDynamic_->setUniform ( "ModelMatrix" , camera.getViewMatrix ( ) );
+        IRESCutawaySurfaceDynamic_->setUniform ( "ModelMatrix" , Eigen::Affine3f::Identity() );
         IRESCutawaySurfaceDynamic_->setUniform ( "ViewMatrix" , camera.getViewMatrix ( ) );
         IRESCutawaySurfaceDynamic_->setUniform ( "ProjectionMatrix" , camera.getProjectionMatrix ( ) );
 
@@ -1061,7 +1061,7 @@ void GLWidget::drawPrimaryDynamic ( ) const
         SSAOIRESPrimaryDynamic_->setUniform("max_property_static", reservoir_model_.static_max[reservoir_model_.current_static]  );
         SSAOIRESPrimaryDynamic_->setUniform("property_index", reservoir_model_.current_static );
 
-        SSAOIRESPrimaryDynamic_->setUniform ( "ModelMatrix" , camera.getViewMatrix ( ) );
+        SSAOIRESPrimaryDynamic_->setUniform ( "ModelMatrix" , Eigen::Affine3f::Identity() );
         SSAOIRESPrimaryDynamic_->setUniform ( "ViewMatrix" , camera.getViewMatrix ( ) );
         SSAOIRESPrimaryDynamic_->setUniform ( "ProjectionMatrix" , camera.getProjectionMatrix ( ) );
 
@@ -1108,7 +1108,7 @@ void GLWidget::drawSecondaryDynamic ( ) const
         SSAOIRESCutawayDynamic_->setUniform ( "lights[0]" , light_elements , 3 , (GLint) lights.size ( ) );
         SSAOIRESCutawayDynamic_->setUniform ( "WIN_SCALE" , (float) width ( ) , (float) height ( ) );
 
-        SSAOIRESCutawayDynamic_->setUniform ( "ModelMatrix" , camera.getViewMatrix ( ) );
+        SSAOIRESCutawayDynamic_->setUniform ( "ModelMatrix" , Eigen::Affine3f::Identity() );
         SSAOIRESCutawayDynamic_->setUniform ( "ViewMatrix" , camera.getViewMatrix ( ) );
         SSAOIRESCutawayDynamic_->setUniform ( "ProjectionMatrix" , camera.getProjectionMatrix ( ) );
 
@@ -1137,7 +1137,7 @@ void GLWidget::drawSecondaryDynamic ( ) const
         SSAOIRESCutawayDynamicShell_->setUniform ( "lights[0]" , light_elements , 3 , (GLint) lights.size ( ) );
         SSAOIRESCutawayDynamicShell_->setUniform ( "WIN_SCALE" , (float) width ( ) , (float) height ( ) );
 
-        SSAOIRESCutawayDynamicShell_->setUniform ( "ModelMatrix" , camera.getViewMatrix ( ) );
+        SSAOIRESCutawayDynamicShell_->setUniform ( "ModelMatrix" , Eigen::Affine3f::Identity() );
         SSAOIRESCutawayDynamicShell_->setUniform ( "ViewMatrix" , camera.getViewMatrix ( ) );
         SSAOIRESCutawayDynamicShell_->setUniform ( "ProjectionMatrix" , camera.getProjectionMatrix ( ) );
 
@@ -1201,7 +1201,7 @@ void GLWidget::IRESCutawayDynamic ( )
                                  glLineWidth( (float) borderLinesSize_ );
                                  BorderLines_->bind ( );
 
-                                 BorderLines_->setUniform ( "ModelMatrix" , camera.getViewMatrix ( ) );
+                                 BorderLines_->setUniform ( "ModelMatrix" , Eigen::Affine3f::Identity() );
                                  BorderLines_->setUniform ( "ViewMatrix" , camera.getViewMatrix ( ) );
                                  BorderLines_->setUniform ( "ProjectionMatrix" , camera.getProjectionMatrix ( ) );
 
@@ -1295,7 +1295,7 @@ void GLWidget::drawIRESModel ( )
         RawModel_->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
         RawModel_->setUniform("WIN_SCALE", (float) width ( ) , (float) height ( ) );
 
-        RawModel_->setUniform ( "ModelMatrix" , camera.getViewMatrix ( ) );
+        RawModel_->setUniform ( "ModelMatrix" , Eigen::Affine3f::Identity() );
         RawModel_->setUniform ( "ViewMatrix" , camera.getViewMatrix ( ) );
         RawModel_->setUniform ( "ProjectionMatrix" , camera.getProjectionMatrix ( ) );
 
@@ -1310,7 +1310,7 @@ void GLWidget::drawIRESModel ( )
                 glLineWidth( (float) borderLinesSize_ );
                 BorderLines_->bind ( );
 
-                BorderLines_->setUniform ( "ModelMatrix" , camera.getViewMatrix ( ) );
+                BorderLines_->setUniform ( "ModelMatrix" , Eigen::Affine3f::Identity() );
                 BorderLines_->setUniform ( "ViewMatrix" , camera.getViewMatrix ( ) );
                 BorderLines_->setUniform ( "ProjectionMatrix" , camera.getProjectionMatrix ( ) );
 
@@ -1441,7 +1441,7 @@ void GLWidget::PaperDrawCutawaySurface() const
         BurnsPrimarySetup_->setUniform("move_z", move_z );
         BurnsPrimarySetup_->setUniform( "x" , volume_width );
         BurnsPrimarySetup_->setUniform( "y" , volume_height );
-        BurnsPrimarySetup_->setUniform ( "ModelMatrix" , camera.getViewMatrix ( ) );
+        BurnsPrimarySetup_->setUniform ( "ModelMatrix" , Eigen::Affine3f::Identity() );
         BurnsPrimarySetup_->setUniform ( "ViewMatrix" , camera.getViewMatrix ( ) );
         BurnsPrimarySetup_->setUniform ( "ProjectionMatrix" , camera.getProjectionMatrix ( ) );
 
@@ -1494,7 +1494,7 @@ void GLWidget::PaperSecondary( ) const
         BurnsSecondary_->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
         BurnsSecondary_->setUniform("WIN_SCALE", (float) width ( ) , (float) height ( ) );
 
-        BurnsSecondary_->setUniform ( "ModelMatrix" , camera.getViewMatrix ( ) );
+        BurnsSecondary_->setUniform ( "ModelMatrix" , Eigen::Affine3f::Identity() );
         BurnsSecondary_->setUniform ( "ViewMatrix" , camera.getViewMatrix ( ) );
         BurnsSecondary_->setUniform ( "ProjectionMatrix" , camera.getProjectionMatrix ( ) );
 
@@ -1512,7 +1512,7 @@ void GLWidget::PaperSecondary( ) const
                 glLineWidth( (float) borderLinesSize_ );
                 BorderLines_->bind ( );
 
-                BorderLines_->setUniform ( "ModelMatrix" , camera.getViewMatrix ( ) );
+                BorderLines_->setUniform ( "ModelMatrix" , Eigen::Affine3f::Identity() );
                 BorderLines_->setUniform ( "ViewMatrix" , camera.getViewMatrix ( ) );
                 BorderLines_->setUniform ( "ProjectionMatrix" , camera.getProjectionMatrix ( ) );
 
@@ -1551,7 +1551,7 @@ void GLWidget::PaperPrimary( ) const
         BurnsPrimary_->setUniform("max_DynamicProperty", reservoir_model_.dynamic_properties[dynamic_property_index].max_[time_step] );
         BurnsPrimary_->setUniform("property_type", 0.0 );
 
-        BurnsPrimary_->setUniform ( "ModelMatrix" , camera.getViewMatrix ( ) );
+        BurnsPrimary_->setUniform ( "ModelMatrix" , Eigen::Affine3f::Identity() );
         BurnsPrimary_->setUniform ( "ViewMatrix" , camera.getViewMatrix ( ) );
         BurnsPrimary_->setUniform ( "ProjectionMatrix" , camera.getProjectionMatrix ( ) );
 
@@ -1565,7 +1565,7 @@ void GLWidget::PaperPrimary( ) const
                 glLineWidth( (float) borderLinesSize_ );
                 BorderLines_->bind ( );
 
-                BorderLines_->setUniform ( "ModelMatrix" , camera.getViewMatrix ( ) );
+                BorderLines_->setUniform ( "ModelMatrix" , Eigen::Affine3f::Identity() );
                 BorderLines_->setUniform ( "ViewMatrix" , camera.getViewMatrix ( ) );
                 BorderLines_->setUniform ( "ProjectionMatrix" , camera.getProjectionMatrix ( ) );
 
@@ -1590,7 +1590,7 @@ void GLWidget::PaperPly ( )
         BurnsPly_->setUniform("num_lights", (GLint) lights.size ( )  );
         BurnsPly_->setUniform("lights[0]", light_elements,3, (GLint) lights.size ( )  );
 
-        BurnsPly_->setUniform ( "ModelMatrix" , camera.getViewMatrix ( ) );
+        BurnsPly_->setUniform ( "ModelMatrix" , Eigen::Affine3f::Identity() );
         BurnsPly_->setUniform ( "ViewMatrix" , camera.getViewMatrix ( ) );
         BurnsPly_->setUniform ( "ProjectionMatrix" , camera.getProjectionMatrix ( ) );
 
