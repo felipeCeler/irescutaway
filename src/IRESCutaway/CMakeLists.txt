@@ -45,27 +45,30 @@ foreach(dir ${dirs})
   message(STATUS "dir='${dir}'")
 endforeach()
 
-set( ${PROJECT_NAME}_SOURCES App/main.cpp 
-    						 GUI/Qt/MainWindow/MainWindow.cpp
-    						 GUI/Qt/AboutWidget/AboutWidgetIRESReader.cpp
-    						 GUI/Qt/GLWidget/GLWidget.cpp
+set( ${PROJECT_NAME}_SOURCES 
+                             GUI/Qt/GLWidget/GLWidget.cpp   
+                             GUI/Qt/AboutWidget/AboutWidgetIRESReader.cpp    						 
     						 GUI/Qt/GLWidget/GLAnimation.cpp
     						 IRES/CornerPointGrid.cpp    						 
     						 IRES/Block.cpp
     						 Loaders/Ply/PlyLoader.cpp
+    						 GUI/Qt/MainWindow/MainWindow.cpp
+    						 App/main.cpp
     						 )
 	
-set( ${PROJECT_NAME}_HEADERS GUI/Qt/MainWindow/MainWindow.hpp
-                             GUI/Qt/AboutWidget/AboutWidgetIRESReader.hpp
-                             GUI/Qt/GLWidget/GLWidget.hpp
+set( ${PROJECT_NAME}_HEADERS Loaders/Ply/PlyLoader.hpp
+                             GUI/Qt/GLWidget/GLWidget.hpp                             
+                             GUI/Qt/AboutWidget/AboutWidgetIRESReader.hpp                            
                              IRES/CornerPointGrid.hpp
                              IRES/Block.hpp
-                             Loaders/Ply/PlyLoader.hpp
+                             GUI/Qt/MainWindow/MainWindow.hpp
                              )	
 
-set( MOC_HEADERS GUI/Qt/MainWindow/MainWindow.hpp
+set( MOC_HEADERS 
+                 GUI/Qt/GLWidget/GLWidget.hpp
+                 GUI/Qt/MainWindow/MainWindow.hpp
                  GUI/Qt/AboutWidget/AboutWidgetIRESReader.hpp
-                 GUI/Qt/GLWidget/GLWidget.hpp  )
+                   )
                  
 set( UI_SOURCES GUI/Qt/UI/${CMAKE_PROJECT_NAME}.ui GUI/Qt/AboutWidget/AboutWidgetIRESReader.ui)
 
