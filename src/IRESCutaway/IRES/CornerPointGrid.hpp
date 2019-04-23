@@ -15,6 +15,8 @@
 #include <iomanip>
 #include <algorithm>
 #include <string>
+/// iota error : @see https://github.com/lizardfs/lizardfs/issues/402
+#include <numeric>
 
 #include <cctype>
 #include <ctime>

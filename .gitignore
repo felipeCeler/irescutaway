@@ -2,4 +2,4 @@
 .project
 .settings
 ShaderPath.h
-build
+build*
