@@ -8,7 +8,7 @@
     <x>0</x>
     <y>0</y>
     <width>1388</width>
-    <height>1212</height>
+    <height>1258</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -48,7 +48,7 @@
      <x>0</x>
      <y>0</y>
      <width>1388</width>
-     <height>22</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -489,7 +489,7 @@
   <widget class="QDockWidget" name="dockWidgetDynamic">
    <property name="minimumSize">
     <size>
-     <width>315</width>
+     <width>324</width>
      <height>450</height>
     </size>
    </property>
@@ -769,14 +769,8 @@
   <widget class="QDockWidget" name="dockWidgetBeauty">
    <property name="minimumSize">
     <size>
-     <width>400</width>
-     <height>600</height>
-    </size>
-   </property>
-   <property name="maximumSize">
-    <size>
-     <width>400</width>
-     <height>600</height>
+     <width>418</width>
+     <height>606</height>
     </size>
    </property>
    <attribute name="dockWidgetArea">
@@ -845,7 +839,7 @@
              <enum>QAbstractSpinBox::PlusMinus</enum>
             </property>
             <property name="minimum">
-             <number>1</number>
+             <number>0</number>
             </property>
             <property name="maximum">
              <number>512</number>
@@ -887,7 +881,7 @@
              <set>Qt::ImhNone</set>
             </property>
             <property name="minimum">
-             <number>1</number>
+             <number>0</number>
             </property>
             <property name="maximum">
              <number>30</number>
@@ -939,7 +933,7 @@
              <string extracomment="Number of neighbour pixels used in blurring. The blur will be applied to a blurRange x blurRange square around the current pixel. It's important to notice that blurRange must be an odd number."/>
             </property>
             <property name="minimum">
-             <number>1</number>
+             <number>0</number>
             </property>
             <property name="maximum">
              <number>30</number>
@@ -969,7 +963,7 @@
           <item>
            <widget class="QDial" name="dial_radius">
             <property name="minimum">
-             <number>1</number>
+             <number>0</number>
             </property>
             <property name="maximum">
              <number>60</number>
@@ -994,7 +988,7 @@
              <enum>QAbstractSpinBox::PlusMinus</enum>
             </property>
             <property name="minimum">
-             <number>1</number>
+             <number>0</number>
             </property>
             <property name="maximum">
              <number>60</number>
@@ -1021,36 +1015,6 @@
         <string> Lines Properties</string>
        </property>
        <layout class="QGridLayout" name="gridLayout_2">
-        <item row="2" column="0">
-         <widget class="QLabel" name="label_6">
-          <property name="text">
-           <string>Internal Line Size</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="0">
-         <widget class="QLabel" name="labelMeanFilterSize">
-          <property name="text">
-           <string>Mean Filter Kernel Size</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="1">
-         <widget class="QSlider" name="horizontalSliderLineWith">
-          <property name="maximum">
-           <number>10</number>
-          </property>
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="tickPosition">
-           <enum>QSlider::NoTicks</enum>
-          </property>
-          <property name="tickInterval">
-           <number>1</number>
-          </property>
-         </widget>
-        </item>
         <item row="0" column="2">
          <widget class="QLabel" name="labelMeanFilterSize_Value">
           <property name="minimumSize">
@@ -1091,13 +1055,6 @@
           </property>
          </widget>
         </item>
-        <item row="1" column="0">
-         <widget class="QLabel" name="labelLineWith">
-          <property name="text">
-           <string>Border Lines Size</string>
-          </property>
-         </widget>
-        </item>
         <item row="2" column="1">
          <widget class="QSlider" name="horizontalSlider">
           <property name="orientation">
@@ -1124,6 +1081,43 @@
           </property>
           <property name="tickInterval">
            <number>2</number>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="labelLineWith">
+          <property name="text">
+           <string>Border Lines Size</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QSlider" name="horizontalSliderLineWith">
+          <property name="maximum">
+           <number>10</number>
+          </property>
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="tickPosition">
+           <enum>QSlider::NoTicks</enum>
+          </property>
+          <property name="tickInterval">
+           <number>1</number>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QLabel" name="labelMeanFilterSize">
+          <property name="text">
+           <string>Mean Filter Kernel Size</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0">
+         <widget class="QLabel" name="label_6">
+          <property name="text">
+           <string>Internal Line Size</string>
           </property>
          </widget>
         </item>
@@ -1438,7 +1432,7 @@
    <property name="minimumSize">
     <size>
      <width>255</width>
-     <height>277</height>
+     <height>295</height>
     </size>
    </property>
    <property name="maximumSize">
@@ -1601,8 +1595,8 @@
   <widget class="QDockWidget" name="dockWidget_Effects">
    <property name="minimumSize">
     <size>
-     <width>264</width>
-     <height>123</height>
+     <width>277</width>
+     <height>145</height>
     </size>
    </property>
    <property name="maximumSize">

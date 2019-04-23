@@ -830,7 +830,7 @@ void GLWidget::IRESCutawayStatic (  )
 
                 if ( reservoir_model_.showBorderLine )
                 {
-                	//drawPrimaryStaticSilhouette();
+                	drawPrimaryStaticSilhouette();
                 }
 
 

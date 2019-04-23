@@ -15,9 +15,11 @@ set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/build/bin/ )
 set( CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/build/bin/ )
 set( CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/build/bin/ )
 
+set (CMAKE_CXX_STANDARD 11)
+
 # C++ flags
 ## -Wno-unused-local-typedefs -Wunused-local-typedefs - For Eigen Boring Warning
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -Wdeprecated-declarations")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wdeprecated-declarations")
 set(CMAKE_BUILD_TYPE Debug)
 
 IF(MSVC)

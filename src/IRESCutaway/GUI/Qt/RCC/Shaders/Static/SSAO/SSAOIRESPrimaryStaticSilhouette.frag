@@ -184,9 +184,9 @@ void main(void)
                 // bottom right pixel of the window at pixel[N-1].
                 back = texelFetch(silhouette, ivec2(gl_FragCoord.st+offset), 0).rgba;
 
-//              if ((back.a < 51.0)) {
-//                  color = vec4(1.0,0.2,0.0,1.0);
-//              }
+              if ((back.a < 51.0)) {
+                  color = vec4(1.0,0.2,0.0,1.0);
+              }
             }
         }
 
