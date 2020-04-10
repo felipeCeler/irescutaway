@@ -1,4 +1,4 @@
-# irescutaway
+# IRES Cutaway
 
 Interactive Cutaways of Oil Reservoirs
 
